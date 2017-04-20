@@ -1,8 +1,12 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq/Lambda/Materiały".
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
+
+Require Import HSLib.Base.
 
 Require Import HSLib.MonadJoin.Monad.
 Require Import HSLib.MonadJoin.MonadInst.
 Require Import MonadTrans.
+
+Require Import HSLib.Instances.Option.
 
 Instance MonadTrans_option_is_functor (M : Type -> Type) {xd : Monad M}
     : Functor (fun A : Type => M (option A)) :=

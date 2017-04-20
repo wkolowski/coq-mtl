@@ -1,5 +1,6 @@
 Add LoadPath "/home/Zeimer/Code/Coq/Lambda/Materiały".
 
+Require Import HSLib.Base.
 Require Import HSLib.Functor.Functor.
 Require Import HSLib.Functor.FunctorInst.
 

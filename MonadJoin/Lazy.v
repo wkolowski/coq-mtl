@@ -1,4 +1,4 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq/Lambda/Materiały".
+(*Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Export HSLib.MonadJoin.Monad.
 
@@ -84,4 +84,4 @@ Eval simpl in Later _ (fun n : nat => 2 * n) 2.
 Eval simpl in Later _ (fun n : nat => n + 2) 3 >>= fun n : nat =>
     Later _ (fun n : nat => 2 * n) n.
 
-Eval simpl in Later _ id 5 >>= fun n : nat => Later _ (fun m => n * m) 3.
+Eval simpl in Later _ id 5 >>= fun n : nat => Later _ (fun m => n * m) 3.*)

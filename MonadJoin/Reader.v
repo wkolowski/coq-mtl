@@ -1,17 +1,11 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq/Lambda/Materiały".
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import Applicative.
+Require Import HSLib.Base.
+
+Require Import HSLib.Instances.Reader.
+Require Import HSLib.Functor.Functor.
+Require Import HSLib.Applicative.Applicative.
 Require Import HSLib.MonadJoin.Monad.
-
-Print Monad.
-
-Definition Reader (R A : Type) : Type := R -> A.
-
-Print Functor.
-
-Definition fmap_Reader {R A B : Type} (f : A -> B)
-    (ra : Reader R A) : Reader R B :=
-    fun r : R => f (ra r).
 
 Instance FunctorReader (R : Type) : Functor (Reader R) :=
 {
@@ -22,13 +16,6 @@ Proof.
   intros. extensionality ra. extensionality r. unfold fmap_Reader, id, compose.
     trivial.
 Defined.
-Print Applicative.
-
-Definition ret_Reader {R A : Type} (a : A) : Reader R A :=
-    fun _ : R => a.
-
-Definition ap_Reader {R A B : Type} (f : Reader R (A -> B)) (ra : Reader R A)
-    : Reader R B := fun r : R => f r (ra r).
 
 Instance ApplicativeReader (R : Type) : Applicative (Reader R) :=
 {
@@ -42,9 +29,6 @@ Proof.
   trivial.
   trivial.
 Defined.
-
-Definition join_Reader {R A : Type} (rra : Reader R (Reader R A))
-    : Reader R A := fun r : R => rra r r.
 
 Instance MonadReader (R : Type) : Monad (Reader R) :=
 {

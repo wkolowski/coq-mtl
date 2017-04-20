@@ -1,7 +1,12 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq/Lambda/Materiały".
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Export HSLib.MonadJoin.Monad.
-Require Export HSLib.Functor.FunctorInst.
+Require Import HSLib.Base.
+
+Require Import HSLib.MonadJoin.Monad.
+Require Import HSLib.Functor.FunctorInst.
+
+Require Import HSLib.Instances.Option.
+Require Import HSLib.Instances.Sum.
 
 (** * Option *)
 Instance MonadOption : Monad option :=
@@ -69,7 +74,7 @@ Eval compute in init [1; 2; 3].
 
 Eval simpl in filterM (fun _ => [true; false]) [1; 2; 3].
 
-Eval simpl in replicateM _ _ 5 [1; 2].
+Eval simpl in replicateM 3 [1; 2].
 
 Eval simpl in sequence [[1]; [2]].
 
@@ -99,4 +104,4 @@ Defined.
 Eval simpl in sequence [inr 42; inr 5; inr 10].
 Eval simpl in sequence [inr 42; inr 5; inr 10; inl (fun n : nat => 2 * n)].
 
-Eval simpl in foldM _ _ (fun n m => inl (plus n m)) 0 [1; 2; 3].
+Eval simpl in foldM (fun n m => inl (plus n m)) 0 [1; 2; 3].

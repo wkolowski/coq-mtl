@@ -14,7 +14,7 @@ Class Alternative (F : Type -> Type) : Type :=
         aplus x (aplus y z) = aplus (aplus x y) z
 }.
 
-Instance AlternativeOption : Alternative option :=
+(*Instance AlternativeOption : Alternative option :=
 {
     is_applicative := ApplicativeOption;
     aempty := fun _ => None;
@@ -47,3 +47,4 @@ Definition guard {F : Type -> Type} {_inst : Alternative F} {A : Type}
 
 
 
+*)

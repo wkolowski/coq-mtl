@@ -1,4 +1,8 @@
-Require Import Monad.
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
+
+Require Import HSLib.Base.
+
+(*Require Import Monad.
 Require Import MonadInst.
 Require Import Alternative.
 
@@ -60,3 +64,4 @@ Eval compute in @zipWithM _ _ _ _ _
 
 
 
+*)

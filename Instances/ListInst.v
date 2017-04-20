@@ -1,28 +1,29 @@
-Add LoadPath "/home/Zeimer/Code/Coq/Lambda/Materiały".
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-(*Require Export HSLib.Applicative.Applicative.
-Require Export HSLib.Functor.FunctorInst.
+Require Import HSLib.Base.
+Require Import HSLib.Functor.Functor.
+Require Import HSLib.Applicative.Applicative.
+Require Import HSLib.Alternative.Alternative.
 
-Instance ApplicativeOption : Applicative option :=
+Definition fmap_List := map.
+(* fix fmap {A B : Type} (f : A -> B) (l : list A) : list B :=
+      match l with
+        | [] => []
+        | h :: t => f h :: fmap f t
+      end *)
+
+Instance FunctorList : Functor list :=
 {
-    is_functor := FunctorOption;
-    ret := Some;
-    ap := fun {A B : Type} (of : option (A -> B)) (oa : option A) =>
-        match of, oa with
-            | Some f, Some a => Some (f a)
-            | _, _ => None
-        end
+    fmap := fmap_List
 }.
 Proof.
-  intros. unfold id. destruct ax; trivial.
-  intros. destruct ax, af, ag; trivial.
-  intros. trivial.
-  intros. destruct f; trivial.
+  intro. unfold id. extensionality l. induction l as [| h t]; simpl.
+    reflexivity.
+    f_equal. auto.
+  intros. unfold compose. extensionality l. induction l as [| h t]; simpl.
+    reflexivity.
+    f_equal. auto.
 Defined.
-Require Import List.
-
-Definition ap_list' {A B : Type} (lf : list (A -> B)) (la : list A)
-    : list B := fold_right (fun f bs => fmap f la ++ bs) [] lf.
 
 Fixpoint ap_list {A B : Type} (lf : list (A -> B)) (la : list A) : list B :=
 match lf with
@@ -54,7 +55,6 @@ Qed.
 Theorem ap_list_map : forall (A B : Type) (f : A -> B) (la : list A),
     ap_list [f] la = map f la.
 Proof.
-  (*intros. simpl. rewrite app_nil_r. trivial.*)
   induction la as [| x xs]; simpl in *.
     trivial.
     rewrite IHxs. trivial.
@@ -89,47 +89,6 @@ Proof.
         rewrite IHgs. trivial.
 Qed.
 
-Fixpoint ap_list2 {A B : Type} (lf : list (A -> B)) (la : list A) : list B :=
-match la with
-    | [] => []
-    | h :: t => map (fun f => f h) lf ++ ap_list2 lf t
-end.
-
-Theorem ap_list2_nil_l : forall (A B : Type) (la : list A),
-    ap_list2 [] la = @nil B.
-Proof.
-  induction la; auto.
-Qed.
-
-Theorem ap_list2_nil_r : forall (A B : Type) (lf : list (A -> B )),
-    ap_list2 lf [] = [].
-Proof.
-  induction lf as [| f fs]; auto.
-Qed.
-
-Theorem ap_list2_app :
-    forall (A B : Type) (lf : list (A -> B)) (la la' : list A),
-        ap_list2 lf (la ++ la') = ap_list2 lf la ++ ap_list2 lf la'.
-Proof.
-  induction la as [| x xs]; intros; simpl.
-    trivial.
-    rewrite <- app_assoc. rewrite IHxs. trivial.
-Qed.
-
-Theorem ap_list2_map : forall (A B : Type) (f : A -> B) (la : list A),
-    ap_list2 [f] la = map f la.
-Proof.
-  induction la as [| h t]; simpl; try rewrite IHt; trivial.
-Qed.
-
-Theorem ap_list2_exchange : forall (A B : Type) (x : A) (lf : list (A -> B)),
-    ap_list2 [fun f : A -> B => f x] lf = ap_list2 lf [x].
-Proof.
-  induction lf as [| f fs].
-    simpl. trivial.
-    simpl. rewrite IHfs. simpl. trivial.
-Qed.
-
 Instance ApplicativeList : Applicative list :=
 {
     is_functor := FunctorList;
@@ -153,4 +112,19 @@ Proof.
         apply ap_list_exchange2.
         rewrite app_nil_r. apply ap_list_exchange3.
 Defined.
-*)
+
+Definition aempty_List {A : Type} : list A := [].
+
+Definition aplus_List {A : Type} (x y : list A) : list A := app x y.
+
+Instance AlternativeList : Alternative list :=
+{
+    is_applicative := ApplicativeList;
+    aempty := @aempty_List;
+    aplus := @aplus_List
+}.
+Proof.
+  apply app_nil_l.
+  apply app_nil_r.
+  apply app_assoc.
+Defined.

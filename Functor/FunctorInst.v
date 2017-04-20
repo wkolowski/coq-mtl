@@ -1,14 +1,10 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq/Lambda/Materiały".
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Export HSLib.Functor.Functor.
 
-Instance FunctorOption : Functor option :=
+(*Instance FunctorOption : Functor option :=
 {
-    fmap := fun {A B : Type} (f : A -> B) (oa : option A) =>
-        match oa with
-            | None => None
-            | Some a => Some (f a)
-        end
+    fmap := fmap_option
 }.
 Proof.
   intros; extensionality x; destruct x; auto.
@@ -57,3 +53,4 @@ Proof.
   intros. extensionality x. destruct x; unfold id; trivial.
 Defined.
 
+*)

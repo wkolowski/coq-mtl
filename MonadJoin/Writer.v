@@ -1,7 +1,9 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq/Lambda/Materiały".
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import Monoid.
-Require Import Applicative.
+Require Import HSLib.Base.
+
+Require Import HSLib.Monoid.
+Require Import HSLib.Applicative.Applicative.
 Require Import HSLib.MonadJoin.Monad.
 
 Definition Writer (W : Monoid) (A : Type) : Type := prod A W.
