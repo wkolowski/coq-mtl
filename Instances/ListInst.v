@@ -25,6 +25,8 @@ Proof.
     f_equal. auto.
 Defined.
 
+Definition ret_List {A : Type} (x : A) : list A := [x].
+
 Fixpoint ap_list {A B : Type} (lf : list (A -> B)) (la : list A) : list B :=
 match lf with
     | [] => []
@@ -92,7 +94,7 @@ Qed.
 Instance ApplicativeList : Applicative list :=
 {
     is_functor := FunctorList;
-    ret := fun {A : Type} (x : A) => [x];
+    ret := @ret_List; 
     ap := @ap_list
 }.
 Proof.
@@ -128,3 +130,16 @@ Proof.
   apply app_nil_r.
   apply app_assoc.
 Defined.
+
+Fixpoint join_List {A : Type} (lla : list (list A)) : list A :=
+match lla with
+    | [] => []
+    | hl :: tll => hl ++ join_List tll
+end.
+
+Fixpoint bind_List {A B : Type} (la : list A) (f : A -> list B) : list B :=
+match la with
+    | [] => []
+    | h :: t => f h ++ bind_List t f
+end.
+

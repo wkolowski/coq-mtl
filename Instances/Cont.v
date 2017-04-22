@@ -1,6 +1,8 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
+Require Import HSLib.Functor.Functor.
+Require Import HSLib.Applicative.Applicative.
 
 Definition Cont (R A : Type) : Type := (A -> R) -> R.
 
@@ -16,3 +18,25 @@ Definition ap_Cont {R A B : Type} (cf : Cont R (A -> B)) (ca : Cont R A)
 
 Definition join_Cont {R A : Type} (cca : Cont R (Cont R A)) : Cont R A :=
     fun f : A -> R => cca (fun g : (A -> R) -> R => g f).
+
+Instance FunctorCont (R : Type) : Functor (Cont R) :=
+{
+    fmap := @fmap_Cont R
+}.
+Proof.
+  intros. unfold fmap_Cont, id. trivial.
+  intros. unfold fmap_Cont, id. trivial.
+Defined.
+
+Instance ApplicativeCont (R : Type) : Applicative (Cont R) :=
+{
+    is_functor := FunctorCont R;
+    ret := @ret_Cont R;
+    ap := @ap_Cont R
+}.
+Proof.
+  trivial.
+  trivial.
+  trivial.
+  trivial.
+Defined.

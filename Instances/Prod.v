@@ -18,3 +18,11 @@ Proof.
   intros. extensionality x. destruct x; unfold id; trivial.
 Defined.
 
+Theorem Prod_not_applicative : exists A : Type,
+    Applicative (prod A) -> False.
+Proof.
+  exists False. destruct 1. destruct (ret _ 42). assumption.
+Qed.
+
+
+

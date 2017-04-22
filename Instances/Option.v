@@ -63,3 +63,24 @@ Proof.
   destruct fa; trivial.
   destruct x; try destruct y; try destruct z; trivial.
 Defined.
+
+Definition join_Option {A : Type} (ooa : option (option A))
+    : option A :=
+match ooa with
+    | Some (Some x) => Some x
+    | _ => None
+end.
+
+Definition bind_Option {A B : Type} (oa : option A) (f : A -> option B)
+    : option B :=
+match oa with
+    | None => None
+    | Some a => f a
+end.
+
+Definition compM_Option {A B C : Type} (f : A -> option B) (g : B -> option C)
+    (a : A) : option C :=
+match f a with
+    | None => None
+    | Some b => g b
+end.

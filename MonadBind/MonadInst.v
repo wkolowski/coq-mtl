@@ -1,9 +1,10 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
+Require Import Logic.FunctionalExtensionality.
+
 Require Import HSLib.Base.
 
-Require Import HSLib.MonadJoin.Monad.
-Require Import HSLib.Functor.FunctorInst.
+Require Import HSLib.MonadBind.Monad.
 
 Require Import HSLib.Instances.Option.
 Require Import HSLib.Instances.ListInst.
@@ -17,13 +18,14 @@ Instance MonadOption : Monad option :=
 {
     is_functor := FunctorOption;
     ret := Some;
-    join := @join_Option
+    bind := @bind_Option
 }.
 Proof.
-  unfold compose; simpl; intros. extensionality opt.
-    destruct opt as [[[ssx |] |] |]; auto.
-  unfold compose; simpl; intros. extensionality opt.
-    destruct opt; auto.
+  simpl. trivial.
+  destruct ma; simpl; trivial.
+  intros. destruct ma; simpl.
+    destruct (f a); simpl; trivial.
+    trivial.
 Defined.
 
 Eval compute in (fun _ => Some 5) >=> (fun n => Some (n + 6)).
@@ -32,24 +34,26 @@ Eval compute in Some 4 >>= fun n : nat => Some (2 * n).
 Eval compute in liftM2 plus (Some 2) (Some 4).
 Eval compute in liftM2 plus (Some 42) None.
 
-(** * List *)
+Lemma bind_List_app : forall (A B : Type) (l1 l2 : list A) (f : A -> list B),
+    bind_List (l1 ++ l2) f = bind_List l1 f ++ bind_List l2 f.
+Proof.
+  induction l1 as [| h1 t1]; simpl.
+    trivial.
+    intros. rewrite IHt1. rewrite app_assoc. trivial.
+Qed.
 
 Instance MonadList : Monad list :=
 {
+    is_functor := FunctorList;
     ret := fun (A : Type) (a : A) => [a];
-    join := @join_List
+    bind := @bind_List
 }.
 Proof.
-  intro. extensionality lla. induction lla as [| h t];
-  unfold compose in *; simpl in *.
+  intros. simpl. rewrite app_nil_r. trivial.
+  intros. induction ma as [| h t]; simpl; try rewrite IHt; trivial.
+  induction ma as [| h t]; simpl.
     trivial.
-    rewrite IHt. induction h; simpl.
-      trivial.
-      rewrite <- app_assoc. rewrite IHh. trivial.
-  intro. extensionality lla. induction lla as [| h t];
-  unfold compose in *; simpl in *.
-    trivial.
-    f_equal. rewrite <- IHt. trivial. 
+    intros. rewrite bind_List_app. rewrite <- IHt. trivial.
 Defined.
 
 Definition head {A : Type} (l : list A) : option A :=
@@ -73,17 +77,18 @@ Eval simpl in replicateM 3 [1; 2].
 
 Eval simpl in sequence [[1]; [2]].
 
-Instance MonadEither (A : Type) : Monad (sum A) :=
+Instance MonadSum (A : Type) : Monad (sum A) :=
 {
     is_functor := FunctorSum A;
     ret := @ret_Sum A;
-    join := @join_Sum A
+    bind := @bind_Sum A
 }.
 Proof.
-  intro B. extensionality x.
-    destruct x as [a | [a | [a | b]]]; compute; trivial.
-  intro B. extensionality x.
-    destruct x as [a | b]; compute; trivial.
+  intros. simpl. trivial.
+  intros. unfold ret_Sum. destruct ma; simpl; trivial.
+  intros. destruct ma; simpl.
+    trivial.
+    destruct (f a); simpl; trivial.
 Defined.
 
 Eval simpl in sequence [inr 42; inr 5; inr 10].
@@ -93,28 +98,29 @@ Eval simpl in foldM (fun n m => inl (plus n m)) 0 [1; 2; 3].
 
 Instance MonadReader (R : Type) : Monad (Reader R) :=
 {
+    is_functor := FunctorReader R;
     ret := @ret_Reader R;
-    join := @join_Reader R
+    bind := @bind_Reader R
 }.
 Proof.
+  trivial.
   trivial.
   trivial.
 Defined.
 
 Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
 {
+    is_functor := FunctorWriter W;
     ret := @ret_Writer W;
-    join := @join_Writer W
+    bind := @bind_Writer W
 }.
 Proof.
-  * intros. simpl. unfold fmap_Writer, ret_Writer, join_Writer, id, compose.
-    extensionality wwwx. destruct wwwx as [[[x w] w'] w''].
-    rewrite op_assoc. trivial.
-  * intros. simpl. unfold fmap_Writer, ret_Writer, join_Writer, id, compose.
-    extensionality wx. destruct wx as [x w]. rewrite id_left, id_right. auto.
+  solveWriter.
+  solveWriter.
+  solveWriter.
 Defined.
 
-Instance MonadState (S : Type) : Monad (State S) :=
+(*Instance MonadState (S : Type) : Monad (State S) :=
 {
     is_functor := FunctorState S;
     ret := @ret_State S;
@@ -137,4 +143,4 @@ Instance MonadCont (R : Type) : Monad (Cont R) :=
 Proof.
   trivial.
   trivial.
-Defined.
+Defined.*)

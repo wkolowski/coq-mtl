@@ -1,3 +1,5 @@
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
+
 Inductive sigM {A : Type} (P : A -> Prop) : Type -> Type :=
     | existM : forall x : A, P x -> sigM P A.
 
@@ -114,16 +116,20 @@ match l with
     | _ => ret []
 end.*)
 
-(*Inductive sigM' (A : Type) : Type :=
+Inductive sigM' (A : Type) : Type :=
     | existM' : forall (P : A -> Prop) (x : A), P x -> sigM' A.
+
+Require Import HSLib.Functor.Functor.
 
 Instance Functor_sigM' : Functor sigM' :=
 {
     fmap := fun {A B : Type} (f : A -> B) (p : sigM' A) =>
       match p with
-        | existM' _ x _ => existM' (fun _ => True) (f x) I
+        | existM' _ x _ => existM' _ (fun _ => True) (f x) I
       end
 }.
 Proof.
-  intro. extensionality x. destruct x. simpl. unfold id.
-*)
+  intro. Require Import Coq.Logic.FunctionalExtensionality.
+    extensionality p. destruct p. unfold Base.id.
+Abort.
+    
