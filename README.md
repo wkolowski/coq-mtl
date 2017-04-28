@@ -21,7 +21,5 @@ Applicative is currently not a superclas of Monad. MonadPlus currently has no la
 * Make Applicative a superclass of Monad.
 * Check which definition of monads is best for use with transformers.
 * State MonadPlus laws. Play with the MonadPlus reform proposal.
-* Clean up code for instances of Functor and Applicative.
-* Defined instances of Monad for MonadComp and MonadBind.
 * Prove that the three definitions of monads are equivalent.
-* Fix broken commented code.
+* Define Foldable instance for BTree.

@@ -66,9 +66,14 @@ Definition bind_Writer {W : Monoid} {A B : Type} (wa : Writer W A)
     let (a, w) := wa in
     let (b, w') := f a in (b, op w w').
 
+Definition compM_Writer {W : Monoid} {A B C : Type}
+    (f : A -> Writer W B) (g : B -> Writer W C) (x : A) : Writer W C :=
+    let (b, w) := f x in
+    let (c, w') := g b in (c, op w w').
+
 Ltac solveWriter := simpl; intros;
     unfold fmap_Writer, ret_Writer, ap_Writer, join_Writer, bind_Writer,
-    id, compose;
+    compM_Writer, id, compose;
 repeat match goal with
     | wx : Writer _ _ |- _ => destruct wx
     | |- context [let (_, _) := ?f ?x in _] => destruct (f x)

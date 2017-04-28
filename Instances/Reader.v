@@ -44,3 +44,7 @@ Definition join_Reader {R A : Type} (rra : Reader R (Reader R A))
 
 Definition bind_Reader {R A B : Type} (ra : Reader R A) (f : A -> Reader R B)
     : Reader R B := fun r : R => f (ra r) r.
+
+Definition compM_Reader {R A B C : Type}
+    (f : A -> Reader R B) (g : B -> Reader R C) (x : A) : Reader R C :=
+    fun r : R => g (f x r) r.

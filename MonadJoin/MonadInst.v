@@ -3,7 +3,6 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 Require Import HSLib.Base.
 
 Require Import HSLib.MonadJoin.Monad.
-Require Import HSLib.Functor.FunctorInst.
 
 Require Import HSLib.Instances.Option.
 Require Import HSLib.Instances.ListInst.
@@ -73,7 +72,7 @@ Eval simpl in replicateM 3 [1; 2].
 
 Eval simpl in sequence [[1]; [2]].
 
-Instance MonadEither (A : Type) : Monad (sum A) :=
+Instance MonadSum (A : Type) : Monad (sum A) :=
 {
     is_functor := FunctorSum A;
     ret := @ret_Sum A;
@@ -93,6 +92,7 @@ Eval simpl in foldM (fun n m => inl (plus n m)) 0 [1; 2; 3].
 
 Instance MonadReader (R : Type) : Monad (Reader R) :=
 {
+    is_functor := FunctorReader R;
     ret := @ret_Reader R;
     join := @join_Reader R
 }.

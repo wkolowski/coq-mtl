@@ -10,17 +10,6 @@ Definition State (S A : Type) := S -> A * S.
 Definition fmap_State (S A B : Type) (f : A -> B) (st : State S A)
     : State S B := fun s : S => let (a, s') := st s in (f a, s').
 
-Definition ret_State (S A : Type) : A -> State S A :=
-    fun (a : A) (s : S) => (a, s).
-
-Definition ap_State (S A B : Type) (sf : State S (A -> B)) (sa : State S A)
-    : State S B := fun st : S =>
-        let (f, stf) := sf st in
-        let (a, sta) := sa stf in (f a, sta).
-
-Definition join_State {S A : Type} (ssa : State S (State S A)) : State S A :=
-    fun s : S => let (f, s') := ssa s in f s'.
-
 Instance FunctorState (S : Type) : Functor (State S) :=
 {
     fmap := @fmap_State S
@@ -31,6 +20,14 @@ Proof.
   intros. unfold fmap_State, compose, id. extensionality st. extensionality s.
     destruct (st s). reflexivity.
 Defined.
+
+Definition ret_State (S A : Type) : A -> State S A :=
+    fun (a : A) (s : S) => (a, s).
+
+Definition ap_State (S A B : Type) (sf : State S (A -> B)) (sa : State S A)
+    : State S B := fun st : S =>
+        let (f, stf) := sf st in
+        let (a, sta) := sa stf in (f a, sta).
 
 Instance ApplicativeState (S : Type) : Applicative (State S) :=
 {
@@ -55,3 +52,13 @@ Proof.
     exact tt.
     assumption.
 Qed.
+
+Definition join_State {S A : Type} (ssa : State S (State S A)) : State S A :=
+    fun s : S => let (f, s') := ssa s in f s'.
+
+Definition bind_State {S A B : Type} (sa : State S A) (f : A -> State S B)
+    : State S B := fun s : S => let (a, s') := sa s in f a s'.
+
+Definition compM_State {S A B C : Type}
+    (f : A -> State S B) (g : B -> State S C) (a : A) : State S C :=
+    fun s : S => let (b, s') := f a s in g b s'.

@@ -9,16 +9,6 @@ Definition Cont (R A : Type) : Type := (A -> R) -> R.
 Definition fmap_Cont {R A B : Type} (f : A -> B) (ca : Cont R A)
     : Cont R B := fun g : B -> R => ca (f .> g).
 
-Definition ret_Cont {R A : Type} (a : A) : Cont R A :=
-    fun f : A -> R => f a.
-
-Definition ap_Cont {R A B : Type} (cf : Cont R (A -> B)) (ca : Cont R A)
-    : Cont R B := fun br : B -> R => ca (fun a : A => cf (fun ab : A -> B =>
-        br (ab a))).
-
-Definition join_Cont {R A : Type} (cca : Cont R (Cont R A)) : Cont R A :=
-    fun f : A -> R => cca (fun g : (A -> R) -> R => g f).
-
 Instance FunctorCont (R : Type) : Functor (Cont R) :=
 {
     fmap := @fmap_Cont R
@@ -27,6 +17,13 @@ Proof.
   intros. unfold fmap_Cont, id. trivial.
   intros. unfold fmap_Cont, id. trivial.
 Defined.
+
+Definition ret_Cont {R A : Type} (a : A) : Cont R A :=
+    fun f : A -> R => f a.
+
+Definition ap_Cont {R A B : Type} (cf : Cont R (A -> B)) (ca : Cont R A)
+    : Cont R B := fun br : B -> R => ca (fun a : A => cf (fun ab : A -> B =>
+        br (ab a))).
 
 Instance ApplicativeCont (R : Type) : Applicative (Cont R) :=
 {
@@ -40,3 +37,9 @@ Proof.
   trivial.
   trivial.
 Defined.
+
+Definition join_Cont {R A : Type} (cca : Cont R (Cont R A)) : Cont R A :=
+    fun f : A -> R => cca (fun g : (A -> R) -> R => g f).
+
+Definition bind_Cont {R A B : Type} (ca : Cont R A) (f : A -> Cont R B)
+    : Cont R B := fun g : B -> R => ca (fun x : A => f x g).

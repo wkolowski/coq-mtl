@@ -1,7 +1,9 @@
-Require Import List.
-Import ListNotations.
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
+
+Require Import HSLib.Base.
+Require Import HSLib.Monoid.
+
 Require Import Arith.
-Require Import Monoid.
 
 Class Foldable (T : Type -> Type) : Type :=
 {
@@ -62,9 +64,6 @@ Definition findAll (f : A -> bool) (ta : T A) : list A :=
     foldr (fun x xs => if f x then x :: xs else xs) [] ta.
 
 End FoldableFuns.
-(*
-    foldMap : forall (A : Type) (B : Monoid),
-        (A -> B) -> T A -> B *)
 
 Arguments isEmpty [A] [T] [_inst] _.
 Arguments size [A] [T] [_inst] _.
@@ -148,7 +147,7 @@ Inductive BTree (A : Type) : Type :=
     | Node : A -> BTree A -> BTree A -> BTree A.
 Print Foldable.
 
-(*Instance FoldableBTree : Foldable BTree :=
+Instance FoldableBTree : Foldable BTree :=
 {
     foldMap := fix foldMap (A : Type) (M : Monoid) (f : A -> M) (bta : BTree A) :=
         match bta with
@@ -156,12 +155,4 @@ Print Foldable.
             | Node v l r => op (f v) (op (foldMap A M f l) (foldMap A M f r))
         end
 }.
-
-
-
-*)
-
-
-
-
-
+Abort.

@@ -4,10 +4,6 @@ Require Import HSLib.Base.
 Require Import HSLib.Functor.Functor.
 Require Import HSLib.Functor.FunctorInst.
 
-(*Definition apply {A B : Type} (f : A -> B) (x : A) : B := f x.
-
-Notation "f $ x" := (apply f x) (at level 30, right associativity).*)
-
 Class Applicative (F : Type -> Type) : Type :=
 {
     is_functor : Functor F;
@@ -44,4 +40,3 @@ End ApplicativeFuns.
 Arguments liftA [F] [_inst] [A] [B] _ _.
 Arguments liftA2 [F] [_inst] [A] [B] [C] _ _ _.
 Arguments liftA3 [F] [_inst] [A] [B] [C] [D] _ _ _ _.
-

@@ -120,27 +120,28 @@ Proof.
   solveWriter.
 Defined.
 
-(*Instance MonadState (S : Type) : Monad (State S) :=
+Instance MonadState (S : Type) : Monad (State S) :=
 {
     is_functor := FunctorState S;
     ret := @ret_State S;
-    join := @join_State S
+    bind := @bind_State S
 }.
 Proof.
-  intros. extensionality s3x. extensionality s1.
-    simpl. unfold join_State, fmap_State, compose. destruct (s3x s1).
-    destruct (s s0). trivial.
-  intros. extensionality sx. extensionality s.
-    simpl. unfold ret_State, join_State, fmap_State, compose.
-    destruct (sx s). trivial.
+  trivial.
+  unfold ret_State, bind_State. intros. extensionality s.
+    destruct (ma s). trivial.
+  unfold ret_State, bind_State. intros. extensionality s.
+    destruct (ma s). trivial.
 Defined.
 
 Instance MonadCont (R : Type) : Monad (Cont R) :=
 {
+    is_functor := FunctorCont R;
     ret := @ret_Cont R;
-    join := @join_Cont R
+    bind := @bind_Cont R
 }.
 Proof.
   trivial.
   trivial.
-Defined.*)
+  trivial.
+Defined.

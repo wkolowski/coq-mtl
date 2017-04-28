@@ -67,3 +67,6 @@ match x with
     | inl a => inl a
     | inr b => f b
 end.
+
+Definition compM_Sum {E A B C : Type} (f : A -> sum E B) (g : B -> sum E C)
+    (x : A) : sum E C := bind_Sum (f x) g.

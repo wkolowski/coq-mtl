@@ -143,3 +143,14 @@ match la with
     | h :: t => f h ++ bind_List t f
 end.
 
+Definition compM_List {A B C : Type} (f : A -> list B) (g : B -> list C)
+    (x : A) : list C := bind_List (f x) g.
+
+Theorem bind_List_app :
+    forall (A B : Type) (l1 l2 : list A) (f : A -> list B),
+        bind_List (l1 ++ l2) f = bind_List l1 f ++ bind_List l2 f.
+Proof.
+  induction l1 as [| h1 t1]; simpl; intros.
+    trivial.
+    rewrite IHt1, app_assoc. trivial.
+Qed.
