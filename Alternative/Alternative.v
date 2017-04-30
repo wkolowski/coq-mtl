@@ -1,5 +1,10 @@
-Require Import Applicative.
-Require Import ApplicativeInst.
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
+
+Require Import HSLib.Base.
+
+Require Import HSLib.Functor.Functor.
+Require Import HSLib.Applicative.Applicative.
+Require Import HSLib.Foldable.
 
 Class Alternative (F : Type -> Type) : Type :=
 {
@@ -13,3 +18,47 @@ Class Alternative (F : Type -> Type) : Type :=
     aplus_assoc : forall (A : Type) (x y z : F A),
         aplus x (aplus y z) = aplus (aplus x y) z
 }.
+
+Coercion is_applicative : Alternative >-> Applicative.
+
+Section AlternativeFuns.
+
+Variable F : Type -> Type.
+Variable instF : Alternative F.
+
+Variable T : Type -> Type.
+Variable instT : Foldable T.
+
+Variables A B C : Type.
+
+Definition asum : T (F A) -> F A := foldr aplus aempty.
+
+Definition aFromOption (oa : option A) : F A :=
+match oa with
+    | None => aempty
+    | Some a => ret a
+end.
+
+Fixpoint aFromList (la : list A) : F A :=
+match la with
+    | [] => aempty
+    | h :: t => aplus (ret h) (aFromList t)
+end.
+
+Definition afold (ta : T A) : F A :=
+    aFromList (toListF ta).
+
+Definition optional (x : F A) : F (option A) :=
+    aplus (fmap (@Some A) x) (ret None).
+
+Definition guard (b : bool) : F unit :=
+    if b then ret tt else aempty.
+
+End AlternativeFuns.
+
+Arguments asum [F] [instF] [T] [instT] [A] _.
+Arguments aFromOption [F] [instF] [A] _.
+Arguments aFromList [F] [instF] [A] _.
+Arguments afold [F] [instF] [T] [instT] [A] _.
+Arguments optional [F] [instF] [A] _.
+Arguments guard [F] [instF] _.

@@ -4,7 +4,6 @@ Require Import HSLib.Base.
 Require Import HSLib.Instances.ListInst.
 
 Require Import HSLib.Functor.Functor.
-Require Import HSLib.Functor.FunctorInst.
 
 (* Definition of monad using ret and bind. *)
 Class Monad (M : Type -> Type) : Type :=

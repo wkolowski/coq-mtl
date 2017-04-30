@@ -27,7 +27,7 @@ Definition isEmpty (ta : T A) : bool :=
 Definition size (ta : T A) : nat :=
     foldr (fun _ n => S n) 0 ta.
 
-Definition toList (ta : T A) : list A :=
+Definition toListF (ta : T A) : list A :=
     foldr (fun h t => h :: t) [] ta.
 
 Definition elem (cmp : A -> A -> bool) (a : A) (ta : T A) : bool :=
@@ -67,7 +67,7 @@ End FoldableFuns.
 
 Arguments isEmpty [A] [T] [_inst] _.
 Arguments size [A] [T] [_inst] _.
-Arguments toList [A] [T] [_inst] _.
+Arguments toListF [A] [T] [_inst] _.
 Arguments elem [A] [T] [_inst] _ _ _.
 Arguments maxF [T] [_inst] _.
 Arguments maxBy [A] [T] [_inst] _ _ _.
@@ -102,7 +102,7 @@ Instance FoldableOption : Foldable option :=
 
 Eval compute in isEmpty (None).
 Eval compute in size (Some 42).
-Eval compute in toList (Some 5).
+Eval compute in toListF (Some 5).
 Eval compute in elem beq_nat 2 (Some 2).
 Eval compute in maxF (Some 42).
 

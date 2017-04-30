@@ -2,9 +2,14 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
-(*Require Import Monad.
-Require Import MonadInst.
-Require Import Alternative.
+Require Import HSLib.MonadJoin.Monad.
+Require Import HSLib.MonadJoin.MonadInst.
+Require Import HSLib.Alternative.Alternative.
+
+Require Import HSLib.Instances.Option.
+Require Import HSLib.Instances.ListInst.
+
+Require Import Arith.
 
 Class MonadPlus (M : Type -> Type) : Type :=
 {
@@ -12,7 +17,7 @@ Class MonadPlus (M : Type -> Type) : Type :=
     is_alternative :> Alternative M
 }.
 
-Section funs.
+Section MonadPlusFuns.
 
 Variable M : Type -> Type.
 Variable inst : MonadPlus M.
@@ -28,9 +33,10 @@ match lma with
     | h :: t => aplus h (msum t)
 end.
 
-End funs.
+End MonadPlusFuns.
 
-Definition to_1_10 := [1; 2; 3; 4; 5; 6; 7; 8; 9; 10].
+Arguments mfilter [M] [inst] [A] _ _.
+Arguments msum [M] [inst] [A] _.
 
 Instance MonadPlusOption : MonadPlus option :=
 {
@@ -44,8 +50,7 @@ Instance MonadPlusList : MonadPlus list :=
     is_alternative := AlternativeList
 }.
 
-Arguments mfilter [M] [inst] [A] _ _.
-Arguments msum [M] [inst] [A] _.
+Definition to_1_10 := [1; 2; 3; 4; 5; 6; 7; 8; 9; 10].
 
 Eval simpl in
     to_1_10 >>= fun a =>
@@ -61,7 +66,3 @@ Eval compute in msum [[2; 42]; [4; 44]].
 
 Eval compute in @zipWithM _ _ _ _ _
     (fun _ _ => [true; false]) [1; 2; 3] [4; 5; 6; 7].
-
-
-
-*)
