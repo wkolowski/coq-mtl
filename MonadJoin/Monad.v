@@ -172,3 +172,20 @@ Arguments mapM [M] [inst] [A] [B] _ _.
 Arguments forM [M] [inst] [A] [B] _ _.
 
 (* Do notation — conflicts with the 'do' tactic combinator. *)
+
+Section MonadTheorems.
+
+Variable M : Type -> Type.
+Variable inst : Monad M.
+Variables A B C : Type.
+
+Theorem fmap_ret : forall (f : A -> B) (x : A),
+    fmap f (ret x) = ret (f x).
+Proof.
+  intros. Print Monad.
+
+Theorem ret_bind : forall (x : A) (f : A -> M B),
+    ret x >>= f = f x.
+Proof.
+  intros. unfold bind. Print Monad. unfold compose.
+  

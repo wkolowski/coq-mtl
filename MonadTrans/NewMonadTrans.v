@@ -21,17 +21,17 @@ Definition OptionT (M : Type -> Type) (A : Type) : Type := M (option A).
 Instance FunctorOptionT (M : Type -> Type) {_inst : Functor M}
     : Functor (OptionT M) :=
 {
-    fmap := fun (A B : Type) =>
-      @fmap option FunctorOption A B .> @fmap M _inst (option A) (option B)
+    fmap := fun (A B : Type) (f : A -> B) =>
+      (*@fmap option FunctorOption A B .> @fmap M _inst (option A) (option B)*)
+      @fmap M _inst _ _ (@fmap option FunctorOption A B f)
 }.
 Proof.
   intros. unfold compose. do 2 rewrite fmap_pres_id. trivial.
   intros. unfold compose. replace (fun x : A => g (f x)) with (f .> g); auto.
     do 2 rewrite fmap_pres_comp. extensionality x. unfold compose. trivial.
 Defined.
-Require Import Applicative. Print Applicative. Print liftA2.
 
-Check liftA2 ap. Require Import ApplicativeInst.
+(*Require Import Applicative.
 
 Instance ApplicativeOptionT (M : Type -> Type) {_inst : Applicative M}
     : Applicative (OptionT M) :=
@@ -50,10 +50,42 @@ Proof.
     repeat rewrite <- interchange, <- homomorphism. 
     repeat rewrite interchange, homomorphism.
     repeat rewrite <- interchange, <- homomorphism.
-Abort. 
-    
-    
-    
+Abort.*)
+
+Print bind.
+
+Definition OptionT_join {A : Type} {M : Type -> Type} {inst : Monad M}
+    (moma : OptionT M (OptionT M A)) : OptionT M A.
+Proof.
+  red. red in moma. refine (moma >>= fun oma =>
+  match oma with
+      | None => ret None
+      | Some ma => ma
+  end).
+Defined.
+
+(*Definition OptionT_bind {A B : Type} {M : Type -> Type} {inst : Monad M}
+    (moa : OptionT M A) (f : A -> OptionT M B)
+    : OptionT M B := moa >>= fun oa : option A =>
+match oa with
+    | None => ret None
+    | Some a => f a
+end.*)
+
+Instance MonadOptionT (M : Type -> Type) {inst : Monad M}
+    : Monad (OptionT M) :=
+{
+    is_functor := FunctorOptionT M;
+    ret := fun (A : Type) (x : A) => ret (Some x);
+    join := fun (A : Type) => @OptionT_join A M inst
+}.
+Proof.
+  simpl.
+  Focus 2.
+    intro. extensionality x. unfold OptionT_join.
+    unfold compose. unfold bind.
+    replace 
+
 
 (*Definition bind_MonadTrans_option {A B : Type} (M : Type -> Type) {xd : Monad M}
     (moa : M (option A)) (f : A -> M (option B)) : M (option B) :=
@@ -93,7 +125,7 @@ Proof.
       auto.
 Defined.*)
 
-(*Instance MonadTransOption : MonadTrans OptionT :=
+Instance MonadTransOption : MonadTrans OptionT :=
 {
     lift := fun (M : Type -> Type) _ (A : Type) (ma : M A) =>
         ma >>= fun a => ret (Some a)
