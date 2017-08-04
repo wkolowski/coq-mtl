@@ -161,10 +161,10 @@ Variable inst : Monad M.
 Variables A B C D E F : Type.
 
 Definition mapM (f : A -> M B) (la : list A) : M (list B) :=
-    sequence (fmap f la).
+  sequence (fmap f la).
 
 Definition forM (la : list A) (f : A -> M B) : M (list B) :=
-    mapM f la.
+  mapM f la.
 
 End MonadicFuns2.
 
@@ -179,13 +179,33 @@ Variable M : Type -> Type.
 Variable inst : Monad M.
 Variables A B C : Type.
 
-Theorem fmap_ret : forall (f : A -> B) (x : A),
+End MonadTheorems.
+
+Set Implicit Arguments.
+
+Theorem fmap_ret :
+  forall (M : Type -> Type) (inst : Monad M) (A B : Type) (f : A -> B) (x : A),
     fmap f (ret x) = ret (f x).
 Proof.
   intros. Print Monad.
+Admitted.
 
-Theorem ret_bind : forall (x : A) (f : A -> M B),
+
+
+Theorem ret_bind :
+  forall (M : Type -> Type) (inst : Monad M) (A B : Type) (x : A) (f : A -> M B),
     ret x >>= f = f x.
 Proof.
-  intros. unfold bind. Print Monad. unfold compose.
+  intros. unfold bind. Print Monad. rewrite join_law. unfold compose. Check fmap_ret.
+  rewrite fmap_ret. Print Monad.
+  pose (ret_law B). unfold compose in e.
+  change (join (ret (f x))) with ((fun x0 : M B => join (ret x0)) (f x)).
+  rewrite e. Print Monad.
+  pose (join_law B). unfold compose in e0.
+  assert ((fun x0 : M B => join (ret x0)) (f x) =
+  (fun x0 : M B => join (fmap ret x0)) (f x)).
+    
+Abort.
+
+End MonadTheorems.
   

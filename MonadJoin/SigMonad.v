@@ -1,5 +1,7 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
+Require Import Arith. 
+
 Inductive sigM {A : Type} (P : A -> Prop) : Type -> Type :=
     | existM : forall x : A, P x -> sigM P A.
 
@@ -7,6 +9,7 @@ Arguments sigM [A] _ _.
 Arguments existM [A] _ _ _.
 
 Notation "{ x : A | P }" := (sigM (fun x => P) A) : type_scope.
+Notation "<| x |>" := (existM _ x _).
 
 Eval compute in {x : nat | x = 5}.
 Eval compute in (existM (fun n => n = 5) 5 eq_refl).
@@ -64,7 +67,7 @@ Proof.
   simpl in *; auto. rewrite <- (plus_n_O n') in *.
   replace (n' + S (S n')) with (S (S (n' + n'))). auto.
   replace (n' + (S (S n'))) with (S (S n') + n'). auto.
-  Require Import Arith. apply plus_comm.
+  apply plus_comm.
 Defined.
 
 Notation "x >>= f" := (bind_sigM x f) (at level 40).
@@ -130,6 +133,5 @@ Instance Functor_sigM' : Functor sigM' :=
 }.
 Proof.
   intro. Require Import Coq.Logic.FunctionalExtensionality.
-    extensionality p. destruct p. unfold Base.id.
+    extensionality p. destruct p. unfold Base.id. 
 Abort.
-    

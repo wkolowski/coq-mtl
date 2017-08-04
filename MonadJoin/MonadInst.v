@@ -11,6 +11,7 @@ Require Import HSLib.Instances.Reader.
 Require Import HSLib.Instances.Writer.
 Require Import HSLib.Instances.State.
 Require Import HSLib.Instances.Cont.
+Require Import HSLib.Instances.Identity.
 
 Instance MonadOption : Monad option :=
 {
@@ -138,3 +139,17 @@ Proof.
   trivial.
   trivial.
 Defined.
+
+Definition ret_Identity {A : Type} (x : A) : Identity A := x.
+
+Definition join_Identity {A : Type} (x : Identity (Identity A))
+  : Identity A := x.
+
+Instance MonadIdentity : Monad Identity :=
+{
+    is_functor := FunctorIdentity;
+    ret := @ret_Identity;
+    join := @join_Identity
+}.
+Proof. auto. auto. Defined.
+

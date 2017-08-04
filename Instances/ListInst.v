@@ -101,10 +101,6 @@ Proof.
   intros. induction ax.
     simpl. trivial.
     simpl in *. rewrite IHax. trivial.
-  Focus 2. simpl. trivial.
-  Focus 2. intros. induction f as [| f fs].
-    simpl. trivial.
-    simpl in *. rewrite IHfs. trivial. simpl.
   induction af as [| f fs]; induction ag as [| g gs]; simpl; intros.
     trivial.
     repeat rewrite ap_list_nil_r. simpl. trivial.
@@ -113,6 +109,10 @@ Proof.
       rewrite ap_list_app. f_equal.
         apply ap_list_exchange2.
         rewrite app_nil_r. apply ap_list_exchange3.
+  simpl. trivial.
+  intros. induction f as [| f fs].
+    simpl. trivial.
+    simpl in *. rewrite IHfs. trivial.
 Defined.
 
 Definition aempty_List {A : Type} : list A := [].

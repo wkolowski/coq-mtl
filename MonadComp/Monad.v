@@ -151,3 +151,67 @@ Definition unless (b : bool) (mu : M unit) : M unit :=
     when (negb b) mu.
 
 End MonadicFuns.
+
+(* Basic identities for compM version. *)
+
+Theorem compM_join :
+  forall (M : Type -> Type) (inst : Monad M) (A B C : Type)
+  (f : A -> M B) (g : B -> M C),
+    f >=> g = f .> fmap g .> join.
+Proof.
+  intros. unfold compose. extensionality x. unfold bind.
+
+
+Theorem compM_bind_eq :
+  forall (M : Type -> Type) (inst : Monad M) (A B C : Type)
+  (f : A -> M B) (g : B -> M C) (a : A),
+    (f >=> g) a = f a >>= g.
+Proof.
+  intros. unfold bind. destruct inst. simpl.
+  
+Theorem bind_eq :
+  forall {M : Type -> Type} {inst : Monad M} {A B : Type}
+  (ma : M A) (f : A -> M B),
+    bind ma f = (fmap f .> join) ma.
+Proof.
+  intros. unfold join, bind, compose.
+  cut (((fun _ : unit => ma) >=> f) = ((fun _ : unit => fmap f ma) >=> id)).
+    intro. rewrite H. reflexivity.
+    Print Monad. unfold id. extensionality x. destruct x. 
+
+
+
+
+Theorem fmap_ret :
+  forall (M : Type -> Type) (inst : Monad M) (A B : Type) (f : A -> B) (x : A),
+    fmap f (ret x) = ret (f x).
+Proof.
+  intros. Print Monad. 
+Admitted.
+
+Theorem ret_bind :
+  forall (M : Type -> Type) (inst : Monad M) (A B : Type) (x : A) (f : A -> M B),
+    ret x >>= f = f x.
+Proof.
+  intros. unfold bind.
+  assert (((fun _ : unit => ret x) >=> f) tt = (ret >=> f) x).
+    Focus 2. rewrite H. rewrite id_left. reflexivity.
+    unfold ret, compM. destruct inst. rewrite id_left0.
+Admitted.
+
+Theorem join_law :
+  forall (M : Type -> Type) (inst : Monad M) (X : Type),
+    fmap join .> join = join .> join (A := X).
+Proof.
+  intros. unfold compose. extensionality x. unfold join.
+  unfold id. unfold bind. compute. destruct inst; destruct is_functor0. simpl.
+  f_equal. extensionality y. destruct y. simpl.
+Abort.
+
+Theorem ret_law :
+  forall (M : Type -> Type) (inst : Monad M) (X : Type),
+    ret .> join = fmap ret .> join (A := X).
+Proof.
+  intros. unfold join, compose, id. extensionality x.
+  rewrite ret_bind.  Print Monad. 
+  

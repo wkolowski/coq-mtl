@@ -1,5 +1,6 @@
-(*Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
+Require Import HSLib.Base.
 Require Export HSLib.MonadJoin.Monad.
 
 Inductive Lazy (Z : Type) : Type :=
@@ -77,11 +78,11 @@ Defined.
 
 (* I should check the version with Later as return. *)
 
-Eval compute in Now 5 >>= fun n : nat => Later _ (fun _ : nat => 2 * n) 2.
+Eval compute in Now 5 >>= fun n : nat => Later _ (fun _ : nat => 2 * n) 42.
 
 Eval simpl in Later _ (fun n : nat => 2 * n) 2.
 
 Eval simpl in Later _ (fun n : nat => n + 2) 3 >>= fun n : nat =>
     Later _ (fun n : nat => 2 * n) n.
 
-Eval simpl in Later _ id 5 >>= fun n : nat => Later _ (fun m => n * m) 3.*)
+Eval compute in Later _ id 5 >>= fun n : nat => Later _ (fun m => n * m) 3.

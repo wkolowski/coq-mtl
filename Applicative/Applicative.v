@@ -3,6 +3,7 @@ Add LoadPath "/home/Zeimer/Code/Coq".
 Require Import HSLib.Base.
 Require Import HSLib.Functor.Functor.
 
+(** ret nie ma efektów ubocznych *)
 Class Applicative (F : Type -> Type) : Type :=
 {
     is_functor :> Functor F;
@@ -26,6 +27,11 @@ Section ApplicativeFuns.
 Variable F : Type -> Type.
 Variable inst : Applicative F.
 Variables A B C D : Type.
+
+
+
+
+
 
 Definition liftA (f : A -> B) (fa : F A)
     : F B := ap (ret f) fa.

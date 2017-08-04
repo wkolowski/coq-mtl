@@ -52,8 +52,6 @@ Proof.
     repeat rewrite <- interchange, <- homomorphism.
 Abort.*)
 
-Print bind.
-
 Definition OptionT_join {A : Type} {M : Type -> Type} {inst : Monad M}
     (moma : OptionT M (OptionT M A)) : OptionT M A.
 Proof.
@@ -84,7 +82,7 @@ Proof.
   Focus 2.
     intro. extensionality x. unfold OptionT_join.
     unfold compose. unfold bind.
-    replace 
+Abort.
 
 
 (*Definition bind_MonadTrans_option {A B : Type} (M : Type -> Type) {xd : Monad M}
@@ -125,7 +123,7 @@ Proof.
       auto.
 Defined.*)
 
-Instance MonadTransOption : MonadTrans OptionT :=
+(*Instance MonadTransOption : MonadTrans OptionT :=
 {
     lift := fun (M : Type -> Type) _ (A : Type) (ma : M A) =>
         ma >>= fun a => ret (Some a)

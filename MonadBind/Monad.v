@@ -27,9 +27,9 @@ Definition bind_ {M : Type -> Type} {_ : Monad M} {A B : Type}
 Definition join {M : Type -> Type} {_inst : Monad M} {A : Type}
     (mma : M (M A)) : M A := bind mma id.
 
-Definition compM {M : Type -> Type} {_inst : Monad M} {A B C: Type}
+Definition compM {M : Type -> Type} {_inst : Monad M} {A B C : Type}
     (f : A -> M B) (g : B -> M C) (a : A) : M C :=
-    bind (bind (ret a) f) g.
+    bind (f a) g.
 
 Module MonadNotations.
 Notation "mx >>= f" := (bind mx f) (at level 40).
@@ -171,3 +171,60 @@ End MonadicFuns2.
 
 Arguments mapM [M] [inst] [A] [B] _ _.
 Arguments forM [M] [inst] [A] [B] _ _.
+
+Theorem compM_assoc :
+  forall (M : Type -> Type) (inst : Monad M) (A B C D : Type)
+  (f : A -> M B) (g : B -> M C) (h : C -> M D),
+    f >=> (g >=> h) = (f >=> g) >=> h.
+Proof.
+  intros. unfold compM. extensionality a.
+  rewrite assoc. f_equal.
+Qed.
+
+Theorem compM_id_left :
+  forall (M : Type -> Type) (inst : Monad M)
+  (B C : Type) (g : B -> M C),
+    ret >=> g = g.
+Proof.
+  intros. unfold compM. extensionality b.
+  rewrite !id_left. reflexivity.
+Qed.
+
+Theorem compM_id_right :
+  forall (M : Type -> Type) (inst : Monad M)
+  (A B : Type) (f : A -> M B),
+    f >=> ret = f.
+Proof.
+  intros. unfold compM. extensionality a.
+  rewrite id_right. reflexivity.
+Qed.
+
+Theorem bind_compM_eq :
+  forall (M : Type -> Type) (inst : Monad M) (A B : Type)
+  (ma : M A) (f : A -> M B),
+    bind ma f = ((fun _ : unit => ma) >=> f) tt.
+Proof.
+  intros. unfold compM. reflexivity.
+Qed.
+
+Theorem bind_eq_join :
+  forall (M : Type -> Type) (inst : Monad M) (A B C : Type)
+  (ma : M A) (f : A -> M B),
+    bind ma f = (fmap f .> join) ma.
+Proof.
+  intros. unfold join, compose. unfold id.
+
+Theorem join_law :
+  forall (M : Type -> Type) (inst : Monad M) (X : Type),
+    fmap join .> join = join .> @join M inst X.
+Proof.
+  intros. unfold compose. extensionality x. unfold join.
+  Print Functor.
+  unfold id. Print Monad. rewrite assoc. simpl.
+Abort.
+Theorem ret_law :
+  forall (M : Type -> Type) (inst : Monad M) (X : Type),
+    ret .> join = fmap ret .> @join M inst X.
+Proof.
+  intros. unfold join, compose, id. extensionality x.
+  rewrite id_left. Print Monad. 

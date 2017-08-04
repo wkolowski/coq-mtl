@@ -24,11 +24,15 @@ match la with
     | h :: t => liftM2 (@app B) (f h) (F t)
 end.
 
+(*Check (fun x : M (list (M (list A))) => x >>= fun l => l).*)
 
-
-Fixpoint ListT_join (x : M (list (M (list A)))) : M (list A) :=
+(*Fixpoint ListT_join (x : M (list (M (list A)))) : M (list A) :=
 x >>= fun lmla : list (M (list A)) =>
 match lmla with
+    | _ => ret []
+end.
     | [] => ret []
     | mla :: mlas => (ListT_join (ret mlas)) 
-end.
+end.*)
+
+End wut.
