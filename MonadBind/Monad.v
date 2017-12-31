@@ -82,11 +82,11 @@ Definition liftM5
 
 End Lifts.
 
-Arguments liftM [M] [inst] [A] [B] _ _.
-Arguments liftM2 [M] [inst] [A] [B] [C] _ _ _.
-Arguments liftM3 [M] [inst] [A] [B] [C] [D] _ _ _ _.
-Arguments liftM4 [M] [inst] [A] [B] [C] [D] [E] _ _ _ _ _.
-Arguments liftM5 [M] [inst] [A] [B] [C] [D] [E] [F] _ _ _ _ _ _.
+Arguments liftM [M] [inst] [A B] _ _.
+Arguments liftM2 [M] [inst] [A B C] _ _ _.
+Arguments liftM3 [M] [inst] [A B C D] _ _ _ _.
+Arguments liftM4 [M] [inst] [A B C D E] _ _ _ _ _.
+Arguments liftM5 [M] [inst] [A B C D E F] _ _ _ _ _ _.
 
 Section MonadicFuns.
 
@@ -213,6 +213,7 @@ Theorem bind_eq_join :
     bind ma f = (fmap f .> join) ma.
 Proof.
   intros. unfold join, compose. unfold id.
+Abort. (* TODO *)
 
 Theorem join_law :
   forall (M : Type -> Type) (inst : Monad M) (X : Type),
@@ -221,10 +222,12 @@ Proof.
   intros. unfold compose. extensionality x. unfold join.
   Print Functor.
   unfold id. Print Monad. rewrite assoc. simpl.
-Abort.
+Abort. (* TODO *)
+
 Theorem ret_law :
   forall (M : Type -> Type) (inst : Monad M) (X : Type),
     ret .> join = fmap ret .> @join M inst X.
 Proof.
   intros. unfold join, compose, id. extensionality x.
-  rewrite id_left. Print Monad. 
+  rewrite id_left.
+Abort. (* TODO *)
