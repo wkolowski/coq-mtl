@@ -15,9 +15,15 @@ Variable M : Type -> Type.
 Variable inst : Monad M.
 Variables A B C : Type.
 
-Definition OptionT_fmap (*{M : Type -> Type} {inst : Monad M} {A B : Type}*)
-    (f : A -> B) (x : OptionT M A) : OptionT M B :=
-    fmap (fmap f) x.
+Definition OptionT_fmap
+  {_inst : Functor M}
+  (f : A -> B) (x : OptionT M A) : OptionT M B :=
+    @fmap M (@is_functor _ inst) _ _ (@fmap option FunctorOption _ _ f) x.
+    (*@bind _ _ _ inst x (fun oa : option A =>
+    match oa with
+        | None => ret None
+        | Some a => ret (Some (f a))
+    end).*)
 
 Definition OptionT_bind
     (moa : M (option A)) (f : A -> M (option B)) : M (option B) :=
@@ -39,7 +45,7 @@ End wut.
 Instance FunctorOptionT (M : Type -> Type) (inst : Monad M)
     : Functor (OptionT M) :=
 {
-    fmap := @OptionT_fmap M inst
+    fmap := fun _ _ => @OptionT_fmap M inst _ _ (@is_functor _ inst)
 }.
 Proof.
   intro. unfold compose, OptionT_fmap. do 2 rewrite fmap_pres_id. trivial.

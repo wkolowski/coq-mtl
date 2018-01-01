@@ -220,8 +220,7 @@ Theorem join_law :
     fmap join .> join = join .> @join M inst X.
 Proof.
   intros. unfold compose. extensionality x. unfold join.
-  Print Functor.
-  unfold id. Print Monad. rewrite assoc. simpl.
+  unfold id. rewrite assoc. simpl.
 Abort. (* TODO *)
 
 Theorem ret_law :

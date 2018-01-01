@@ -18,11 +18,10 @@ Instance FunctorOption : Functor option :=
     fmap := @fmap_Option
 }.
 Proof.
-  intros; extensionality x; destruct x; auto.
-  intros; extensionality x; destruct x; auto.
+  all: intros; extensionality x; destruct x; auto.
 Defined.
 
-Definition ret_Option := Some.
+Definition ret_Option := @Some.
 
 Definition ap_Option {A B : Type} (of : option (A -> B)) (oa : option A)
     : option B :=

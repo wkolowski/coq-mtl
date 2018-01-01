@@ -187,21 +187,19 @@ Theorem fmap_ret :
   forall (M : Type -> Type) (inst : Monad M) (A B : Type) (f : A -> B) (x : A),
     fmap f (ret x) = ret (f x).
 Proof.
-  intros. Print Monad.
+  intros.
 Admitted. (* TODO *)
 
-Theorem ret_bind :
+(*Theorem ret_bind :
   forall (M : Type -> Type) (inst : Monad M) (A B : Type) (x : A) (f : A -> M B),
     ret x >>= f = f x.
 Proof.
-  intros. unfold bind. Print Monad. rewrite join_law. unfold compose. Check fmap_ret.
-  rewrite fmap_ret. Print Monad.
+  intros. unfold bind. rewrite join_law. unfold compose. Check fmap_ret.
+  rewrite fmap_ret.
   pose (ret_law B). unfold compose in e.
   change (join (ret (f x))) with ((fun x0 : M B => join (ret x0)) (f x)).
-  rewrite e. Print Monad.
+  rewrite e.
   pose (join_law B). unfold compose in e0.
   assert ((fun x0 : M B => join (ret x0)) (f x) =
   (fun x0 : M B => join (fmap ret x0)) (f x)).
-Abort. (* TODO *)
-
-End MonadTheorems.
+Abort. *)

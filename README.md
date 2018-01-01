@@ -4,9 +4,11 @@ This project is an offshoot of my [book on Coq](https://zeimer.github.io/) (in P
 
 It ended up being a Coq library that tries to implement parts of Haskell standard library, namely Functor, Applicative, Alternative, Monad, MonadPlus, MonadTrans and maybe more. The focus is on practical functional programming and not on category theory, although all the classes come equipped with laws and instances have to obey them.
 
+Update: I recently chose to write a monadic parser combinator library as a project for one (or rather, two) of my university courses. Since the parsers are monadic, they fit here perfectly.
+
 ## Done
 
-The current status of the project is highly experimental. I'm trying to find the best way to implemented the aforementioned things in Coq.
+The current status of the project is highly experimental. I'm trying to find the best way to implement the aforementioned things in Coq.
 
 Functors and Applicatives are more or less a no-brainer. Monads are more complicated and come in three flavours:
 * MonadJoin — monads whose definition is based on `join`. This resembles the definition used in category theory.
@@ -24,3 +26,6 @@ Applicative is currently not a superclas of Monad. MonadPlus currently has no la
 * Define Foldable instance for BTree.
 * Define functions for MonadPlus.
 * Define Traversable.
+
+## News
+* 1.01.2018 — The library is now Coq 8.6 compatible.

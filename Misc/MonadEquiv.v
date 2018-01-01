@@ -17,7 +17,6 @@ Module Comp.
 Require Import HSLib.MonadComp.Monad.
 Include HSLib.MonadComp.Monad.
 End Comp.
-Print Bind.Monad.
 
 Instance JoinToBind (M : Type -> Type) (inst : Join.Monad M) : Bind.Monad M :=
 {
@@ -27,5 +26,5 @@ Instance JoinToBind (M : Type -> Type) (inst : Join.Monad M) : Bind.Monad M :=
         (fmap f .> Join.join) ma
 }.
 Proof.
-  intros. Print Join.
+  intros.
 Abort.

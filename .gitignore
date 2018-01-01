@@ -1,5 +1,7 @@
 *.vo
+*.vo.aux
 *.v.d
 *.glob
 *.crashcoqide
 *~
+makefile

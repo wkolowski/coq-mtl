@@ -14,4 +14,4 @@ Instance FunctorIdentity : Functor Identity :=
 {
     fmap := @fmap_Identity
 }.
-Proof. auto. auto. Defined.
+Proof. all: auto. Defined.

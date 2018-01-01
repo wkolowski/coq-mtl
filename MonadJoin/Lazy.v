@@ -4,16 +4,22 @@ Require Import HSLib.Base.
 Require Export HSLib.MonadJoin.Monad.
 
 Inductive Lazy (Z : Type) : Type :=
-    | Now : Z -> Lazy Z
+    | delay : Z -> Lazy Z
     | Later : forall (A : Type), (A -> Z) -> A -> Lazy Z.
 
-Arguments Now [Z] _.
-Arguments Later [Z] _ _ _.
+Arguments delay [Z] _.
+Arguments Later [Z A] _ _.
+
+Definition force {A : Type} (la : Lazy A) : A :=
+match la with
+    | delay a => a
+    | Later f x => f x
+end.
 
 Definition fmapL {A B : Type} (f : A -> B) (la : Lazy A) : Lazy B :=
 match la with
-    | Now v => Now (f v)
-    | Later _ g a => Later _ (g .> f) a
+    | delay v => delay (f v)
+    | Later g a => Later (g .> f) a
 end.
 
 Instance FunctorLazy : Functor Lazy :=
@@ -31,24 +37,24 @@ Defined.
 
 Definition joinL {A : Type} (lla : Lazy (Lazy A)) : Lazy A :=
 match lla with
-    | Now v => match v with
-        | Now v' => Now v'
-        | Later _ f v' => Now (f v')
+    | delay v => match v with
+        | delay v' => delay v'
+        | Later f v' => delay (f v')
     end
-    | Later _ f v => f v
+    | Later f v => f v
 end.
 
 Definition bindL {A B : Type} (la : Lazy A) (f : A -> Lazy B) : Lazy B :=
 match la with
-    | Now a => f a
-    | Later _ g x => f (g x)
+    | delay a => f a
+    | Later g x => f (g x)
 end.
 
 Definition bindL' {A B : Type} (la : Lazy A) (f : A -> Lazy B) : Lazy B :=
 match la with
-    | Now a => f a
-    | Later _ g x => match f (g x) with
-        | Now x' => Later _ id x'
+    | delay a => f a
+    | Later g x => match f (g x) with
+        | delay x' => Later id x'
         | _ => f (g x)
     end
 end.
@@ -61,7 +67,7 @@ Check @joinL'.
 Instance MonadLazy : Monad Lazy :=
 {
     is_functor := FunctorLazy;
-    ret := fun {A : Type} (a : A) => Now a;
+    ret := fun {A : Type} (a : A) => delay a;
       (* @Later A A (fun x : _ => x) a; Universe problems *)
     join := @joinL
 }.
@@ -77,12 +83,15 @@ Proof.
 Defined.
 
 (* I should check the version with Later as return. *)
+Eval lazy in
+  delay 5 >>= fun n : nat => Later (fun _ : nat => 2 * n) 42.
 
-Eval compute in Now 5 >>= fun n : nat => Later _ (fun _ : nat => 2 * n) 42.
+Eval lazy in
+  Later (fun n : nat => 2 * n) 2.
 
-Eval simpl in Later _ (fun n : nat => 2 * n) 2.
+Eval lazy in
+  Later (fun n : nat => n + 2) 3 >>= fun n : nat =>
+  Later (fun n : nat => 2 * n) n.
 
-Eval simpl in Later _ (fun n : nat => n + 2) 3 >>= fun n : nat =>
-    Later _ (fun n : nat => 2 * n) n.
-
-Eval compute in Later _ id 5 >>= fun n : nat => Later _ (fun m => n * m) 3.
+Eval lazy in
+  Later id 5 >>= fun n : nat => Later (fun m => n * m) 3.

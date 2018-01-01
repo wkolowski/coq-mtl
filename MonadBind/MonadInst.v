@@ -17,7 +17,7 @@ Require Import HSLib.Instances.Cont.
 Instance MonadOption : Monad option :=
 {
     is_functor := FunctorOption;
-    ret := Some;
+    ret := @Some;
     bind := @bind_Option
 }.
 Proof.

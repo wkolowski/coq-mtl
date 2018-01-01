@@ -16,7 +16,7 @@ Require Import HSLib.Instances.Identity.
 Instance MonadOption : Monad option :=
 {
     is_functor := FunctorOption;
-    ret := Some;
+    ret := @Some;
     join := @join_Option
 }.
 Proof.

@@ -2,7 +2,7 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Functor.Functor.
 Require Import HSLib.MonadJoin.Monad.
-Require Import HSLib.Instances.Id.
+Require Import HSLib.Instances.Identity.
 
 (*Class FreeMonad (T : (Type -> Type) -> (Type -> Type)) : Type :=
 {
@@ -21,24 +21,24 @@ Class FreeMonad2 (M : Type -> Type) : Type :=
         wrap (fmap f x) = wrap (fmap ret x) >>= f
 }.
 
-Definition ret_Id {A : Type} (x : A) : Id A := x.
+Definition ret_Identity {A : Type} (x : A) : Identity A := x.
 
-Definition join_Id {A : Type} (x : Id (Id A)) : Id A := x.
+Definition join_Identity {A : Type} (x : Identity (Identity A)) : Identity A := x.
 
-Instance MonadId : Monad Id :=
+Instance MonadIdentity : Monad Identity :=
 {
-    is_functor := FunctorId;
-    ret := @ret_Id;
-    join := @join_Id
+    is_functor := FunctorIdentity;
+    ret := @ret_Identity;
+    join := @join_Identity
 }.
 Proof. auto. auto. Defined.
 
-Instance FreeMonad2_Identity : FreeMonad2 Id :=
+Instance FreeMonad2_Identityentity : FreeMonad2 Identity :=
 {
-    is_monad := MonadId;
-    F := Id;
-    is_functor := FunctorId;
-    wrap := @join_Id
+    is_monad := MonadIdentity;
+    F := Identity;
+    is_functor := FunctorIdentity;
+    wrap := @join_Identity
 }.
 Proof. auto. Defined.
 

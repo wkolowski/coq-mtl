@@ -1,4 +1,4 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 Require Import HSLib.Monoid.
@@ -143,16 +143,20 @@ Eval compute in findFirst (beq_nat 42) [1; 3; 5; 7; 11; 42].
 Eval compute in count (leb 10) [1; 3; 5; 7; 11; 42].
 
 Inductive BTree (A : Type) : Type :=
-    | Empty : BTree A
-    | Node : A -> BTree A -> BTree A -> BTree A.
-Print Foldable.
+    | E : BTree A
+    | T : A -> BTree A -> BTree A -> BTree A.
+
+Arguments E [A].
+Arguments T [A] _ _ _.
 
 Instance FoldableBTree : Foldable BTree :=
 {
-    foldMap := fix foldMap (A : Type) (M : Monoid) (f : A -> M) (bta : BTree A) :=
-        match bta with
-            | Empty => neutr
-            | Node v l r => op (f v) (op (foldMap A M f l) (foldMap A M f r))
-        end
+    foldMap :=
+    fix foldMap (A : Type) (M : Monoid) (f : A -> M) (bta : BTree A) :=
+    match bta with
+        | E => neutr
+        | T v l r => op (f v) (op (foldMap A M f l) (foldMap A M f r))
+    end
 }.
+Proof.
 Abort.

@@ -1,18 +1,18 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import Arith. 
+Require Import Arith.
 
 Inductive sigM {A : Type} (P : A -> Prop) : Type -> Type :=
     | existM : forall x : A, P x -> sigM P A.
 
 Arguments sigM [A] _ _.
-Arguments existM [A] _ _ _.
+Arguments existM [A P] _ _.
 
 Notation "{ x : A | P }" := (sigM (fun x => P) A) : type_scope.
 Notation "<| x |>" := (existM _ x _).
 
 Eval compute in {x : nat | x = 5}.
-Eval compute in (existM (fun n => n = 5) 5 eq_refl).
+Eval compute in (@existM _ (fun n => n = 5) 5 eq_refl).
 
 Definition comp_sigM {A B C : Type} {P : B -> Prop} {Q : C -> Prop}
     (f : A -> {x : B | P x}) (g : B -> {x : C | Q x}) (a : A) : {x : C | Q x} :=
@@ -23,7 +23,7 @@ end.
 Notation "f >=> g" := (comp_sigM f g) (at level 40).
 
 Definition return_sigM {A : Type} (a : A) : sigM (fun a : A => True) A :=
-    existM (fun a : A => True) a I.
+  @existM _ (fun a : A => True) a I.
 
 (*Theorem sig_id_left : forall (A B : Type) (P : B -> Prop)
     (f : A -> {x : B | P x}), f >=> return_sigM = f.*)
@@ -50,7 +50,7 @@ end.
 
 Definition even_four : {n : nat | evenb n = true}.
 Proof.
-  refine (existM _ 4 _). auto.
+  refine (existM 4 _). auto.
 Defined.
 
 Fixpoint dbl_ind (P : nat -> Prop) (H0 : P 0) (H1 : P 1)
@@ -63,7 +63,7 @@ end.
 
 Definition double (n : nat) : {n : nat | evenb n = true}.
 Proof.
-  refine (existM _ (2 * n) _). induction n as [| | n'] using dbl_ind;
+  refine (existM (2 * n) _). induction n as [| | n'] using dbl_ind;
   simpl in *; auto. rewrite <- (plus_n_O n') in *.
   replace (n' + S (S n')) with (S (S (n' + n'))). auto.
   replace (n' + (S (S n'))) with (S (S n') + n'). auto.
@@ -85,7 +85,7 @@ Proof. destruct s. auto. Defined.
 (*Definition join_sigM_hard {A : Type} (P : A -> Prop) (Q : {x : A | P x} -> Prop)
     (s : {x : {a : A | P a} | Q x}) : {a : A | P a /\ forall
     H : P a, Q (existM P a H)}.
-Proof. Print existM.
+Proof.
   destruct s as [x p]. 
 match s with
     | existM (existM a p) q => existM P a (conj p q)
@@ -122,13 +122,15 @@ end.*)
 Inductive sigM' (A : Type) : Type :=
     | existM' : forall (P : A -> Prop) (x : A), P x -> sigM' A.
 
+Arguments existM' [A P] _ _.
+
 Require Import HSLib.Functor.Functor.
 
 Instance Functor_sigM' : Functor sigM' :=
 {
     fmap := fun {A B : Type} (f : A -> B) (p : sigM' A) =>
       match p with
-        | existM' _ x _ => existM' _ (fun _ => True) (f x) I
+        | existM' x _ => @existM' _ (fun _ => True) (f x) I
       end
 }.
 Proof.
