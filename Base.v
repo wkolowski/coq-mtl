@@ -9,3 +9,9 @@ Global Set Universe Polymorphism.
 Definition id {A : Type} := fun x : A => x.
 
 Notation "f .> g" := (compose g f) (at level 40).
+
+Ltac ext x := extensionality x.
+
+Ltac gen x := generalize dependent x.
+
+Notation "f $ x" := (f x) (left associativity, at level 40, only parsing).

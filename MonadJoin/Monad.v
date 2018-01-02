@@ -31,9 +31,19 @@ Definition compM {A B C : Type} {M : Type -> Type} {_ : Monad M}
     f .> fmap g .> join.
 
 Module MonadNotations.
+
 Notation "mx >>= f" := (bind mx f) (at level 40).
 Notation "ma >> mb" := (bind_ ma mb) (at level 40).
 Notation "f >=> g" := (compM f g) (at level 40).
+
+Notation "x '<-' e1 ; e2" := (bind e1 (fun x => e2))
+  (right associativity, at level 42).
+
+Notation "e1 ;; e2" := (bind_ e1 e2)
+  (right associativity, at level 42).
+
+Notation "'do' e" := e (at level 50).
+
 End MonadNotations.
 
 Export MonadNotations.

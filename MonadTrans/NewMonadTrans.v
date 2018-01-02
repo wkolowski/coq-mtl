@@ -78,10 +78,15 @@ Instance MonadOptionT (M : Type -> Type) {inst : Monad M}
     join := fun (A : Type) => @OptionT_join A M inst
 }.
 Proof.
-  simpl.
+  intros. unfold compose. cbn. extensionality x.
+  unfold OptionT_join.
+  assert (H := join_law X).
+    unfold compose in H. 
+
   Focus 2.
     intro. extensionality x. unfold OptionT_join.
-    unfold compose. unfold bind.
+    unfold compose. unfold bind. f_equal.
+      cbn. unfold fmap_Option.
 Abort.
 
 

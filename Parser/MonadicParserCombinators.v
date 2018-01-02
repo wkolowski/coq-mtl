@@ -1,3 +1,7 @@
+Add Rec LoadPath "/home/zeimer/Code/Coq".
+
+Require Import HSLib.Base.
+
 (** * Monadic Parser Combinators *)
 
 (** This file is a Coq translation of code taken from the paper "Monadic
@@ -5,9 +9,6 @@
 
 Require Import Ascii.
 Require Import String.
-
-Require Import List.
-Import ListNotations.
 
 (** ** 1 Introduction *)
 
@@ -25,7 +26,7 @@ Definition result {A : Type} (x : A) : Parser A :=
 Definition zero {A : Type} : Parser A :=
   fun _ => [].
 
-Definition item {A : Type} : Parser ascii :=
+Definition item : Parser ascii :=
   fun input : string =>
   match input with
       | EmptyString => []
@@ -40,20 +41,19 @@ match lla with
     | l :: ls => l ++ join ls
 end.
 
-Definition bind
+Definition bind_Parser
   {A B : Type} (p : Parser A) (f : A -> Parser B) : Parser B :=
   fun input : string =>
-    join (map (fun x : A * string =>
-      let '(v, input') := x in f v input') (p input)).
+    join (map (fun '(v, input') => f v input') (p input)).
 
 Definition seq
   {A B : Type} (pa : Parser A) (pb : Parser B) : Parser (A * B) :=
-    bind pa (fun a : A =>
-    bind pb (fun b : B =>
+    bind_Parser pa (fun a : A =>
+    bind_Parser pb (fun b : B =>
       result (a, b))).
 
 Definition sat (p : ascii -> bool) : Parser ascii :=
-  bind (@item ascii) (fun c : ascii =>
+  bind_Parser item (fun c : ascii =>
     if p c then result c else zero).
 
 Require Import Bool.
@@ -91,8 +91,8 @@ Definition upper : Parser ascii :=
   sat (fun c : ascii =>
     Nat.leb 65 (nat_of_ascii c) && Nat.leb (nat_of_ascii c) 90).
 
-Compute bind lower (fun x =>
-        bind lower (fun y =>
+Compute bind_Parser lower (fun x =>
+        bind_Parser lower (fun y =>
           result (String x (String y EmptyString)))) "hello".
 
 Open Scope list_scope.
@@ -111,8 +111,8 @@ Fixpoint words (n : nat) : Parser string :=
 match n with
     | 0 => result ""
     | S n' => plus
-                (bind letter (fun c =>
-                 bind (words n') (fun cs =>
+                (bind_Parser letter (fun c =>
+                 bind_Parser (words n') (fun cs =>
                    result (String c cs))))
                 (result "")
 end.
@@ -127,6 +127,40 @@ Definition word : Parser string :=
 
 (* TODO *)
 
+Require Import HSLib.Base.
+Require Import HSLib.Functor.Functor.
+Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadBind.MonadInst.
+
+Definition fmap_Parser {A B : Type} (f : A -> B) (p : Parser A) : Parser B :=
+  fun input : string =>
+    map (fun p => (f (fst p), snd p)) (p input).
+
+Instance FunctorParser : Functor Parser :=
+{
+    fmap := @fmap_Parser;
+}.
+Proof.
+  intros. unfold fmap_Parser, id. ext p; ext s.
+    induction (p s) as [| [r s'] rs]; cbn; rewrite ?IHrs; reflexivity.
+  intros. unfold fmap_Parser, compose. ext p; ext s.
+    induction (p s) as [| [r s'] rs]; cbn; rewrite ?IHrs; reflexivity.
+Defined.
+
+Instance MonadParser : Monad Parser :=
+{
+    is_functor := FunctorParser;
+    ret := @result;
+    bind := @bind_Parser
+}.
+Proof.
+  all: intros; unfold bind_Parser, result.
+    ext s. cbn. rewrite app_nil_r. reflexivity.
+    ext s. induction (ma s) as [| [x s'] rs];
+      cbn in *; rewrite ?IHrs; reflexivity.
+  Axiom wut : False. destruct wut.
+Defined.
+
 (** *** 3.2 Monad comprehension syntax *)
 
 Fixpoint str (s : string) : Parser string :=
@@ -134,7 +168,9 @@ Fixpoint str (s : string) : Parser string :=
 match s with
     | "" => result ""
     | String c cs =>
-        bind (char c) (fun _ => bind (str cs) (fun _ => result (String c cs)))
+        (*bind_Parser (char c) (fun _ =>
+          bind_Parser (str cs) (fun _ => result (String c cs)))*)
+        liftM2 String (char c) (str cs)
 end.
 
 Compute str "abc" "abcd".
@@ -147,8 +183,8 @@ Fixpoint many' {A : Type} (n : nat) (p : Parser A) : Parser (list A) :=
 match n with
     | 0 => result []
     | S n' => plus
-                (bind p (fun h =>
-                 bind (many' n' p) (fun t =>
+                (bind_Parser p (fun h =>
+                 bind_Parser (many' n' p) (fun t =>
                    result (h :: t))))
                 (result [])
 end.
@@ -179,14 +215,14 @@ Compute word "abc"%string.
 Compute word' "abc"%string.
 
 Definition ident : Parser string :=
-  bind lower (fun c =>
-  bind (fmap toString (many alphanum)) (fun cs => result (String c cs))).
+  bind_Parser lower (fun c =>
+  bind_Parser (fmap toString (many alphanum)) (fun cs => result (String c cs))).
 
 Compute ident "wut123"%string.
 
 Definition many1 {A : Type} (p : Parser A) : Parser (list A) :=
-  bind p (fun h =>
-  bind (many p) (fun t =>
+  bind_Parser p (fun h =>
+  bind_Parser (many p) (fun t =>
     result (h :: t))).
 
 Compute many1 (char "a") "aaab"%string.
@@ -206,7 +242,7 @@ Require Import ZArith.
 
 Definition parseNeg : Parser nat :=
   fmap (fun l => eval (rev l))
-    (bind (char "-") (fun _ => many1 digit)).
+    (bind_Parser (char "-") (fun _ => many1 digit)).
 
 Definition parseZ : Parser Z :=
   plus
@@ -218,13 +254,13 @@ Compute parseZ "-12345"%string.
 Definition parseSign : Parser (Z -> Z) :=
 (*  fmap (fun l => match l with | [] => [] | h :: _ => [h] end)*)
     plus
-      (bind (char "-") (fun _ =>
+      (bind_Parser (char "-") (fun _ =>
       (result (fun k => Z.sub 0%Z k))))
       (result id).
 
 Definition parseZ' : Parser Z :=
-  bind parseSign (fun f =>
-  bind parseNat (fun n =>
+  bind_Parser parseSign (fun f =>
+  bind_Parser parseNat (fun n =>
     result (f (Z_of_nat n)))).
 
 Compute parseZ' "-12345"%string.
@@ -233,15 +269,15 @@ Compute parseZ' "-12345"%string.
 
 Definition sepby1 {A B : Type} (p : Parser A) (sep : Parser B) : 
   Parser (list A) :=
-    bind p (fun h =>
-    bind (many (bind sep (fun _ => p))) (fun t =>
+    bind_Parser p (fun h =>
+    bind_Parser (many (bind_Parser sep (fun _ => p))) (fun t =>
       result (h :: t))).
 
 Definition bracket {A B C : Type}
   (open : Parser A) (content : Parser B) (close : Parser C) : Parser B :=
-    bind open (fun _ =>
-    bind content (fun res =>
-    bind close (fun _ =>
+    bind_Parser open (fun _ =>
+    bind_Parser content (fun res =>
+    bind_Parser close (fun _ =>
       result res))).
 
 Definition ints : Parser (list Z) :=
@@ -266,16 +302,16 @@ match n with
     | 0 => result 42%Z
     | S n' =>
         let
-          addop := plus (bind (char "+") (fun _ => result Z.add))
-                        (bind (char "-") (fun _ => result Z.sub))
+          addop := plus (bind_Parser (char "+") (fun _ => result Z.add))
+                        (bind_Parser (char "-") (fun _ => result Z.sub))
         in let
           factor := plus parseZ
                          (bracket (char "(") (exprn n') (char ")"))
         in
           plus
-            (bind (exprn n') (fun x =>
-             bind addop (fun op =>
-             bind factor (fun y =>
+            (bind_Parser (exprn n') (fun x =>
+             bind_Parser addop (fun op =>
+             bind_Parser factor (fun y =>
                result (op x y)))))
             factor
 end.
@@ -289,21 +325,39 @@ Compute expr "0-5)"%string.
 
 Notation "a |: b" := (plus a b) (at level 50).
 
-Definition chainl1
+(*Definition chainl1
   {A : Type} (p : Parser A) (p_op : Parser (A -> A -> A)) : Parser A :=
-    bind p (fun start =>
-    bind (many (bind p_op (fun op =>
-                bind p (fun arg =>
+    bind_Parser p (fun start =>
+    bind_Parser (many (bind_Parser p_op (fun op =>
+                bind_Parser p (fun arg =>
                   result (op, arg)))))
          (fun l => result (fold_left (fun x p => fst p x (snd p)) l start))).
+*)
+
+Definition chainl1
+  {A : Type} (p : Parser A) (p_op : Parser (A -> A -> A)) : Parser A :=
+  do
+    h <- p;
+    t <- many $ do
+      op <- p_op;
+      arg <- p;
+      ret (op, arg);
+    ret $ fold_left (fun x '(f, y) => f x y) t h.
+
+Definition chainl1'
+  {A : Type} (obj : Parser A) (op : Parser (A -> A -> A)) : Parser A :=
+  do
+    h <- obj;
+    t <- many $ liftM2 pair op obj;
+    ret $ fold_left (fun x '(f, y) => f x y) t h.
 
 Fixpoint exprn'' (n : nat) : Parser Z :=
 match n with
     | 0 => result 0%Z
     | S n' =>
         let
-          op := bind (char "+") (fun _ => result Z.add) |:
-                bind (char "-") (fun _ => result Z.sub)
+          op := do (char "+";; ret Z.add) |:
+                do (char "-";; ret Z.sub)
         in let
           factor := parseZ |: bracket (char "(") (exprn'' n') (char ")")
         in
@@ -318,10 +372,10 @@ Compute expr'' "3-2"%string.
 Definition ops
   {A B : Type} (start : Parser A * B) (l : list (Parser A * B)) : Parser B :=
 match l with
-    | [] => let '(p, op) := start in bind p (fun _ => result op)
+    | [] => let '(p, op) := start in bind_Parser p (fun _ => result op)
     | h :: t =>
-        fold_right plus (bind (fst start) (fun _ => result (snd start)))
-          (map (fun x => bind (fst x) (fun _ => result (snd x))) l)
+        fold_right plus (bind_Parser (fst start) (fun _ => result (snd start)))
+          (map (fun x => bind_Parser (fst x) (fun _ => result (snd x))) l)
 end.
 
 Fixpoint exprn3 (n : nat) : Parser Z :=
