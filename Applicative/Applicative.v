@@ -22,16 +22,20 @@ Class Applicative (F : Type -> Type) : Type :=
 
 Coercion is_functor : Applicative >-> Functor.
 
+Module ApplicativeNotations.
+
+Notation "f $$ x" := (ap f x)
+  (left associativity, at level 40, only parsing).
+
+End ApplicativeNotations.
+
+Export ApplicativeNotations.
+
 Section ApplicativeFuns.
 
 Variable F : Type -> Type.
 Variable inst : Applicative F.
 Variables A B C D : Type.
-
-
-
-
-
 
 Definition liftA (f : A -> B) (fa : F A)
     : F B := ap (ret f) fa.

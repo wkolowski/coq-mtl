@@ -1,9 +1,9 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import HSLib.Base.
+Require Export HSLib.Base.
 Require Import HSLib.Instances.ListInst.
 
-Require Import HSLib.Functor.Functor.
+Require Export HSLib.Functor.Functor.
 
 (* Definition of monad using ret and bind. *)
 Class Monad (M : Type -> Type) : Type :=
@@ -240,3 +240,16 @@ Proof.
   intros. unfold join, compose, id. extensionality x.
   rewrite id_left.
 Abort. (* TODO *)
+
+
+(* TODO: add this to other definitions of monads *)
+Module wut.
+
+Notation "f $$ x" := (ap f x)
+  (left associativity, at level 40, only parsing).
+
+End wut.
+
+Export wut.
+
+Locate "$$".
