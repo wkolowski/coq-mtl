@@ -24,6 +24,7 @@ Proof.
   trivial.
   intros. extensionality x. unfold compM_Option.
     destruct (f x); trivial.
+  reflexivity.
 Defined.
 (* end hide *)
 
@@ -50,6 +51,7 @@ Proof.
     apply app_nil_r.
   intros. extensionality x. unfold ret_List, compM_List.
     induction (f x); simpl; try rewrite IHl; trivial.
+  trivial.
 Defined.
 
 Instance MonadSum (E : Type) : Monad (sum E) :=
@@ -64,6 +66,7 @@ Proof.
   trivial.
   intros. extensionality x. unfold compM_Sum.
     destruct (f x); simpl; trivial.
+  trivial.
 Defined.
 
 Instance MonadReader (R : Type) : Monad (Reader R) :=
@@ -72,22 +75,14 @@ Instance MonadReader (R : Type) : Monad (Reader R) :=
     ret := @ret_Reader R;
     compM := @compM_Reader R
 }.
-Proof.
-  trivial.
-  trivial.
-  trivial.
-Defined.
+Proof. all: trivial. Defined.
 
 Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
 {
     ret := @ret_Writer W;
     compM := @compM_Writer W
 }.
-Proof.
-  solveWriter.
-  solveWriter.
-  solveWriter.
-Defined.
+Proof. all: solveWriter. Defined.
 
 Instance MonadState (S : Type) : Monad (State S) :=
 {
@@ -101,5 +96,5 @@ Proof.
   trivial.
   intros. extensionality x. extensionality s. unfold compM_State.
     destruct (f x s). trivial.
+  trivial.
 Defined.
-

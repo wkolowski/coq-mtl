@@ -16,7 +16,11 @@ Class Monad (M : Type -> Type) : Type :=
     id_right : forall (A : Type) (ma : M A),
         bind ma ret = ma;
     assoc : forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
-        bind (bind ma f) g = bind ma (fun x => bind (f x) g)
+        bind (bind ma f) g = bind ma (fun x => bind (f x) g);
+    fmap_ret : forall (A B : Type) (f : A -> B) (x : A),
+        fmap f (ret x) = ret (f x);
+    bind_fmap : forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
+        bind (fmap f x) g = bind x (f .> g)
 }.
 
 Coercion is_functor : Monad >-> Functor.

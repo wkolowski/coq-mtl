@@ -26,6 +26,8 @@ Proof.
   intros. destruct ma; simpl.
     destruct (f a); simpl; trivial.
     trivial.
+  trivial.
+  destruct x; cbn; reflexivity.
 Defined.
 
 Eval compute in (fun _ => Some 5) >=> (fun n => Some (n + 6)).
@@ -54,6 +56,10 @@ Proof.
   induction ma as [| h t]; simpl.
     trivial.
     intros. rewrite bind_List_app. rewrite <- IHt. trivial.
+  trivial.
+  induction x as [| h t]; cbn; intros.
+    reflexivity.
+    unfold compose in *. rewrite IHt. reflexivity.
 Defined.
 
 Definition head {A : Type} (l : list A) : option A :=
@@ -89,6 +95,8 @@ Proof.
   intros. destruct ma; simpl.
     trivial.
     destruct (f a); simpl; trivial.
+  trivial.
+  destruct x; cbn; unfold compose; reflexivity.
 Defined.
 
 Eval simpl in sequence [inr 42; inr 5; inr 10].
@@ -102,11 +110,7 @@ Instance MonadReader (R : Type) : Monad (Reader R) :=
     ret := @ret_Reader R;
     bind := @bind_Reader R
 }.
-Proof.
-  trivial.
-  trivial.
-  trivial.
-Defined.
+Proof. all: trivial. Defined.
 
 Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
 {
@@ -114,11 +118,7 @@ Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
     ret := @ret_Writer W;
     bind := @bind_Writer W
 }.
-Proof.
-  solveWriter.
-  solveWriter.
-  solveWriter.
-Defined.
+Proof. all: solveWriter. Defined.
 
 Instance MonadState (S : Type) : Monad (State S) :=
 {
@@ -132,6 +132,8 @@ Proof.
     destruct (ma s). trivial.
   unfold ret_State, bind_State. intros. extensionality s.
     destruct (ma s). trivial.
+  trivial.
+  cbn; intros. ext s. compute. destruct (x s). reflexivity.
 Defined.
 
 Instance MonadCont (R : Type) : Monad (Cont R) :=
@@ -140,8 +142,4 @@ Instance MonadCont (R : Type) : Monad (Cont R) :=
     ret := @ret_Cont R;
     bind := @bind_Cont R
 }.
-Proof.
-  trivial.
-  trivial.
-  trivial.
-Defined.
+Proof. all: trivial. Defined.

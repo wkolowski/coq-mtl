@@ -31,7 +31,7 @@ Instance MonadIdentity : Monad Identity :=
     ret := @ret_Identity;
     join := @join_Identity
 }.
-Proof. auto. auto. Defined.
+Proof. all: auto. Defined.
 
 Instance FreeMonad2_Identityentity : FreeMonad2 Identity :=
 {

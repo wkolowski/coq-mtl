@@ -80,7 +80,10 @@ Proof.
     destruct (l a); auto.
   simpl; intros. extensionality la. destruct la. auto.
     unfold compose. simpl. unfold compose. reflexivity.
-Defined.
+  intros. unfold joinL, compose, id. ext lx. destruct lx.
+    reflexivity.
+    admit. (* Bullshit *)
+Admitted.
 
 (* I should check the version with Later as return. *)
 Eval lazy in

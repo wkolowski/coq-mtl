@@ -24,6 +24,8 @@ Proof.
     destruct opt as [[[ssx |] |] |]; auto.
   unfold compose; simpl; intros. extensionality opt.
     destruct opt; auto.
+  intros. ext ox. cbn. destruct ox; reflexivity.
+  trivial.
 Defined.
 
 Eval compute in (fun _ => Some 5) >=> (fun n => Some (n + 6)).
@@ -49,7 +51,9 @@ Proof.
   intro. extensionality lla. induction lla as [| h t];
   unfold compose in *; simpl in *.
     trivial.
-    f_equal. rewrite <- IHt. trivial. 
+    f_equal. rewrite <- IHt. trivial.
+  intros. ext lx. cbn. rewrite app_nil_r. reflexivity.
+  trivial.
 Defined.
 
 Definition head {A : Type} (l : list A) : option A :=
@@ -84,6 +88,8 @@ Proof.
     destruct x as [a | [a | [a | b]]]; compute; trivial.
   intro B. extensionality x.
     destruct x as [a | b]; compute; trivial.
+  intros. ext sx. destruct sx; reflexivity.
+  trivial.
 Defined.
 
 Eval simpl in sequence [inr 42; inr 5; inr 10].
@@ -97,10 +103,7 @@ Instance MonadReader (R : Type) : Monad (Reader R) :=
     ret := @ret_Reader R;
     join := @join_Reader R
 }.
-Proof.
-  trivial.
-  trivial.
-Defined.
+Proof. all: trivial. Defined.
 
 Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
 {
@@ -108,11 +111,13 @@ Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
     join := @join_Writer W
 }.
 Proof.
-  * intros. simpl. unfold fmap_Writer, ret_Writer, join_Writer, id, compose.
+  intros. simpl. unfold fmap_Writer, ret_Writer, join_Writer, id, compose.
     extensionality wwwx. destruct wwwx as [[[x w] w'] w''].
     rewrite op_assoc. trivial.
-  * intros. simpl. unfold fmap_Writer, ret_Writer, join_Writer, id, compose.
+  intros. simpl. unfold fmap_Writer, ret_Writer, join_Writer, id, compose.
     extensionality wx. destruct wx as [x w]. rewrite id_left, id_right. auto.
+  intros. ext wx. destruct wx. cbn. rewrite id_right. reflexivity.
+  trivial.
 Defined.
 
 Instance MonadState (S : Type) : Monad (State S) :=
@@ -128,6 +133,8 @@ Proof.
   intros. extensionality sx. extensionality s.
     simpl. unfold ret_State, join_State, fmap_State, compose.
     destruct (sx s). trivial.
+  reflexivity.
+  trivial.
 Defined.
 
 Instance MonadCont (R : Type) : Monad (Cont R) :=
@@ -135,10 +142,7 @@ Instance MonadCont (R : Type) : Monad (Cont R) :=
     ret := @ret_Cont R;
     join := @join_Cont R
 }.
-Proof.
-  trivial.
-  trivial.
-Defined.
+Proof. all: trivial. Defined.
 
 Definition ret_Identity {A : Type} (x : A) : Identity A := x.
 
@@ -151,5 +155,4 @@ Instance MonadIdentity : Monad Identity :=
     ret := @ret_Identity;
     join := @join_Identity
 }.
-Proof. auto. auto. Defined.
-
+Proof. all: trivial. Defined.

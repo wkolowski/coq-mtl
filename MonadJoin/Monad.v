@@ -14,8 +14,14 @@ Class Monad (M : Type -> Type) : Type :=
     join_law : forall (X : Type),
         fmap join .> join = join .> @join X;
     ret_law : forall (X : Type),
-        ret .> join = fmap ret .> @join X
+        ret .> join = fmap ret .> @join X;
+    ret_join : forall (X : Type),
+      ret .> @join X = id;
+    fmap_ret : forall (A B : Type) (f : A -> B) (x : A),
+      fmap f (ret x) = ret (f x)
 }.
+
+(* TODO: ret .> join = id *)
 
 Coercion is_functor : Monad >-> Functor.
 
@@ -193,12 +199,6 @@ End MonadTheorems.
 
 Set Implicit Arguments.
 
-Theorem fmap_ret :
-  forall (M : Type -> Type) (inst : Monad M) (A B : Type) (f : A -> B) (x : A),
-    fmap f (ret x) = ret (f x).
-Proof.
-  intros.
-Admitted. (* TODO *)
 
 (*Theorem ret_bind :
   forall (M : Type -> Type) (inst : Monad M) (A B : Type) (x : A) (f : A -> M B),

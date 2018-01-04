@@ -44,6 +44,8 @@ Proof.
   reflexivity.
   cbn. intros. unfold compose, ret_Lazy, join_Lazy, fmap_Lazy.
     extensionality la. extensionality u. destruct u. reflexivity.
+  reflexivity.
+  trivial.
 Defined.
 
 Eval lazy in

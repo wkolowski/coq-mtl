@@ -75,7 +75,9 @@ Proof.
     ext s. cbn. rewrite app_nil_r. reflexivity.
     ext s. induction (ma s) as [| [x s'] rs];
       cbn in *; rewrite ?IHrs; reflexivity.
-  Axiom wut : False. destruct wut.
+    Axiom wut : False. destruct wut.
+    trivial.
+    destruct wut.
 Defined.
 
 Definition seq
@@ -547,22 +549,133 @@ Definition in_decb {A : Type} (eq_dec : forall x y : A, {x = y} + {x <> y})
 Definition identifier (keywords : list string) : Parser string :=
   do
     id <- token ident;
-    if in_decb string_dec id keywords then ret id else ret id.
+    if in_decb string_dec id keywords then zero else ret id.
 
 Compute natural "123"%string.
 
-Compute identifier [] "a_huj_kurwa    "%string.
-Compute identifier ["for"]%string "for da hord"%string.
-
 (* My own stuff *)
 
-Definition nonzeroDigit : Parser ascii :=
+(*Definition nonzeroDigit : Parser ascii :=
   sat (fun c : ascii => leb 49 (nat_of_ascii c) && leb (nat_of_ascii c) 58).
+
+Definition parsePositive : Parser positive :=
+  parseNat >>= fun n =>
+  match n with
+      | 0 => zero
+      | S n' => ret $ Pos.of_nat n
+  end.
 
 Require Import QArith.
 
-
-(*Definition parseQ : Parser Q := do
+Definition parseQ : Parser Q := do
   a <- parseZ;
   char "/";;
-  b <- parseN*)
+  b <- parsePositive;
+  ret (a # b).
+
+Compute parseQ "1/5"%string.*)
+
+(** *** 6.2 A parser for λ-expressions *)
+
+Inductive Expr : Type :=
+    | App : Expr -> Expr -> Expr
+    | Lam : string -> Expr -> Expr
+    | Let : string -> Expr -> Expr -> Expr
+    | Var : string -> Expr.
+
+(* Lambda calculus parser for Coq-like syntax. *)
+Fixpoint parseExprn (n : nat) : Parser Expr :=
+match n with
+    | 0 => zero
+    | S n' =>
+        let
+          id := identifier ["let"; "fun"; "in"]%string
+        in let
+          app := do
+            token $ char "(";;
+            e1 <- parseExprn n';
+            e2 <- parseExprn n';
+            token $ char ")";;
+            ret $ App e1 e2
+        in let
+          lam := do
+            token $ str "fun";;
+            var <- id;
+            token $ str "=>";;
+            body <- parseExprn n';
+            ret $ Lam var body
+        in let
+          parseLet := do
+            token $ str "let";;
+            var <- id;
+            token $ str ":=";;
+            body <- parseExprn n';
+            token $ str "in";;
+            let_body <- parseExprn n';
+            ret $ Let var body let_body
+        in let
+          var := fmap Var id
+        in
+          app +++ lam +++ parseLet +++ var
+end.
+
+Definition parseExpr : Parser Expr :=
+  fun input : string => parseExprn (String.length input) input.
+
+Compute parseExpr
+  "(x x)"%string.
+
+Compute parseExpr
+  "fun f => fun x => (f x)"%string.
+
+Compute parseExpr
+  "let x := (x x) in x"%string.
+
+(** Parser for lambda calculus with Haskell-like syntax taken directly
+    from the paper. *)
+Fixpoint parseExprn' (n : nat) : Parser Expr :=
+match n with
+    | 0 => zero
+    | S n' =>
+        let
+          variable := identifier ["let"; "in"]%string
+        in let
+          paren := bracket (char "(") (parseExprn' n') (char ")")
+        in let
+          var := fmap Var variable
+        in let
+          local := do
+            symbol "let";;
+            x <- variable;
+            symbol "=";;
+            e <- parseExprn' n';
+            symbol "in";;
+            e' <- parseExprn' n';
+            ret $ Let x e e'
+        in let
+          lam := do
+            symbol "\";;
+            x <- variable;
+            symbol "->";;
+            e <- parseExprn' n';
+            ret $ Lam x e
+        in let
+          atom := token (lam +++ local +++ var +++ paren)
+        in
+          chainl1 atom (ret App)
+end.
+
+Definition parseExpr' : Parser Expr :=
+  fun input : string => parseExprn' (String.length input) input.
+
+Compute parseExpr'
+  "(x x)"%string.
+
+Compute parseExpr'
+  "\f -> \x -> (f x)"%string.
+
+Compute parseExpr'
+  "let x = (x x) in x"%string.
+
+(** ** 7 Factorising the parser monad *)
+

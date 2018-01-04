@@ -16,7 +16,9 @@ Class Monad (M : Type -> Type) : Type :=
     id_left : forall (B C : Type) (g : B -> M C),
         compM ret g = g;
     id_right : forall (A B : Type) (f : A -> M B),
-        compM f ret = f
+        compM f ret = f;
+    fmap_ret : forall (A B : Type) (f : A -> B) (x : A),
+      fmap f (ret x) = ret (f x)
 }.
 
 Coercion is_functor : Monad >-> Functor.
@@ -189,13 +191,6 @@ Proof.
     intro. rewrite H. reflexivity.
     unfold id. extensionality x. destruct x.
 Abort. (* TODO *)
-
-Theorem fmap_ret :
-  forall (M : Type -> Type) (inst : Monad M) (A B : Type) (f : A -> B) (x : A),
-    fmap f (ret x) = ret (f x).
-Proof.
-  intros.
-Admitted. (* TODO *)
 
 Theorem ret_bind :
   forall (M : Type -> Type) (inst : Monad M) (A B : Type) (x : A) (f : A -> M B),
