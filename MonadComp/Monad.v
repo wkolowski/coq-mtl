@@ -23,9 +23,9 @@ Class Monad (M : Type -> Type) : Type :=
 
 Coercion is_functor : Monad >-> Functor.
 
-Definition bind {A B : Type} {M : Type -> Type} {_ : Monad M}
-    (ma : M A) (f : A -> M B) : M B :=
-    compM (fun _ : unit => ma) f tt.
+Definition bind
+  {A B : Type} {M : Type -> Type} {_ : Monad M} (ma : M A) (f : A -> M B)
+    : M B := compM (fun _ : unit => ma) f tt.
 
 Definition bind_ {M : Type -> Type} {_ : Monad M} {A B : Type}
     (ma : M A) (mb : M B) : M B := bind ma (fun _ => mb).
@@ -40,12 +40,12 @@ Notation "ma >> mb" := (bind_ ma mb) (at level 40).
 Notation "f >=> g" := (compM f g) (at level 40).
 
 Notation "x '<-' e1 ; e2" := (bind e1 (fun x => e2))
-  (right associativity, at level 42).
+  (right associativity, at level 42, only parsing).
 
 Notation "e1 ;; e2" := (bind_ e1 e2)
-  (right associativity, at level 42).
+  (right associativity, at level 42, only parsing).
 
-Notation "'do' e" := e (at level 50).
+Notation "'do' e" := e (at level 50, only parsing).
 
 End MonadNotations.
 
@@ -164,26 +164,29 @@ Definition unless (b : bool) (mu : M unit) : M unit :=
 
 End MonadicFuns.
 
+Section DerivedLaws.
+
+Variables
+  (M : Type -> Type)
+  (inst : Monad M).
+
 (* Basic identities for compM version. *)
 Theorem compM_join :
-  forall (M : Type -> Type) (inst : Monad M) (A B C : Type)
-  (f : A -> M B) (g : B -> M C),
-    f >=> g = f .> fmap g .> join.
+  forall (A B C : Type) (f : A -> M B) (g : B -> M C),
+      f >=> g = f .> fmap g .> join.
 Proof.
-  intros. unfold compose. extensionality x. unfold bind.
+  intros. unfold compose. extensionality x.
 Abort. (* TODO *)
 
 Theorem compM_bind_eq :
-  forall (M : Type -> Type) (inst : Monad M) (A B C : Type)
-  (f : A -> M B) (g : B -> M C) (a : A),
+  forall (A B C : Type) (f : A -> M B) (g : B -> M C) (a : A),
     (f >=> g) a = f a >>= g.
 Proof.
   intros. unfold bind. destruct inst.
 Abort. (* TODO *)
 
 Theorem bind_eq :
-  forall {M : Type -> Type} {inst : Monad M} {A B : Type}
-  (ma : M A) (f : A -> M B),
+  forall (A B : Type) (ma : M A) (f : A -> M B),
     bind ma f = (fmap f .> join) ma.
 Proof.
   intros. unfold join, bind, compose.
@@ -193,7 +196,7 @@ Proof.
 Abort. (* TODO *)
 
 Theorem ret_bind :
-  forall (M : Type -> Type) (inst : Monad M) (A B : Type) (x : A) (f : A -> M B),
+  forall (A B : Type) (x : A) (f : A -> M B),
     ret x >>= f = f x.
 Proof.
   intros. unfold bind.
@@ -203,8 +206,7 @@ Proof.
 Admitted. (* TODO *)
 
 Theorem join_law :
-  forall (M : Type -> Type) (inst : Monad M) (X : Type),
-    fmap join .> join = join .> join (A := X).
+  forall A : Type, fmap join .> join = join .> join (A := A).
 Proof.
   intros. unfold compose. extensionality x. unfold join.
   unfold id. unfold bind. compute. destruct inst; destruct is_functor0. simpl.
@@ -212,10 +214,10 @@ Proof.
 Abort. (* TODO *)
 
 Theorem ret_law :
-  forall (M : Type -> Type) (inst : Monad M) (X : Type),
-    ret .> join = fmap ret .> join (A := X).
+  forall A : Type, ret .> join = fmap ret .> join (A := A).
 Proof.
   intros. unfold join, compose, id. extensionality x.
   rewrite ret_bind.
 Abort. (* TODO *)
-  
+
+End DerivedLaws.

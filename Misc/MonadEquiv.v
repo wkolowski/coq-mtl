@@ -18,13 +18,6 @@ Require Import HSLib.MonadComp.Monad.
 Include HSLib.MonadComp.Monad.
 End Comp.
 
-Axiom fmap_ret :
-  forall (M : Type -> Type) (inst : Join.Monad M) (A B : Type) (f : A -> B)
-    (x : A), fmap f (Join.ret x) = Join.ret (f x).
-
-Axiom join_ret :
-  forall (M : Type -> Type) (inst : Join.Monad M) (X : Type) (mx : M X),
-    Join.join (Join.ret mx) = mx.
 
 Axiom fmap_join :
   forall (M : Type -> Type) (inst : Join.Monad M) (A B : Type) (f : A -> B)
@@ -45,9 +38,10 @@ Instance JoinToBind (M : Type -> Type) (inst : Join.Monad M) : Bind.Monad M :=
 }.
 Proof.
   all: intros.
-    unfold compose. rewrite fmap_ret, join_ret. reflexivity.
-    rewrite <- Join.ret_law. unfold compose. rewrite join_ret. reflexivity.
-    Focus 2. rewrite fmap_ret. reflexivity.
+    unfold compose. rewrite Join.fmap_ret, Join.join_ret. reflexivity.
+    rewrite <- Join.ret_law. unfold compose. rewrite Join.join_ret.
+      reflexivity.
+    Focus 2. rewrite Join.fmap_ret. reflexivity.
     Focus 2. unfold compose. rewrite <- fmap_pres_comp'. reflexivity.
     unfold compose. rewrite fmap_join, <- ?fmap_pres_comp'.
 Abort.
@@ -63,8 +57,8 @@ Instance BindToComp (M : Type -> Type) (inst : Bind.Monad M)
 Proof.
   all: intros; try ext x.
     rewrite Bind.assoc. reflexivity.
-    apply Bind.id_left.
-    apply Bind.id_right.
+    apply Bind.bind_ret_l.
+    apply Bind.bind_ret_r.
     apply Bind.fmap_ret.
 Defined.
 
@@ -77,13 +71,24 @@ Instance BindToJoin (M : Type -> Type) (inst : Bind.Monad M)
         Bind.bind x id
 }.
 Proof.
-  intros. unfold compose. ext x. rewrite Bind.assoc, Bind.bind_fmap.
-    unfold compose, id. reflexivity.
-  intros. unfold compose. ext x. rewrite Bind.id_left, Bind.bind_fmap.
-    unfold compose, id. rewrite Bind.id_right. reflexivity.
-  intros. unfold compose, id. ext x. rewrite Bind.id_left. reflexivity.
-  intros. rewrite Bind.fmap_ret. reflexivity.
+  all: intros; unfold compose; try ext x.
+    rewrite Bind.assoc, Bind.bind_fmap. unfold compose, id. reflexivity.
+    rewrite Bind.bind_ret_l, Bind.bind_fmap, id_right, Bind.bind_ret_r.
+      reflexivity.
+    rewrite Bind.bind_ret_l. reflexivity.
+    rewrite Bind.fmap_ret. reflexivity.
+  rewrite Bind.bind_ret_l. reflexivity.
 Defined.
+
+Axiom comp_id :
+  forall (M : Type -> Type) (inst : Comp.Monad M) (A B : Type) (f : A -> M B)
+  (x : A),
+    Comp.compM id f (Comp.ret x) = f x.
+
+Axiom comp_const :
+  forall (M : Type -> Type) (inst : Comp.Monad M) (A B C : Type)
+  (f : B -> M C) (x : A) (mb : M B),
+    Comp.compM (fun _ => mb) f x = Comp.bind mb f.
 
 Instance CompToBind (M : Type -> Type) (inst : Comp.Monad M)
   : Bind.Monad M :=
@@ -91,11 +96,11 @@ Instance CompToBind (M : Type -> Type) (inst : Comp.Monad M)
     is_functor := @Comp.is_functor M inst;
     ret := @Comp.ret M inst;
     bind := fun (A B : Type) (ma : M A) (f : A -> M B) =>
-      Comp.compM id f ma
+      @Comp.compM M inst unit A B (fun _ => ma) f tt
 }.
 Proof.
   all: intros.
     Focus 2. rewrite Comp.id_right. reflexivity.
     Focus 3. rewrite Comp.fmap_ret. reflexivity.
-    Focus 3. unfold compose, id. 
+    Focus 2. rewrite comp_const.
 Abort.

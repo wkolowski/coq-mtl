@@ -7,10 +7,10 @@ Require Import HSLib.Alternative.Alternative.
 
 Require Export HSLib.Monoid.
 
-Definition Writer (W : Monoid) (A : Type) : Type := prod A W.
+Definition Writer (W : Monoid) (A : Type) : Type := (A * W)%type.
 
-Definition fmap_Writer {W : Monoid} {A B : Type} (f : A -> B) (wa : Writer W A)
-    : Writer W B :=
+Definition fmap_Writer
+  {W : Monoid} {A B : Type} (f : A -> B) (wa : Writer W A) : Writer W B :=
 match wa with
     | (a, w) => (f a, w)
 end.
@@ -20,12 +20,11 @@ Instance FunctorWriter (W : Monoid) : Functor (Writer W) :=
     fmap := @fmap_Writer W
 }.
 Proof.
-  intro. unfold fmap_Writer, id. extensionality wa. destruct wa; trivial.
-  intros. unfold fmap_Writer, id. extensionality wa. destruct wa; trivial.
+  all: intros; unfold fmap_Writer, id; ext wa; destruct wa; reflexivity.
 Defined.
 
 Definition ret_Writer {W : Monoid} {A : Type} (a : A) : Writer W A :=
-    (a, neutr).
+  (a, neutr).
 
 Definition ap_Writer {W : Monoid} {A B : Type} (wf : Writer W (A -> B))
     (wa : Writer W A) : Writer W B :=
@@ -61,10 +60,11 @@ match wwa with
     | pair (pair a w) w' => pair a (op w w')
 end.
 
-Definition bind_Writer {W : Monoid} {A B : Type} (wa : Writer W A)
-    (f : A -> Writer W B) : Writer W B :=
-    let (a, w) := wa in
-    let (b, w') := f a in (b, op w w').
+Definition bind_Writer
+  {W : Monoid} {A B : Type} (wa : Writer W A) (f : A -> Writer W B)
+    : Writer W B :=
+      let (a, w) := wa in
+      let (b, w') := f a in (b, op w w').
 
 Definition compM_Writer {W : Monoid} {A B C : Type}
     (f : A -> Writer W B) (g : B -> Writer W C) (x : A) : Writer W C :=

@@ -21,13 +21,10 @@ Instance MonadOption : Monad option :=
     bind := @bind_Option
 }.
 Proof.
-  simpl. trivial.
-  destruct ma; simpl; trivial.
-  intros. destruct ma; simpl.
-    destruct (f a); simpl; trivial.
-    trivial.
-  trivial.
-  destruct x; cbn; reflexivity.
+  all: intros; try
+  match goal with
+      | x : option _ |- _ => destruct x
+  end; cbn in *; reflexivity.
 Defined.
 
 Eval compute in (fun _ => Some 5) >=> (fun n => Some (n + 6)).
@@ -53,13 +50,16 @@ Instance MonadList : Monad list :=
 Proof.
   intros. simpl. rewrite app_nil_r. trivial.
   intros. induction ma as [| h t]; simpl; try rewrite IHt; trivial.
-  induction ma as [| h t]; simpl.
+  induction ma as [| h t]; cbn; intros.
     trivial.
-    intros. rewrite bind_List_app. rewrite <- IHt. trivial.
+    rewrite bind_List_app, <- IHt. trivial.
   trivial.
   induction x as [| h t]; cbn; intros.
     reflexivity.
     unfold compose in *. rewrite IHt. reflexivity.
+  induction x as [| h t]; cbn; intros.
+    reflexivity.
+    unfold fmap_List. rewrite map_app, IHt. reflexivity.
 Defined.
 
 Definition head {A : Type} (l : list A) : option A :=
@@ -75,32 +75,26 @@ match l with
     | h :: t => liftM2 (@cons A) (ret h) (init t)
 end.
 
-Eval compute in init [1; 2; 3].
-
-Eval simpl in filterM (fun _ => [true; false]) [1; 2; 3].
-
-Eval simpl in replicateM 3 [1; 2].
-
-Eval simpl in sequence [[1]; [2]].
+Compute init [1; 2; 3].
+Compute filterM (fun _ => [true; false]) [1; 2; 3].
+Compute replicateM 3 [1; 2].
+Compute sequence [[1]; [2]].
 
 Instance MonadSum (A : Type) : Monad (sum A) :=
 {
     is_functor := FunctorSum A;
-    ret := @ret_Sum A;
+    ret := @inr A;
     bind := @bind_Sum A
 }.
 Proof.
-  intros. simpl. trivial.
-  intros. unfold ret_Sum. destruct ma; simpl; trivial.
-  intros. destruct ma; simpl.
-    trivial.
-    destruct (f a); simpl; trivial.
-  trivial.
-  destruct x; cbn; unfold compose; reflexivity.
+  all: intros; try
+  match goal with
+      | x : _ + _ |- _ => destruct x
+  end; cbn in *; reflexivity.
 Defined.
 
-Eval simpl in sequence [inr 42; inr 5; inr 10].
-Eval simpl in sequence [inr 42; inr 5; inr 10; inl (fun n : nat => 2 * n)].
+Eval cbn in sequence [inr 42; inr 5; inr 10].
+Eval cbn in sequence [inr 42; inr 5; inr 10; inl (fun n : nat => 2 * n)].
 
 Eval simpl in foldM (fun n m => inl (plus n m)) 0 [1; 2; 3].
 
@@ -128,12 +122,18 @@ Instance MonadState (S : Type) : Monad (State S) :=
 }.
 Proof.
   trivial.
-  unfold ret_State, bind_State. intros. extensionality s.
+  unfold ret_State, bind_State. intros. ext s.
     destruct (ma s). trivial.
-  unfold ret_State, bind_State. intros. extensionality s.
+  unfold ret_State, bind_State. intros. ext s.
     destruct (ma s). trivial.
   trivial.
   cbn; intros. ext s. compute. destruct (x s). reflexivity.
+  intros. ext s. compute. destruct (x s). reflexivity.
+Restart.
+  all: compute; intros; ext s;
+  try match goal with
+      | x : ?S -> _ * ?S, s : ?S |- _ => destruct (x s)
+  end; trivial.
 Defined.
 
 Instance MonadCont (R : Type) : Monad (Cont R) :=

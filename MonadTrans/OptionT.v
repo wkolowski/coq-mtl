@@ -2,71 +2,91 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
-Require Import HSLib.MonadJoin.Monad.
-Require Import HSLib.MonadJoin.MonadInst.
-Require Import MonadTrans.
+Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadTrans.MonadTrans.
 
-Require Import HSLib.Instances.Option.
+Definition OptionT (M : Type -> Type) (A : Type) : Type := M (option A).
 
-Instance MonadTrans_option_is_functor (M : Type -> Type) {xd : Monad M}
-    : Functor (fun A : Type => M (option A)) :=
+Definition fmap_OptionT
+  {M : Type -> Type} {inst : Functor M}
+  (A B : Type) (f : A -> B) : OptionT M A -> OptionT M B :=
+    fmap (fun oa : option A =>
+    match oa with
+        | None => None
+        | Some x => Some (f x)
+    end).
+
+Instance FunctorOptionT (M : Type -> Type) {inst : Functor M}
+    : Functor (OptionT M) :=
 {
-    fmap := fun (A B : Type) =>
-      @fmap option FunctorOption A B .> @fmap M xd (option A) (option B)
+    fmap := fmap_OptionT
 }.
 Proof.
-  intro. unfold compose. do 2 rewrite fmap_pres_id. trivial.
-  intros. unfold compose. replace (fun x : A => g (f x)) with (f .> g); auto.
-    extensionality x. do 2 rewrite fmap_pres_comp. auto.
+  all: unfold fmap_OptionT; functor.
 Defined.
 
-Definition bind_MonadTrans_option
-    (M : Type -> Type) {_ : Monad M} {A B : Type}
-    (moa : M (option A)) (f : A -> M (option B)) : M (option B) :=
-    moa >>= fun oa : option A => match oa with
-      | None => ret None
-      | Some a => f a
-    end.
+Definition bind_OptionT
+  {M : Type -> Type} {inst : Monad M} {A B : Type}
+  (moa : OptionT M A) (f : A -> OptionT M B) : OptionT M B :=
+    @bind M inst (option A) (option B) moa (fun oa : option A =>
+match oa with
+    | None => ret None
+    | Some a => f a
+end).
 
-Definition MonadTrans_option_join (M : Type -> Type) {xd : Monad M}
-    (A : Type) (x : M (option (M (option A)))) : M (option A) :=
-    x >>= fun omoa : option (M (option A)) =>
-    match omoa with
-      | None => ret None
-      | Some moa => moa
-    end.
-
-Instance MonadTrans_option_is_monad (M : Type -> Type) {xd : Monad M}
-    : Monad (fun A : Type => M (option A)) :=
+Instance Monad_OptionT (M : Type -> Type) {inst : Monad M}
+    : Monad (OptionT M) :=
 {
-    ret := fun (A : Type) (a : A) => ret (Some a);
-    join := @MonadTrans_option_join M xd;
-    is_functor := MonadTrans_option_is_functor M
-}.
-Abort.
-
-(*Instance MonadTrans_option_is_functor' (M : Type -> Type) {xd : Monad M}
-    : Functor (fun A : Type => option (M A)) :=
-{
-    fmap := fun (A B : Type) =>
-        @fmap M xd A B .> @fmap option FunctorOption (M A) (M B)
+    is_functor := FunctorOptionT M;
+    ret := fun (A : Type) (x : A) => ret (Some x);
+    bind := @bind_OptionT M inst
 }.
 Proof.
-  intro. unfold compose. do 2 rewrite fmap_pres_id. trivial.
-  intros. unfold compose. simpl. extensionality x.
-    destruct x; auto. f_equal. replace (fun x : A => g (f x)) with (f .> g).
-      rewrite fmap_pres_comp. unfold compose. trivial.
-      auto.
+  all: cbn; intros; unfold fmap_OptionT, bind_OptionT.
+    rewrite bind_ret_l. reflexivity.
+    match goal with
+        | |- ?moa >>= ?f = ?moa => replace f with (@ret M inst (option A))
+    end.
+      rewrite bind_ret_r. reflexivity.
+      ext oa. destruct oa; reflexivity.
+    rewrite assoc. f_equal. ext oa. destruct oa.
+      reflexivity.
+      rewrite bind_ret_l. reflexivity.
+    rewrite fmap_ret. reflexivity.
+    rewrite bind_fmap. unfold compose. f_equal. ext oa.
+      destruct oa; cbn; reflexivity.
+    rewrite fmap_bind. f_equal. ext oa. destruct oa; cbn.
+      reflexivity.
+      rewrite fmap_ret. cbn. reflexivity.
+Defined.
+(*Restart.
+  From mathcomp Require Import ssreflect.
+  all: intros; unfold bind_OptionT; cbn.
+    by rewrite bind_ret_l.
+    match goal with
+        | |- ?moa >>= ?f = ?moa => replace f with (@ret M inst (option A))
+    end.
+      by rewrite bind_ret_r.
+      by ext oa; case: oa.
+    rewrite assoc. f_equal. by ext oa; case: oa; rewrite ?bind_ret_l.
+    by rewrite fmap_ret.
+    rewrite bind_fmap /compose. f_equal. by ext oa; case: oa.
+    rewrite fmap_bind. f_equal. by ext oa; case oa; rewrite ?fmap_ret.
 Defined.*)
 
-Instance MonadTrans_option : MonadTrans option :=
-{
-    lift := fun (M : Type -> Type) {_ : Monad M} (A : Type)
-        (ma : M A) => ma >>= fun a : A => ret (Some a)
-}.
-Abort.
+Definition lift_OptionT {M : Type -> Type} {_inst : Monad M} {A : Type}
+  (ma : M A) : OptionT M A := fmap Some ma.
 
-(*Check @lift.
-Eval compute in @lift option MonadTrans_option list MonadList nat [5].
-Check lift.
-Eval compute in lift option [5].*)
+Instance MonadTrans_OptionT : MonadTrans OptionT :=
+{
+    is_monad := @Monad_OptionT;
+    lift := @lift_OptionT;
+}.
+Proof.
+  all: intros; unfold lift_OptionT; cbn.
+    rewrite fmap_ret. reflexivity.
+    unfold bind_OptionT. rewrite bind_fmap. unfold compose.
+      rewrite fmap_bind. reflexivity.
+Defined.
+
+(*Eval compute in @lift OptionT MonadTrans_OptionT list MonadList nat [5].*)

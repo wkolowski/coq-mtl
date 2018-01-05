@@ -11,16 +11,19 @@ Class Monad (M : Type -> Type) : Type :=
     is_functor :> Functor M;
     ret : forall {A : Type}, A -> M A;
     bind : forall {A B : Type}, M A -> (A -> M B) -> M B;
-    id_left : forall (A B : Type) (f : A -> M B) (a : A),
-        bind (ret a) f = f a;
-    id_right : forall (A : Type) (ma : M A),
-        bind ma ret = ma;
+    bind_ret_l : forall (A B : Type) (f : A -> M B) (a : A),
+      bind (ret a) f = f a;
+    bind_ret_r : forall (A : Type) (ma : M A),
+      bind ma ret = ma;
     assoc : forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
-        bind (bind ma f) g = bind ma (fun x => bind (f x) g);
+      bind (bind ma f) g = bind ma (fun x => bind (f x) g);
     fmap_ret : forall (A B : Type) (f : A -> B) (x : A),
         fmap f (ret x) = ret (f x);
     bind_fmap : forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
-        bind (fmap f x) g = bind x (f .> g)
+      bind (fmap f x) g = bind x (f .> g);
+    fmap_bind :
+      forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
+        fmap g (bind x f) = bind x (fun x0 : A => fmap g (f x0))
 }.
 
 Coercion is_functor : Monad >-> Functor.
@@ -28,11 +31,13 @@ Coercion is_functor : Monad >-> Functor.
 Definition bind_ {M : Type -> Type} {_ : Monad M} {A B : Type}
     (ma : M A) (mb : M B) : M B := bind ma (fun _ => mb).
 
-Definition join {M : Type -> Type} {_inst : Monad M} {A : Type}
-    (mma : M (M A)) : M A := bind mma id.
+Definition join
+  {M : Type -> Type} {_inst : Monad M} {A : Type} (mma : M (M A)) : M A :=
+    bind mma id.
 
-Definition compM {M : Type -> Type} {_inst : Monad M} {A B C : Type}
-    (f : A -> M B) (g : B -> M C) (a : A) : M C :=
+Definition compM
+  {M : Type -> Type} {_inst : Monad M} {A B C : Type}
+  (f : A -> M B) (g : B -> M C) (a : A) : M C :=
     bind (f a) g.
 
 Module MonadNotations.
@@ -42,12 +47,12 @@ Notation "ma >> mb" := (bind_ ma mb) (at level 40).
 Notation "f >=> g" := (compM f g) (at level 40).
 
 Notation "x '<-' e1 ; e2" := (bind e1 (fun x => e2))
-  (right associativity, at level 42).
+  (right associativity, at level 42, only parsing).
 
 Notation "e1 ;; e2" := (bind_ e1 e2)
-  (right associativity, at level 42).
+  (right associativity, at level 42, only parsing).
 
-Notation "'do' e" := e (at level 50).
+Notation "'do' e" := e (at level 50, only parsing).
 
 End MonadNotations.
 
@@ -186,65 +191,62 @@ End MonadicFuns2.
 Arguments mapM [M] [inst] [A] [B] _ _.
 Arguments forM [M] [inst] [A] [B] _ _.
 
+Section DerivedLaws.
+
+Variables
+  (M : Type -> Type)
+  (inst : Monad M).
+
 Theorem compM_assoc :
-  forall (M : Type -> Type) (inst : Monad M) (A B C D : Type)
-  (f : A -> M B) (g : B -> M C) (h : C -> M D),
+  forall (A B C D : Type) (f : A -> M B) (g : B -> M C) (h : C -> M D),
     f >=> (g >=> h) = (f >=> g) >=> h.
 Proof.
-  intros. unfold compM. extensionality a.
-  rewrite assoc. f_equal.
+  intros. unfold compM. ext a. rewrite assoc. reflexivity.
 Qed.
 
 Theorem compM_id_left :
-  forall (M : Type -> Type) (inst : Monad M)
-  (B C : Type) (g : B -> M C),
-    ret >=> g = g.
+  forall (A B : Type) (f : A -> M B), ret >=> f = f.
 Proof.
-  intros. unfold compM. extensionality b.
-  rewrite !id_left. reflexivity.
+  intros. unfold compM. ext a. apply bind_ret_l.
 Qed.
 
 Theorem compM_id_right :
-  forall (M : Type -> Type) (inst : Monad M)
-  (A B : Type) (f : A -> M B),
-    f >=> ret = f.
+  forall (A B : Type) (f : A -> M B), f >=> ret = f.
 Proof.
-  intros. unfold compM. extensionality a.
-  rewrite id_right. reflexivity.
+  intros. unfold compM. ext a. apply bind_ret_r.
 Qed.
 
-Theorem bind_compM_eq :
-  forall (M : Type -> Type) (inst : Monad M) (A B : Type)
-  (ma : M A) (f : A -> M B),
+Theorem bind_compM :
+  forall (A B : Type) (ma : M A) (f : A -> M B),
     bind ma f = ((fun _ : unit => ma) >=> f) tt.
 Proof.
   intros. unfold compM. reflexivity.
 Qed.
 
-Theorem bind_eq_join :
-  forall (M : Type -> Type) (inst : Monad M) (A B C : Type)
-  (ma : M A) (f : A -> M B),
-    bind ma f = (fmap f .> join) ma.
+Theorem bind_join_fmap :
+  forall (A B C : Type) (ma : M A) (f : A -> M B),
+    bind ma f = join (fmap f ma).
 Proof.
-  intros. unfold join, compose. unfold id.
-Abort. (* TODO *)
+  intros. unfold join. rewrite bind_fmap. reflexivity.
+Qed.
 
-Theorem join_law :
-  forall (M : Type -> Type) (inst : Monad M) (X : Type),
-    fmap join .> join = join .> @join M inst X.
+Theorem join_fmap :
+  forall (A : Type) (x : M (M (M A))),
+    join (fmap join x) = join (join x).
 Proof.
-  intros. unfold compose. extensionality x. unfold join.
-  unfold id. rewrite assoc. simpl.
-Abort. (* TODO *)
+  intros. unfold join. rewrite bind_fmap, assoc. reflexivity.
+Qed.
 
-Theorem ret_law :
-  forall (M : Type -> Type) (inst : Monad M) (X : Type),
-    ret .> join = fmap ret .> @join M inst X.
+Theorem join_ret :
+  forall (A : Type) (x : M A),
+    join (ret x) = join (fmap ret x).
 Proof.
-  intros. unfold join, compose, id. extensionality x.
-  rewrite id_left.
-Abort. (* TODO *)
+  intros. unfold join.
+  rewrite bind_ret_l, bind_fmap, id_right, bind_ret_r.
+  reflexivity.
+Qed.
 
+End DerivedLaws.
 
 (* TODO: add this to other definitions of monads *)
 Module wut.
@@ -255,5 +257,3 @@ Notation "f $$ x" := (ap f x)
 End wut.
 
 Export wut.
-
-Locate "$$".

@@ -18,10 +18,10 @@ Class Monad (M : Type -> Type) : Type :=
     ret_join : forall (X : Type),
       ret .> @join X = id;
     fmap_ret : forall (A B : Type) (f : A -> B) (x : A),
-      fmap f (ret x) = ret (f x)
+      fmap f (ret x) = ret (f x);
+    join_ret :
+      forall (A : Type) (ma : M A), join (ret ma) = ma
 }.
-
-(* TODO: ret .> join = id *)
 
 Coercion is_functor : Monad >-> Functor.
 
@@ -43,12 +43,12 @@ Notation "ma >> mb" := (bind_ ma mb) (at level 40).
 Notation "f >=> g" := (compM f g) (at level 40).
 
 Notation "x '<-' e1 ; e2" := (bind e1 (fun x => e2))
-  (right associativity, at level 42).
+  (right associativity, at level 42, only parsing).
 
 Notation "e1 ;; e2" := (bind_ e1 e2)
-  (right associativity, at level 42).
+  (right associativity, at level 42, only parsing).
 
-Notation "'do' e" := e (at level 50).
+Notation "'do' e" := e (at level 50, only parsing).
 
 End MonadNotations.
 

@@ -75,9 +75,8 @@ Proof.
     ext s. cbn. rewrite app_nil_r. reflexivity.
     ext s. induction (ma s) as [| [x s'] rs];
       cbn in *; rewrite ?IHrs; reflexivity.
-    Axiom wut : False. destruct wut.
-    trivial.
-    destruct wut.
+    Focus 2. trivial.
+    Axiom wut : False. all: destruct wut.
 Defined.
 
 Definition seq
@@ -678,4 +677,3 @@ Compute parseExpr'
   "let x = (x x) in x"%string.
 
 (** ** 7 Factorising the parser monad *)
-

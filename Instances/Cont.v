@@ -31,12 +31,7 @@ Instance ApplicativeCont (R : Type) : Applicative (Cont R) :=
     ret := @ret_Cont R;
     ap := @ap_Cont R
 }.
-Proof.
-  trivial.
-  trivial.
-  trivial.
-  trivial.
-Defined.
+Proof. all: trivial. Defined.
 
 Definition join_Cont {R A : Type} (cca : Cont R (Cont R A)) : Cont R A :=
     fun f : A -> R => cca (fun g : (A -> R) -> R => g f).

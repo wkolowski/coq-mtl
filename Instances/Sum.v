@@ -14,7 +14,6 @@ end.
 Instance FunctorSum (A : Type) : Functor (sum A) :=
 {
     fmap := @fmap_Sum A
-        
 }.
 Proof.
   intros. extensionality x. destruct x; unfold id; trivial.

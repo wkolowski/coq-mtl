@@ -19,10 +19,8 @@ Instance FunctorLazy : Functor Lazy :=
     fmap := @fmap_Lazy;
 }.
 Proof.
-  intro. unfold id, fmap_Lazy.
-    extensionality la. extensionality u. destruct u. reflexivity.
-  intros. unfold compose, fmap_Lazy.
-    extensionality la. reflexivity.
+  intro. unfold id, fmap_Lazy. ext la. ext u. destruct u. reflexivity.
+  intros. unfold compose, fmap_Lazy. ext la. reflexivity.
 Defined.
 
 Definition ret_Lazy {A : Type} (a : A) : Lazy A :=
@@ -41,11 +39,9 @@ Instance MonadLazy : Monad Lazy :=
     join := @join_Lazy;
 }.
 Proof.
-  reflexivity.
+  all: try reflexivity.
   cbn. intros. unfold compose, ret_Lazy, join_Lazy, fmap_Lazy.
-    extensionality la. extensionality u. destruct u. reflexivity.
-  reflexivity.
-  trivial.
+    ext la; ext u. destruct u. reflexivity.
 Defined.
 
 Eval lazy in

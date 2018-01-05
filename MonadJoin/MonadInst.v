@@ -26,6 +26,7 @@ Proof.
     destruct opt; auto.
   intros. ext ox. cbn. destruct ox; reflexivity.
   trivial.
+  destruct ma; reflexivity.
 Defined.
 
 Eval compute in (fun _ => Some 5) >=> (fun n => Some (n + 6)).
@@ -54,6 +55,7 @@ Proof.
     f_equal. rewrite <- IHt. trivial.
   intros. ext lx. cbn. rewrite app_nil_r. reflexivity.
   trivial.
+  intros. cbn. apply app_nil_r.
 Defined.
 
 Definition head {A : Type} (l : list A) : option A :=
@@ -90,6 +92,7 @@ Proof.
     destruct x as [a | b]; compute; trivial.
   intros. ext sx. destruct sx; reflexivity.
   trivial.
+  destruct ma; reflexivity.
 Defined.
 
 Eval simpl in sequence [inr 42; inr 5; inr 10].
@@ -118,6 +121,7 @@ Proof.
     extensionality wx. destruct wx as [x w]. rewrite id_left, id_right. auto.
   intros. ext wx. destruct wx. cbn. rewrite id_right. reflexivity.
   trivial.
+  intros. cbn. destruct ma. rewrite id_right. reflexivity.
 Defined.
 
 Instance MonadState (S : Type) : Monad (State S) :=
@@ -134,6 +138,7 @@ Proof.
     simpl. unfold ret_State, join_State, fmap_State, compose.
     destruct (sx s). trivial.
   reflexivity.
+  trivial.
   trivial.
 Defined.
 
