@@ -62,8 +62,6 @@ end.
 Definition joinL' {A : Type} (lla : Lazy (Lazy A)) : Lazy A :=
     bindL' lla id.
 
-Check @joinL'.
-
 Instance MonadLazy : Monad Lazy :=
 {
     is_functor := FunctorLazy;

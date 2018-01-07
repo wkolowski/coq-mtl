@@ -15,3 +15,23 @@ Instance FunctorIdentity : Functor Identity :=
     fmap := @fmap_Identity
 }.
 Proof. all: auto. Defined.
+
+Definition ret_Identity {A : Type} (x : A) : Identity A := x.
+
+Definition ap_Identity
+  {A B : Type} (f : Identity A -> Identity B) (x : Identity A) : Identity B :=
+    f x.
+
+Instance Applicative_Identity : Applicative Identity :=
+{
+    is_functor := FunctorIdentity;
+    ret := @ret_Identity;
+    ap := @ap_Identity
+}.
+Proof. all: reflexivity. Defined.
+
+Theorem Identity_not_Alternative :
+  Alternative Identity -> False.
+Proof.
+  destruct 1. apply (aempty False).
+Qed.

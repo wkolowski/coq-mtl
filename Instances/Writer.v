@@ -9,6 +9,14 @@ Require Export HSLib.Monoid.
 
 Definition Writer (W : Monoid) (A : Type) : Type := (A * W)%type.
 
+Ltac solveWriter' :=
+repeat match goal with
+    | w : Writer _ _ |- _ => destruct w
+    | |- context [let (_, _) := ?f ?x in _] => destruct (f x)
+    | |- _ = _ => let id := fresh in extensionality id
+    | _ => rewrite ?id_left, ?id_right, ?op_assoc; eauto
+end.
+
 Definition fmap_Writer
   {W : Monoid} {A B : Type} (f : A -> B) (wa : Writer W A) : Writer W B :=
 match wa with
@@ -20,17 +28,15 @@ Instance FunctorWriter (W : Monoid) : Functor (Writer W) :=
     fmap := @fmap_Writer W
 }.
 Proof.
-  all: intros; unfold fmap_Writer, id; ext wa; destruct wa; reflexivity.
+  all: intros; unfold fmap_Writer, id; solveWriter'.
 Defined.
 
-Definition ret_Writer {W : Monoid} {A : Type} (a : A) : Writer W A :=
-  (a, neutr).
+Definition ret_Writer
+  {W : Monoid} {A : Type} (a : A) : Writer W A := (a, neutr).
 
-Definition ap_Writer {W : Monoid} {A B : Type} (wf : Writer W (A -> B))
-    (wa : Writer W A) : Writer W B :=
-match wf, wa with
-    | pair f w, pair a w' => pair (f a) (op w w')
-end.
+Definition ap_Writer
+  {W : Monoid} {A B : Type} (wf : Writer W (A -> B)) (wa : Writer W A)
+    : Writer W B := let '((f, w), (a, w')) := (wf, wa) in (f a, op w w').
 
 Instance ApplicativeWriter (W : Monoid) : Applicative (Writer W) :=
 {
@@ -39,26 +45,18 @@ Instance ApplicativeWriter (W : Monoid) : Applicative (Writer W) :=
     ap := @ap_Writer W
 }.
 Proof.
-  intros. unfold ret_Writer, ap_Writer, id. destruct ax.
-    rewrite id_left. trivial.
-  intros. unfold ret_Writer, ap_Writer, id. destruct af, ag, ax.
-    rewrite id_left, op_assoc. trivial.
-  intros. unfold ret_Writer, ap_Writer, id. rewrite id_left. trivial.
-  intros. unfold ret_Writer, ap_Writer, id. destruct f.
-    rewrite id_left, id_right. trivial.
+  all: intros; unfold ret_Writer, ap_Writer, id; solveWriter'.
 Defined.
 
-Theorem Writer_not_alternative : forall W : Monoid,
-    Alternative (Writer W) -> False.
+Theorem Writer_not_alternative :
+  forall W : Monoid, Alternative (Writer W) -> False.
 Proof.
   destruct 1. destruct (aempty False). assumption.
 Qed.
 
-Definition join_Writer {W : Monoid} {A : Type} (wwa : Writer W (Writer W A))
-    : Writer W A :=
-match wwa with
-    | pair (pair a w) w' => pair a (op w w')
-end.
+Definition join_Writer
+  {W : Monoid} {A : Type} (wwa : Writer W (Writer W A)) : Writer W A :=
+    let '((a, w), w') := wwa in (a, op w w').
 
 Definition bind_Writer
   {W : Monoid} {A B : Type} (wa : Writer W A) (f : A -> Writer W B)
@@ -66,18 +64,15 @@ Definition bind_Writer
       let (a, w) := wa in
       let (b, w') := f a in (b, op w w').
 
-Definition compM_Writer {W : Monoid} {A B C : Type}
-    (f : A -> Writer W B) (g : B -> Writer W C) (x : A) : Writer W C :=
-    let (b, w) := f x in
-    let (c, w') := g b in (c, op w w').
+Definition compM_Writer
+  {W : Monoid} {A B C : Type} (f : A -> Writer W B) (g : B -> Writer W C)
+    (x : A) : Writer W C :=
+      let (b, w) := f x in
+      let (c, w') := g b in (c, op w w').
 
-Ltac solveWriter := simpl; intros;
-    unfold fmap_Writer, ret_Writer, ap_Writer, join_Writer, bind_Writer,
+Ltac solveWriter :=
+  cbn; intros;
+  unfold
+    fmap_Writer, ret_Writer, ap_Writer, join_Writer, bind_Writer,
     compM_Writer, id, compose;
-repeat match goal with
-    | wx : Writer _ _ |- _ => destruct wx
-    | |- context [let (_, _) := ?f ?x in _] => destruct (f x)
-    | |- _ = _ => let id := fresh in extensionality id
-    | _ => try rewrite id_left;
-        try rewrite id_right; try rewrite op_assoc; eauto
-end.
+  solveWriter'.

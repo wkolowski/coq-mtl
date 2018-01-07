@@ -2,15 +2,10 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
+Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadBind.MonadInst.
 Require Import HSLib.MonadComp.Monad.
-
-Require Import HSLib.Instances.Option.
-Require Import HSLib.Instances.ListInst.
-Require Import HSLib.Instances.Sum.
-Require Import HSLib.Instances.Reader.
-Require Import HSLib.Instances.Writer.
-Require Import HSLib.Instances.State.
-Require Import HSLib.Instances.Cont.
+Require Import HSLib.Instances.All.
 
 Instance MonadOption : Monad option :=
 {
@@ -26,16 +21,6 @@ Proof.
     destruct (f x); trivial.
   reflexivity.
 Defined.
-(* end hide *)
-
-(*Fixpoint joinL {A : Type} (lla : list (list A)) : list A :=
-match lla with
-    | [] => []
-    | h :: t => h ++ joinL t
-end.
-
-Definition compL {A B C : Type} (f : A -> list B) (g : B -> list C)
-    (a : A) : list C := joinL (fmap g (f a)).*)
 
 Instance MonadList : Monad list :=
 {

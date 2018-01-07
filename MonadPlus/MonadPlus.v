@@ -24,8 +24,7 @@ Variable inst : MonadPlus M.
 Variables A B C : Type.
 
 Definition mfilter (f : A -> bool) (ma : M A) : M A :=
-    ma >>= fun a : A => if f a then ret a else aempty.
-(*@guard _ _ A (f a) >>= fun _ => ret a. *)
+  ma >>= fun a : A => if f a then ret a else aempty.
 
 Fixpoint msum (lma : list (M A)) : M A :=
 match lma with

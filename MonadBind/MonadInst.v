@@ -114,27 +114,28 @@ Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
 }.
 Proof. all: solveWriter. Defined.
 
-Instance MonadState (S : Type) : Monad (State S) :=
+Instance Monad_State (S : Type) : Monad (State S) :=
 {
     is_functor := FunctorState S;
     ret := @ret_State S;
     bind := @bind_State S
 }.
 Proof.
-  trivial.
-  unfold ret_State, bind_State. intros. ext s.
-    destruct (ma s). trivial.
-  unfold ret_State, bind_State. intros. ext s.
-    destruct (ma s). trivial.
-  trivial.
-  cbn; intros. ext s. compute. destruct (x s). reflexivity.
-  intros. ext s. compute. destruct (x s). reflexivity.
-Restart.
   all: compute; intros; ext s;
   try match goal with
       | x : ?S -> _ * ?S, s : ?S |- _ => destruct (x s)
   end; trivial.
 Defined.
+
+Require Import HSLib.MonadBind.MonadState.
+
+Instance MonadState_State
+  (S : Type) : MonadState S (State S) (Monad_State S) :=
+{
+    get := fun s : S => (s, s);
+    put := fun s : S => fun _ => (tt, s)
+}.
+Proof. all: reflexivity. Defined.
 
 Instance MonadCont (R : Type) : Monad (Cont R) :=
 {

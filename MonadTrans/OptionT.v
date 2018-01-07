@@ -2,6 +2,7 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
+Require Import HSLib.Applicative.Applicative.
 Require Import HSLib.MonadBind.Monad.
 Require Import HSLib.MonadTrans.MonadTrans.
 
@@ -25,6 +26,53 @@ Proof.
   all: unfold fmap_OptionT; functor.
 Defined.
 
+Definition ret_OptionT
+  {M : Type -> Type} {inst : Monad M} {A : Type} (x : A) : OptionT M A :=
+    ret $ Some x.
+
+Definition ap_OptionT
+  {M : Type -> Type} {inst : Monad M} {A B : Type}
+  (mof : OptionT M (A -> B)) (moa : OptionT M A) : OptionT M B :=
+    @bind M inst _ _ mof (fun of =>
+    @bind M inst _ _ moa (fun oa =>
+    match of, oa with
+        | Some f, Some a => ret (Some (f a))
+        | _, _ => ret None
+    end)).
+
+Hint Rewrite @bind_ret_l @bind_ret_r @assoc @fmap_ret @bind_fmap @fmap_bind
+  : monad.
+
+Instance Applicative_OptionT
+  (M : Type -> Type) (inst : Monad M) : Applicative (OptionT M) :=
+{
+    is_functor := @FunctorOptionT M inst;
+    ret := @ret_OptionT M inst;
+    ap := @ap_OptionT M inst;
+}.
+Proof.
+  Ltac wut := repeat (
+  match goal with
+      | |- ?x >>= _ = ?x >>= _ => f_equal
+      | |- context [_ >>= ?f] =>
+          match f with
+              | (fun _ : ?A => _) =>
+                  match type of f with
+                      | ?T -> _ => replace f with (@ret _ _ A)
+                  end
+          end
+      | |- context [match ?x with _ => _ end] => destruct x
+      | |- ret = fun _ => _ => let x := fresh "x" in ext x
+      | |- (fun _ => _) = (fun _ => _) => let x := fresh "x" in ext x
+      | |- context [id] => unfold id
+      | |- context [_ .> _] => unfold compose
+      | _ => autorewrite with monad
+  end; try congruence).
+  1-4: unfold OptionT, ret_OptionT, ap_OptionT; intros.
+    wut. wut. wut. wut.
+    intros. unfold ap_OptionT, ret_OptionT. rewrite bind_ret_l.
+Abort.
+
 Definition bind_OptionT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
   (moa : OptionT M A) (f : A -> OptionT M B) : OptionT M B :=
@@ -38,11 +86,11 @@ Instance Monad_OptionT (M : Type -> Type) {inst : Monad M}
     : Monad (OptionT M) :=
 {
     is_functor := FunctorOptionT M;
-    ret := fun (A : Type) (x : A) => ret (Some x);
+    ret := @ret_OptionT M inst;
     bind := @bind_OptionT M inst
 }.
 Proof.
-  all: cbn; intros; unfold fmap_OptionT, bind_OptionT.
+  all: cbn; intros; unfold fmap_OptionT, ret_OptionT, bind_OptionT.
     rewrite bind_ret_l. reflexivity.
     match goal with
         | |- ?moa >>= ?f = ?moa => replace f with (@ret M inst (option A))

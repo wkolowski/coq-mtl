@@ -7,7 +7,8 @@ Require Import HSLib.Alternative.Alternative.
 
 (* option is already there, so we won't redefine it. *)
 
-Definition fmap_Option {A B : Type} (f : A -> B) (oa : option A) : option B :=
+Definition fmap_Option
+  {A B : Type} (f : A -> B) (oa : option A) : option B :=
 match oa with
     | None => None
     | Some a => Some (f a)
@@ -18,13 +19,13 @@ Instance FunctorOption : Functor option :=
     fmap := @fmap_Option
 }.
 Proof.
-  all: intros; extensionality x; destruct x; auto.
+  all: intros; ext x; destruct x; auto.
 Defined.
 
 Definition ret_Option := @Some.
 
-Definition ap_Option {A B : Type} (of : option (A -> B)) (oa : option A)
-    : option B :=
+Definition ap_Option
+  {A B : Type} (of : option (A -> B)) (oa : option A) : option B :=
 match of, oa with
     | Some f, Some a => Some (f a)
     | _, _ => None
@@ -37,10 +38,10 @@ Instance ApplicativeOption : Applicative option :=
     ap := @ap_Option
 }.
 Proof.
-  intros. unfold id. destruct ax; trivial.
-  intros. destruct ax, af, ag; trivial.
-  intros. trivial.
-  intros. destruct f; trivial.
+  all: intros; repeat
+  match goal with
+      | x : option _ |- _ => destruct x
+  end; compute; reflexivity.
 Defined.
 
 Definition aempty_Option {A : Type} : option A := None.
@@ -58,27 +59,28 @@ Instance AlternativeOption : Alternative option :=
     aplus := @aplus_Option
 }.
 Proof.
-  trivial.
-  destruct fa; trivial.
-  destruct x; try destruct y; try destruct z; trivial.
+  all: intros; repeat
+  match goal with
+      | x : option _ |- _ => destruct x
+  end; cbn; reflexivity.
 Defined.
 
-Definition join_Option {A : Type} (ooa : option (option A))
-    : option A :=
+Definition join_Option
+  {A : Type} (ooa : option (option A)) : option A :=
 match ooa with
     | Some (Some x) => Some x
     | _ => None
 end.
 
-Definition bind_Option {A B : Type} (oa : option A) (f : A -> option B)
-    : option B :=
+Definition bind_Option 
+  {A B : Type} (oa : option A) (f : A -> option B) : option B :=
 match oa with
     | None => None
     | Some a => f a
 end.
 
-Definition compM_Option {A B C : Type} (f : A -> option B) (g : B -> option C)
-    (a : A) : option C :=
+Definition compM_Option
+  {A B C : Type} (f : A -> option B) (g : B -> option C) (a : A) : option C :=
 match f a with
     | None => None
     | Some b => g b
