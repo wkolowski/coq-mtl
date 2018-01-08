@@ -27,39 +27,58 @@ Instance Functor_StateT
 Proof.
   all: intros; unfold fmap_StateT; ext x; ext s.
     replace (x s >>= _ = _) with (x s >>= ret = id x s).
-      rewrite bind_ret_r. reflexivity.
+      monad.
       do 2 f_equal. ext p. destruct p. reflexivity.
     unfold compose. rewrite assoc. f_equal. ext p. destruct p.
-      rewrite bind_ret_l. reflexivity.
+      monad.
 Defined.
 
 Definition ret_StateT
   {M : Type -> Type} {inst : Monad M} {S A : Type} (x : A)
     : StateT S M A := fun s => ret (x, s).
 
+Definition ap_StateT
+  (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
+  (sf : StateT S M (A -> B)) (sa : StateT S M A) : StateT S M B :=
+    fun st : S =>
+      sf st >>= fun '(f, stf) =>
+      sa stf >>= fun '(a, sta) =>
+        ret (f a, sta).
+
+Instance Applicative_StateT
+  (S : Type) (M : Type -> Type) (inst : Monad M) : Applicative (StateT S M) :=
+{
+    is_functor := @Functor_StateT M inst S;
+    ret := @ret_StateT M inst S;
+    ap := @ap_StateT S M inst;
+}.
+Proof.
+  all: cbn; unfold fmap_StateT, ret_StateT, ap_StateT; monad.
+Defined.
+
 Definition bind_StateT
   {M : Type -> Type} {inst : Monad M} {S A B : Type}
   (x : StateT S M A) (f : A -> StateT S M B) : StateT S M B :=
     fun s : S => x s >>= (fun '(a, s') => f a s').
 
+Ltac st :=
+  cbn; intros; 
+repeat (monad; repeat match goal with
+    | |- ?x >>= _ = ?x => rewrite <- bind_ret_r
+    | |- ?x >>= _ = ?x >>= _ => f_equal
+    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
+    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
+    | H : _ * _ |- _ => destruct H
+end; monad).
+
 Instance Monad_StateT
   (S : Type) (M : Type -> Type) {inst : Monad M} : Monad (StateT S M) :=
 {
-    is_functor := @Functor_StateT M inst S;
-    ret := @ret_StateT M inst S;
+    is_applicative := @Applicative_StateT S M inst;
     bind := @bind_StateT M inst S;
 }.
 Proof.
-  all: cbn; intros; unfold fmap_StateT, ret_StateT, bind_StateT; ext s.
-    rewrite bind_ret_l. reflexivity.
-    replace (ma s >>= _) with (ma s >>= ret).
-      rewrite bind_ret_r. reflexivity.
-      f_equal. ext p. destruct p. reflexivity.
-    rewrite assoc. f_equal. ext p. destruct p. reflexivity.
-    rewrite bind_ret_l. reflexivity.
-    rewrite assoc. f_equal. ext p. destruct p. rewrite bind_ret_l.
-      unfold compose. reflexivity.
-    rewrite assoc. f_equal. ext p. destruct p. reflexivity.
+  all: cbn; unfold fmap_StateT, ret_StateT, ap_StateT, bind_StateT; monad.
 Defined.
 
 Definition lift_StateT
@@ -72,8 +91,5 @@ Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
     lift := @lift_StateT S;
 }.
 Proof.
-  all: cbn; intros; unfold lift_StateT, ret_StateT, bind_StateT; ext s.
-    rewrite bind_ret_l. reflexivity.
-    rewrite !assoc. f_equal. ext a. rewrite bind_ret_l. unfold compose.
-      reflexivity.
+  all: cbn; unfold ret_StateT, bind_StateT, lift_StateT; monad.
 Defined.

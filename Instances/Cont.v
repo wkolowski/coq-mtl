@@ -19,10 +19,17 @@ Proof. all: reflexivity. Defined.
 Definition ret_Cont {R A : Type} (a : A) : Cont R A :=
     fun f : A -> R => f a.
 
-Definition ap_Cont {R A B : Type} (cf : Cont R (A -> B)) (ca : Cont R A)
-    : Cont R B := fun br : B -> R => ca (fun a : A => cf (fun ab : A -> B =>
-        br (ab a))).
+Definition ap_Cont
+  {R A B : Type} (f : Cont R (A -> B)) (x : Cont R A) : Cont R B :=
+    fun y : B -> R => f (fun h : A -> B => x (fun a : A => y (h a))).
+(*
+Proof.
+  unfold Cont in *. intro y. apply f. intro h. apply x. intro a.
+    apply y. apply h. assumption. Show Proof.
 
+ apply y. apply h.
+    fun br : B -> R => ca (fun a : A => cf (fun ab : A -> B => br (ab a))).
+*)
 Instance ApplicativeCont (R : Type) : Applicative (Cont R) :=
 {
     is_functor := FunctorCont R;

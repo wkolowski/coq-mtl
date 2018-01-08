@@ -42,6 +42,30 @@ Definition ret_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A : Type} (x : A)
     : WriterT W M A := ret (x, neutr).
 
+Definition ap_WriterT
+  (W : Monoid) (M : Type -> Type) (inst : Monad M) (A B : Type)
+  (mf : WriterT W M (A -> B)) (mx : WriterT W M A) : WriterT W M B :=
+    @bind M inst _ _ mf (fun '(f, w) =>
+    @bind M inst _ _ mx (fun '(x, w') =>
+      ret (f x, op w w'))).
+
+Instance Applicative_WriterT
+  (W : Monoid) (M : Type -> Type) (inst : Monad M)
+  : Applicative (WriterT W M) :=
+{
+    is_functor := @Functor_WriterT W M inst;
+    ret := @ret_WriterT W M inst;
+    ap := @ap_WriterT W M inst;
+}.
+Proof.
+  all: cbn; unfold WriterT, fmap_WriterT, ret_WriterT, ap_WriterT; monad;
+  rewrite ?id_left, ?id_right, ?op_assoc; try reflexivity.
+Defined.
+
+Hint Rewrite @id_left @id_right @op_assoc : monoid.
+
+Ltac monoid := autorewrite with monoid; try congruence.
+
 Definition bind_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A B : Type}
   (x : WriterT W M A) (f : A -> WriterT W M B) : WriterT W M B :=
@@ -52,28 +76,13 @@ Definition bind_WriterT
 Instance Monad_WriterT
   (W : Monoid) (M : Type -> Type) {inst : Monad M} : Monad (WriterT W M) :=
 {
-    is_functor := @Functor_WriterT W M inst;
-    ret := @ret_WriterT W M inst;
+    is_applicative := @Applicative_WriterT W M inst;
     bind := @bind_WriterT W M inst;
 }.
 Proof.
-  all: cbn; intros;
-  unfold fmap_WriterT, ret_WriterT, bind_WriterT, WriterT in *.
-    rewrite bind_ret_l. replace (f a >>= _) with (f a >>= ret).
-      rewrite bind_ret_r. reflexivity.
-      f_equal. ext p. destruct p. rewrite id_left. reflexivity.
-    replace (ma >>= _) with (ma >>= ret).
-      rewrite bind_ret_r. reflexivity.
-      f_equal. ext p. destruct p. rewrite bind_ret_l, id_right. reflexivity.
-    rewrite assoc. f_equal. ext p. destruct p. rewrite !assoc. f_equal.
-      ext p. destruct p. rewrite bind_ret_l. rewrite assoc. f_equal.
-      ext p. destruct p. rewrite bind_ret_l, op_assoc. reflexivity.
-    rewrite fmap_ret. reflexivity.
-    rewrite bind_fmap. f_equal. ext p. destruct p. unfold compose.
-      reflexivity.
-    rewrite fmap_bind. f_equal. ext p. destruct p.
-      rewrite fmap_bind, bind_fmap. f_equal. ext p. destruct p.
-      unfold compose. rewrite fmap_ret. reflexivity.
+  all: cbn;
+  unfold WriterT, fmap_WriterT, ret_WriterT, ap_WriterT, bind_WriterT;
+  monad; monoid.
 Defined.
 
 Definition lift_WriterT
@@ -86,13 +95,7 @@ Instance MonadTrans_WriterT (W : Monoid) : MonadTrans (WriterT W) :=
     lift := @lift_WriterT W;
 }.
 Proof.
-  all: cbn; intros; unfold lift_WriterT, ret_WriterT, bind_WriterT.
-    rewrite fmap_ret. reflexivity.
-    rewrite fmap_bind, bind_fmap. f_equal. ext a. unfold compose.
-      match goal with
-          | |- fmap _ _ = fmap _ _ >>= ?f =>
-              replace f with (@ret M _inst (B * W))
-      end.
-        rewrite bind_ret_r. reflexivity.
-        ext p. destruct p. rewrite id_left. reflexivity.
+  all: cbn; intros; unfold WriterT, lift_WriterT, ret_WriterT, bind_WriterT.
+  monad.
+  monad. unfold compose. monad. unfold compose. monoid.
 Defined.

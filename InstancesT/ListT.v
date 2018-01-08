@@ -6,30 +6,18 @@ Require Import HSLib.MonadBind.Monad.
 Require Import HSLib.MonadTrans.MonadTrans.
 
 Definition ListT (M : Type -> Type) (A : Type) : Type := M (list A).
-
+(*
 Definition fmap_ListT
   {M : Type -> Type} {inst : Functor M}
   (A B : Type) (f : A -> B) : ListT M A -> ListT M B :=
     fmap (map f).
-(*(fix aux (la : list A) : list B :=
-    match la with
-        | [] => []
-        | h :: t => f h :: aux t
-    end).*)
 
 Instance FunctorListT (M : Type -> Type) {inst : Functor M}
     : Functor (ListT M) :=
 {
     fmap := fmap_ListT
 }.
-Proof. (*
-  all: intros; unfold fmap_ListT.
-    replace (fmap _) with (fmap (@id (list A))).
-      rewrite fmap_pres_id. reflexivity.
-      f_equal. ext l. unfold id.
-        induction l as [| h t]; cbn; rewrite <- ?IHt; reflexivity.
-    functor.
-      unfold compose in *. rewrite IHx. reflexivity.*)
+Proof.
   all: intros; unfold fmap_ListT.
     ext x. replace (map id) with (@id (list A)).
       rewrite fmap_pres_id. reflexivity.
@@ -143,3 +131,4 @@ Proof.
       unfold bind_ListT_aux, liftM2, compose. rewrite assoc. f_equal.
         ext b. rewrite !bind_ret_l. rewrite app_nil_r. reflexivity.
 Defined.
+*)

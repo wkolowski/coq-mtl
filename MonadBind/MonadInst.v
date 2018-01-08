@@ -16,8 +16,7 @@ Require Import HSLib.Instances.Cont.
 
 Instance MonadOption : Monad option :=
 {
-    is_functor := FunctorOption;
-    ret := @Some;
+    is_applicative := ApplicativeOption;
     bind := @bind_Option
 }.
 Proof.
@@ -43,13 +42,13 @@ Qed.
 
 Instance MonadList : Monad list :=
 {
-    is_functor := FunctorList;
-    ret := fun (A : Type) (a : A) => [a];
+    is_applicative := ApplicativeList;
     bind := @bind_List
 }.
 Proof.
-  intros. simpl. rewrite app_nil_r. trivial.
-  intros. induction ma as [| h t]; simpl; try rewrite IHt; trivial.
+  all: cbn.
+  intros. rewrite app_nil_r. reflexivity.
+  induction ma as [| h t]; cbn; rewrite ?IHt; reflexivity.
   induction ma as [| h t]; cbn; intros.
     trivial.
     rewrite bind_List_app, <- IHt. trivial.
@@ -60,6 +59,11 @@ Proof.
   induction x as [| h t]; cbn; intros.
     reflexivity.
     unfold fmap_List. rewrite map_app, IHt. reflexivity.
+  induction mf as [| hf tf]; cbn; intros.
+    reflexivity.
+    rewrite <- IHtf. f_equal. induction mx as [| h t]; cbn.
+      reflexivity.
+      rewrite IHt. reflexivity.
 Defined.
 
 Definition head {A : Type} (l : list A) : option A :=
@@ -82,8 +86,7 @@ Compute sequence [[1]; [2]].
 
 Instance MonadSum (A : Type) : Monad (sum A) :=
 {
-    is_functor := FunctorSum A;
-    ret := @inr A;
+    is_applicative := ApplicativeSum A;
     bind := @bind_Sum A
 }.
 Proof.
@@ -100,24 +103,21 @@ Eval simpl in foldM (fun n m => inl (plus n m)) 0 [1; 2; 3].
 
 Instance MonadReader (R : Type) : Monad (Reader R) :=
 {
-    is_functor := FunctorReader R;
-    ret := @ret_Reader R;
+    is_applicative := ApplicativeReader R;
     bind := @bind_Reader R
 }.
-Proof. all: trivial. Defined.
+Proof. all: reflexivity. Defined.
 
 Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
 {
-    is_functor := FunctorWriter W;
-    ret := @ret_Writer W;
+    is_applicative := ApplicativeWriter W;
     bind := @bind_Writer W
 }.
 Proof. all: solveWriter. Defined.
 
 Instance Monad_State (S : Type) : Monad (State S) :=
 {
-    is_functor := FunctorState S;
-    ret := @ret_State S;
+    is_applicative := ApplicativeState S;
     bind := @bind_State S
 }.
 Proof.
@@ -139,8 +139,7 @@ Proof. all: reflexivity. Defined.
 
 Instance MonadCont (R : Type) : Monad (Cont R) :=
 {
-    is_functor := FunctorCont R;
-    ret := @ret_Cont R;
+    is_applicative := ApplicativeCont R;
     bind := @bind_Cont R
 }.
 Proof. all: trivial. Defined.

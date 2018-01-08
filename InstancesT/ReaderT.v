@@ -2,6 +2,7 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
+Require Import HSLib.Applicative.Applicative.
 Require Import HSLib.MonadBind.Monad.
 Require Import HSLib.MonadTrans.MonadTrans.
 
@@ -28,6 +29,23 @@ Definition ret_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A)
   : ReaderT E M A := fun _ => ret x.
 
+Definition ap_ReaderT
+  {E : Type} {M : Type -> Type} {inst : Monad M} {A B : Type}
+  (f : ReaderT E M (A -> B)) (x : ReaderT E M A) : ReaderT E M B :=
+    fun e : E => f e <*> x e.
+
+Instance Applicative_ReaderT
+  (E : Type) (M : Type -> Type) (inst : Monad M) : Applicative (ReaderT E M) :=
+{
+    is_functor := @Functor_ReaderT M inst E;
+    ret := @ret_ReaderT M inst E;
+    ap := @ap_ReaderT E M inst;
+}.
+Proof.
+  all: cbn; unfold fmap_ReaderT, ret_ReaderT, ap_ReaderT; intros; ext e;
+  applicative.
+Defined.
+
 Definition bind_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
   (x : ReaderT E M A) (f : A -> ReaderT E M B) : ReaderT E M B :=
@@ -36,18 +54,13 @@ Definition bind_ReaderT
 Instance Monad_ReaderT
   (E : Type) (M : Type -> Type) {inst : Monad M} : Monad (ReaderT E M) :=
 {
-    is_functor := @Functor_ReaderT M inst E;
-    ret := @ret_ReaderT M inst E;
+    is_applicative := @Applicative_ReaderT E M inst;
     bind := @bind_ReaderT M inst E;
 }.
 Proof.
-  all: cbn; intros; unfold fmap_ReaderT, ret_ReaderT, bind_ReaderT; ext e.
-    rewrite bind_ret_l. reflexivity.
-    rewrite bind_ret_r. reflexivity.
-    rewrite assoc. reflexivity.
-    rewrite fmap_ret. reflexivity.
-    rewrite bind_fmap. reflexivity.
-    rewrite fmap_bind. reflexivity.
+  all: cbn;
+  unfold fmap_ReaderT, ret_ReaderT, ap_ReaderT, bind_ReaderT;
+  monad.
 Defined.
 
 Definition lift_ReaderT
@@ -59,4 +72,4 @@ Instance MonadTrans_ReaderT (E : Type) : MonadTrans (ReaderT E) :=
     is_monad := @Monad_ReaderT E;
     lift := @lift_ReaderT E;
 }.
-Proof. all: compute; reflexivity. Defined.
+Proof. all: reflexivity. Defined.

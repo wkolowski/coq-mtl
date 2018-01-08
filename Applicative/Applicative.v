@@ -20,12 +20,26 @@ Class Applicative (F : Type -> Type) : Type :=
     interchange :
       forall (A B : Type) (f : F (A -> B)) (x : A),
         ap f (ret x) = ap (ret (fun f => f x)) f;
-    fmap_pure_ap :
+    fmap_ret_ap :
       forall (A B : Type) (f : A -> B) (x : F A),
-        fmap f x = ap (ret f) x
+        fmap f x = ap (ret f) x;
 }.
 
 Coercion is_functor : Applicative >-> Functor.
+
+Hint Rewrite @identity @composition @homomorphism @fmap_ret_ap
+  : applicative_laws.
+Hint Rewrite <- @interchange
+  : applicative_laws.
+
+Ltac applicative :=
+  intros; autorewrite with applicative_laws; try congruence.
+
+Lemma fmap_ret :
+  forall (F : Type -> Type) (inst : Applicative F)
+  (A B : Type) (f : A -> B) (x : A),
+    fmap f (ret x) = ret (f x).
+Proof. applicative. Qed.
 
 Module ApplicativeNotations.
 

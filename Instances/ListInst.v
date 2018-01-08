@@ -140,8 +140,8 @@ Definition compM_List
     bind_List (f x) g.
 
 Theorem bind_List_app :
-    forall (A B : Type) (l1 l2 : list A) (f : A -> list B),
-        bind_List (l1 ++ l2) f = bind_List l1 f ++ bind_List l2 f.
+  forall (A B : Type) (l1 l2 : list A) (f : A -> list B),
+    bind_List (l1 ++ l2) f = bind_List l1 f ++ bind_List l2 f.
 Proof.
   induction l1 as [| h1 t1]; simpl; intros.
     trivial.

@@ -17,8 +17,7 @@ Module Comp.
 Require Import HSLib.MonadComp.Monad.
 Include HSLib.MonadComp.Monad.
 End Comp.
-
-
+(*
 Axiom fmap_join :
   forall (M : Type -> Type) (inst : Join.Monad M) (A B : Type) (f : A -> B)
     (x : M (M A)),
@@ -104,3 +103,4 @@ Proof.
     Focus 3. rewrite Comp.fmap_ret. reflexivity.
     Focus 2. rewrite comp_const.
 Abort.
+*)

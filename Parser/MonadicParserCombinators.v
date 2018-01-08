@@ -25,6 +25,8 @@ Definition Parser (A : Type) : Type := string -> list (A * string).
 Definition result {A : Type} (x : A) : Parser A :=
   fun input : string => [(x, input)].
 
+Arguments result [A] _ _%string.
+
 Definition zero {A : Type} : Parser A :=
   fun _ => [].
 
@@ -550,7 +552,12 @@ Definition identifier (keywords : list string) : Parser string :=
     id <- token ident;
     if in_decb string_dec id keywords then zero else ret id.
 
-Compute natural "123"%string.
+Arguments spaces _%string.
+Arguments comment _%string.
+Arguments symbol _%string.
+Arguments natural _%string.
+
+Compute natural "123".
 
 (* My own stuff *)
 
@@ -621,14 +628,13 @@ end.
 Definition parseExpr : Parser Expr :=
   fun input : string => parseExprn (String.length input) input.
 
-Compute parseExpr
-  "(x x)"%string.
+Arguments parseExpr _%string.
 
-Compute parseExpr
-  "fun f => fun x => (f x)"%string.
+Compute parseExpr "(x x)".
 
-Compute parseExpr
-  "let x := (x x) in x"%string.
+Compute parseExpr "fun f => fun x => (f x)".
+
+Compute parseExpr "let x := (x x) in x".
 
 (** Parser for lambda calculus with Haskell-like syntax taken directly
     from the paper. *)
@@ -667,13 +673,12 @@ end.
 Definition parseExpr' : Parser Expr :=
   fun input : string => parseExprn' (String.length input) input.
 
-Compute parseExpr'
-  "(x x)"%string.
+Arguments parseExpr' _%string.
 
-Compute parseExpr'
-  "\f -> \x -> (f x)"%string.
+Compute parseExpr' "(x x)".
 
-Compute parseExpr'
-  "let x = (x x) in x"%string.
+Compute parseExpr' "\f -> \x -> (f x)".
+
+Compute parseExpr' "let x = (x x) in x".
 
 (** ** 7 Factorising the parser monad *)

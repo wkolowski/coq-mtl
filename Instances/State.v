@@ -36,14 +36,6 @@ Instance ApplicativeState (S : Type) : Applicative (State S) :=
     ap := @ap_State S
 }.
 Proof.
-  intros. unfold ret_State, ap_State. extensionality st.
-    destruct (ax st). trivial.
-  intros. unfold ret_State, ap_State. unfold State in *. extensionality st.
-    destruct (ag st). destruct (af s). destruct (ax s0). trivial.
-  intros. unfold ret_State, ap_State. extensionality st. trivial.
-  intros. unfold ret_State, ap_State. extensionality st. destruct (f st).
-    trivial.
-Restart.
   all: intros; compute; ext st.
     destruct (ax st). reflexivity.
     destruct (ag st), (af s), (ax s0). reflexivity.
