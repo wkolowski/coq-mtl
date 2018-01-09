@@ -29,8 +29,8 @@ Defined.
 Eval compute in (fun _ => Some 5) >=> (fun n => Some (n + 6)).
 Eval compute in Some 4 >>= fun n : nat => Some (2 * n).
 
-Eval compute in liftM2 plus (Some 2) (Some 4).
-Eval compute in liftM2 plus (Some 42) None.
+Eval compute in liftA2 plus (Some 2) (Some 4).
+Eval compute in liftA2 plus (Some 42) None.
 
 Lemma bind_List_app : forall (A B : Type) (l1 l2 : list A) (f : A -> list B),
     bind_List (l1 ++ l2) f = bind_List l1 f ++ bind_List l2 f.
@@ -76,13 +76,13 @@ Fixpoint init {A : Type} (l : list A) : option (list A) :=
 match l with
     | [] => None
     | [_] => Some []
-    | h :: t => liftM2 (@cons A) (ret h) (init t)
+    | h :: t => cons <$> ret h <*> init t
 end.
 
 Compute init [1; 2; 3].
-Compute filterM (fun _ => [true; false]) [1; 2; 3].
-Compute replicateM 3 [1; 2].
-Compute sequence [[1]; [2]].
+Compute filterA (fun _ => [true; false]) [1; 2; 3].
+Compute replicateA 3 [1; 2].
+Compute sequenceA [[1]; [2]].
 
 Instance MonadSum (A : Type) : Monad (sum A) :=
 {
@@ -96,8 +96,8 @@ Proof.
   end; cbn in *; reflexivity.
 Defined.
 
-Eval cbn in sequence [inr 42; inr 5; inr 10].
-Eval cbn in sequence [inr 42; inr 5; inr 10; inl (fun n : nat => 2 * n)].
+Eval cbn in sequenceA [inr 42; inr 5; inr 10].
+Eval cbn in sequenceA [inr 42; inr 5; inr 10; inl (fun n : nat => 2 * n)].
 
 Eval simpl in foldM (fun n m => inl (plus n m)) 0 [1; 2; 3].
 

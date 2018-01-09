@@ -35,12 +35,15 @@ Definition ap_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
   (msf : SumT E M (A -> B)) (msx : SumT E M A) : SumT E M B :=
     @bind M inst _ _ msf (fun sf =>
-    @bind M inst _ _ msx (fun sx =>
-      match sf, sx with
-          | inr f, inr x => ret (inr (f x))
-          | inl e, _ => ret (inl e)
-          | _, inl e => ret (inl e)
-      end)).
+      match sf with
+          | inl e => ret (inl e)
+          | inr f =>
+              @bind M inst _ _ msx (fun sx =>
+              match sx with
+                  | inl e => ret (inl e)
+                  | inr x => ret (inr (f x))
+              end)
+      end).
 
 Instance Applicative_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Applicative (SumT E M) :=
@@ -70,7 +73,6 @@ Instance Monad_SumT
 }.
 Proof.
   all: cbn; unfold SumT, fmap_SumT, ret_SumT, ap_SumT, bind_SumT; monad.
-  Axiom huj : False. destruct huj. (* TODO *)
 Defined.
 
 Definition lift_SumT

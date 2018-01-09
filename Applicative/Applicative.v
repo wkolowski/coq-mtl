@@ -70,31 +70,34 @@ End ApplicativeNotations.
 
 Export ApplicativeNotations.
 
-Section ApplicativeFuns.
+Section Lifts.
 
 Variable F : Type -> Type.
 Variable inst : Applicative F.
 Variables A B C D E : Type.
 
 Definition liftA2
-  (f : A -> B -> C) (fa : F A) (fb : F B) : F C :=
+  (f : A -> B -> C)
+  (fa : F A) (fb : F B) : F C :=
     ret f <*> fa <*> fb.
 
 Definition liftA3
-  (f : A -> B -> C -> D) (fa : F A) (fb : F B) (fc : F C) : F D :=
+  (f : A -> B -> C -> D)
+  (fa : F A) (fb : F B) (fc : F C) : F D :=
     ret f <*> fa <*> fb <*> fc.
 
 Definition liftA4
-  (f : A -> B -> C -> D -> E) (fa : F A) (fb : F B) (fc : F C) (fd : F D)
-    : F E := ret f <*> fa <*> fb <*> fc <*> fd.
+  (f : A -> B -> C -> D -> E)
+  (fa : F A) (fb : F B) (fc : F C) (fd : F D) : F E :=
+    ret f <*> fa <*> fb <*> fc <*> fd.
 
-End ApplicativeFuns.
+End Lifts.
 
 Arguments liftA2 [F inst A B C] _ _ _.
 Arguments liftA3 [F inst A B C D ] _ _ _ _.
 Arguments liftA4 [F inst A B C D E] _ _ _ _ _.
 
-Section ApplicativeFuns2.
+Section ApplicativeFuns1.
 
 Variable F : Type -> Type.
 Variable inst : Applicative F.
@@ -106,7 +109,19 @@ match la with
     | h :: t =>
         let f :=
           fmap (fun b : bool => if b then (cons h) else id) (p h)
-        in ap f (filterA p t)
+        in f <*> filterA p t
+end.
+
+Fixpoint sequenceA (lma : list (F A)) : F (list A) :=
+match lma with
+    | [] => ret []
+    | h :: t => cons <$> h <*> sequenceA t
+end.
+
+Fixpoint replicateA (n : nat) (x : F A) : F (list A) :=
+match n with
+    | 0 => ret []
+    | S n' => cons <$> x <*> replicateA n' x
 end.
 
 Fixpoint zipWithA (f : A -> B -> F C) (la : list A) (lb : list B)
@@ -115,13 +130,7 @@ match la, lb with
     | [], _ => ret []
     | _, [] => ret []
     | ha :: ta, hb :: tb =>
-        liftA2 (@cons C) (f ha hb) (zipWithA f ta tb)
-end.
-
-Fixpoint replicateA (n : nat) (x : F A) : F (list A) :=
-match n with
-    | 0 => ret []
-    | S n' => liftA2 (@cons A) x (replicateA n' x)
+        cons <$> f ha hb <*> zipWithA f ta tb
 end.
 
 Definition when (cond : bool) (a : F unit) : F unit :=
@@ -129,5 +138,26 @@ Definition when (cond : bool) (a : F unit) : F unit :=
 
 Definition unless (cond : bool) (a : F unit) : F unit :=
   if cond then ret tt else a.
+
+End ApplicativeFuns1.
+
+Arguments filterA [F inst A] _ _.
+Arguments sequenceA [F inst A] _.
+Arguments replicateA [F inst A] _ _.
+Arguments zipWithA [F inst A B C] _ _ _.
+Arguments when [F inst] _ _.
+Arguments unless [F inst] _ _.
+
+Section ApplicativeFuns2.
+
+Variable F : Type -> Type.
+Variable inst : Applicative F.
+Variables A B C D E : Type.
+
+Definition mapA (f : A -> F B) (la : list A) : F (list B) :=
+  sequenceA (map f la).
+
+Definition forA (la : list A) (f : A -> F B) : F (list B) :=
+  mapA f la.
 
 End ApplicativeFuns2.

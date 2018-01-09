@@ -40,11 +40,15 @@ Definition ap_OptionT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
   (mof : OptionT M (A -> B)) (moa : OptionT M A) : OptionT M B :=
     @bind M inst _ _ mof (fun of =>
-    @bind M inst _ _ moa (fun oa =>
-    match of, oa with
-        | Some f, Some a => ret (Some (f a))
-        | _, _ => ret None
-    end)).
+    match of with
+        | Some f =>
+            @bind M inst _ _ moa (fun oa =>
+            match oa with
+                | Some a => ret (Some (f a))
+                | None => ret None
+            end)
+        | _ => ret None
+    end).
 
 Instance Applicative_OptionT
   (M : Type -> Type) (inst : Monad M) : Applicative (OptionT M) :=
@@ -54,23 +58,6 @@ Instance Applicative_OptionT
     ap := @ap_OptionT M inst;
 }.
 Proof.
-  Ltac wut := repeat (monad;
-  match goal with
-      | |- ?x >>= _ = ?x >>= _ => f_equal
-      | |- context [match ?x with _ => _ end] => destruct x
-      | |- ret = fun _ => _ => let x := fresh "x" in ext x
-      | |- (fun _ => _) = (fun _ => _) => let x := fresh "x" in ext x
-      | |- context [id] => unfold id
-      | |- context [_ .> _] => unfold compose
-      | M : Type -> Type, inst : Monad ?M |- context [_ >>= ?f] =>
-          match f with
-              | (fun _ : ?A => _) =>
-                  match type of f with
-                      | ?T -> _ => replace f with (@ret M inst T)
-                  end
-          end
-      | _ => autorewrite with monad
-  end; try congruence).
   all: cbn; unfold OptionT, fmap_OptionT, ret_OptionT, ap_OptionT; monad.
 Defined.
 
@@ -78,10 +65,10 @@ Definition bind_OptionT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
   (moa : OptionT M A) (f : A -> OptionT M B) : OptionT M B :=
     @bind M inst (option A) (option B) moa (fun oa : option A =>
-match oa with
-    | None => ret None
-    | Some a => f a
-end).
+    match oa with
+        | None => ret None
+        | Some a => f a
+    end).
 
 Instance Monad_OptionT (M : Type -> Type) {inst : Monad M}
     : Monad (OptionT M) :=
@@ -91,37 +78,8 @@ Instance Monad_OptionT (M : Type -> Type) {inst : Monad M}
 }.
 Proof.
   all: cbn;
-  unfold OptionT, fmap_OptionT, ret_OptionT, ap_OptionT, bind_OptionT; intros.
-    rewrite bind_ret_l. reflexivity.
-    match goal with
-        | |- ?moa >>= ?f = ?moa => replace f with (@ret M inst (option A))
-    end.
-      rewrite bind_ret_r. reflexivity.
-      ext oa. destruct oa; reflexivity.
-    rewrite assoc. f_equal. ext oa. destruct oa.
-      reflexivity.
-      rewrite bind_ret_l. reflexivity.
-    rewrite bind_fmap. unfold compose. f_equal. ext oa.
-      destruct oa; cbn; reflexivity.
-    rewrite fmap_bind. f_equal. ext oa. destruct oa; cbn.
-      reflexivity.
-      rewrite fmap_ret. cbn. reflexivity.
-    monad. Axiom huj : False. destruct huj. (* TODO *)
+  unfold OptionT, fmap_OptionT, ret_OptionT, ap_OptionT, bind_OptionT; monad.
 Defined.
-(*Restart.
-  From mathcomp Require Import ssreflect.
-  all: intros; unfold bind_OptionT; cbn.
-    by rewrite bind_ret_l.
-    match goal with
-        | |- ?moa >>= ?f = ?moa => replace f with (@ret M inst (option A))
-    end.
-      by rewrite bind_ret_r.
-      by ext oa; case: oa.
-    rewrite assoc. f_equal. by ext oa; case: oa; rewrite ?bind_ret_l.
-    by rewrite fmap_ret.
-    rewrite bind_fmap /compose. f_equal. by ext oa; case: oa.
-    rewrite fmap_bind. f_equal. by ext oa; case oa; rewrite ?fmap_ret.
-Defined.*)
 
 Definition lift_OptionT {M : Type -> Type} {_inst : Monad M} {A : Type}
   (ma : M A) : OptionT M A := fmap Some ma.
