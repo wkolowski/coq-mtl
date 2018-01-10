@@ -2,15 +2,21 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadBind.MonadInst.
+Require Import HSLib.Applicative.Applicative.
 Require Import HSLib.MonadComp.Monad.
+
 Require Import HSLib.Instances.All.
+
+Instance MonadIdentity : Monad Identity :=
+{
+    is_applicative := Applicative_Identity;
+    compM := @compM_Identity
+}.
+Proof. all: reflexivity. Defined.
 
 Instance MonadOption : Monad option :=
 {
-    is_functor := FunctorOption;
-    ret := @ret_Option;
+    is_applicative := ApplicativeOption;
     compM := @compM_Option
 }.
 Proof.
@@ -19,13 +25,11 @@ Proof.
   trivial.
   intros. extensionality x. unfold compM_Option.
     destruct (f x); trivial.
-  reflexivity.
 Defined.
 
 Instance MonadList : Monad list :=
 {
-    is_functor := FunctorList;
-    ret := @ret_List;
+    is_applicative := ApplicativeList;
     compM := @compM_List
 }.
 Proof.
@@ -35,14 +39,12 @@ Proof.
   intros. extensionality x. unfold ret_List, compM_List. simpl.
     apply app_nil_r.
   intros. extensionality x. unfold ret_List, compM_List.
-    induction (f x); simpl; try rewrite IHl; trivial.
-  trivial.
+    induction (f x); cbn in *; rewrite ?IHl; trivial.
 Defined.
 
 Instance MonadSum (E : Type) : Monad (sum E) :=
 {
-    is_functor := FunctorSum E;
-    ret := @ret_Sum E;
+    is_applicative := ApplicativeSum E;
     compM := @compM_Sum E
 }.
 Proof.
@@ -51,28 +53,25 @@ Proof.
   trivial.
   intros. extensionality x. unfold compM_Sum.
     destruct (f x); simpl; trivial.
-  trivial.
 Defined.
 
 Instance MonadReader (R : Type) : Monad (Reader R) :=
 {
-    is_functor := FunctorReader R;
-    ret := @ret_Reader R;
+    is_applicative := ApplicativeReader R;
     compM := @compM_Reader R
 }.
-Proof. all: trivial. Defined.
+Proof. all: reflexivity. Defined.
 
 Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
 {
-    ret := @ret_Writer W;
+    is_applicative := ApplicativeWriter W;
     compM := @compM_Writer W
 }.
 Proof. all: solveWriter. Defined.
 
 Instance MonadState (S : Type) : Monad (State S) :=
 {
-    is_functor := FunctorState S;
-    ret := @ret_State S;
+    is_applicative := ApplicativeState S;
     compM := @compM_State S
 }.
 Proof.
@@ -81,5 +80,11 @@ Proof.
   trivial.
   intros. extensionality x. extensionality s. unfold compM_State.
     destruct (f x s). trivial.
-  trivial.
 Defined.
+
+Instance MonadCont (R : Type) : Monad (Cont R) :=
+{
+    is_applicative := ApplicativeCont R;
+    compM := @compM_Cont R
+}.
+Proof. all: reflexivity. Defined.

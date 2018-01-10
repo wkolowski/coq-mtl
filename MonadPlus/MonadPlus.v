@@ -2,8 +2,8 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
-Require Import HSLib.MonadJoin.Monad.
-Require Import HSLib.MonadJoin.MonadInst.
+Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadBind.MonadInst.
 Require Import HSLib.Alternative.Alternative.
 
 Require Import HSLib.Instances.Option.
@@ -26,16 +26,16 @@ Variables A B C : Type.
 Definition mfilter (f : A -> bool) (ma : M A) : M A :=
   ma >>= fun a : A => if f a then ret a else aempty.
 
-Fixpoint msum (lma : list (M A)) : M A :=
+(*Fixpoint msum (lma : list (M A)) : M A :=
 match lma with
     | [] => aempty
     | h :: t => aplus h (msum t)
-end.
+end.*)
 
 End MonadPlusFuns.
 
 Arguments mfilter [M] [inst] [A] _ _.
-Arguments msum [M] [inst] [A] _.
+(*Arguments msum [M] [inst] [A] _.*)
 
 Instance MonadPlusOption : MonadPlus option :=
 {
@@ -49,19 +49,25 @@ Instance MonadPlusList : MonadPlus list :=
     is_alternative := AlternativeList
 }.
 
-Definition to_1_10 := [1; 2; 3; 4; 5; 6; 7; 8; 9; 10].
+Fixpoint aux (n k : nat) : list nat :=
+match n with
+    | 0 => [k]
+    | S n' => k :: aux n' (S k)
+end.
 
-Eval simpl in
-    to_1_10 >>= fun a =>
-    to_1_10 >>= fun b =>
-    to_1_10 >>= fun c =>
-    guard (beq_nat (a * a + b * b) (c * c)) >>= fun _ =>
-    ret (a, b, c).
+Definition I (a b : nat) : list nat := aux (b - a) a.
 
-Eval compute in mfilter (fun _ => true) to_1_10.
+Compute do
+  a <- I 1 35;
+  b <- I 1 35;
+  c <- I 1 35;
+  guard (beq_nat (a * a + b * b) (c * c));;
+  ret (a, b, c).
+
+Eval compute in mfilter (fun _ => true) (I 1 10).
 Eval compute in mfilter (fun _ => false) (Some 42).
 
-Eval compute in msum [[2; 42]; [4; 44]].
+(*Eval compute in asum [[2; 42]; [4; 44]].*)
 
-Eval compute in @zipWithM _ _ _ _ _
-    (fun _ _ => [true; false]) [1; 2; 3] [4; 5; 6; 7].
+Compute zipWithA
+  (fun _ _ => [true; false]) [1; 2; 3] [4; 5; 6; 7].

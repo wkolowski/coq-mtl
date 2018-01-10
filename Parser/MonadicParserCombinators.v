@@ -55,10 +55,21 @@ Instance Functor_Parser : Functor Parser :=
     fmap := @fmap_Parser;
 }.
 Proof.
-  intros. unfold fmap_Parser, id. ext p; ext s.
-    induction (p s) as [| [r s'] rs]; cbn; rewrite ?IHrs; reflexivity.
-  intros. unfold fmap_Parser, compose. ext p; ext s.
-    induction (p s) as [| [r s'] rs]; cbn; rewrite ?IHrs; reflexivity.
+  Lemma f1 :
+    forall A : Type, fmap_Parser (@id A) = id.
+  Proof.
+    abstract (cbn; unfold fmap_Parser, compose, id; intros; ext p; ext s;
+    induction (p s) as [| [r s'] rs]; cbn; rewrite ?IHrs; reflexivity).
+  Qed.
+  Lemma f2 :
+    forall (A B C : Type) (f : A -> B) (g : B -> C),
+      fmap_Parser (f .> g) = fmap_Parser f .> fmap_Parser g.
+  Proof.
+    abstract (cbn; unfold fmap_Parser, compose, id; intros; ext p; ext s;
+    induction (p s) as [| [r s'] rs]; cbn; rewrite ?IHrs; reflexivity).
+  Qed.
+  apply f1.
+  apply f2.
 Defined.
 
 Definition ret_Parser := @result.
@@ -70,6 +81,41 @@ Definition ap_Parser
       pa input' >>= fun '(a, input'') =>
         ret (f a, input'').
 
+Ltac parser :=
+  cbn; unfold Parser, fmap_Parser, ret_Parser, result, ap_Parser; monad.
+
+Lemma p1 :
+  forall (A : Type) (ax : Parser A),
+    ap_Parser (ret_Parser (A -> A) id) ax = ax.
+Proof. abstract parser. Qed.
+
+Lemma p2 :
+  forall (A B C : Type) (af : Parser (A -> B)) (ag : Parser (B -> C))
+  (ax : Parser A),
+ap_Parser
+  (ap_Parser
+     (ap_Parser (ret_Parser ((B -> C) -> (A -> B) -> A -> C) compose) ag) af)
+  ax = ap_Parser ag (ap_Parser af ax).
+Proof. abstract parser. Qed.
+
+Lemma p3 :
+  forall (A B : Type) (f : A -> B) (x : A),
+    ap_Parser (ret_Parser (A -> B) f) (ret_Parser A x) = ret_Parser B (f x).
+Proof. abstract parser. Qed.
+
+Lemma p4 :
+  forall (A B : Type) (f : Parser (A -> B)) (x : A),
+    ap_Parser f (ret_Parser A x) =
+    ap_Parser (ret_Parser ((A -> B) -> B) (fun f0 : A -> B => f0 x)) f.
+Proof. abstract parser. Qed.
+
+Lemma p5 :
+  forall (A B : Type) (f : A -> B) (x : Parser A),
+    fmap f x = ap_Parser (ret_Parser (A -> B) f) x.
+Proof.
+  abstract (parser; induction (x x0); cbn; try
+    reflexivity; destruct a; cbn; rewrite IHl; reflexivity).
+Qed.
 
 Instance Applicative_Parser : Applicative Parser :=
 {
@@ -78,31 +124,61 @@ Instance Applicative_Parser : Applicative Parser :=
     ap := @ap_Parser;
 }.
 Proof.
-(*  all: cbn; unfold Parser, fmap_Parser, ret_Parser, result, ap_Parser; monad.
-  cbn. induction (x x0); cbn.
-    reflexivity.
-    destruct a. cbn. rewrite IHl. reflexivity.*)
-Axiom wut : False.
-  all: destruct wut. 
+  apply p1.
+  apply p2.
+  apply p3.
+  apply p4.
+  apply p5.
 Defined.
-
 
 Definition bind_Parser
   {A B : Type} (p : Parser A) (f : A -> Parser B) : Parser B :=
     fun input : string =>
       p input >>= fun '(a, input') => f a input'.
 
-Instance MonadParser : Monad Parser :=
+Ltac parser' :=
+  cbn; unfold fmap_Parser, ret_Parser, result, bind_Parser; monad.
+
+Instance Monad_Parser : Monad Parser :=
 {
     is_applicative := Applicative_Parser;
     bind := @bind_Parser
 }.
 Proof.
-(*  all: cbn; unfold fmap_Parser, ret_Parser, result, bind_Parser; monad.
-  induction (x x0); cbn.
-    reflexivity.
-    destruct a. cbn in *. rewrite map_app, <- IHl. reflexivity.*)
-  all: destruct wut.
+  Lemma m1 :
+    forall (A B : Type) (f : A -> Parser B) (a : A),
+      bind_Parser (ret a) f = f a.
+  Proof. abstract parser'. Qed.
+  Lemma m2 :
+    forall (A : Type) (ma : Parser A), bind_Parser ma ret = ma.
+  Proof. abstract parser'. Qed.
+  Lemma m3 :
+    forall (A B C : Type) (ma : Parser A) (f : A -> Parser B) (g : B -> Parser C),
+bind_Parser (bind_Parser ma f) g =
+bind_Parser ma (fun x : A => bind_Parser (f x) g).
+  Proof. abstract parser'. Qed.
+  Lemma m4 :
+    forall (A B C : Type) (f : A -> B) (x : Parser A) (g : B -> Parser C),
+      bind_Parser (fmap f x) g = bind_Parser x (f .> g).
+  Proof. abstract parser'. Qed.
+  Lemma m5 :
+    forall (A B C : Type) (x : Parser A) (f : A -> Parser B) (g : B -> C),
+      fmap g (bind_Parser x f) = bind_Parser x (fun x0 : A => fmap g (f x0)).
+  Proof.
+    abstract (parser'; induction (x x0); cbn; try reflexivity;
+    destruct a; cbn in *; rewrite map_app, <- IHl; reflexivity).
+  Qed.
+  Lemma m6 :
+  forall (A B : Type) (mf : Parser (A -> B)) (mx : Parser A),
+    mf <*> mx =
+    bind_Parser mf (fun f : A -> B => bind_Parser mx (fun x : A => ret (f x))).
+  Proof. abstract parser'. Qed.
+  apply m1.
+  apply m2.
+  apply m3.
+  apply m4.
+  apply m5.
+  apply m6.
 Defined.
 
 Definition seq
@@ -638,6 +714,8 @@ end.
 Definition parseExpr : Parser Expr :=
   fun input : string => parseExprn (String.length input) input.
 
+(** TODO: formalizing parsers for CompCert by Leroy *)
+
 Arguments parseExpr _%string.
 
 Compute parseExpr "(x x)".
@@ -666,7 +744,6 @@ match n with
             e <- parseExprn' n';
             symbol "in";;
             e' <- parseExprn' n';
-            (*@result _ $ Let x e e'*)
             ret $ Let x e e'
         in let
           lam := do
@@ -674,7 +751,6 @@ match n with
             x <- variable;
             symbol "->";;
             e <- parseExprn' n';
-(*            @result _ $ Lam x e*)
             ret $ Lam x e
         in let
           atom := token (lam +++ local +++ var +++ paren)

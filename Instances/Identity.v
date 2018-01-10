@@ -7,8 +7,8 @@ Require Import HSLib.Alternative.Alternative.
 
 Definition Identity (A : Type) : Type := A.
 
-Definition fmap_Identity {A B : Type} (f : A -> B) (ia : Identity A)
-    : Identity B := f ia.
+Definition fmap_Identity
+  {A B : Type} (f : A -> B) (a : Identity A) : Identity B := f a.
 
 Instance FunctorIdentity : Functor Identity :=
 {
@@ -19,8 +19,8 @@ Proof. all: auto. Defined.
 Definition ret_Identity {A : Type} (x : A) : Identity A := x.
 
 Definition ap_Identity
-  {A B : Type} (f : Identity A -> Identity B) (x : Identity A) : Identity B :=
-    f x.
+  {A B : Type} (f : Identity A -> Identity B) (x : Identity A)
+    : Identity B := f x.
 
 Instance Applicative_Identity : Applicative Identity :=
 {
@@ -29,6 +29,16 @@ Instance Applicative_Identity : Applicative Identity :=
     ap := @ap_Identity
 }.
 Proof. all: reflexivity. Defined.
+
+Definition bind_Identity
+  {A B : Type} (a : Identity A) (f : A -> Identity B) : Identity B := f a.
+
+Definition join_Identity
+  {A : Type} (x : Identity (Identity A)) : Identity A := x.
+
+Definition compM_Identity
+  {A B C : Type} (f : A -> Identity B) (g : B -> Identity C)
+  (x : A) : Identity C := g (f x).
 
 Theorem Identity_not_Alternative :
   Alternative Identity -> False.

@@ -3,96 +3,65 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 Require Import HSLib.Base.
 Require Export HSLib.MonadJoin.Monad.
 
-Inductive Lazy (Z : Type) : Type :=
-    | delay : Z -> Lazy Z
-    | Later : forall (A : Type), (A -> Z) -> A -> Lazy Z.
+Definition Lazy (A : Type) : Type := unit -> A.
 
-Arguments delay [Z] _.
-Arguments Later [Z A] _ _.
+Definition delay {A : Type} (a : A) : Lazy A :=
+  fun _ => a.
 
 Definition force {A : Type} (la : Lazy A) : A :=
-match la with
-    | delay a => a
-    | Later f x => f x
-end.
+  la tt.
 
-Definition fmapL {A B : Type} (f : A -> B) (la : Lazy A) : Lazy B :=
-match la with
-    | delay v => delay (f v)
-    | Later g a => Later (g .> f) a
-end.
+Definition fmap_Lazy {A B : Type} (f : A -> B) (la : Lazy A) : Lazy B :=
+  fun _ => f (la tt).
 
 Instance FunctorLazy : Functor Lazy :=
 {
-    fmap := @fmapL
+    fmap := @fmap_Lazy;
 }.
 Proof.
-  intro. unfold fmapL. extensionality la. destruct la.
-    unfold id. reflexivity.
-    unfold id, compose. f_equal.
-  intros. unfold fmapL, compose. extensionality la. destruct la.
-    reflexivity.
-    reflexivity.
+  intro. unfold id, fmap_Lazy. ext la. ext u. destruct u. reflexivity.
+  intros. unfold compose, fmap_Lazy. ext la. reflexivity.
 Defined.
 
-Definition joinL {A : Type} (lla : Lazy (Lazy A)) : Lazy A :=
-match lla with
-    | delay v => match v with
-        | delay v' => delay v'
-        | Later f v' => delay (f v')
-    end
-    | Later f v => f v
-end.
+Definition ret_Lazy {A : Type} (a : A) : Lazy A :=
+  fun _ => a.
 
-Definition bindL {A B : Type} (la : Lazy A) (f : A -> Lazy B) : Lazy B :=
-match la with
-    | delay a => f a
-    | Later g x => f (g x)
-end.
+Definition ap_Lazy
+  {A B : Type} (f : Lazy (A -> B)) (x : Lazy A) : Lazy B :=
+    fun _ => f tt (x tt).
 
-Definition bindL' {A B : Type} (la : Lazy A) (f : A -> Lazy B) : Lazy B :=
-match la with
-    | delay a => f a
-    | Later g x => match f (g x) with
-        | delay x' => Later id x'
-        | _ => f (g x)
-    end
-end.
+Instance ApplicativeLazy : Applicative Lazy :=
+{
+    is_functor := FunctorLazy;
+    ret := @ret_Lazy;
+    ap := @ap_Lazy;
+}.
+Proof.
+  all: try reflexivity.
+  intros. compute. ext u. destruct u. reflexivity.
+Defined.
 
-Definition joinL' {A : Type} (lla : Lazy (Lazy A)) : Lazy A :=
-    bindL' lla id.
+Definition bind_Lazy
+  {A B : Type} (la : Lazy A) (f : A -> Lazy B) : Lazy B :=
+    f (la tt).
+
+Definition join_Lazy {A : Type} (lla : Lazy (Lazy A)) : Lazy A :=
+  lla tt.
 
 Instance MonadLazy : Monad Lazy :=
 {
-    is_functor := FunctorLazy;
-    ret := fun {A : Type} (a : A) => delay a;
-      (* @Later A A (fun x : _ => x) a; Universe problems *)
-    join := @joinL
+    is_applicative := ApplicativeLazy;
+    join := @join_Lazy;
 }.
 Proof.
-  intro; simpl. unfold fmapL, joinL. extensionality la. unfold compose.
-  destruct la.
-    destruct l.
-      destruct l; auto.
-      destruct (l a); auto.
-    destruct (l a); auto.
-  simpl; intros. extensionality la. destruct la. auto.
-    unfold compose. simpl. unfold compose. reflexivity.
-  intros. unfold joinL, compose, id. ext lx. destruct lx.
-    reflexivity.
-    admit. (* Bullshit *)
-Admitted.
-
-(* I should check the version with Later as return. *)
-Eval lazy in
-  delay 5 >>= fun n : nat => Later (fun _ : nat => 2 * n) 42.
+  all: try reflexivity.
+  cbn. intros. unfold compose, ret_Lazy, join_Lazy, fmap_Lazy.
+    ext la; ext u. destruct u. reflexivity.
+Defined.
 
 Eval lazy in
-  Later (fun n : nat => 2 * n) 2.
+  delay 5 >>= fun n : nat =>
+  delay 2 >>= fun m : nat => delay (n * m).
 
 Eval lazy in
-  Later (fun n : nat => n + 2) 3 >>= fun n : nat =>
-  Later (fun n : nat => 2 * n) n.
-
-Eval lazy in
-  Later id 5 >>= fun n : nat => Later (fun m => n * m) 3.
+  delay 42 >>= fun n : nat => delay (2 * n).

@@ -2,21 +2,21 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
+Require Import HSLib.Applicative.Applicative.
 Require Import HSLib.MonadJoin.Monad.
 
-Require Import HSLib.Instances.Option.
-Require Import HSLib.Instances.ListInst.
-Require Import HSLib.Instances.Sum.
-Require Import HSLib.Instances.Reader.
-Require Import HSLib.Instances.Writer.
-Require Import HSLib.Instances.State.
-Require Import HSLib.Instances.Cont.
-Require Import HSLib.Instances.Identity.
+Require Import HSLib.Instances.All.
+
+Instance MonadIdentity : Monad Identity :=
+{
+    is_applicative := Applicative_Identity;
+    join := @join_Identity
+}.
+Proof. all: reflexivity. Defined.
 
 Instance MonadOption : Monad option :=
 {
-    is_functor := FunctorOption;
-    ret := @Some;
+    is_applicative := ApplicativeOption;
     join := @join_Option
 }.
 Proof.
@@ -24,22 +24,12 @@ Proof.
     destruct opt as [[[ssx |] |] |]; auto.
   unfold compose; simpl; intros. extensionality opt.
     destruct opt; auto.
-  intros. ext ox. cbn. destruct ox; reflexivity.
-  trivial.
   destruct ma; reflexivity.
 Defined.
 
-Eval compute in (fun _ => Some 5) >=> (fun n => Some (n + 6)).
-Eval compute in Some 4 >>= fun n : nat => Some (2 * n).
-
-Eval compute in liftM2 plus (Some 2) (Some 4).
-Eval compute in liftM2 plus (Some 42) None.
-
-(** * List *)
-
 Instance MonadList : Monad list :=
 {
-    ret := fun (A : Type) (a : A) => [a];
+    is_applicative := ApplicativeList;
     join := @join_List
 }.
 Proof.
@@ -53,36 +43,12 @@ Proof.
   unfold compose in *; simpl in *.
     trivial.
     f_equal. rewrite <- IHt. trivial.
-  intros. ext lx. cbn. rewrite app_nil_r. reflexivity.
-  trivial.
-  intros. cbn. apply app_nil_r.
+  cbn. apply app_nil_r.
 Defined.
-
-Definition head {A : Type} (l : list A) : option A :=
-match l with
-    | [] => None
-    | h :: _ => Some h
-end.
-
-Fixpoint init {A : Type} (l : list A) : option (list A) :=
-match l with
-    | [] => None
-    | [_] => Some []
-    | h :: t => liftM2 (@cons A) (ret h) (init t)
-end.
-
-Eval compute in init [1; 2; 3].
-
-Eval simpl in filterM (fun _ => [true; false]) [1; 2; 3].
-
-Eval simpl in replicateM 3 [1; 2].
-
-Eval simpl in sequence [[1]; [2]].
 
 Instance MonadSum (A : Type) : Monad (sum A) :=
 {
-    is_functor := FunctorSum A;
-    ret := @ret_Sum A;
+    is_applicative := ApplicativeSum A;
     join := @join_Sum A
 }.
 Proof.
@@ -90,27 +56,19 @@ Proof.
     destruct x as [a | [a | [a | b]]]; compute; trivial.
   intro B. extensionality x.
     destruct x as [a | b]; compute; trivial.
-  intros. ext sx. destruct sx; reflexivity.
-  trivial.
   destruct ma; reflexivity.
 Defined.
 
-Eval simpl in sequence [inr 42; inr 5; inr 10].
-Eval simpl in sequence [inr 42; inr 5; inr 10; inl (fun n : nat => 2 * n)].
-
-Eval simpl in foldM (fun n m => inl (plus n m)) 0 [1; 2; 3].
-
 Instance MonadReader (R : Type) : Monad (Reader R) :=
 {
-    is_functor := FunctorReader R;
-    ret := @ret_Reader R;
+    is_applicative := ApplicativeReader R;
     join := @join_Reader R
 }.
-Proof. all: trivial. Defined.
+Proof. all: reflexivity. Defined.
 
 Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
 {
-    ret := @ret_Writer W;
+    is_applicative := ApplicativeWriter W;
     join := @join_Writer W
 }.
 Proof.
@@ -119,15 +77,12 @@ Proof.
     rewrite op_assoc. trivial.
   intros. simpl. unfold fmap_Writer, ret_Writer, join_Writer, id, compose.
     extensionality wx. destruct wx as [x w]. rewrite id_left, id_right. auto.
-  intros. ext wx. destruct wx. cbn. rewrite id_right. reflexivity.
-  trivial.
   intros. cbn. destruct ma. rewrite id_right. reflexivity.
 Defined.
 
 Instance MonadState (S : Type) : Monad (State S) :=
 {
-    is_functor := FunctorState S;
-    ret := @ret_State S;
+    is_applicative := ApplicativeState S;
     join := @join_State S
 }.
 Proof.
@@ -138,26 +93,11 @@ Proof.
     simpl. unfold ret_State, join_State, fmap_State, compose.
     destruct (sx s). trivial.
   reflexivity.
-  trivial.
-  trivial.
 Defined.
 
 Instance MonadCont (R : Type) : Monad (Cont R) :=
 {
-    ret := @ret_Cont R;
+    is_applicative := ApplicativeCont R;
     join := @join_Cont R
 }.
-Proof. all: trivial. Defined.
-
-Definition ret_Identity {A : Type} (x : A) : Identity A := x.
-
-Definition join_Identity {A : Type} (x : Identity (Identity A))
-  : Identity A := x.
-
-Instance MonadIdentity : Monad Identity :=
-{
-    is_functor := FunctorIdentity;
-    ret := @ret_Identity;
-    join := @join_Identity
-}.
-Proof. all: trivial. Defined.
+Proof. all: reflexivity. Defined.

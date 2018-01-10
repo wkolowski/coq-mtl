@@ -9,3 +9,4 @@ Require Export HSLib.Instances.Reader.
 Require Export HSLib.Instances.Writer.
 Require Export HSLib.Instances.State.
 Require Export HSLib.Instances.Cont.
+Require Export HSLib.Instances.Identity.
