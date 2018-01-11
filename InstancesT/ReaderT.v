@@ -1,10 +1,15 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
 Require Import HSLib.Applicative.Applicative.
+Require Import HSLib.Alternative.Alternative.
 Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadPlus.MonadPlus.
 Require Import HSLib.MonadTrans.MonadTrans.
+
+Require Import HSLib.Instances.All.
+Require Import HSLib.MonadBind.MonadInst.
 
 Definition ReaderT (E : Type) (M : Type -> Type) (A : Type)
   : Type := E -> M A.
@@ -46,6 +51,15 @@ Proof.
   applicative.
 Defined.
 
+Theorem ReaderT_not_Alternative :
+  (forall (E : Type) (M : Type -> Type) (inst : Monad M),
+    Alternative (ReaderT E M)) -> False.
+Proof.
+  intros. destruct (X unit Identity MonadIdentity).
+  clear -aempty. specialize (aempty False).
+  compute in aempty. apply aempty. exact tt.
+Qed.
+
 Definition bind_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
   (x : ReaderT E M A) (f : A -> ReaderT E M B) : ReaderT E M B :=
@@ -62,6 +76,14 @@ Proof.
   unfold fmap_ReaderT, ret_ReaderT, ap_ReaderT, bind_ReaderT;
   monad.
 Defined.
+
+Theorem ReaderT_not_MonadPlus :
+  (forall (E : Type) (M : Type -> Type) (inst : Monad M),
+    MonadPlus (ReaderT E M)) -> False.
+Proof.
+  intros. apply ReaderT_not_Alternative.
+  intros. destruct (X E M inst). assumption.
+Qed.
 
 Definition lift_ReaderT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)

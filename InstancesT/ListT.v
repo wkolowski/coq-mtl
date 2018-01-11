@@ -1,21 +1,27 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
+Require Import HSLib.Applicative.Applicative.
+Require Import HSLib.Alternative.Alternative.
 Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadPlus.MonadPlus.
 Require Import HSLib.MonadTrans.MonadTrans.
 
+Require Import HSLib.Instances.All.
+Require Import HSLib.MonadBind.MonadInst.
+
 Definition ListT (M : Type -> Type) (A : Type) : Type := M (list A).
-(*
+
 Definition fmap_ListT
-  {M : Type -> Type} {inst : Functor M}
+  (M : Type -> Type) (inst : Functor M)
   (A B : Type) (f : A -> B) : ListT M A -> ListT M B :=
     fmap (map f).
 
-Instance FunctorListT (M : Type -> Type) {inst : Functor M}
-    : Functor (ListT M) :=
+Instance Functor_ListT
+  (M : Type -> Type) (inst : Functor M) : Functor (ListT M) :=
 {
-    fmap := fmap_ListT
+    fmap := fmap_ListT M inst
 }.
 Proof.
   all: intros; unfold fmap_ListT.
@@ -26,18 +32,64 @@ Proof.
 Defined.
 
 Definition ret_ListT
-  {M : Type -> Type} {inst : Monad M} {A : Type} (x : A)
+  (M : Type -> Type) (inst : Monad M) (A : Type) (x : A)
     : ListT M A := ret [x].
 
+Definition ap_ListT
+  (M : Type -> Type) (inst : Monad M) (A B : Type)
+  (mfs : ListT M (A -> B)) (mxs : ListT M A) : ListT M B :=
+    @bind M inst _ _ mfs (fun fs =>
+    @bind M inst _ _ mxs (fun xs =>
+      ret $ ap_list fs xs)).
+
+
+Axiom wut : False.
+
+Instance Applicative_ListT
+  (M : Type -> Type) (inst : Monad M) : Applicative (ListT M) :=
+{
+    is_functor := Functor_ListT M inst;
+    ret := ret_ListT M inst;
+    ap := ap_ListT M inst;
+}.
+Proof.
+  all: cbn; unfold ListT, fmap_ListT, ret_ListT, ap_ListT; monad; cbn.
+    rewrite app_nil_r. rewrite map_id. reflexivity.
+    rewrite app_nil_r. destruct wut. (* TODO *)
+    rewrite <- ap_list_exchange. cbn. reflexivity.
+    rewrite app_nil_r. reflexivity.
+Defined.
+
+Definition aempty_ListT
+  (M : Type -> Type) (inst : Monad M) (A : Type) : ListT M A :=
+    ret [].
+
+Definition aplus_ListT
+  (M : Type -> Type) (inst : Monad M) (A : Type) (ml1 ml2 : ListT M A)
+    : ListT M A :=
+      @bind M inst _ _ ml1 (fun l1 =>
+      @bind M inst _ _ ml2 (fun l2 =>
+        ret (l1 ++ l2))).
+
+Instance Alternative_ListT
+  (M : Type -> Type) (inst : Monad M) : Alternative (ListT M) :=
+{
+    is_applicative := Applicative_ListT M inst;
+    aempty := aempty_ListT M inst;
+    aplus := aplus_ListT M inst;
+}.
+Proof.
+  all: cbn; unfold ListT, aempty_ListT, aplus_ListT; monad.
+    rewrite app_nil_r. reflexivity.
+    rewrite app_assoc. reflexivity.
+Defined.
+
 Fixpoint bind_ListT_aux
-  {M : Type -> Type} {inst : Monad M} {A B : Type} (f : A -> ListT M B)
-  (l : list A) : ListT M B :=
+  {M : Type -> Type} {inst : Monad M} {A B : Type}
+  (f : A -> ListT M B) (l : list A) : ListT M B :=
 match l with
     | [] => ret []
-    | h :: t => liftM2 (@app B) (f h) (bind_ListT_aux f t)
-(*                @bind M inst _ _ (bind_ListT_aux f t) (fun l2 =>
-                @bind M inst _ _ (f h) (fun l1 =>
-                  ret (l1 ++ l2)))*)
+    | h :: t => liftA2 (@app B) (f h) (bind_ListT_aux f t)
 end.
 
 Definition bind_ListT
@@ -79,44 +131,32 @@ Proof.
 *)
 Abort.
 
-Axiom wut : False.
-
-Instance Monad_ListT (M : Type -> Type) {inst : Monad M}
-    : Monad (ListT M) :=
+Instance Monad_ListT
+  (M : Type -> Type) (inst : Monad M) : Monad (ListT M) :=
 {
-    is_functor := FunctorListT M;
-    ret := @ret_ListT M inst;
+    is_applicative := Applicative_ListT M inst;
     bind := @bind_ListT M inst
 }.
 Proof.
-  all: cbn; intros; unfold fmap_ListT, ret_ListT.
-    unfold bind_ListT. rewrite bind_ret_l. cbn. unfold liftM2, ListT in *.
-      rewrite <- (bind_ret_r _ (f a)) at 2. f_equal.
-        ext l. rewrite bind_ret_l. f_equal. apply app_nil_r.
-    unfold bind_ListT;
+  all: cbn; unfold ListT, fmap_ListT, ret_ListT, ap_ListT, bind_ListT; intros.
+    monad. unfold bind_ListT_aux, liftA2. monad.
+      rewrite app_nil_r. reflexivity.
     match goal with
         | |- ?moa >>= ?f = ?moa => replace f with (@ret M inst (list A))
     end.
-      rewrite bind_ret_r. reflexivity.
+      monad.
       ext la. induction la; cbn.
         reflexivity.
-        rewrite <- IHla. unfold liftM2. rewrite ?bind_ret_l. reflexivity.
+        rewrite <- IHla. unfold liftA2. monad.
     destruct wut.
-    rewrite fmap_ret. reflexivity.
-    unfold bind_ListT. rewrite bind_fmap. unfold compose. f_equal. ext l.
+    monad. unfold compose. ext l.
       induction l; cbn; rewrite ?IHl; reflexivity.
-    unfold bind_ListT. rewrite fmap_bind. f_equal. ext la.
-    gen g; gen f. clear x.
-      induction la as [| ha ta]; cbn; intros.
-        rewrite fmap_ret. cbn. reflexivity.
-        rewrite <- IHta. clear IHta. unfold liftM2.
-          rewrite !bind_fmap, !fmap_bind. f_equal. ext lb. unfold compose.
-          rewrite fmap_bind. rewrite bind_fmap. f_equal. unfold compose.
-            ext lb'. rewrite fmap_ret, map_app. reflexivity.
+    monad. destruct wut.
+    monad. destruct wut. (* TODO *)
 Defined.
 
 Definition lift_ListT
-  {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
+  (M : Type -> Type) (inst : Monad M) (A : Type) (ma : M A)
     : ListT M A := ma >>= fun a : A => @ret M inst _ [a].
 
 Instance MonadTrans_ListT : MonadTrans ListT :=
@@ -126,9 +166,7 @@ Instance MonadTrans_ListT : MonadTrans ListT :=
 }.
 Proof.
   all: cbn; intros; unfold lift_ListT, ret_ListT, bind_ListT.
-    rewrite bind_ret_l. reflexivity.
-    rewrite !assoc. f_equal. ext a. rewrite bind_ret_l.
-      unfold bind_ListT_aux, liftM2, compose. rewrite assoc. f_equal.
-        ext b. rewrite !bind_ret_l. rewrite app_nil_r. reflexivity.
+    monad.
+    monad. unfold bind_ListT_aux, liftA2, compose. rewrite ?bind_ap, assoc.
+      f_equal. destruct wut. (* TODO *)
 Defined.
-*)

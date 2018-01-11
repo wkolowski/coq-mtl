@@ -1,23 +1,24 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
+Require Import HSLib.Applicative.Applicative.
+Require Import HSLib.Alternative.Alternative.
 Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadPlus.MonadPlus.
 Require Import HSLib.MonadTrans.MonadTrans.
 
-Open Scope type_scope.
+Require Import HSLib.Instances.All.
+Require Import HSLib.MonadBind.MonadInst.
 
 Definition StateT (S : Type) (M : Type -> Type) (A : Type)
-  : Type := S -> M (A * S).
+  : Type := S -> M (A * S)%type.
 
 Definition fmap_StateT
   {M : Type -> Type} {inst : Monad M} {S A B : Type} (f : A -> B)
   : StateT S M A -> StateT S M B :=
     fun (x : StateT S M A) (s : S) =>
       x s >>= fun '(a, s') => ret (f a, s').
-(*
-    fmap (fun '(a, s) => (f a, s)) (x s).
-*)
 
 Instance Functor_StateT
   {M : Type -> Type} {inst : Monad M} {S : Type} : Functor (StateT S M) :=
@@ -56,20 +57,19 @@ Proof.
   all: cbn; unfold fmap_StateT, ret_StateT, ap_StateT; monad.
 Defined.
 
+Theorem StateT_not_Alternative :
+  (forall (S : Type) (M : Type -> Type) (inst : Monad M),
+    Alternative (StateT S M)) -> False.
+Proof.
+  intros. destruct (X unit Identity MonadIdentity).
+  clear -aempty. specialize (aempty False).
+  compute in aempty. apply aempty. exact tt.
+Qed.
+
 Definition bind_StateT
   {M : Type -> Type} {inst : Monad M} {S A B : Type}
   (x : StateT S M A) (f : A -> StateT S M B) : StateT S M B :=
     fun s : S => x s >>= (fun '(a, s') => f a s').
-
-Ltac st :=
-  cbn; intros; 
-repeat (monad; repeat match goal with
-    | |- ?x >>= _ = ?x => rewrite <- bind_ret_r
-    | |- ?x >>= _ = ?x >>= _ => f_equal
-    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
-    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
-    | H : _ * _ |- _ => destruct H
-end; monad).
 
 Instance Monad_StateT
   (S : Type) (M : Type -> Type) {inst : Monad M} : Monad (StateT S M) :=
@@ -80,6 +80,14 @@ Instance Monad_StateT
 Proof.
   all: cbn; unfold fmap_StateT, ret_StateT, ap_StateT, bind_StateT; monad.
 Defined.
+
+Theorem StateT_not_MonadPlus :
+  (forall (S : Type) (M : Type -> Type) (inst : Monad M),
+    MonadPlus (StateT S M)) -> False.
+Proof.
+  intros. apply StateT_not_Alternative.
+  intros. destruct (X S M inst). assumption.
+Qed.
 
 Definition lift_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)

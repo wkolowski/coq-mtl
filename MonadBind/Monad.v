@@ -26,7 +26,7 @@ Class Monad (M : Type -> Type) : Type :=
         fmap g (bind x f) = bind x (fun x0 : A => fmap g (f x0));
     bind_ap :
       forall (A B : Type) (mf : M (A -> B)) (mx : M A),
-        ap mf mx = bind mf (fun f => bind mx (fun x => ret (f x)));
+        mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x)));
 }.
 
 Coercion is_applicative : Monad >-> Applicative.
@@ -148,6 +148,17 @@ Theorem join_ret :
     join (ret x) = join (fmap ret x).
 Proof.
   unfold join. monad.
+Qed.
+
+Theorem fmap_join :
+  forall (A B C : Type) (f : A -> M B) (g : B -> C) (x : M A),
+    fmap g (join (fmap f x)) =
+    join (fmap (fun x : A => fmap g (f x)) x).
+Proof.
+  intros. unfold join. monad.
+Restart.
+  unfold join. intros.
+  rewrite fmap_bind, 2!bind_fmap. unfold compose, id. reflexivity.
 Qed.
 
 End DerivedLaws.

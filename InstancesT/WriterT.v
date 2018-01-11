@@ -1,21 +1,22 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
+Require Import HSLib.Applicative.Applicative.
+Require Import HSLib.Alternative.Alternative.
 Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadPlus.MonadPlus.
 Require Import HSLib.MonadTrans.MonadTrans.
 
-Require Export HSLib.Monoid.
-
-Open Scope type_scope.
+Require Import HSLib.Instances.All.
+Require Import HSLib.MonadBind.MonadInst.
 
 Definition WriterT (W : Monoid) (M : Type -> Type) (A : Type)
-  : Type := M (A * W).
+  : Type := M (A * W)%type.
 
 Definition fmap_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A B : Type} (f : A -> B)
   (x : WriterT W M A) : WriterT W M B :=
-(*    @bind M inst _ _ x (fun '(a, w) => ret (f a, w)).*)
     fmap (fun '(a, w) => (f a, w)) x.
 
 Instance Functor_WriterT
@@ -66,6 +67,18 @@ Hint Rewrite @id_left @id_right @op_assoc : monoid.
 
 Ltac monoid := autorewrite with monoid; try congruence.
 
+Theorem WriterT_not_Alternative :
+  (forall (W : Monoid) (M : Type -> Type) (inst : Monad M),
+    Alternative (WriterT W M)) -> False.
+Proof.
+  intros. assert (W : Monoid).
+    refine {| carr := unit; neutr := tt; op := fun _ _ => tt |}.
+      1-3: try destruct x; reflexivity.
+    destruct (X W Identity MonadIdentity).
+    clear -aempty. specialize (aempty False).
+    compute in aempty. destruct aempty. assumption.
+Qed.
+
 Definition bind_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A B : Type}
   (x : WriterT W M A) (f : A -> WriterT W M B) : WriterT W M B :=
@@ -84,6 +97,14 @@ Proof.
   unfold WriterT, fmap_WriterT, ret_WriterT, ap_WriterT, bind_WriterT;
   monad; monoid.
 Defined.
+
+Theorem WriterT_not_MonadPlus :
+  (forall (W : Monoid) (M : Type -> Type) (inst : Monad M),
+    MonadPlus (WriterT W M)) -> False.
+Proof.
+  intros. apply WriterT_not_Alternative.
+  intros. destruct (X W M inst). assumption.
+Qed.
 
 Definition lift_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)

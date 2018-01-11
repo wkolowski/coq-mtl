@@ -55,8 +55,8 @@ Instance MonadLazy : Monad Lazy :=
 }.
 Proof.
   all: try reflexivity.
-  cbn. intros. unfold compose, ret_Lazy, join_Lazy, fmap_Lazy.
-    ext la; ext u. destruct u. reflexivity.
+  all: compute; intros.
+    ext u. destruct u. reflexivity.
 Defined.
 
 Eval lazy in

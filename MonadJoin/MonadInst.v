@@ -20,11 +20,10 @@ Instance MonadOption : Monad option :=
     join := @join_Option
 }.
 Proof.
-  unfold compose; simpl; intros. extensionality opt.
-    destruct opt as [[[ssx |] |] |]; auto.
-  unfold compose; simpl; intros. extensionality opt.
-    destruct opt; auto.
-  destruct ma; reflexivity.
+  all: intros; repeat
+  match goal with
+      | x : option _ |- _ => destruct x
+  end; cbn; reflexivity.
 Defined.
 
 Instance MonadList : Monad list :=
@@ -33,17 +32,22 @@ Instance MonadList : Monad list :=
     join := @join_List
 }.
 Proof.
-  intro. extensionality lla. induction lla as [| h t];
+  induction x as [| h t];
   unfold compose in *; simpl in *.
     trivial.
     rewrite IHt. induction h; simpl.
       trivial.
       rewrite <- app_assoc. rewrite IHh. trivial.
-  intro. extensionality lla. induction lla as [| h t];
-  unfold compose in *; simpl in *.
-    trivial.
-    f_equal. rewrite <- IHt. trivial.
   cbn. apply app_nil_r.
+  induction x as [| h t]; cbn in *; rewrite ?IHt; reflexivity.
+  induction x as [| h t]; cbn in *.
+    reflexivity.
+    unfold fmap_List in *. rewrite map_app, IHt. reflexivity.
+  induction mf as [| hf tf]; cbn in *; intros.
+    reflexivity.
+    rewrite IHtf. unfold compose. f_equal. induction ma as [| ha ta]; cbn.
+      reflexivity.
+      rewrite IHta. reflexivity.
 Defined.
 
 Instance MonadSum (A : Type) : Monad (sum A) :=
@@ -52,11 +56,10 @@ Instance MonadSum (A : Type) : Monad (sum A) :=
     join := @join_Sum A
 }.
 Proof.
-  intro B. extensionality x.
-    destruct x as [a | [a | [a | b]]]; compute; trivial.
-  intro B. extensionality x.
-    destruct x as [a | b]; compute; trivial.
-  destruct ma; reflexivity.
+  all: intros; repeat
+  match goal with
+      | x : _ + _ |- _ => destruct x
+  end; reflexivity.
 Defined.
 
 Instance MonadReader (R : Type) : Monad (Reader R) :=
@@ -71,14 +74,7 @@ Instance MonadWriter (W : Monoid) : Monad (Writer W) :=
     is_applicative := ApplicativeWriter W;
     join := @join_Writer W
 }.
-Proof.
-  intros. simpl. unfold fmap_Writer, ret_Writer, join_Writer, id, compose.
-    extensionality wwwx. destruct wwwx as [[[x w] w'] w''].
-    rewrite op_assoc. trivial.
-  intros. simpl. unfold fmap_Writer, ret_Writer, join_Writer, id, compose.
-    extensionality wx. destruct wx as [x w]. rewrite id_left, id_right. auto.
-  intros. cbn. destruct ma. rewrite id_right. reflexivity.
-Defined.
+Proof. all: solveWriter. Defined.
 
 Instance MonadState (S : Type) : Monad (State S) :=
 {
@@ -86,13 +82,9 @@ Instance MonadState (S : Type) : Monad (State S) :=
     join := @join_State S
 }.
 Proof.
-  intros. extensionality s3x. extensionality s1.
-    simpl. unfold join_State, fmap_State, compose. destruct (s3x s1).
-    destruct (s s0). trivial.
-  intros. extensionality sx. extensionality s.
-    simpl. unfold ret_State, join_State, fmap_State, compose.
-    destruct (sx s). trivial.
-  reflexivity.
+  all: cbn; unfold join_State, fmap_State, ret_State, ap_State, compose;
+  intros; ext s; try destruct (x s); try reflexivity.
+    destruct (mf s), (ma s0). reflexivity.
 Defined.
 
 Instance MonadCont (R : Type) : Monad (Cont R) :=

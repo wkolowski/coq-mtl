@@ -1,10 +1,15 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
 Require Import HSLib.Applicative.Applicative.
+Require Import HSLib.Alternative.Alternative.
 Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadPlus.MonadPlus.
 Require Import HSLib.MonadTrans.MonadTrans.
+
+Require Import HSLib.Instances.All.
+Require Import HSLib.MonadBind.MonadInst.
 
 Definition SumT (E : Type) (M : Type -> Type) (A : Type)
   : Type := M (sum E A).
@@ -56,6 +61,15 @@ Proof.
   1-5: cbn; unfold SumT, fmap_SumT, ret_SumT, ap_SumT; monad.
 Defined.
 
+Theorem SumT_not_Alternative :
+  (forall (E : Type) (M : Type -> Type) (inst : Monad M),
+    Alternative (SumT E M)) -> False.
+Proof.
+  intros. destruct (X False Identity MonadIdentity).
+  clear -aempty. specialize (aempty False).
+  compute in aempty. destruct aempty; assumption.
+Qed.
+
 Definition bind_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
   (ma : SumT E M A) (f : A -> SumT E M B) : SumT E M B :=
@@ -74,6 +88,14 @@ Instance Monad_SumT
 Proof.
   all: cbn; unfold SumT, fmap_SumT, ret_SumT, ap_SumT, bind_SumT; monad.
 Defined.
+
+Theorem SumT_not_MonadPlus :
+  (forall (E : Type) (M : Type -> Type) (inst : Monad M),
+    MonadPlus (SumT E M)) -> False.
+Proof.
+  intros. apply SumT_not_Alternative.
+  intros. destruct (X E M inst). assumption.
+Qed.
 
 Definition lift_SumT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)

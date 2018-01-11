@@ -1,9 +1,15 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
+Require Import HSLib.Applicative.Applicative.
+Require Import HSLib.Alternative.Alternative.
 Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.MonadPlus.MonadPlus.
 Require Import HSLib.MonadTrans.MonadTrans.
+
+Require Import HSLib.Instances.All.
+Require Import HSLib.MonadBind.MonadInst.
 
 Definition ContT (R : Type) (M : Type -> Type) (A : Type)
   : Type := (A -> M R) -> M R.
@@ -38,6 +44,15 @@ Instance ApplicativeContT
 }.
 Proof. all: reflexivity. Defined.
 
+Theorem ContT_not_Alternative :
+  (forall (R : Type) (M : Type -> Type) (inst : Monad M),
+    Alternative (ContT R M)) -> False.
+Proof.
+  intros. destruct (X False Identity MonadIdentity).
+  clear -aempty. specialize (aempty False).
+  compute in aempty. apply aempty. trivial.
+Qed.
+
 Definition bind_ContT
   (R : Type) {M : Type -> Type} {inst : Monad M} {A B : Type}
   (x : ContT R M A) (f : A -> ContT R M B) : ContT R M B :=
@@ -50,6 +65,14 @@ Instance Monad_ContT (R : Type) (M : Type -> Type) {inst : Monad M}
     bind := @bind_ContT R M inst
 }.
 Proof. all: reflexivity. Defined.
+
+Theorem ContT_not_MonadPlus :
+  (forall (R : Type) (M : Type -> Type) (inst : Monad M),
+    MonadPlus (ContT R M)) -> False.
+Proof.
+  intros. apply ContT_not_Alternative.
+  intros. destruct (X R M inst). assumption.
+Qed.
 
 Definition lift_ContT
   (R : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)

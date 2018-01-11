@@ -56,7 +56,7 @@ Qed.
 
 Definition join_Writer
   {W : Monoid} {A : Type} (wwa : Writer W (Writer W A)) : Writer W A :=
-    let '((a, w), w') := wwa in (a, op w w').
+    let '((a, w'), w) := wwa in (a, op w w').
 
 Definition bind_Writer
   {W : Monoid} {A B : Type} (wa : Writer W A) (f : A -> Writer W B)

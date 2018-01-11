@@ -20,39 +20,28 @@ End Comp.
 
 Require Import HSLib.Applicative.Applicative.
 
-Axiom fmap_join :
-  forall (M : Type -> Type) (inst : Join.Monad M) (A B : Type) (f : A -> B)
-    (x : M (M A)),
-      fmap f (Join.join x) = Join.join (fmap (fmap f) x).
-
-Axiom fmap_pres_comp' :
-  forall (M : Type -> Type) (inst : Join.Monad M) (A B C : Type)
-  (f : A -> B) (g : B -> C) (x : M A),
-    fmap (fun x : A => g (f x)) x = fmap g (fmap f x).
-
 Instance JoinToBind (M : Type -> Type) (inst : Join.Monad M) : Bind.Monad M :=
 {
     is_applicative := @Join.is_applicative M inst;
-    bind := fun (A B : Type) (ma : M A) (f : A -> M B) =>
-      (fmap f .> Join.join) ma
+    bind := @Join.bind M inst
 }.
 Proof.
-  all: intros.
-    unfold compose. rewrite fmap_ret, Join.join_ret. reflexivity.
-    rewrite <- Join.ret_law. unfold compose. rewrite Join.join_ret.
-      reflexivity.
-    Focus 2. unfold compose. rewrite <- fmap_pres_comp'. reflexivity.
-Abort. (* TODO *)
+  apply Join.bind_ret_l.
+  apply Join.bind_ret_r.
+  apply Join.assoc.
+  apply Join.bind_fmap.
+  apply Join.fmap_bind.
+  intros. admit.
+Admitted.
 
 Instance BindToComp (M : Type -> Type) (inst : Bind.Monad M)
   : Comp.Monad M :=
 {
     is_applicative := @Bind.is_applicative M inst;
-    compM := fun (A B C : Type) (f : A -> M B) (g : B -> M C) =>
-        fun a : A => Bind.bind (f a) g
+    compM := @Bind.compM M inst
 }.
 Proof.
-  all: intros; try ext x.
+  all: unfold Bind.compM; intros; try ext x.
     rewrite Bind.assoc. reflexivity.
     apply Bind.bind_ret_l.
     apply Bind.bind_ret_r.
@@ -62,15 +51,15 @@ Instance BindToJoin (M : Type -> Type) (inst : Bind.Monad M)
   : Join.Monad M :=
 {
     is_applicative := @Bind.is_applicative M inst;
-    join := fun (A : Type) (x : M (M A)) =>
-        Bind.bind x id
+    join := @Bind.join M inst
 }.
 Proof.
-  all: intros; unfold compose; try ext x.
+  all: intros; unfold Bind.join, compose; try ext x.
     rewrite Bind.assoc, Bind.bind_fmap. unfold compose, id. reflexivity.
-    rewrite Bind.bind_ret_l, Bind.bind_fmap, id_right, Bind.bind_ret_r.
-      reflexivity.
     rewrite Bind.bind_ret_l. reflexivity.
+    rewrite Bind.bind_fmap, <- Bind.bind_ret_r. f_equal.
+    rewrite Bind.bind_fmap, Bind.fmap_bind. f_equal.
+    rewrite !Bind.bind_ap. Bind.monad.
 Defined.
 
 Axiom comp_id :

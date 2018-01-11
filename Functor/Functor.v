@@ -22,3 +22,18 @@ Definition void (ma : F A) : F unit :=
 End FunctorFuns.
 
 Arguments void [F] [inst] [A] _.
+
+Section DerivedLaws.
+
+Variables
+  (F : Type -> Type)
+  (inst : Functor F).
+
+Lemma fmap_pres_comp' :
+  forall (A B C : Type) (f : A -> B) (g : B -> C) (x : F A),
+    fmap (f .> g) x = fmap g (fmap f x).
+Proof.
+  intros. rewrite fmap_pres_comp. unfold compose. reflexivity.
+Qed.
+
+End DerivedLaws.
