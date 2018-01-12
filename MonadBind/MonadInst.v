@@ -1,12 +1,11 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import Logic.FunctionalExtensionality.
-
 Require Import HSLib.Base.
-
 Require Import HSLib.MonadBind.Monad.
 
 Require Import HSLib.Instances.All.
+
+Require Import HSLib.MonadClass.MonadState.
 
 Instance MonadIdentity : Monad Identity :=
 {
@@ -98,8 +97,6 @@ Proof.
       | x : ?S -> _ * ?S, s : ?S |- _ => destruct (x s)
   end; reflexivity.
 Defined.
-
-Require Import HSLib.MonadBind.MonadState.
 
 Instance MonadState_State
   (S : Type) : MonadState S (State S) (Monad_State S) :=

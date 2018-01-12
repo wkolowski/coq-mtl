@@ -29,10 +29,11 @@ Variables
   (inst : Monad M)
   (inst' : MonadState S M inst).
 
-Definition state {A : Type} (f : S -> prod A S) : M A :=
+Definition state {A : Type} (f : S -> (A * S)%type) : M A :=
   do
     s <- get;
-    let '(a, s') := f s in do
+    let '(a, s') := f s in
+    do
       put s';;
       ret a.
 
@@ -71,10 +72,11 @@ Proof.
         reflexivity.
 Qed.
 
-(*Lemma modify_get :
+Lemma modify_get :
   forall f : S -> S,
     modify f >> get = fmap f get.
 Proof.
-  intros. unfold modify, bind_. rewrite assoc.*)
+  intros. unfold modify, bind_. rewrite assoc.
+Abort.
 
 End MonadState_funs.

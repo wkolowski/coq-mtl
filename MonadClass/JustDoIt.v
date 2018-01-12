@@ -1,0 +1,356 @@
+Add Rec LoadPath "/home/zeimer/Code/Coq".
+
+Require Import HSLib.Base.
+Require Import HSLib.MonadBind.Monad.
+
+(** * Just do It: Simple Monadic Equational Reasoning *)
+
+(** ** 1. Introduction *)
+
+(** ** 2. Background *)
+
+(** ** 3. A counter example: Towers of Hanoi *)
+
+Set Universe Polymorphism.
+Set Implicit Arguments.
+
+Section S0.
+
+Variable M : Type -> Type.
+
+Variable inst : Monad M.
+
+Class MonadCount : Type :=
+{
+    tick : M unit;
+}.
+
+Definition skip : M unit := ret tt.
+
+Fixpoint hanoi {inst' : MonadCount} (n : nat) : M unit :=
+match n with
+    | 0 => skip
+    | S n' => hanoi n' >> tick >> hanoi n'
+end.
+
+Fixpoint rep (n : nat) (x : M unit) : M unit :=
+match n with
+    | 0 => skip
+    | S n' => x >> rep n' x
+end.
+
+Require Import Arith.
+
+Lemma bind__assoc :
+  forall (A B C : Type) (ma : M A) (mb : M B) (mc : M C),
+    (ma >> mb) >> mc = ma >> (mb >> mc).
+Proof.
+  intros. unfold bind_. rewrite assoc. reflexivity.
+Qed.
+
+Lemma rep_bind_ :
+  forall (x : M unit) (n m : nat),
+    rep (n + m) x = rep n x >> rep m x.
+Proof.
+  induction n as [| n']; cbn; intros.
+    unfold skip, bind_. rewrite bind_ret_l. reflexivity.
+    rewrite IHn'. rewrite bind__assoc. reflexivity.
+Qed.
+
+Lemma rep1 :
+  forall x : M unit, rep 1 x = x.
+Proof.
+  intros. cbn. unfold skip, bind_. rewrite <- bind_ret_r.
+  f_equal. ext u. destruct u. reflexivity.
+Qed.
+
+Require Import Nat.
+Require Import Omega.
+
+Theorem hanoi_rep :
+  forall (inst' : MonadCount) (n : nat),
+    hanoi n = rep (2 ^ n - 1) tick.
+Proof.
+  induction n as [| n']; cbn; try reflexivity.
+  rewrite IHn', bind__assoc. rewrite <- (rep1 tick) at 2.
+  rewrite <- !rep_bind_, <- plus_n_O, <- !pred_of_minus. f_equal.
+  induction n' as [| n'']; cbn.
+    reflexivity. erewrite (Nat.lt_succ_pred 0).
+      omega.
+      clear. induction n'' as [| n''']; cbn; abstract omega.
+Qed.
+
+(** ** 4. Nondeterministic computations *)
+
+(** *** 4.1 Failure *)
+
+Class MonadFail : Type :=
+{
+    fail : forall {A :  Type}, M A;
+    bind_fail_l :
+      forall (A B : Type) (mb : M B),
+        @fail A >> mb = @fail B;
+}.
+
+Definition guard {inst' : MonadFail} (b : bool) : M unit :=
+  if b then skip else fail.
+
+Definition assert
+  {inst' : MonadFail} {A : Type} (p : A -> bool) (ma : M A) : M A :=
+  do
+    a <- ma;
+    guard (p a);;
+    ret a.
+
+(** *** 4.2 Choice *)
+
+Class MonadAlt : Type :=
+{
+    choose : forall {A : Type}, M A -> M A -> M A;
+    choose_assoc :
+      forall {X : Type} (a b c : M X),
+        choose (choose a b) c = choose a (choose b c);
+    choose_bind :
+      forall (A B : Type) (x y : M A) (f : A -> M B),
+        choose x y >>= f = choose (x >>= f) (y >>= f);
+}.
+
+(** *** 4.3 Nondeterminism *)
+
+Class MonadNondet : Type :=
+{
+    instF :> MonadFail;
+    instA :> MonadAlt;
+    choose_fail_l :
+      forall (A : Type) (x : M A),
+        choose fail x = x;
+    choose_fail_r :
+      forall (A : Type) (x : M A),
+        choose x fail = x;
+}.
+
+Coercion instF : MonadNondet >-> MonadFail.
+Coercion instA : MonadNondet >-> MonadAlt.
+
+End S0.
+
+Require Import HSLib.Instances.All.
+Require Import HSLib.MonadBind.MonadInst.
+
+Instance MonadFail_List : MonadFail MonadList :=
+{
+    fail := @nil
+}.
+Proof.
+  compute. reflexivity.
+Defined.
+
+Instance MonadAlt_List : MonadAlt MonadList :=
+{
+    choose := @app;
+}.
+Proof.
+  all: intros.
+    rewrite app_assoc. reflexivity.
+    cbn. apply bind_List_app.
+Defined.
+
+Instance MonadNondet_List : MonadNondet MonadList :=
+{
+    instF := MonadFail_List;
+    instA := MonadAlt_List;
+}.
+Proof.
+  all: cbn; intros.
+    reflexivity.
+    rewrite app_nil_r. reflexivity.
+Defined.
+
+Arguments fail [M inst MonadFail A].
+Arguments choose [M inst MonadAlt A] _ _.
+
+Section S1.
+
+Variable M : Type -> Type.
+Variable inst : Monad M.
+
+Fixpoint select
+  {inst' : MonadNondet inst} {A : Type} (l : list A) : M (A * list A) :=
+match l with
+    | [] => fail
+    | x :: xs => 
+        choose (ret (x, xs)) $ do
+          p <- select xs;
+          let '(y, ys) := p in
+            ret (y, x :: ys)
+end.
+
+Fixpoint perms' (n : nat)
+  {inst' : MonadNondet inst} {A : Type} (l : list A) : M (list A) :=
+match n, l with
+    | 0, _ => fail
+    | _, [] => ret []
+    | S n', _ => do
+        p <- select l;
+        let '(h, t) := p in
+        rest <- perms' n' t;
+        ret (h :: rest)
+end.
+
+Definition perms 
+  {inst' : MonadNondet inst} {A : Type} (l : list A) : M (list A) :=
+    perms' (S (length l)) l.
+
+End S1.
+
+Compute select [1; 2; 3].
+
+Compute perms [1; 2; 3].
+
+(** ** 5. Exceptional computations *)
+
+Section S2.
+
+Variable M : Type -> Type.
+Variable inst : Monad M.
+
+Class MonadExcept
+  (inst' : MonadFail inst) : Type :=
+{
+    catch : forall {A : Type}, M A -> M A -> M A;
+    catch_fail_l :
+      forall (A : Type) (x : M A),
+        catch fail x = x;
+    catch_fail_r :
+      forall (A : Type) (x : M A),
+        catch x fail = x;
+    catch_assoc :
+      forall (A : Type) (x y z : M A),
+        catch (catch x y) z = catch x (catch y z);
+    catch_ret :
+      forall (A : Type) (x : A) (h : M A),
+        catch (ret x) h = ret x;
+(* TODO BEWARE: MY OWN LAWS BELOW THIS COMMENT *)
+    catch_ap_ret :
+      forall (A : Type) (f : A -> A) (x : M A) (h : M A),
+        catch (ret f <*> x) h = ret f <*> catch x h;
+}.
+
+Fixpoint product (l : list nat) : nat :=
+match l with
+    | [] => 0
+    | h :: t => h * product t
+end.
+
+Lemma product_In_0 :
+  forall l : list nat,
+    In 0 l -> product l = 0.
+Proof.
+  induction l as [| h t]; cbn; destruct 1; subst.
+    reflexivity.
+    rewrite IHt; auto.
+Qed.
+
+Fixpoint has (n : nat) (l : list nat) : bool :=
+match l with
+    | [] => false
+    | h :: t => beq_nat n h || has n t
+end.
+
+Lemma product_has_0 :
+  forall l : list nat,
+    has 0 l = true -> product l = 0.
+Proof.
+  induction l as [| h t]; cbn; intros.
+    reflexivity.
+    destruct h as [| h'].
+      reflexivity.
+      rewrite IHt; auto.
+Qed.
+
+Definition work
+  {inst' : MonadFail inst} (l : list nat) : M nat :=
+    if has 0 l then fail else ret (product l).
+
+Lemma work_S :
+  forall (inst' : MonadFail inst) (h : nat) (t : list nat),
+    work (S h :: t) = mul <$> ret (S h) <*> work t.
+Proof.
+  unfold work; intros. cbn. case_eq (has 0 t); intros.
+    rewrite bind_ap.
+Abort.
+
+Definition fastprod
+  {inst' : MonadFail inst} {inst'' : MonadExcept inst'}
+    (l : list nat) : M nat := catch (work l) (ret 0).
+
+Theorem fastprod_spec :
+  forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
+    fastprod l = ret (product l).
+Proof.
+  unfold fastprod, work; intros.
+  case_eq (has 0 l); intros.
+    rewrite catch_fail_l, product_has_0; auto.
+    rewrite catch_ret. reflexivity.
+Qed.
+
+Fixpoint fastprod'_aux
+  {inst' : MonadFail inst} (l : list nat) : M nat :=
+match l with
+    | [] => ret 0
+    | h :: t =>
+        if beq_nat 0 h then fail else mult <$> (ret h) <*> fastprod'_aux t
+end.
+
+Goal
+  forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
+    fastprod'_aux l = work l.
+Proof.
+  induction l as [| h t].
+    cbn. reflexivity.
+    destruct h as [| h'].
+      cbn. reflexivity.
+      cbn. rewrite IHt.
+Abort.
+
+Definition fastprod'
+  {inst' : MonadFail inst} {inst'' : MonadExcept inst'}
+    (l : list nat) : M nat := catch (fastprod'_aux l) (ret 0).
+
+Theorem fastprod'_spec :
+  forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
+    fastprod' l = ret (product l).
+Proof.
+  unfold fastprod'.
+  induction l as [| h t]; cbn in *.
+    rewrite catch_ret. reflexivity.
+    destruct h as [| h'].
+      cbn. rewrite catch_fail_l. reflexivity.
+      rewrite <- (@homomorphism M inst _ _ (mul (S h')) (product t)), <- IHt.
+        applicative. rewrite catch_ap_ret. reflexivity.
+Qed.
+
+End S2.
+
+(** ** 6. Stateful computations *)
+
+Arguments skip [M inst].
+
+Class MonadState
+  (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
+{
+    get : M S;
+    put : S -> M unit;
+    put_put :
+      forall s s' : S,
+        put s >> put s' = put s';
+    put_get :
+      forall s : S,
+        put s >> get = put s >> ret s;
+    get_put :
+      get >>= put = skip;
+    get_get :
+      forall (A : Type) (f : S -> S -> M A),
+        get >>= (fun s : S => get >>= f s) =
+        get >>= (fun s : S => f s s);
+}.

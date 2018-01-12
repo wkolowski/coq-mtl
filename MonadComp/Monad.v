@@ -4,16 +4,19 @@ Require Import HSLib.Base.
 Require Export HSLib.Functor.Functor.
 Require Export HSLib.Applicative.Applicative.
 
-(* Definition of monad using ret and monadic composition. *)
+(* Definition of monad using monadic composition. *)
 Class Monad (M : Type -> Type) : Type :=
 {
     is_applicative :> Applicative M;
     compM : forall {A B C : Type}, (A -> M B) -> (B -> M C) -> (A -> M C);
-    compM_assoc : forall (A B C D : Type) (f : A -> M B) (g : B -> M C)
+    compM_assoc :
+      forall (A B C D : Type) (f : A -> M B) (g : B -> M C)
         (h : C -> M D), compM f (compM g h) = compM (compM f g) h;
-    id_left : forall (B C : Type) (g : B -> M C),
+    id_left :
+      forall (B C : Type) (g : B -> M C),
         compM ret g = g;
-    id_right : forall (A B : Type) (f : A -> M B),
+    id_right :
+      forall (A B : Type) (f : A -> M B),
         compM f ret = f;
 }.
 

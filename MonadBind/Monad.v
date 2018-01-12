@@ -4,7 +4,7 @@ Require Import HSLib.Base.
 Require Export HSLib.Functor.Functor.
 Require Export HSLib.Applicative.Applicative.
 
-(* Definition of monad using ret and bind. *)
+(* Definition of monad using bind (monadic application). *)
 Class Monad (M : Type -> Type) : Type :=
 {
     is_applicative :> Applicative M;
