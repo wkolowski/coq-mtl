@@ -354,3 +354,89 @@ Class MonadState
         get >>= (fun s : S => get >>= f s) =
         get >>= (fun s : S => f s s);
 }.
+
+(** ** 7. Combining effects *)
+
+Class MonadStateNondet
+  (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
+{
+    instS :> MonadState S inst;
+    instN :> MonadNondet inst;
+    seq_fail_r :
+      forall (A B : Type) (x : M A),
+        x >> fail = @fail M inst instN B;
+    bind_choose_distr :
+      forall (A B : Type) (f g : A -> M B) (ma : M A),
+        ma >>= (fun x : A => choose (f x) (g x)) =
+        choose (ma >>= f) (ma >>= g)
+}.
+
+Section S3.
+
+Variable M : Type -> Type.
+Variable inst : Monad M.
+
+Lemma guard_seq_bind :
+  forall (S : Type) (inst' : MonadStateNondet S inst) (A : Type)
+  (b : bool) (ma : M A),
+    guard b >> ma = ma >>= fun a : A => guard b >> ret a.
+Proof.
+  intros. unfold guard. destruct b.
+    unfold skip, bind_. monad.
+    rewrite bind_fail_l. rewrite <- (seq_fail_r _ _ ma).
+      unfold bind_. f_equal. ext a.
+      assert (H := bind_fail_l). unfold bind_ in H. rewrite H. reflexivity.
+Qed.
+
+End S3.
+
+(** ** 8. Probabilistic computations *)
+
+Section S4.
+
+Axiom (Prob : Type).
+Axiom p0 : Prob.
+Axiom p1 : Prob.
+Axiom neg : Prob -> Prob.
+Axiom mul : Prob -> Prob -> Prob.
+
+Class MonadProb_no_laws
+  (M : Type -> Type) (inst : Monad M) : Type :=
+{
+    choice : forall {A : Type}, Prob -> M A -> M A -> M A;
+}.
+
+Notation "x <| p |> y" := (choice p x y)
+  (left associativity, at level 5).
+
+Class MonadProb
+  (M : Type -> Type) (inst : Monad M) : Type :=
+{
+    instP :> MonadProb_no_laws inst;
+    choice_p0 :
+      forall (A : Type) (x y : M A),
+        x <| p0 |> y = x;
+    choice_p1 :
+      forall (A : Type) (x y : M A),
+        x <| p1 |> y = y;
+    choice_qcomm :
+      forall (A : Type) (x y : M A) (p : Prob),
+        x <| p |> y = y <| neg p |> x;
+    choice_idempotent :
+      forall (A : Type) (x : M A) (p : Prob),
+        x <| p |> x = x;
+    choice_qassoc :
+      forall (A : Type) (x y z : M A) (p q r s : Prob),
+        p = mul r s -> neg s = mul (neg p) (neg q) ->
+          x <| p |> (y <| q |> z) =
+          (x <| r |> y) <| s |> z;
+    bind_choice :
+      forall (A B : Type) (p : Prob) (x y : M A) (f : A -> M B),
+        (x <| p |> y) >>= f = (x >>= f) <| p |> (y >>= f);
+    choice_bind :
+      forall (A B : Type) (p : Prob) (ma : M A) (f g : A -> M B),
+        ma >>= (fun x : A => (f x) <| p |> (g x)) =
+        (ma >>= f) <| p |> (ma >>= g)
+      
+}.
+

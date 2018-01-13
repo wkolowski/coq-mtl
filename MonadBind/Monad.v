@@ -74,6 +74,7 @@ Ltac monad :=
 repeat (monad'; repeat match goal with
     | H : _ * _ |- _ => destruct H
     | |- ?x >>= _ = ?x => rewrite <- bind_ret_r
+    | |- ?x = ?x >>= _ => rewrite <- bind_ret_r at 1 (* BEWARE *)
     | |- ?x >>= _ = ?x >>= _ => f_equal
     | |- (fun _ => _) = _ => let x := fresh "x" in ext x
     | |- _ = (fun _ => _) => let x := fresh "x" in ext x
