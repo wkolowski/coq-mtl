@@ -162,4 +162,37 @@ Restart.
   rewrite fmap_bind, 2!bind_fmap. unfold compose, id. reflexivity.
 Qed.
 
+Lemma compM_comp :
+  forall (A B C : Type) (f : A -> B) (g : B -> M C),
+    (f .> ret) >=> g = f .> g.
+Proof.
+  intros. unfold compM, compose. monad.
+Qed.
+
+Lemma compM_fmap :
+  forall (A B C : Type) (f : A -> M B) (g : B -> C),
+    f >=> (g .> ret) = f .> fmap g.
+Proof.
+  intros. unfold compM, compose. monad.
+Qed.
+
+(* TODO
+Print compM.
+
+Lemma compM_fmap__ :
+  forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
+    ((fun _ : unit => fmap f x) >=> g) tt =
+    ((fun _ : unit => x) >=> (f .> g)) tt.
+Proof.
+  intros. unfold compM. monad.
+
+
+    fmap_bind :
+      forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
+        fmap g (bind x f) = bind x (fun x0 : A => fmap g (f x0));
+    bind_ap :
+      forall (A B : Type) (mf : M (A -> B)) (mx : M A),
+        mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x)));
+
+*)
 End DerivedLaws.

@@ -43,7 +43,22 @@ Definition ret_isMonoidal
 Definition ap_isMonoidal
   {F : Type -> Type} {inst : isMonoidal F} {A B : Type}
   (f : F (A -> B)) (a : F A) : F B :=
-    fmap (fun '(f, a) => f a) (pairF f a).
+    (*fmap (fun '(f, a) => f a) (pairF f a).*)
+    fmap (fun p => apply (fst p) (snd p)) (pairF f a).
+
+Hint Rewrite @fmap_pres_id @fmap_pres_comp @fmap_pres_comp' : functor.
+
+Ltac functor :=
+  repeat (cbn; unfold id, compose, par; intros;
+       autorewrite with functor; try congruence); fail.
+
+Ltac aux :=
+    match goal with
+        | |- context [pairF (fmap _ _) ?x] =>
+            replace x with (fmap id x) by functor;
+            rewrite <- ?natural, <- ?fmap_pres_comp';
+            unfold id, compose, par
+    end.
 
 Instance isMonoidal_Applicative (F : Type -> Type) (inst : isMonoidal F)
   : Applicative F :=
@@ -54,5 +69,90 @@ Instance isMonoidal_Applicative (F : Type -> Type) (inst : isMonoidal F)
 }.
 Proof.
   all: unfold ret_isMonoidal, ap_isMonoidal; intros.
-    rewrite <- pairF_default_l, <- pairF_default_r.
+  
+(*
+    aux.
+    replace
+      (fun x : unit * A =>
+       let '(f, a) := let '(_, b) := x in (fun x0 : A => x0, b) in f a)
+    with (@snd unit A).
+      Focus 2. ext p. destruct p. cbn. reflexivity.
+      rewrite pairF_default_l. rewrite fmap_pres_id. reflexivity.
+    Focus 4. aux.
+      replace
+    (fun x0 : unit * A => let '(f0, a) := let '(_, b) := x0 in (f, b) in f0 a)
+      with (@snd unit A .> f).
+      Focus 2. unfold compose. ext p. destruct p. cbn. reflexivity.
+      rewrite fmap_pres_comp'. rewrite pairF_default_l. reflexivity.
+    Focus 3. aux.
+        replace
+          (fun x0 : (A -> B) * unit =>
+           let '(f0, a) := let '(a, _) := x0 in (a, x) in f0 a)
+        with
+          (@fst (A -> B) unit .> flip apply x).
+          Focus 2. ext p. destruct p. cbn. reflexivity.
+        replace
+          (fun x0 : unit * (A -> B) => let '(f0, a) :=
+           let '(_, b) := x0 in (fun f0 : A -> B => f0 x, b) in f0 a)
+        with
+          (@snd unit (A -> B) .> flip apply x).
+          Focus 2. ext p. destruct p. cbn. reflexivity.
+        rewrite !fmap_pres_comp'. rewrite pairF_default_l, pairF_default_r.
+          reflexivity.
+    Focus 2. aux.
+      replace
+      (fun x0 : unit * A =>
+       let '(f0, a) := let '(_, b) := x0 in (f, b) in f0 a)
+      with
+      (@snd unit A .> f).
+        Focus 2. ext p. destruct p. cbn. reflexivity.
+        rewrite fmap_pres_comp'. rewrite pairF_default_l.
+          rewrite <- fmap_pres_comp'. unfold compose. reflexivity.
+    aux. aux. repeat aux. *) (*
+    replace
+    (fun x : ((A -> B) -> A -> C) * (A -> B) * A =>
+     let '(f, a) := let '(a, b) := x in (let '(f, a0) := a in f a0, b) in f a)
+    with
+    (fun x : ((A -> B) -> A -> C) * (A -> B) * A =>
+     let '(f, a) := (fst (fst x) (snd (fst x)), snd x) in f a).
+    
+      Focus 2. ext p. do 2 destruct p. cbn. reflexivity.*)
+  Check natural.
+    match goal with
+        | |- context [pairF (fmap ?f ?a) ?x] =>
+            replace x with (fmap id x) by functor;
+            rewrite <- ?(natural _ _ _ _ f id a x), <- ?fmap_pres_comp'
+    end.
+    rewrite fmap_pres_comp.
 Abort.
+
+Definition default_Applicative
+  {F : Type -> Type} {inst : Applicative F} : F unit := ret tt.
+
+Definition pairF_Applicative
+  {F : Type -> Type} {inst : Applicative F} {A B : Type}
+  (x : F A) (y : F B) : F (A * B)%type := pair <$> x <*> y.
+
+Hint Rewrite @identity @interchange @homomorphism @fmap_ret_ap
+  : applicative_laws2.
+Hint Rewrite <- @composition
+  : applicative_laws2.
+
+Ltac applicative2 :=
+  intros; autorewrite with applicative_laws2; try congruence.
+
+Instance Applicative_isMonoidal
+  (F : Type -> Type) (inst : Applicative F) : isMonoidal F :=
+{
+    isMonoidal_functor := inst;
+    default := default_Applicative;
+    pairF := @pairF_Applicative F inst;
+}.
+Proof.
+  all: unfold default_Applicative, pairF_Applicative; applicative.
+    applicative2.
+    applicative2.
+    Focus 2. applicative2. unfold compose, par. reflexivity.
+    repeat (rewrite <- composition, homomorphism). applicative2.
+      unfold compose. reflexivity.
+Defined.

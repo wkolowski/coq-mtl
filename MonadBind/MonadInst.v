@@ -112,3 +112,13 @@ Instance MonadCont (R : Type) : Monad (Cont R) :=
     bind := @bind_Cont R
 }.
 Proof. all: reflexivity. Defined.
+
+Require Import Arith.
+
+Definition wut {R : Type} (b : bool) : Cont R nat :=
+  do
+    callCC (fun k =>
+      when (b) (k 42);;
+      ret 123).
+
+Compute @wut False false.

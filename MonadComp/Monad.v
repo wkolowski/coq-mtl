@@ -12,10 +12,10 @@ Class Monad (M : Type -> Type) : Type :=
     compM_assoc :
       forall (A B C D : Type) (f : A -> M B) (g : B -> M C)
         (h : C -> M D), compM f (compM g h) = compM (compM f g) h;
-    id_left :
+    compM_ret_l :
       forall (B C : Type) (g : B -> M C),
         compM ret g = g;
-    id_right :
+    compM_ret_r :
       forall (A B : Type) (f : A -> M B),
         compM f ret = f;
 }.
@@ -71,10 +71,12 @@ Variables
   (M : Type -> Type)
   (inst : Monad M).
 
+Print bind.
+
 (* Basic identities for compM version. *)
 Theorem compM_join :
   forall (A B C : Type) (f : A -> M B) (g : B -> M C),
-      f >=> g = f .> fmap g .> join.
+    f >=> g = f .> fmap g .> join.
 Proof.
   intros. unfold compose. extensionality x.
 Abort. (* TODO *)
@@ -102,8 +104,8 @@ Theorem ret_bind :
 Proof.
   intros. unfold bind.
   assert (((fun _ : unit => ret x) >=> f) tt = (ret >=> f) x).
-    Focus 2. rewrite H. rewrite id_left. reflexivity.
-    unfold ret, compM. destruct inst.
+    Focus 2. rewrite H. rewrite compM_ret_l. reflexivity.
+    unfold ret, compM. destruct inst, is_applicative.
 Admitted. (* TODO *)
 
 Theorem join_law :

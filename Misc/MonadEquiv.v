@@ -62,15 +62,33 @@ Proof.
     rewrite !Bind.bind_ap. Bind.monad.
 Defined.
 
+Section Axioms.
+
+Variable M : Type -> Type.
+Variable inst : Comp.Monad M.
+
+Axiom compM_comp :
+  forall (A B C : Type) (f : A -> B) (g : B -> M C),
+    Comp.compM (f .> ret) g = f .> g.
+
+Axiom compM_comp' :
+  forall (A B C : Type) (f : A -> B) (g : B -> M C) (x : A),
+    Comp.compM (f .> ret) g x = g (f x).
+
+Axiom compM_fmap :
+  forall (A B C : Type) (f : A -> M B) (g : B -> C),
+    Comp.compM f (g .> ret) = f .> fmap g.
+
+(* old *)
 Axiom comp_id :
-  forall (M : Type -> Type) (inst : Comp.Monad M) (A B : Type) (f : A -> M B)
-  (x : A),
+  forall (A B : Type) (f : A -> M B) (x : A),
     Comp.compM id f (ret x) = f x.
 
 Axiom comp_const :
-  forall (M : Type -> Type) (inst : Comp.Monad M) (A B C : Type)
-  (f : B -> M C) (x : A) (mb : M B),
+  forall (A B C : Type) (f : B -> M C) (x : A) (mb : M B),
     Comp.compM (fun _ => mb) f x = Comp.bind mb f.
+
+End Axioms.
 
 Instance CompToBind (M : Type -> Type) (inst : Comp.Monad M)
   : Bind.Monad M :=
@@ -81,6 +99,7 @@ Instance CompToBind (M : Type -> Type) (inst : Comp.Monad M)
 }.
 Proof.
   all: intros.
-    Focus 2. rewrite Comp.id_right. reflexivity.
-    Focus 2. rewrite comp_const.
+    apply compM_comp'.
+    rewrite Comp.compM_ret_r. reflexivity.
+    Focus 2. Print Comp.bind. rewrite ?comp_const.
 Abort. (* TODO *)

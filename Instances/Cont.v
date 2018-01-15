@@ -50,3 +50,7 @@ Proof.
   unfold Cont. intro. destruct (X False).
   apply aempty with False. trivial.
 Qed.
+
+Definition callCC
+  {R A B : Type} (f : (A -> Cont R B) -> Cont R A) : Cont R A :=
+    fun ar : A -> R => f (fun (a : A) (_ : B -> R) => ar a) ar.
