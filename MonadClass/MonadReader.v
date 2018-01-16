@@ -10,7 +10,7 @@ Class MonadReader
     local : (R -> R) -> M R -> M R;
 }.
 
-Section MonadState_funs.
+Section MonadReader_funs.
 
 Variables
   (R : Type)
@@ -23,3 +23,5 @@ Definition asks {A : Type} (f : R -> A) : M A :=
   do
     r <- ask;
     ret $ f r.
+
+End MonadReader_funs.

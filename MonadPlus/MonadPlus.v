@@ -26,16 +26,9 @@ Variables A B C : Type.
 Definition mfilter (f : A -> bool) (ma : M A) : M A :=
   ma >>= fun a : A => if f a then ret a else aempty.
 
-(*Fixpoint msum (lma : list (M A)) : M A :=
-match lma with
-    | [] => aempty
-    | h :: t => aplus h (msum t)
-end.*)
-
 End MonadPlusFuns.
 
 Arguments mfilter [M] [inst] [A] _ _.
-(*Arguments msum [M] [inst] [A] _.*)
 
 Instance MonadPlusOption : MonadPlus option :=
 {
@@ -66,8 +59,6 @@ Compute do
 
 Eval compute in mfilter (fun _ => true) (I 1 10).
 Eval compute in mfilter (fun _ => false) (Some 42).
-
-(*Eval compute in asum [[2; 42]; [4; 44]].*)
 
 Compute zipWithA
   (fun _ _ => [true; false]) [1; 2; 3] [4; 5; 6; 7].

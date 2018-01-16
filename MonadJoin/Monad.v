@@ -138,7 +138,7 @@ Qed.
 
 Lemma bind_ap :
   forall (A B : Type) (mf : M (A -> B)) (mx : M A),
-    ap mf mx = bind mf (fun f => bind mx (fun x => ret (f x))).
+    mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x))).
 Proof.
   intros. unfold bind, compose. rewrite join_ap. applicative.
   unfold compose. reflexivity.

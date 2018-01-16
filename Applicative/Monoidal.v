@@ -6,10 +6,38 @@ Require Import HSLib.Functor.Functor.
 (* An altenrative characterization of applicative functors as lax monoidal
    functors. *)
 
-Definition par {A A' B B' : Type} (f : A -> A') (g : B -> B')
-  : A * B -> A' * B' := fun '(a, b) => (f a, g b).
+Lemma id_eq :
+  forall (A : Type) (x : A), id x = x.
+Proof. reflexivity. Qed.
+
+Definition par {A A' B B' : Type} (f : A -> B) (g : A' -> B')
+  : A * A' -> B * B' := fun '(a, b) => (f a, g b).
 
 Notation "f *** g" := (par f g) (at level 40).
+
+Lemma par_id :
+  forall (A B : Type), @id A *** @id B = id.
+Proof.
+  intros. unfold par, id. ext p. destruct p. reflexivity.
+Qed.
+
+Lemma par_comp :
+  forall (A B C A' B' C' : Type)
+  (f1 : A -> B) (f2 : B -> C) (g1 : A' -> B') (g2 : B' -> C'),
+    (f1 *** g1) .> (f2 *** g2) = (f1 .> f2) *** (g1 .> g2).
+Proof.
+  intros. unfold compose, par. ext p. destruct p. reflexivity.
+Qed.
+
+Lemma par_wut :
+  forall (A B A' B' X : Type) (f : A -> B) (g : A' -> B') (h : B * B' -> X),
+    (f *** g) .> h = fun p : A * A' => h (f (fst p), g (snd p)).
+Proof.
+  intros. unfold compose, par. ext p. destruct p. cbn. reflexivity.
+Qed.
+
+Definition reassoc {A B C : Type} : (A * B) * C -> A * (B * C) :=
+  fun '((a, b), c) => (a, (b, c)).
 
 Class isMonoidal (F : Type -> Type) : Type :=
 {
@@ -24,7 +52,7 @@ Class isMonoidal (F : Type -> Type) : Type :=
         fmap fst (pairF v default) = v;
     pairF_assoc :
       forall (A B C : Type) (a : F A) (b : F B) (c : F C),
-        fmap (fun '((a, b), c) => (a, (b, c))) (pairF (pairF a b) c) =
+        fmap reassoc (pairF (pairF a b) c) =
         pairF a (pairF b c);
     natural :
       forall (A A' B B' : Type) (f : A -> A') (g : B -> B')
@@ -43,7 +71,6 @@ Definition ret_isMonoidal
 Definition ap_isMonoidal
   {F : Type -> Type} {inst : isMonoidal F} {A B : Type}
   (f : F (A -> B)) (a : F A) : F B :=
-    (*fmap (fun '(f, a) => f a) (pairF f a).*)
     fmap (fun p => apply (fst p) (snd p)) (pairF f a).
 
 Hint Rewrite @fmap_pres_id @fmap_pres_comp @fmap_pres_comp' : functor.
@@ -52,13 +79,33 @@ Ltac functor :=
   repeat (cbn; unfold id, compose, par; intros;
        autorewrite with functor; try congruence); fail.
 
-Ltac aux :=
-    match goal with
-        | |- context [pairF (fmap _ _) ?x] =>
+Lemma wutzor_snd :
+  forall {W A B C : Type} (f : B -> C) (g : A -> B),
+    ((fun _ : W => f) *** g) .>
+    (fun p : (B -> C) * B => apply (fst p) (snd p)) = snd .> g .> f.
+Proof.
+  intros. unfold compose, par. ext x. destruct x. cbn. reflexivity.
+Qed.
+
+Ltac woed := repeat (
+multimatch goal with
+    | |- ?x =?x => reflexivity
+    | |- context [fmap snd (pairF _ _)] => rewrite pairF_default_l
+    | |- context [fmap fst (pairF _ _)] => rewrite pairF_default_r
+    | |- context [fmap id _] => rewrite !fmap_pres_id
+    | |- context [id _] => rewrite !id_eq
+    | |- context [id .> _] => rewrite !id_left
+    | |- context [_ .> id] => rewrite !id_right
+    | |- context [fmap (fst .> _)] => rewrite !fmap_pres_comp'
+    | |- context [fmap (snd .> _)] => rewrite !fmap_pres_comp'
+    | _ => rewrite ?wutzor_snd
+    | |- context [pairF (fmap ?f ?a) ?x] =>
+          replace x with (fmap id x) by functor;
+          rewrite <- ?natural, <- ?fmap_pres_comp', ?fmap_pres_id
+    | |- context [pairF ?x (fmap ?f ?a)] =>
             replace x with (fmap id x) by functor;
-            rewrite <- ?natural, <- ?fmap_pres_comp';
-            unfold id, compose, par
-    end.
+            rewrite <- ?natural, <- ?fmap_pres_comp', ?fmap_pres_id
+end).
 
 Instance isMonoidal_Applicative (F : Type -> Type) (inst : isMonoidal F)
   : Applicative F :=
@@ -69,62 +116,17 @@ Instance isMonoidal_Applicative (F : Type -> Type) (inst : isMonoidal F)
 }.
 Proof.
   all: unfold ret_isMonoidal, ap_isMonoidal; intros.
-  
-(*
-    aux.
-    replace
-      (fun x : unit * A =>
-       let '(f, a) := let '(_, b) := x in (fun x0 : A => x0, b) in f a)
-    with (@snd unit A).
-      Focus 2. ext p. destruct p. cbn. reflexivity.
-      rewrite pairF_default_l. rewrite fmap_pres_id. reflexivity.
-    Focus 4. aux.
-      replace
-    (fun x0 : unit * A => let '(f0, a) := let '(_, b) := x0 in (f, b) in f0 a)
-      with (@snd unit A .> f).
-      Focus 2. unfold compose. ext p. destruct p. cbn. reflexivity.
-      rewrite fmap_pres_comp'. rewrite pairF_default_l. reflexivity.
-    Focus 3. aux.
-        replace
-          (fun x0 : (A -> B) * unit =>
-           let '(f0, a) := let '(a, _) := x0 in (a, x) in f0 a)
-        with
-          (@fst (A -> B) unit .> flip apply x).
-          Focus 2. ext p. destruct p. cbn. reflexivity.
-        replace
-          (fun x0 : unit * (A -> B) => let '(f0, a) :=
-           let '(_, b) := x0 in (fun f0 : A -> B => f0 x, b) in f0 a)
-        with
-          (@snd unit (A -> B) .> flip apply x).
-          Focus 2. ext p. destruct p. cbn. reflexivity.
-        rewrite !fmap_pres_comp'. rewrite pairF_default_l, pairF_default_r.
-          reflexivity.
-    Focus 2. aux.
-      replace
-      (fun x0 : unit * A =>
-       let '(f0, a) := let '(_, b) := x0 in (f, b) in f0 a)
-      with
-      (@snd unit A .> f).
+    woed.
+    woed. rewrite !par_wut. cbn. unfold apply. admit.
+    woed. rewrite <- fmap_pres_comp'. unfold compose. reflexivity.
+    woed.
+      rewrite <- fmap_pres_comp', par_wut. cbn.
+      replace (fun p : (A -> B) * unit => id (fst p) x)
+      with (@fst (A -> B) unit .> flip apply x).
         Focus 2. ext p. destruct p. cbn. reflexivity.
-        rewrite fmap_pres_comp'. rewrite pairF_default_l.
-          rewrite <- fmap_pres_comp'. unfold compose. reflexivity.
-    aux. aux. repeat aux. *) (*
-    replace
-    (fun x : ((A -> B) -> A -> C) * (A -> B) * A =>
-     let '(f, a) := let '(a, b) := x in (let '(f, a0) := a in f a0, b) in f a)
-    with
-    (fun x : ((A -> B) -> A -> C) * (A -> B) * A =>
-     let '(f, a) := (fst (fst x) (snd (fst x)), snd x) in f a).
-    
-      Focus 2. ext p. do 2 destruct p. cbn. reflexivity.*)
-  Check natural.
-    match goal with
-        | |- context [pairF (fmap ?f ?a) ?x] =>
-            replace x with (fmap id x) by functor;
-            rewrite <- ?(natural _ _ _ _ f id a x), <- ?fmap_pres_comp'
-    end.
-    rewrite fmap_pres_comp.
-Abort.
+        woed. unfold flip, apply, id, compose. reflexivity.
+    woed.
+Admitted.
 
 Definition default_Applicative
   {F : Type -> Type} {inst : Applicative F} : F unit := ret tt.
@@ -152,7 +154,7 @@ Proof.
   all: unfold default_Applicative, pairF_Applicative; applicative.
     applicative2.
     applicative2.
-    Focus 2. applicative2. unfold compose, par. reflexivity.
     repeat (rewrite <- composition, homomorphism). applicative2.
       unfold compose. reflexivity.
+    applicative2. unfold compose, par. reflexivity.
 Defined.

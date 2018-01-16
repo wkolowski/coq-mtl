@@ -80,10 +80,5 @@ Definition callCC
 Proof.
   unfold Cont in *. intros R y. apply f.
     Focus 2. trivial.
-    intros a B Q z. apply z. apply f.  
-
-Goal False.
-Proof.
-  apply (@callCC False False).
-    Focus 2. trivial.
-    unfold Cont. intros. apply X.
+    intros a B Q z. apply z. apply f.
+Abort.

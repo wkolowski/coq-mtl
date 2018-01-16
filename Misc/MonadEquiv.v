@@ -31,8 +31,8 @@ Proof.
   apply Join.assoc.
   apply Join.bind_fmap.
   apply Join.fmap_bind.
-  intros. admit.
-Admitted.
+  apply Join.bind_ap.
+Defined.
 
 Instance BindToComp (M : Type -> Type) (inst : Bind.Monad M)
   : Comp.Monad M :=
