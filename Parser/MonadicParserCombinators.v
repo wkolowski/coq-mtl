@@ -168,6 +168,13 @@ bind_Parser ma (fun x : A => bind_Parser (f x) g).
     abstract (parser'; induction (x x0); cbn; try reflexivity;
     destruct a; cbn in *; rewrite map_app, <- IHl; reflexivity).
   Qed.
+  Lemma new_m45 :
+    forall (A B : Type) (f : A -> B) (x : Parser A),
+      fmap f x = bind_Parser x (fun a : A => ret (f a)).
+  Proof.
+    abstract (parser'; induction (x x0); try (destruct a; cbn; rewrite IHl);
+    reflexivity).
+  Qed.
   Lemma m6 :
   forall (A B : Type) (mf : Parser (A -> B)) (mx : Parser A),
     mf <*> mx =
@@ -176,8 +183,7 @@ bind_Parser ma (fun x : A => bind_Parser (f x) g).
   apply m1.
   apply m2.
   apply m3.
-  apply m4.
-  apply m5.
+  apply new_m45.
   apply m6.
 Defined.
 

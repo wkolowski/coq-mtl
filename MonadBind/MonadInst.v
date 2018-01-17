@@ -46,13 +46,9 @@ Proof.
   induction ma as [| h t]; cbn; intros.
     trivial.
     rewrite bind_List_app, <- IHt. trivial.
-  trivial.
   induction x as [| h t]; cbn; intros.
     reflexivity.
     unfold compose in *. rewrite IHt. reflexivity.
-  induction x as [| h t]; cbn; intros.
-    reflexivity.
-    unfold fmap_List. rewrite map_app, IHt. reflexivity.
   induction mf as [| hf tf]; cbn; intros.
     reflexivity.
     rewrite <- IHtf. f_equal. induction mx as [| h t]; cbn.
@@ -115,6 +111,7 @@ Proof. all: reflexivity. Defined.
 
 Require Import Arith.
 
+(* TODO: callCC wut? *)
 Definition wut {R : Type} (b : bool) : Cont R nat :=
   do
     callCC (fun k =>

@@ -16,6 +16,10 @@ Ltac gen x := generalize dependent x.
 
 Notation "f $ x" := (f x) (left associativity, at level 40, only parsing).
 
+Lemma id_eq :
+  forall (A : Type) (x : A), id x = x.
+Proof. reflexivity. Qed.
+
 Lemma id_left :
   forall (A B : Type) (f : A -> B),
     id .> f = f.
@@ -29,3 +33,7 @@ Lemma id_right :
 Proof.
   intros. unfold compose, id. ext x. reflexivity.
 Qed.
+
+Hint Rewrite @id_eq @id_left @id_right : id.
+
+Ltac id := autorewrite with id.

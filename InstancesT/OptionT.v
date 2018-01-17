@@ -124,5 +124,5 @@ Instance MonadTrans_OptionT : MonadTrans OptionT :=
     lift := @lift_OptionT;
 }.
 Proof.
-  all: cbn; unfold lift_OptionT, ret_OptionT, bind_OptionT; monad.
+  all: cbn; unfold lift_OptionT, ret_OptionT, bind_OptionT, compose; monad.
 Defined.

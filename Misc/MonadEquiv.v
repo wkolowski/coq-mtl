@@ -29,8 +29,7 @@ Proof.
   apply Join.bind_ret_l.
   apply Join.bind_ret_r.
   apply Join.assoc.
-  apply Join.bind_fmap.
-  apply Join.fmap_bind.
+  apply Join.fmap_bind_ret.
   apply Join.bind_ap.
 Defined.
 

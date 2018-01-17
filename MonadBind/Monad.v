@@ -18,12 +18,9 @@ Class Monad (M : Type -> Type) : Type :=
     assoc :
       forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
         bind (bind ma f) g = bind ma (fun x => bind (f x) g);
-    bind_fmap :
-      forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
-        bind (fmap f x) g = bind x (f .> g);
-    fmap_bind :
-      forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
-        fmap g (bind x f) = bind x (fun x0 : A => fmap g (f x0));
+    fmap_bind_ret :
+      forall (A B : Type) (f : A -> B) (x : M A),
+        fmap f x = bind x (fun a : A => ret (f a));
     bind_ap :
       forall (A B : Type) (mf : M (A -> B)) (mx : M A),
         mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x)));
@@ -62,24 +59,27 @@ End MonadNotations.
 
 Export MonadNotations.
 
-Hint Rewrite @bind_ret_l @bind_ret_r @assoc @bind_fmap @fmap_bind @bind_ap
-  : monad_laws.
+Hint Rewrite @bind_ret_l @bind_ret_r @assoc @bind_ap @fmap_bind_ret
+  : monad_laws'.
 
-Ltac monad' :=
+Ltac monad_simpl' :=
   intros;
-  autorewrite with monad_laws;
-  autorewrite with applicative_laws.
+  autorewrite with monad_laws';
+  autorewrite with applicative_laws; functor_simpl.
 
-Ltac monad :=
-repeat (monad'; repeat match goal with
+Ltac monad_aux t :=
+repeat (t; repeat match goal with
+    | |- context [_ .> id] => rewrite id_right
     | H : _ * _ |- _ => destruct H
     | |- ?x >>= _ = ?x => rewrite <- bind_ret_r
     | |- ?x = ?x >>= _ => rewrite <- bind_ret_r at 1 (* BEWARE *)
-    | |- ?x >>= _ = ?x >>= _ => f_equal
+    | |- ?x >>= _ = ?x >>= _ => f_equal; try reflexivity
     | |- (fun _ => _) = _ => let x := fresh "x" in ext x
     | |- _ = (fun _ => _) => let x := fresh "x" in ext x
     | |- context [match ?x with _ => _ end] => destruct x
-end; monad'); try (unfold compose, id; cbn; congruence; fail).
+end; t); try (unfold compose, id; cbn; congruence; fail).
+
+Ltac monad' := monad_aux monad_simpl'.
 
 Section MonadicFuns.
 
@@ -99,6 +99,38 @@ End MonadicFuns.
 Arguments foldM [M] [inst] [A] [B] _ _ _.
 
 Section DerivedLaws.
+
+Variables
+  (M : Type -> Type)
+  (inst : Monad M).
+
+Lemma fmap_bind :
+  forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
+    fmap g (x >>= f) = x >>= (fun a : A => fmap g (f a)).
+Proof.
+  intros. rewrite fmap_bind_ret. monad'.
+Qed.
+
+Lemma bind_fmap :
+  forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
+    fmap f x >>= g = x >>= (f .> g).
+Proof.
+  intros. rewrite fmap_bind_ret. monad'.
+Qed.
+
+End DerivedLaws.
+
+Hint Rewrite @bind_ret_l @bind_ret_r @assoc @bind_fmap @fmap_bind @bind_ap
+  : monad_laws.
+
+Ltac monad_simpl :=
+  intros;
+  autorewrite with monad_laws;
+  autorewrite with applicative_laws; functor_simpl.
+
+Ltac monad := monad_aux monad_simpl.
+
+Section DerivedLaws2.
 
 Variables
   (M : Type -> Type)
@@ -127,21 +159,23 @@ Theorem bind_compM :
   forall (A B : Type) (ma : M A) (f : A -> M B),
     bind ma f = ((fun _ : unit => ma) >=> f) tt.
 Proof.
-  unfold compM. reflexivity.
+  unfold compM. monad.
 Qed.
 
 Theorem bind_join_fmap :
-  forall (A B C : Type) (ma : M A) (f : A -> M B),
+  forall (A B : Type) (ma : M A) (f : A -> M B),
     bind ma f = join (fmap f ma).
 Proof.
-  unfold join. monad.
+  unfold join.
+  
+ monad.
 Qed.
 
 Theorem join_fmap :
   forall (A : Type) (x : M (M (M A))),
     join (fmap join x) = join (join x).
 Proof.
-  unfold join. monad.
+  unfold join. monad_simpl. f_equal; try reflexivity.
 Qed.
 
 Theorem join_ret :
@@ -156,24 +190,21 @@ Theorem fmap_join :
     fmap g (join (fmap f x)) =
     join (fmap (fun x : A => fmap g (f x)) x).
 Proof.
-  intros. unfold join. monad.
-Restart.
-  unfold join. intros.
-  rewrite fmap_bind, 2!bind_fmap. unfold compose, id. reflexivity.
+  unfold join. monad.
 Qed.
 
 Lemma compM_comp :
   forall (A B C : Type) (f : A -> B) (g : B -> M C),
     (f .> ret) >=> g = f .> g.
 Proof.
-  intros. unfold compM, compose. monad.
+  unfold compM, compose. monad.
 Qed.
 
 Lemma compM_fmap :
   forall (A B C : Type) (f : A -> M B) (g : B -> C),
     f >=> (g .> ret) = f .> fmap g.
 Proof.
-  intros. unfold compM, compose. monad.
+  unfold compM, compose. monad.
 Qed.
 
 (* TODO
@@ -195,4 +226,4 @@ Proof.
         mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x)));
 
 *)
-End DerivedLaws.
+End DerivedLaws2.

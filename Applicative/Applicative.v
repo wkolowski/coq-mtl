@@ -24,6 +24,7 @@ Class Applicative (F : Type -> Type) : Type :=
       forall (A B : Type) (f : A -> B) (x : F A),
         fmap f x = ap (ret f) x;
 }.
+(* TODO: sprawdzić czy ostatnie prawo jest potrzbne. *)
 
 Coercion is_functor : Applicative >-> Functor.
 
@@ -35,11 +36,67 @@ Hint Rewrite <- @interchange
 Ltac applicative :=
   intros; autorewrite with applicative_laws; try congruence.
 
+(* TODO: wut applicative laws *)
+Section wut.
+
+Variables
+  (F : Type -> Type)
+  (inst : Applicative F).
+
+Goal
+  forall (A B C : Type) (f : A -> B) (g : B -> C) (x : F A),
+    ap (ret (f .> g)) x = ap (ret g) (ap (ret f) x).
+Proof.
+  intros.
+  replace (ap (ret (f .> g)) x)
+  with (ap (ap (ap (ret compose) (ret g)) (ret f)) x).
+    rewrite composition. reflexivity.
+    rewrite composition.
+Abort.
+
 Lemma fmap_ret :
   forall (F : Type -> Type) (inst : Applicative F)
   (A B : Type) (f : A -> B) (x : A),
     fmap f (ret x) = ret (f x).
-Proof. applicative. Qed.
+Proof.
+  intros. rewrite fmap_ret_ap. rewrite homomorphism. reflexivity.
+Qed.
+
+Definition identity' : Prop :=
+  forall (A : Type) (ax : F A),
+    ap (ret id) ax = ax.
+
+Definition composition' : Prop :=
+  forall (A B C : Type) (af : F (A -> B)) (ag : F (B  -> C)) (ax : F A),
+    ap (ap (ap (ret compose) ag) af) ax = ap ag (ap af ax).
+
+Definition homomorphism' : Prop :=
+  forall (A B : Type) (f : A -> B) (x : A),
+    ap (ret f) (ret x) = ret (f x).
+
+Definition interchange' : Prop :=
+  forall (A B : Type) (f : F (A -> B)) (x : A),
+    ap f (ret x) = ap (ret (fun f => f x)) f.
+
+Definition fmap_ret_ap' : Prop :=
+  forall (A B : Type) (f : A -> B) (x : F A),
+    fmap f x = ap (ret f) x.
+
+Goal
+  fmap_ret_ap' -> identity'.
+Proof.
+  unfold fmap_ret_ap', identity'. intros.
+  rewrite <- H. functor.
+Qed.
+
+Goal
+  fmap_ret_ap' -> homomorphism'.
+Proof.
+  unfold fmap_ret_ap', homomorphism'.
+  intros. rewrite <- H. Print Functor. 
+Abort.
+
+End wut. (* TODO *)
 
 Module ApplicativeNotations.
 

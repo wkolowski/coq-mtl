@@ -136,6 +136,15 @@ Proof.
   rewrite join_fmap_fmap. reflexivity.
 Qed.
 
+Lemma fmap_bind_ret :
+  forall (A B : Type) (f : A -> B) (x : M A),
+    fmap f x = bind x (fun a : A => ret (f a)).
+Proof.
+  intros. replace (fun _ => _) with (f .> ret) by functor.
+  unfold bind. rewrite fmap_pres_comp. unfold compose.
+  rewrite join_fmap_ret. reflexivity.
+Qed.
+
 Lemma bind_ap :
   forall (A B : Type) (mf : M (A -> B)) (mx : M A),
     mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x))).

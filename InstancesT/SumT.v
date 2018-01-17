@@ -107,5 +107,5 @@ Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
     lift := @lift_SumT E;
 }.
 Proof.
-  all: cbn; intros; unfold lift_SumT, ret_SumT, bind_SumT; monad.
+  all: cbn; intros; unfold lift_SumT, ret_SumT, bind_SumT, compose; monad.
 Defined.

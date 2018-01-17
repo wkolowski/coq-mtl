@@ -42,8 +42,7 @@ Definition ap_ListT
     @bind M inst _ _ mxs (fun xs =>
       ret $ ap_list fs xs)).
 
-
-Axiom wut : False.
+(* TODO *) Axiom wut : False.
 
 Instance Applicative_ListT
   (M : Type -> Type) (inst : Monad M) : Applicative (ListT M) :=
@@ -125,7 +124,7 @@ Proof.
       with (fun x : list B =>
         @bind_ListT_aux M inst B C g (lb ++ x)).
           Focus 2. ext wut. rewrite bind_ret_l. reflexivity.
-      Check bind_ret_r. Print bind_. rewrite IHta.
+      Check bind_ret_r. rewrite IHta.
       replace (fun b : list C => @ret M inst (list C) (a ++ b)))
       with (fun lc : list C => 
 *)
@@ -148,11 +147,14 @@ Proof.
       ext la. induction la; cbn.
         reflexivity.
         rewrite <- IHla. unfold liftA2. monad.
-    destruct wut.
-    monad. unfold compose. ext l.
-      induction l; cbn; rewrite ?IHl; reflexivity.
-    monad. destruct wut.
-    monad. destruct wut. (* TODO *)
+    rewrite assoc. f_equal. ext l. induction l as [| h t]; cbn.
+      rewrite bind_ret_l. cbn. reflexivity.
+      unfold liftA2 in *. rewrite !bind_ap. monad. destruct wut.
+    monad. induction x0 as [| h t]; cbn.
+      reflexivity.
+      rewrite <- IHt. unfold liftA2. monad.
+    f_equal. ext fs. induction fs as [| f fs']; cbn.
+      1-2: destruct wut. (* TODO *)
 Defined.
 
 Definition lift_ListT
