@@ -20,7 +20,8 @@ End Comp.
 
 Require Import HSLib.Applicative.Applicative.
 
-Instance JoinToBind (M : Type -> Type) (inst : Join.Monad M) : Bind.Monad M :=
+Instance JoinToBind
+  (M : Type -> Type) (inst : Join.Monad M) : Bind.Monad M :=
 {
     is_applicative := @Join.is_applicative M inst;
     bind := @Join.bind M inst

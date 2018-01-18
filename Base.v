@@ -10,7 +10,24 @@ Definition id {A : Type} := fun x : A => x.
 
 Notation "f .> g" := (compose g f) (at level 40).
 
-Ltac ext x := extensionality x.
+Ltac ext_aux x := extensionality x.
+
+Tactic Notation "ext" ident(x) := extensionality x.
+Tactic Notation "ext" := let x := fresh "x" in ext x.
+
+Ltac exts := repeat ext.
+
+(*Ltac exts'_aux l :=
+match l with
+    | [] => idtac
+    | ?h :: ?t => ext h; exts'_aux t
+end.
+
+Tactic Notation "exts'" simple_intropattern(l) := exts'_aux l.
+
+Goal (fun n => 1 + n) = (fun n => n + 1).
+Proof.
+  exts' n.*)
 
 Ltac gen x := generalize dependent x.
 

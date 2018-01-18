@@ -5,6 +5,7 @@ Require Import HSLib.Applicative.Applicative.
 Require Export HSLib.Functor.Functor.
 
 (* Definition of monad using bind (monadic application). *)
+(* TODO: spawdzić czy monada daje funktor *)
 Class Monad (M : Type -> Type) : Type :=
 {
     is_functor :> Functor M;
@@ -19,15 +20,9 @@ Class Monad (M : Type -> Type) : Type :=
     assoc :
       forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
         bind (bind ma f) g = bind ma (fun x => bind (f x) g);
-    bind_fmap :
-      forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
-        bind (fmap f x) g = bind x (f .> g);
-    fmap_bind :
-      forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
-        fmap g (bind x f) = bind x (fun x0 : A => fmap g (f x0));
-(*    bind_ap :
-      forall (A B : Type) (mf : M (A -> B)) (mx : M A),
-        mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x)));*)
+    fmap_bind_ret :
+      forall (A B : Type) (f : A -> B) (x : M A),
+        fmap f x = bind x (fun a : A => ret (f a));
 }.
 
 Module MonadNotations.
@@ -41,8 +36,7 @@ End MonadNotations.
 
 Export MonadNotations.
 
-Hint Rewrite @bind_ret_l @bind_ret_r @assoc @bind_fmap @fmap_bind
-  : monad_laws.
+Hint Rewrite @bind_ret_l @bind_ret_r @assoc @fmap_bind_ret : monad_laws.
 
 Ltac monad' :=
   intros;
@@ -72,16 +66,7 @@ Instance Monad_Applicative
     ap := ap_Monad M inst;
 }.
 Proof.
-  all: cbn; unfold ap_Monad; intros.
-    monad.
-    monad.
-    monad.
-    monad.
-    monad.
-    replace (fun a : A => ret (f a))
-    with (f .> ret).
-      Focus 2. unfold compose. ext a. reflexivity.
-      rewrite <- bind_fmap. rewrite bind_ret_r. reflexivity.
+  all: cbn; unfold ap_Monad; monad.
 Defined.
 
 Section wut.
@@ -101,23 +86,15 @@ Definition fmap_bind_wut : Prop :=
   forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
     fmap g (bind x f) = bind x (fun x0 : A => fmap g (f x0)).
 
-Goal wut -> bind_fmap_wut.
-Proof.
-  unfold wut, bind_fmap_wut; intros.
-  rewrite H. monad.
-Qed.
-
-Goal wut -> fmap_bind_wut.
-Proof.
-  unfold wut, fmap_bind_wut; intros.
-  rewrite H. monad. rewrite H. monad.
-Qed.
-
 Lemma bind_ap_derived :
   forall (A B : Type) (mf : M (A -> B)) (mx : M A),
     mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x))).
 Proof.
-  intros. Print Applicative.
+  intros.
+  replace (fun f : A -> B => mx >>= (fun x : A => ret (f x)))
+  with (fun f : A -> B => fmap f mx).
+    Focus 2. monad.
+    Print Applicative.
 Abort.
 
 End wut.

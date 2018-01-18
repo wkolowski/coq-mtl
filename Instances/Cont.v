@@ -5,6 +5,7 @@ Require Import HSLib.Functor.Functor.
 Require Import HSLib.Applicative.Applicative.
 Require Import HSLib.Alternative.Alternative.
 
+(* TODO: Check Codensity *)
 Definition Cont (R A : Type) : Type := (A -> R) -> R.
 
 Definition fmap_Cont {R A B : Type} (f : A -> B) (ca : Cont R A)
