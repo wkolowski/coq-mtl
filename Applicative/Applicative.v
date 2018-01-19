@@ -218,3 +218,11 @@ Definition forA (la : list A) (f : A -> F B) : F (list B) :=
   mapA f la.
 
 End ApplicativeFuns2.
+
+Class CommutativeApplicative
+  (F : Type -> Type) (inst : Applicative F) : Prop :=
+{
+    ap_comm :
+      forall (A B C : Type) (f : A -> B -> C) (u : F A) (v : F B),
+        f <$> u <*> v = flip f <$> v <*> u
+}.

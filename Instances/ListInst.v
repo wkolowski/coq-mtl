@@ -147,3 +147,12 @@ Proof.
     trivial.
     rewrite IHt1, app_assoc. trivial.
 Qed.
+
+(* TODO: Check commutativity for all instances. *)
+Theorem List_not_CommutativeApplicative :
+  ~ CommutativeApplicative list ApplicativeList.
+Proof.
+  destruct 1.
+  specialize (ap_comm _ _ _ (fun _ => id) [true; false] [false; true]).
+  compute in ap_comm. inversion ap_comm.
+Qed.

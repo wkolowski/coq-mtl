@@ -85,3 +85,9 @@ match f a with
     | None => None
     | Some b => g b
 end.
+
+Instance CommutativeApplicative_Option :
+  CommutativeApplicative _ ApplicativeOption.
+Proof.
+  split. destruct u, v; compute; reflexivity.
+Qed.

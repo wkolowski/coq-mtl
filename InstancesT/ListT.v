@@ -27,17 +27,6 @@ Notation "[[ x ; y ; .. ; z ]]" :=
 Notation "[[ x ; .. ; y ]]" :=
   (fun X nil cons => cons x .. (cons y nil) ..) (compat "8.4").
 
-(* TODO *) Notation "M[[ ]]" :=
-  (fun (M : Type -> Type) (inst : Monad M) X nil cons => nil).
-Notation "M[[ x ]]" :=
-  (fun (M : Type -> Type) (inst : Monad M) X nil cons => cons x nil).
-Notation "M[[ x ; y ; .. ; z ]]" :=
-  (fun (M : Type -> Type) (inst : Monad M) X nil cons =>
-    cons x (cons y .. (cons z nil) ..)).
-Notation "M[[ x ; .. ; y ]]" :=
-  (fun (M : Type -> Type) (inst : Monad M) X nil cons =>
-    cons x .. (cons y nil) ..) (compat "8.4").
-
 End ListT_Notations.
 
 Export ListT_Notations.

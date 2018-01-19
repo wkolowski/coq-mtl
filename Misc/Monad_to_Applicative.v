@@ -5,7 +5,6 @@ Require Import HSLib.Applicative.Applicative.
 Require Export HSLib.Functor.Functor.
 
 (* Definition of monad using bind (monadic application). *)
-(* TODO: spawdzić czy monada daje funktor *)
 Class Monad (M : Type -> Type) : Type :=
 {
     is_functor :> Functor M;

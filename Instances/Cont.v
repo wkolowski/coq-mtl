@@ -5,7 +5,6 @@ Require Import HSLib.Functor.Functor.
 Require Import HSLib.Applicative.Applicative.
 Require Import HSLib.Alternative.Alternative.
 
-(* TODO: Check Codensity *)
 Definition Cont (R A : Type) : Type := (A -> R) -> R.
 
 Definition fmap_Cont {R A B : Type} (f : A -> B) (ca : Cont R A)
@@ -50,6 +49,15 @@ Theorem Cont_not_Alternative :
 Proof.
   unfold Cont. intro. destruct (X False).
   apply aempty with False. trivial.
+Qed.
+
+Theorem Cont_not_CommutativeApplicative :
+  ~ (forall R : Type, CommutativeApplicative _ (ApplicativeCont R)).
+Proof.
+  intro. destruct (H bool).
+  specialize (ap_comm bool bool _ (fun _ => id) (const true) (const false)).
+  compute in ap_comm. apply (f_equal (fun f => f id)) in ap_comm.
+  inversion ap_comm.
 Qed.
 
 Definition callCC

@@ -4,8 +4,6 @@ Require Import HSLib.Base.
 Require Export HSLib.Functor.Functor.
 Require Export HSLib.Applicative.Applicative.
 
-(* TODO: Trójka Kleisliego *)
-
 (* Definition of monad using monadic composition. *)
 Class Monad (M : Type -> Type) : Type :=
 {
