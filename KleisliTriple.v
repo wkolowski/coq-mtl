@@ -72,7 +72,6 @@ Proof.
     ktl. f_equal. ext ab. kt.
 Defined.
 
-(* TODO: prove that monad gives a Kleisli triple. *)
 Instance Monad_KleisliTriple : Monad M :=
 {
     bind := @bind_Kleisli;
@@ -83,3 +82,23 @@ Proof.
 Defined.
 
 End KleisliTriple_to_MonadBind.
+
+Section MonadBind_to_KleisliTriple.
+
+Variable M : Type -> Type.
+Variable inst : Monad M.
+
+Definition eta_Monad := @ret M inst.
+
+Definition star_Monad {A B : Type} := flip (@bind M inst A B).
+
+Instance KleisliTriple_Monad : KleisliTriple M :=
+{
+    eta := @eta_Monad;
+    star := @star_Monad;
+}.
+Proof.
+  all: unfold eta_Monad, star_Monad, flip; monad.
+Defined.
+
+End MonadBind_to_KleisliTriple.

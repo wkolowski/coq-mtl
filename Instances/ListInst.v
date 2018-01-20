@@ -148,7 +148,6 @@ Proof.
     rewrite IHt1, app_assoc. trivial.
 Qed.
 
-(* TODO: Check commutativity for all instances. *)
 Theorem List_not_CommutativeApplicative :
   ~ CommutativeApplicative list ApplicativeList.
 Proof.

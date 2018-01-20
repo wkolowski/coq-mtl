@@ -93,7 +93,6 @@ Proof.
   replace (fun f : A -> B => mx >>= (fun x : A => ret (f x)))
   with (fun f : A -> B => fmap f mx).
     Focus 2. monad.
-    Print Applicative.
 Abort.
 
 End wut.

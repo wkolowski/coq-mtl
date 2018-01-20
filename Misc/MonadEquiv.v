@@ -19,6 +19,7 @@ Include HSLib.MonadComp.Monad.
 End Comp.
 
 Require Import HSLib.Applicative.Applicative.
+Require Import HSLib.KleisliTriple.
 
 Instance JoinToBind
   (M : Type -> Type) (inst : Join.Monad M) : Bind.Monad M :=
@@ -101,5 +102,5 @@ Proof.
   all: intros.
     apply compM_comp'.
     rewrite Comp.compM_ret_r. reflexivity.
-    Focus 2. Print Comp.bind. rewrite ?comp_const.
+    Focus 2. rewrite ?comp_const.
 Abort. (* TODO *)

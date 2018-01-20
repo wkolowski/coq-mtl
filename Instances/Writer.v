@@ -48,7 +48,42 @@ Proof.
   all: intros; unfold ret_Writer, ap_Writer, id; solveWriter'.
 Defined.
 
-Theorem Writer_not_alternative :
+Instance Monoid_bool_andb : Monoid :=
+{
+    carr := bool;
+    neutr := true;
+    op := andb;
+}.
+Proof.
+  all: intros; repeat
+  match goal with
+      | b : bool |- _ => destruct b
+  end; cbn; reflexivity.
+Defined.
+
+Instance Monoid_list_app (A : Type) : Monoid :=
+{
+    carr := list A;
+    neutr := [];
+    op := @app A;
+}.
+Proof.
+  all: intros.
+    reflexivity.
+    rewrite app_nil_r. reflexivity.
+    rewrite app_assoc. reflexivity.
+Defined.
+
+Theorem Writer_not_CommutativeApplicative :
+  ~ (forall W : Monoid, CommutativeApplicative _ (ApplicativeWriter W)).
+Proof.
+  intro. destruct (H (Monoid_list_app bool)). unfold Writer in ap_comm.
+  specialize (ap_comm nat nat nat (fun _ => id)
+    (42, [true; false]) (43, [false; true])).
+  compute in ap_comm. congruence.
+Qed.
+
+Theorem Writer_not_Alternative :
   forall W : Monoid, Alternative (Writer W) -> False.
 Proof.
   destruct 1. destruct (aempty False). assumption.

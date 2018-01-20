@@ -71,8 +71,6 @@ Variables
   (M : Type -> Type)
   (inst : Monad M).
 
-Print bind.
-
 (* Basic identities for compM version. *)
 Theorem compM_join :
   forall (A B C : Type) (f : A -> M B) (g : B -> M C),

@@ -208,7 +208,6 @@ Proof.
 Qed.
 
 (* TODO
-Print compM.
 
 Lemma compM_fmap__ :
   forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),

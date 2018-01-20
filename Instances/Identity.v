@@ -45,3 +45,7 @@ Theorem Identity_not_Alternative :
 Proof.
   destruct 1. apply (aempty False).
 Qed.
+
+Instance CommutativeApplicative_Identity :
+  CommutativeApplicative _ Applicative_Identity := {}.
+Proof. reflexivity. Qed.

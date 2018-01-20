@@ -44,6 +44,17 @@ Proof.
     destruct (x st). reflexivity.
 Defined.
 
+Theorem State_not_CommutativeApplicative :
+  ~ (forall S : Type, CommutativeApplicative _ (ApplicativeState S)).
+Proof.
+  intro. destruct (H bool). compute in ap_comm.
+  specialize (ap_comm nat nat nat (fun _ => id)
+    (fun b => if b then (42, negb b) else (142, b))
+    (fun b => if b then (143, b) else (43, negb b))).
+  apply (@f_equal _ _ (fun f => f true)) in ap_comm.
+  cbn in ap_comm. congruence.
+Qed.
+
 Theorem State_not_alternative :
   (forall S : Type, Alternative (State S)) -> False.
 Proof.

@@ -36,8 +36,7 @@ Hint Rewrite <- @interchange
 Ltac applicative :=
   intros; autorewrite with applicative_laws; try congruence.
 
-(* TODO: wut applicative laws *)
-Section wut.
+(* TODO: *) Section ApplicativeLaws.
 
 Variables
   (F : Type -> Type)
@@ -93,10 +92,10 @@ Goal
   fmap_ret_ap' -> homomorphism'.
 Proof.
   unfold fmap_ret_ap', homomorphism'.
-  intros. rewrite <- H. Print Functor. 
+  intros. rewrite <- H.
 Abort.
 
-End wut. (* TODO *)
+End ApplicativeLaws.
 
 Module ApplicativeNotations.
 

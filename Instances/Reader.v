@@ -32,6 +32,10 @@ Instance ApplicativeReader (R : Type) : Applicative (Reader R) :=
 }.
 Proof. all: reflexivity. Defined.
 
+Instance CommutativeApplicative_Reader (R : Type) :
+  CommutativeApplicative _ (ApplicativeReader R) := {}.
+Proof. reflexivity. Qed.
+
 Definition join_Reader
   {R A : Type} (rra : Reader R (Reader R A)) : Reader R A :=
     fun r : R => rra r r.

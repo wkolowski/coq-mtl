@@ -56,6 +56,15 @@ Proof.
     reflexivity.
 Defined.
 
+Theorem RT_not_CommutativeApplicative :
+  ~ CommutativeApplicative _ Applicative_RT.
+Proof.
+  destruct 1.
+  specialize (ap_comm bool bool _ (fun _ => id)
+    (Node (Leaf false) (Leaf true)) (Node (Leaf true) (Leaf false))).
+  compute in *. congruence.
+Qed.
+
 Theorem RT_not_Alternative :
   Alternative RT -> False.
 Proof.

@@ -43,6 +43,14 @@ Proof.
   end; compute; reflexivity.
 Defined.
 
+Theorem Sum_not_CommutativeApplicative :
+  ~ (forall E : Type, CommutativeApplicative _ (ApplicativeSum E)).
+Proof.
+  intro. destruct (H bool).
+  specialize (ap_comm nat nat nat (fun _ => id) (inl true) (inl false)).
+  compute in ap_comm. congruence.
+Qed.
+
 Theorem Sum_not_alternative :
   (forall E : Type, Alternative (sum E)) -> False.
 Proof.
