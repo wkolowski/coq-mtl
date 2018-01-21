@@ -90,6 +90,10 @@ Class MonadFail : Type :=
     bind_fail_l :
       forall (A B : Type) (mb : M B),
         @fail A >> mb = @fail B;
+(** TODO: BEWARE! Custom laws *)
+    bind_fail_l' :
+      forall (A B : Type) (f : A -> M B),
+        fail >>= f = fail
 }.
 
 Definition guard {inst' : MonadFail} (b : bool) : M unit :=
@@ -142,7 +146,7 @@ Instance MonadFail_List : MonadFail MonadList :=
     fail := @nil
 }.
 Proof.
-  compute. reflexivity.
+  all: compute; reflexivity.
 Defined.
 
 Instance MonadAlt_List : MonadAlt MonadList :=
@@ -214,6 +218,7 @@ Section S2.
 Variable M : Type -> Type.
 Variable inst : Monad M.
 
+(** [catch] and [fail] form a monoid. Pure computations need no handler. *)
 Class MonadExcept
   (inst' : MonadFail inst) : Type :=
 {
@@ -230,15 +235,19 @@ Class MonadExcept
     catch_ret :
       forall (A : Type) (x : A) (h : M A),
         catch (ret x) h = ret x;
-(* TODO BEWARE: MY OWN LAWS BELOW THIS COMMENT *)
-    catch_ap_ret :
-      forall (A : Type) (f : A -> A) (x : M A) (h : M A),
-        catch (ret f <*> x) h = ret f <*> catch x h;
 }.
+
+Goal
+  forall (instF : MonadFail inst)
+  (instE : MonadExcept instF) (A : Type) (f : A -> A) (x : M A) (h : M A),
+    catch (ret f <*> x) h = ret f <*> catch x h.
+Proof.
+  intros.
+Abort. (* TODO *)
 
 Fixpoint product (l : list nat) : nat :=
 match l with
-    | [] => 0
+    | [] => 1
     | h :: t => h * product t
 end.
 
@@ -262,7 +271,7 @@ Lemma product_has_0 :
     has 0 l = true -> product l = 0.
 Proof.
   induction l as [| h t]; cbn; intros.
-    reflexivity.
+    congruence.
     destruct h as [| h'].
       reflexivity.
       rewrite IHt; auto.
@@ -271,14 +280,6 @@ Qed.
 Definition work
   {inst' : MonadFail inst} (l : list nat) : M nat :=
     if has 0 l then fail else ret (product l).
-
-Lemma work_S :
-  forall (inst' : MonadFail inst) (h : nat) (t : list nat),
-    work (S h :: t) = mul <$> ret (S h) <*> work t.
-Proof.
-  unfold work; intros. cbn. case_eq (has 0 t); intros.
-    rewrite bind_ap.
-Abort.
 
 Definition fastprod
   {inst' : MonadFail inst} {inst'' : MonadExcept inst'}
@@ -294,40 +295,54 @@ Proof.
     rewrite catch_ret. reflexivity.
 Qed.
 
-Fixpoint fastprod'_aux
-  {inst' : MonadFail inst} (l : list nat) : M nat :=
-match l with
-    | [] => ret 0
-    | h :: t =>
-        if beq_nat 0 h then fail else mult <$> (ret h) <*> fastprod'_aux t
-end.
+(** wut *)
 
-Goal
-  forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
-    fastprod'_aux l = work l.
+Definition next
+  {inst' : MonadFail inst} (n : nat) (ml : M nat) : M nat :=
+    if beq_nat 0 n then fail else fmap (mult n) ml.
+
+Lemma work_foldr :
+  forall (inst' : MonadFail inst),
+    work = fold_right next (ret 1).
 Proof.
-  induction l as [| h t].
-    cbn. reflexivity.
-    destruct h as [| h'].
-      cbn. reflexivity.
-      cbn. rewrite IHt.
-Abort.
+  intros. ext l. induction l as [| h t]; cbn.
+    reflexivity.
+    unfold work in *. cbn. destruct h as [| h']; cbn.
+      reflexivity.
+      case_eq (has 0 t); intros.
+        rewrite H in *. rewrite <- IHt. rewrite fmap_bind_ret.
+          rewrite bind_fail_l'. reflexivity.
+        rewrite H in *. rewrite <- IHt. rewrite fmap_ret. reflexivity.
+Qed.
+
+Fixpoint hasE
+  {inst' : MonadFail inst} {inst'' : MonadExcept inst'}
+  (n : nat) (l : list nat) : M unit :=
+match l with
+    | [] => ret tt
+    | h :: t => if beq_nat n h then fail else hasE n t
+end.
 
 Definition fastprod'
   {inst' : MonadFail inst} {inst'' : MonadExcept inst'}
-    (l : list nat) : M nat := catch (fastprod'_aux l) (ret 0).
+  (l : list nat) : M nat :=
+    catch (hasE 0 l >> ret (product l)) (ret 0).
 
 Theorem fastprod'_spec :
   forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
     fastprod' l = ret (product l).
 Proof.
-  unfold fastprod'.
-  induction l as [| h t]; cbn in *.
-    rewrite catch_ret. reflexivity.
-    destruct h as [| h'].
-      cbn. rewrite catch_fail_l. reflexivity.
-      rewrite <- (@homomorphism M inst _ _ (mul (S h')) (product t)), <- IHt.
-        applicative. rewrite catch_ap_ret. reflexivity.
+  intros. unfold fastprod'.
+  assert (forall n m : nat, catch (hasE 0 l >> ret n) (ret m) =
+          if has 0 l then ret m else ret n).
+    induction l as [| h t]; cbn in *; intros.
+      unfold bind_. rewrite bind_ret_l, catch_ret. reflexivity.
+      destruct h as [| h'].
+        rewrite bind_fail_l, catch_fail_l. cbn. reflexivity.
+        rewrite IHt. cbn. reflexivity.
+    rewrite H. case_eq (has 0 l); intros.
+      rewrite product_has_0; auto.
+      reflexivity.
 Qed.
 
 End S2.
