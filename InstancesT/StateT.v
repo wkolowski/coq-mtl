@@ -20,6 +20,7 @@ Definition fmap_StateT
     fun (x : StateT S M A) (s : S) =>
       x s >>= fun '(a, s') => ret (f a, s').
 
+(* TODO: Possibly move the proof in StateT outside the instance definition. *)
 Instance Functor_StateT
   {M : Type -> Type} {inst : Monad M} {S : Type} : Functor (StateT S M) :=
 {
@@ -54,7 +55,8 @@ Instance Applicative_StateT
     ap := @ap_StateT S M inst;
 }.
 Proof.
-  all: cbn; unfold fmap_StateT, ret_StateT, ap_StateT; monad.
+  all: abstract
+    (cbn; unfold fmap_StateT, ret_StateT, ap_StateT; monad).
 Defined.
 
 Theorem StateT_not_Alternative :
@@ -78,7 +80,8 @@ Instance Monad_StateT
     bind := @bind_StateT M inst S;
 }.
 Proof.
-  all: cbn; unfold fmap_StateT, ret_StateT, ap_StateT, bind_StateT; monad.
+  all: abstract
+    (cbn; unfold fmap_StateT, ret_StateT, ap_StateT, bind_StateT; monad).
 Defined.
 
 Theorem StateT_not_MonadPlus :
@@ -99,5 +102,6 @@ Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
     lift := @lift_StateT S;
 }.
 Proof.
-  all: cbn; unfold ret_StateT, bind_StateT, lift_StateT; monad.
+  all: abstract
+    (cbn; unfold ret_StateT, bind_StateT, lift_StateT; monad).
 Defined.

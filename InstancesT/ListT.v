@@ -8,8 +8,7 @@ Require Import HSLib.MonadBind.Monad.
 Require Import HSLib.MonadPlus.MonadPlus.
 Require Import HSLib.MonadTrans.MonadTrans.
 
-(* TODO: find out wut's up with commutative monads and commutative
-   applicatives *)
+(* TODO: find out wut's up with commutative monads *)
 
 Definition ListT
   (M : Type -> Type) (A : Type) : Type :=

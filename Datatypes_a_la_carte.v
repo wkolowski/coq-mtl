@@ -204,15 +204,24 @@ Fail Inductive Render (F : Type -> Type) : Type :=
 Definition Render : (Type -> Type) -> Type :=
   fun F : Type -> Type =>
     forall Render : (Type -> Type) -> Type,
-      (forall G : Type -> Type, Render G -> F (Expr G) -> string) -> Render F.
+      ((forall G : Type -> Type, Render G -> F (Expr G) -> string) -> Render F)
+      -> Render F.
 
-(*
-Instance Render_Val : Render Val :=
+Class RenderClass (F : Type -> Type) : Type :=
 {
-    render := fun G x => match x with Val' i => "13" end
+    render : Render F;
 }.
 
-Instance Render_Add : Render Add :=
+Definition render_Val : Render Val :=
+  fun _ f => f (fun _ _ _ => "42").
+
+Instance Render_Val : RenderClass Val :=
 {
-    render := fun _ '(Add' e1 e2) => render e1
-}.*)
+    render := render_Val
+}.
+
+Definition render_Add : Render Add.
+Proof.
+  red. intros R f.
+  apply f. intros G wut x. destruct x as [e1 e2].
+Abort.

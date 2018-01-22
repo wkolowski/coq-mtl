@@ -72,14 +72,31 @@ Abort.
   ~ CommutativeApplicative _ Applicative_Codensity.
 Proof.
   destruct 1. compute in *. Require Import Bool.
+  assert (
+  forall (A B C : Type) (f : A -> B -> C)
+         (u : forall R : Type, (A -> R) -> R)
+         (v : forall R : Type, (B -> R) -> R),
+         (fun (R : Type) (y : C -> R) =>
+          u R (fun a : A => v R (f a .> y))) =
+         (fun (R : Type) (y : C -> R) =>
+          v R (fun b : B => u R (flip f b .> y)))).
+  intros. unfold flip, compose. rewrite <- ap_comm. ext R; ext y.
+    f_equal. clear H.
+(*
   specialize (
-    ap_comm _ _ _ 
+    ap_comm nat bool unit).
+  replace (fun a : nat => v R (fun a0 : bool => y (f a a0)))
+  with (fun a : nat => v R (f a .> y)) in ap_comm.*)
+  specialize (
+    ap_comm _ _ _
       (fun a b =>
-      match a with
-          | [] => b ++ b
-          | _ => b ++ b ++ a
+      match a ++ b with
+          | [] => a ++ b ++ b
+          | [1] => b ++ b ++ b
+          | [2] => a ++ a ++ a
+          | _ => []
       end)
-    (fun _ f => f [2]) (fun _ f => f [])). cbn in ap_comm.
+    (fun _ f => f [2]) (fun _ f => f [1])). cbn in ap_comm.
   compute in ap_comm.
   Ltac ext_in H :=
   match type of H with
@@ -104,12 +121,10 @@ Definition callCC_Type : Type :=
   forall A B : Type, ((A -> Codensity B) -> Codensity A) -> Codensity A.
 
 (* TODO: why no callCC? *)
+
 Theorem no_callCC :
   callCC_Type -> False.
 Proof.
   unfold callCC_Type, Codensity. intro.
-  apply (X nat False); intros.
-    apply X1. exact 42.
-    destruct H.
-    
+  specialize (X False unit). apply X.
 Abort.

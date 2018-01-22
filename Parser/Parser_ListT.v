@@ -9,20 +9,28 @@ Require Import HSLib.InstancesT.AllT.
 Require Import Ascii.
 Require Import String.
 
-Check ListT.
+Set Universe Polymorphism.
 
 Definition Parser (A : Type) : Type :=
-  StateT string list A.
+  StateT string (ListT Identity) A.
 
 (** *** 2.2 Primitive parsers *)
 
 Definition fail {A : Type} : Parser A :=
-  fun _ => [].
+  fun _ => [[]].
+
+Check Applicative_ListT _ MonadIdentity.
+
+Definition Applicative_Parser := Applicative_ListT _ MonadIdentity.
+Definition Monad_Parser := Monad_ListT _ MonadIdentity.
+
+Existing Instance Applicative_Parser.
+Existing Instance Monad_Parser.
 
 Definition item : Parser ascii :=
   fun input : string =>
   match input with
-      | EmptyString => []
+      | EmptyString => [[]]
       | String c cs => ret (c, cs)
   end.
 
@@ -69,13 +77,18 @@ Definition upper : Parser ascii :=
 
 Open Scope list_scope.
 
+(*Definition plus {A : Type} (p1 p2 : Parser A) : Parser A :=
+  fun input : string => (p1 input) ++ (p2 input).*)
+
 Definition plus {A : Type} (p1 p2 : Parser A) : Parser A :=
-  fun input : string => (p1 input) ++ (p2 input).
+  fun input : string => @aplus_ListT _ _ _ (p1 input) (p2 input).
 
 Notation "x <|> y" := (plus x y) (at level 42).
 
+(* TODO *)
+(*
 Definition letter : Parser ascii :=
-  plus lower upper.
+  @plus ascii lower upper.
 
 Definition alnum : Parser ascii :=
   plus letter digit.
@@ -106,8 +119,8 @@ Compute str "abc" "abcd".
 Fixpoint many'
   {A : Type} (n : nat) (p : Parser A) : Parser (list A) :=
 match n with
-    | 0 => ret []
-    | S n' => (cons <$> p <*> many' n' p) <|> ret []
+    | 0 => ret [[]]
+    | S n' => (cons <$> p <*> many' n' p) <|> ret [[]]
 end.
 
 Arguments many' [A] _ _ _%string.
@@ -230,7 +243,7 @@ Compute ints "[1,2,3,4,5,6,7,8]".
 
 Definition sepby {A B : Type}
   (item : Parser A) (sep : Parser B) : Parser (list A) :=
-    sepby1 item sep <|> ret [].
+    sepby1 item sep <|> ret [[]].
 
 (**
     expr    ::= expr addop factor | factor
@@ -240,7 +253,7 @@ Definition sepby {A B : Type}
 
 Fixpoint exprn (n : nat) : Parser Z :=
 match n with
-    | 0 => ret []
+    | 0 => ret [[]]
     | S n' =>
         let
           addop := char "+" >> ret Z.add <|>
@@ -259,7 +272,6 @@ Definition expr : Parser Z :=
 Arguments expr _%string.
 
 Compute expr "2+2".
-
 Compute expr "0-5)".
 
 Definition chainl1
@@ -301,7 +313,7 @@ Compute parseNat_chainr "211".
 
 Fixpoint exprn'' (n : nat) : Parser Z :=
 match n with
-    | 0 => ret [] (* 0%Z *)
+    | 0 => ret [[]] (* 0%Z *)
     | S n' =>
         let
           op := char "+" >> ret Z.add <|>
@@ -322,7 +334,7 @@ Compute expr'' "3-2"%string.
 Definition ops
   {A B : Type} (start : Parser A * B) (l : list (Parser A * B)) : Parser B :=
 match l with
-    | [] => let '(p, op) := start in p >> ret op
+    | [[]] => let '(p, op) := start in p >> ret op
     | h :: t =>
         let '(p, op) := start in
           fold_right plus (p >> ret op)
@@ -331,7 +343,7 @@ end.
 
 Fixpoint exprn3 (n : nat) : Parser Z :=
 match n with
-    | 0 => fail (* ret [] *) (* 0%Z *)
+    | 0 => fail (* ret [[]] *) (* 0%Z *)
     | S n' =>
         let
           op := ops (char "+", Z.add) [(char "-", Z.sub)]
@@ -355,7 +367,7 @@ match n with
         let
           addop := ops (char "+", Z.add) [(char "-", Z.sub)]
         in let
-          expop := ops (char "^", Z.pow) []
+          expop := ops (char "^", Z.pow) [[]]
         in let
           factor := parseZ <|> bracket (char "(") (exprn4 n') (char ")")
         in let
@@ -383,7 +395,7 @@ Definition first
   {A : Type} (p : Parser A) : Parser A :=
     fun input : string =>
 match p input with
-    | [] => []
+    | [[]] => [[]]
     | h :: _ => [h]
 end.
 
@@ -395,7 +407,7 @@ Notation "p +++ q" := (plus_det p q) (at level 42).
 
 Theorem plus_det_spec :
   forall (A : Type) (p q : Parser A),
-    p <|> q = (fun _ => []) \/
+    p <|> q = (fun _ => [[]]) \/
     (exists x : A * string, p <|> q = fun _ => [x]) ->
       p +++ q = p <|> q.
 Proof.
@@ -568,3 +580,4 @@ Arguments parseExpr' _%string.
 Time Compute parseExpr' "(x x)".
 Time Compute parseExpr' "\f -> \x -> (f x)".
 Time Compute parseExpr' "let x = (x x) in x".
+*)
