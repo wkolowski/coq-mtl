@@ -13,3 +13,5 @@ Class Monoid : Type :=
 }.
 
 Coercion carr : Monoid >-> Sortclass.
+
+Hint Rewrite @id_left @id_right @op_assoc : HSLib.

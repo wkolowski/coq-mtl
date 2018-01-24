@@ -2,14 +2,14 @@ Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
-Require Import HSLib.Applicative.Applicative.
-Require Import HSLib.Alternative.Alternative.
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadPlus.MonadPlus.
-Require Import HSLib.MonadTrans.MonadTrans.
+Require Import Control.Applicative.
+Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
+Require Import Control.MonadTrans.
 
 Require Import HSLib.Instances.All.
-Require Import HSLib.MonadBind.MonadInst.
+Require Import Control.MonadInst.
 
 Definition WriterT (W : Monoid) (M : Type -> Type) (A : Type)
   : Type := M (A * W)%type.
@@ -19,24 +19,15 @@ Definition fmap_WriterT
   (x : WriterT W M A) : WriterT W M B :=
     fmap (fun '(a, w) => (f a, w)) x.
 
+Hint Unfold WriterT fmap_WriterT compose (* BEWARE *): HSLib.
+
 Instance Functor_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} : Functor (WriterT W M) :=
 {
     fmap := @fmap_WriterT W M inst
 }.
 Proof.
-  all: intros; unfold fmap_WriterT; ext x.
-    match goal with
-        | |- ?f ?g ?h = _ => replace (f g h) with (f id h)
-    end.
-      rewrite fmap_pres_id. reflexivity.
-      f_equal. ext p. destruct p. reflexivity.
-    unfold compose;
-    match goal with
-        | |- fmap ?f _ = fmap ?g (fmap ?h _) => replace f with (h .> g)
-    end.
-      rewrite fmap_pres_comp. unfold compose. reflexivity.
-      ext p. destruct p. unfold compose. reflexivity.
+  all: monad.
 Defined.
 
 Definition ret_WriterT
@@ -50,6 +41,8 @@ Definition ap_WriterT
     @bind M inst _ _ mx (fun '(x, w') =>
       ret (f x, op w w'))).
 
+Hint Unfold ret_WriterT ap_WriterT : HSLib.
+
 Instance Applicative_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M)
   : Applicative (WriterT W M) :=
@@ -58,14 +51,7 @@ Instance Applicative_WriterT
     ret := @ret_WriterT W M inst;
     ap := @ap_WriterT W M inst;
 }.
-Proof.
-  all: cbn; unfold WriterT, fmap_WriterT, ret_WriterT, ap_WriterT; monad;
-  rewrite ?id_left, ?id_right, ?op_assoc; try reflexivity.
-Defined.
-
-Hint Rewrite @id_left @id_right @op_assoc : monoid.
-
-Ltac monoid := autorewrite with monoid; try congruence.
+Proof. all: monad. Defined.
 
 Theorem WriterT_not_Alternative :
   (forall (W : Monoid) (M : Type -> Type) (inst : Monad M),
@@ -79,6 +65,27 @@ Proof.
     compute in aempty. destruct aempty. assumption.
 Qed.
 
+Definition aempty_WriterT
+  (W : Monoid) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
+  {A : Type} : WriterT W M A := fmap (fun a => (a, neutr)) aempty.
+
+Definition aplus_WriterT
+  {W : Monoid} {M : Type -> Type} {inst : MonadPlus M} {A : Type}
+  (wx wy : WriterT W M A) : WriterT W M A :=
+    @aplus M inst _ wx wy.
+
+Hint Unfold aempty_WriterT aplus_WriterT : HSLib.
+
+Instance Alternative_WriterT
+  (W : Monoid) (M : Type -> Type) (inst : MonadPlus M)
+  : Alternative (WriterT W M) :=
+{
+    is_applicative := Applicative_WriterT W M inst;
+    aempty := @aempty_WriterT W M inst inst;
+    aplus := @aplus_WriterT W M inst;
+}.
+Proof. all: monad. Defined.
+
 Definition bind_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A B : Type}
   (x : WriterT W M A) (f : A -> WriterT W M B) : WriterT W M B :=
@@ -86,17 +93,15 @@ Definition bind_WriterT
     @bind M inst _ _ (f a) (fun '(b, w') =>
       ret (b, op w w'))).
 
+Hint Unfold bind_WriterT : HSLib.
+
 Instance Monad_WriterT
   (W : Monoid) (M : Type -> Type) {inst : Monad M} : Monad (WriterT W M) :=
 {
     is_applicative := @Applicative_WriterT W M inst;
     bind := @bind_WriterT W M inst;
 }.
-Proof.
-  all: cbn;
-  unfold WriterT, fmap_WriterT, ret_WriterT, ap_WriterT, bind_WriterT;
-  monad; monoid.
-Defined.
+Proof. all: monad. Defined.
 
 Theorem WriterT_not_MonadPlus :
   (forall (W : Monoid) (M : Type -> Type) (inst : Monad M),
@@ -106,17 +111,24 @@ Proof.
   intros. destruct (X W M inst). assumption.
 Qed.
 
+Instance MonadPlus_WriterT
+  (W : Monoid) {M : Type -> Type} {inst : MonadPlus M}
+  : MonadPlus (WriterT W M) :=
+{
+    is_monad := @Monad_WriterT W M inst;
+    is_alternative := @Alternative_WriterT W M inst;
+}.
+Proof. monad. Defined.
+
 Definition lift_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : WriterT W M A := fmap (fun x : A => (x, neutr)) ma.
+
+Hint Unfold lift_WriterT : HSLib.
 
 Instance MonadTrans_WriterT (W : Monoid) : MonadTrans (WriterT W) :=
 {
     is_monad := @Monad_WriterT W;
     lift := @lift_WriterT W;
 }.
-Proof.
-  all: cbn; intros; unfold WriterT, lift_WriterT, ret_WriterT, bind_WriterT.
-  monad.
-  monad. unfold compose. monad. unfold compose. monoid.
-Defined.
+Proof. all: monad. Defined.

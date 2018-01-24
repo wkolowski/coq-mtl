@@ -1,11 +1,11 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Export HSLib.Functor.Functor.
-Require Export HSLib.Applicative.Applicative.
-Require Import HSLib.Alternative.Alternative.
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadPlus.MonadPlus.
+Require Export Control.Functor.
+Require Export Control.Applicative.
+Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
 
 (* Rose Trees *)
 Inductive RT (A : Type) : Type :=

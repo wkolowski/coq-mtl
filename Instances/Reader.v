@@ -1,8 +1,8 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.Functor.Functor.
-Require Import HSLib.Applicative.Applicative.
+Require Import Control.Functor.
+Require Import Control.Applicative.
 
 Definition Reader (R A : Type) : Type := R -> A.
 

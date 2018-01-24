@@ -1,7 +1,7 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.MonadBind.Monad.
+Require Import Control.Monad.
 
 (** * Datat types à la carte *)
 

@@ -1,33 +1,32 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import HSLib.Base.
-
-Require Import HSLib.Functor.Functor.
-Require Import HSLib.Applicative.Applicative.
-Require Import HSLib.Foldable.
-
+Require Export HSLib.Foldable.
+Require Export HSLib.Control.Applicative.
+Print Applicative.
 Class Alternative (F : Type -> Type) : Type :=
 {
     is_applicative :> Applicative F;
     aempty : forall {A : Type}, F A;
     aplus : forall {A : Type}, F A -> F A -> F A;
-    id_left :
+    aplus_aempty_l :
       forall (A : Type) (fa : F A),
         aplus aempty fa = fa;
-    id_right :
+    aplus_aempty_r :
       forall (A : Type) (fa : F A),
         aplus fa aempty = fa;
     aplus_assoc :
       forall (A : Type) (x y z : F A),
-        aplus x (aplus y z) = aplus (aplus x y) z
+        aplus x (aplus y z) = aplus (aplus x y) z;
 }.
 
 Coercion is_applicative : Alternative >-> Applicative.
 
+Hint Rewrite @aplus_aempty_l @aplus_aempty_r @aplus_assoc : HSLib.
+
 Module AlternativeNotations.
 
 Notation "x <|> y" := (aplus x y)
-  (left associativity, at level 40).
+  (left associativity, at level 50).
 
 End AlternativeNotations.
 

@@ -1,9 +1,7 @@
 Add LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import HSLib.Base.
-Require Import HSLib.Functor.Functor.
-Require Import HSLib.Applicative.Applicative.
-Require Import HSLib.Applicative.Monoidal.
+Require Export HSLib.Control.Applicative.
+Require Export HSLib.Control.Monoidal.
 
 Lemma par_id :
   forall (A B : Type), @id A *** @id B = id.
@@ -102,13 +100,12 @@ Definition pairF_Applicative
   {F : Type -> Type} {inst : Applicative F} {A B : Type}
   (x : F A) (y : F B) : F (A * B)%type := pair <$> x <*> y.
 
-Hint Rewrite @identity @interchange @homomorphism @fmap_ret_ap
-  : applicative_laws2.
-Hint Rewrite <- @composition
-  : applicative_laws2.
+Hint Unfold default_Applicative pairF_Applicative compose (* WUT *): HSLib.
 
-Ltac applicative2 :=
-  intros; autorewrite with applicative_laws2; try congruence.
+Hint Rewrite @identity @interchange @homomorphism @fmap_ret_ap
+  : HSLib'.
+Hint Rewrite <- @composition
+  : HSLib'.
 
 Instance Applicative_isMonoidal
   (F : Type -> Type) (inst : Applicative F) : isMonoidal F :=
@@ -118,10 +115,6 @@ Instance Applicative_isMonoidal
     pairF := @pairF_Applicative F inst;
 }.
 Proof.
-  all: unfold default_Applicative, pairF_Applicative; applicative.
-    applicative2.
-    applicative2.
-    repeat (rewrite <- composition, homomorphism). applicative2.
-      unfold compose. reflexivity.
-    applicative2. unfold compose, par. reflexivity.
-Defined. (* TODO: refactor applicative and applicative2 *)
+  all: hs; repeat (rewrite <- composition, homomorphism);
+  autorewrite with HSLib'; reflexivity.
+Defined.

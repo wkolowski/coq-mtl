@@ -2,11 +2,11 @@ Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
-Require Import HSLib.Applicative.Applicative.
-Require Import HSLib.Alternative.Alternative.
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadPlus.MonadPlus.
-Require Import HSLib.MonadTrans.MonadTrans.
+Require Import Control.Applicative.
+Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
+Require Import Control.MonadTrans.
 
 (* TODO: find out wut's up with commutative monads *)
 
@@ -36,7 +36,6 @@ Definition fmap_ListT
     fun (X : Type) (nil : M X) (cons : B -> M X -> M X) =>
       l X nil (fun h t => cons (f h) t).
 
-(*Definition wut := M[[0; 1; 2]].*)
 Definition wut
   {M : Type -> Type} {inst : Monad M} : ListT M nat := [[0; 1; 2]].
 
@@ -49,13 +48,14 @@ Instance Functor_ListT
     fmap := @fmap_ListT M inst
 }.
 Proof.
-  all: intros; unfold fmap_ListT;
-    exts; unfold id, compose; f_equal.
+  all: reflexivity.
 Defined.
 
 Definition ret_ListT
   (M : Type -> Type) (inst : Monad M) (A : Type) (x : A) : ListT M A :=
-    fun (X : Type) (nil : M X) (cons : A -> M X -> M X) => ret (cons x nil).
+    fun (X : Type) (nil : M X) (cons : A -> M X -> M X) => cons x nil.
+
+Eval lazy in ret_ListT _ _ _ 42.
 
 Definition length_ListT
   {M : Type -> Type} {inst : Monad M} {A : Type}
@@ -84,8 +84,7 @@ Instance Applicative_ListT
     ap := @ap_ListT M inst;
 }.
 Proof.
-  all: cbn; unfold ListT, fmap_ListT, ret_ListT, ap_ListT; intros;
-    exts; cbn; unfold fmap_ListT; f_equal.
+  all: reflexivity.
 Defined.
 
 Definition aempty_ListT
@@ -104,8 +103,10 @@ Instance Alternative_ListT
     aplus := aplus_ListT M inst;
 }.
 Proof.
-  all: cbn; unfold ListT, aempty_ListT, aplus_ListT; monad.
+  all: reflexivity.
 Defined.
+
+Eval lazy in aplus_ListT _ _ _ wut wut.
 
 Definition bind_ListT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -122,13 +123,13 @@ Instance Monad_ListT
     bind := @bind_ListT M inst
 }.
 Proof.
-  all: cbn; unfold ListT, fmap_ListT, ret_ListT, ap_ListT, bind_ListT; monad.
-  compute. all: f_equal.
+  all: reflexivity.
 Defined.
 
 Definition lift_ListT
   {M : Type -> Type} {inst : Monad M} (A : Type) (ma : M A) : ListT M A :=
     fun X nil cons => ma >>= fun a : A => cons a nil.
+(*    fun X nil cons => ma >>= cons ma nil.*)
 
 Instance MonadTrans_ListT : MonadTrans ListT :=
 {
@@ -136,6 +137,10 @@ Instance MonadTrans_ListT : MonadTrans ListT :=
     lift := @lift_ListT;
 }.
 Proof.
-  all: cbn; intros; unfold lift_ListT, ret_ListT, bind_ListT; monad.
-  cbn. unfold Identity.ret_Identity. reflexivity.
+  (*all: cbn; intros; unfold lift_ListT, ret_ListT, bind_ListT; monad.*)
+  (* 145 lines long *)
+  all: cbn; intros; unfold lift_ListT, ret_ListT, bind_ListT;
+  ext X; ext nil; ext cons.
+    rewrite bind_ret_l. reflexivity.
+    rewrite assoc. reflexivity. (* 84 lines long *)
 Defined.

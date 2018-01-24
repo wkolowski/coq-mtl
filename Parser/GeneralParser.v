@@ -1,15 +1,15 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadBind.MonadInst.
+Require Import Control.Monad.
+Require Import Control.MonadInst.
 Require Import HSLib.Instances.All.
 Require Import HSLib.InstancesT.AllT.
 
 Require Import Ascii.
 Require Import String.
 
-Check ListT.
+Print Monad.
 
 Definition Parser (A : Type) : Type :=
   StateT string list A.
@@ -69,16 +69,16 @@ Definition upper : Parser ascii :=
 
 Open Scope list_scope.
 
-Definition plus {A : Type} (p1 p2 : Parser A) : Parser A :=
+(*Definition aplus {A : Type} (p1 p2 : Parser A) : Parser A :=
   fun input : string => (p1 input) ++ (p2 input).
 
-Notation "x <|> y" := (plus x y) (at level 42).
+Notation "x <|> y" := (aplus x y) (at level 42).*)
 
 Definition letter : Parser ascii :=
-  plus lower upper.
+  lower <|> upper.
 
 Definition alnum : Parser ascii :=
-  plus letter digit.
+  letter <|> digit.
 
 (** All words of length less than or equal to n. *)
 Fixpoint words (n : nat) : Parser string :=
@@ -325,7 +325,7 @@ match l with
     | [] => let '(p, op) := start in p >> ret op
     | h :: t =>
         let '(p, op) := start in
-          fold_right plus (p >> ret op)
+          fold_right aplus (p >> ret op)
             (map (fun '(p, op) => p >> ret op) l)
 end.
 
@@ -387,19 +387,19 @@ match p input with
     | h :: _ => [h]
 end.
 
-Definition plus_det
+Definition aplus_det
   {A : Type} (p q : Parser A) : Parser A :=
     first (p <|> q).
 
-Notation "p +++ q" := (plus_det p q) (at level 42).
+Notation "p +++ q" := (aplus_det p q) (at level 42).
 
-Theorem plus_det_spec :
+Theorem aplus_det_spec :
   forall (A : Type) (p q : Parser A),
     p <|> q = (fun _ => []) \/
     (exists x : A * string, p <|> q = fun _ => [x]) ->
       p +++ q = p <|> q.
 Proof.
-  intros. extensionality input. unfold plus_det, first.
+  intros. extensionality input. unfold aplus_det, first.
   (* BEWARE: ]] gives an error *)
   destruct H as [H | [x H] ]; rewrite H; reflexivity.
 Qed.

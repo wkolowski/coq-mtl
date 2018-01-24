@@ -1,11 +1,6 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import HSLib.Base.
-
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadBind.MonadInst.
-
-Require Import HSLib.Instances.Option.
+Require Export HSLib.Control.Monad.
 
 Class MonadTrans (T : (Type -> Type) -> Type -> Type) : Type :=
 {
@@ -22,7 +17,7 @@ Class MonadTrans (T : (Type -> Type) -> Type -> Type) : Type :=
 
 (* Tactic for dealing with functor instances specific to monad
    transformers. *)
-Ltac functor := intros; try
+Ltac mtrans := intros; try
 match goal with
     | |- fmap (fun x : ?A => ?e) = _ =>
           let x := fresh "x" in

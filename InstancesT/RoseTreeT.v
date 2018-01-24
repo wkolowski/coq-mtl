@@ -1,11 +1,11 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Export HSLib.Functor.Functor.
-Require Export HSLib.Applicative.Applicative.
-Require Import HSLib.Alternative.Alternative.
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadPlus.MonadPlus.
+Require Export Control.Functor.
+Require Export Control.Applicative.
+Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
 
 Definition RoseTreeT (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (M X -> M X -> M X) -> M X.
@@ -66,7 +66,7 @@ Theorem RoseTreeT_not_Alternative :
 Proof.
   unfold RoseTreeT; intros.
   Require Import HSLib.Instances.All.
-  Require Import HSLib.MonadBind.MonadInst.
+  Require Import Control.MonadInst.
   specialize (X Identity (MonadIdentity)).
   unfold Identity in *. destruct X.
   apply (aempty False False); trivial.

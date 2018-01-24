@@ -1,7 +1,7 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.Functor.Functor.
+Require Import Control.Functor.
 
 Module Join.
 Require Import HSLib.MonadJoin.Monad.
@@ -9,8 +9,8 @@ Include HSLib.MonadJoin.Monad.
 End Join.
 
 Module Bind.
-Require Import HSLib.MonadBind.Monad.
-Include HSLib.MonadBind.Monad.
+Require Import Control.Monad.
+Include Control.Monad.
 End Bind.
 
 Module Comp.
@@ -18,7 +18,7 @@ Require Import HSLib.MonadComp.Monad.
 Include HSLib.MonadComp.Monad.
 End Comp.
 
-Require Import HSLib.Applicative.Applicative.
+Require Import Control.Applicative.
 Require Import HSLib.KleisliTriple.
 
 Instance JoinToBind

@@ -1,7 +1,6 @@
 Add LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import HSLib.Base.
-Require Import HSLib.Functor.Functor.
+Require Export HSLib.Control.Functor.
 
 Class Applicative (F : Type -> Type) : Type :=
 {
@@ -29,12 +28,9 @@ Class Applicative (F : Type -> Type) : Type :=
 Coercion is_functor : Applicative >-> Functor.
 
 Hint Rewrite @identity @composition @homomorphism @fmap_ret_ap
-  : applicative_laws.
+  : HSLib.
 Hint Rewrite <- @interchange
-  : applicative_laws.
-
-Ltac applicative :=
-  intros; autorewrite with applicative_laws; try congruence.
+  : HSLib.
 
 (* TODO: *) Section ApplicativeLaws.
 

@@ -1,9 +1,9 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.Functor.Functor.
-Require Import HSLib.Applicative.Applicative.
-Require Import HSLib.Alternative.Alternative.
+Require Import Control.Functor.
+Require Import Control.Applicative.
+Require Import Control.Alternative.
 
 Definition Free (F : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> X) -> (F X -> X) -> X.
@@ -41,7 +41,7 @@ Definition bind_Free
   {A B : Type} (x : Free F A) (f : A -> Free F B) : Free F B :=
     fun X pure free => x X (fun a => f a X pure free) free.
 
-Require Import HSLib.MonadBind.Monad.
+Require Import Control.Monad.
 
 Instance Monad_Free : Monad (Free F) :=
 {
@@ -60,7 +60,7 @@ Proof.
   apply (aempty False False); trivial.
 Qed.
 
-Require Import HSLib.MonadPlus.MonadPlus.
+Require Import Control.MonadPlus.
 
 Theorem Free_not_MonadPlus :
   (forall F : Type -> Type, MonadPlus (Free F)) -> False.

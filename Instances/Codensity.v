@@ -1,9 +1,9 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.Functor.Functor.
-Require Import HSLib.Applicative.Applicative.
-Require Import HSLib.Alternative.Alternative.
+Require Import Control.Functor.
+Require Import Control.Applicative.
+Require Import Control.Alternative.
 
 Definition Codensity (A : Type) : Type :=
   forall {R : Type}, (A -> R) -> R.
@@ -46,7 +46,7 @@ Proof.
   apply (aempty False). intro. assumption.
 Qed.
 
-Require Import HSLib.MonadBind.Monad.
+Require Import Control.Monad.
 
 Instance MonadCodensity : Monad Codensity :=
 {

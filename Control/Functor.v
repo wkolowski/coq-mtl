@@ -1,6 +1,6 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import HSLib.Base.
+Require Export HSLib.Base.
 
 Class Functor (F : Type -> Type) : Type :=
 {
@@ -27,18 +27,18 @@ Qed.
 
 End DerivedLaws.
 
-Hint Rewrite @fmap_pres_id @fmap_pres_comp @fmap_pres_comp' : functor.
-Hint Rewrite @fmap_pres_id : functor'.
-Hint Rewrite <- @fmap_pres_comp @fmap_pres_comp' : functor'.
+Hint Rewrite @fmap_pres_id @fmap_pres_comp @fmap_pres_comp' : HSLib Functor.
+Hint Rewrite @fmap_pres_id : Functor'.
+Hint Rewrite <- @fmap_pres_comp @fmap_pres_comp' : Functor'.
 
 Ltac functor_simpl :=
-  autorewrite with functor.
+  autorewrite with Functor.
 
 Ltac functor_simpl' :=
-  autorewrite with functor'.
+  autorewrite with Functor'.
 
 Ltac functor :=
-  intros; (functor_simpl + functor_simpl'); id;
+  intros; (functor_simpl + functor_simpl');
   (congruence + reflexivity).
 
 Section FunctorFuns.

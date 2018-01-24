@@ -1,7 +1,7 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.MonadBind.Monad.
+Require Import Control.Monad.
 
 (** * Just do It: Simple Monadic Equational Reasoning *)
 
@@ -139,7 +139,7 @@ Coercion instA : MonadNondet >-> MonadAlt.
 End S0.
 
 Require Import HSLib.Instances.All.
-Require Import HSLib.MonadBind.MonadInst.
+Require Import Control.MonadInst.
 
 Instance MonadFail_List : MonadFail MonadList :=
 {

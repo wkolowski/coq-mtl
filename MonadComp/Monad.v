@@ -1,8 +1,8 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Export HSLib.Functor.Functor.
-Require Export HSLib.Applicative.Applicative.
+Require Export Control.Functor.
+Require Export Control.Applicative.
 
 (* Definition of monad using monadic composition. *)
 Class Monad (M : Type -> Type) : Type :=

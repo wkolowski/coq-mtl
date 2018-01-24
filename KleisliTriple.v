@@ -1,8 +1,8 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Export HSLib.Functor.Functor.
-Require Export HSLib.Applicative.Applicative.
+Require Export Control.Functor.
+Require Export Control.Applicative.
 
 Class KleisliTriple (M : Type -> Type) : Type :=
 {
@@ -28,7 +28,7 @@ Ltac ktr := autorewrite with Kleisli'.
 
 Ltac kt := ktl + ktr; congruence + reflexivity.
 
-Require Import HSLib.MonadBind.Monad.
+Require Import Control.Monad.
 
 Section KleisliTriple_to_MonadBind.
 

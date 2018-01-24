@@ -1,8 +1,6 @@
 Add LoadPath "/home/Zeimer/Code/Coq".
 
-Require Import HSLib.Base.
-Require Import HSLib.Functor.Functor.
-Require Import HSLib.Applicative.Applicative.
+Require Export HSLib.Control.Functor.
 
 (* Auxiliary functions needed to define Monoidal. *)
 Definition reassoc {A B C : Type} : (A * B) * C -> A * (B * C) :=
@@ -45,14 +43,3 @@ Lemma strength :
 Proof.
   intros. exact (fmap (pair a) fb).
 Qed.
-
-(*Lemma strength :
-  forall (F : Type -> Type) (inst : isMonoidal F)
-  (A B : Type) (a : A) (fb : F B), F (A * B)%type.
-Proof.
-  intros. destruct inst, isMonoidal_functor0.
-  clear natural0 pairF_assoc0 pairF_default_r0 pairF_default_l0
-    fmap_pres_id fmap_pres_comp.
-    specialize (fmap B A (fun _ => a) fb).
-    apply pairF0; assumption.
-Qed.*)

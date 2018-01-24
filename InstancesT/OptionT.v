@@ -2,14 +2,14 @@ Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
-Require Import HSLib.Applicative.Applicative.
-Require Import HSLib.Alternative.Alternative.
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadPlus.MonadPlus.
-Require Import HSLib.MonadTrans.MonadTrans.
+Require Import Control.Applicative.
+Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
+Require Import Control.MonadTrans.
 
 Require Import HSLib.Instances.All.
-Require Import HSLib.MonadBind.MonadInst.
+Require Import Control.MonadInst.
 
 Definition OptionT (M : Type -> Type) (A : Type) : Type := M (option A).
 
@@ -30,7 +30,7 @@ Instance Functor_OptionT (M : Type -> Type) {inst : Functor M}
     fmap := fmap_OptionT
 }.
 Proof.
-  all: unfold fmap_OptionT, fmap_Option; functor.
+  all: unfold fmap_OptionT, fmap_Option; mtrans.
 Defined.
 
 Definition ret_OptionT

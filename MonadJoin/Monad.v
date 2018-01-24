@@ -1,8 +1,8 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Export HSLib.Functor.Functor.
-Require Export HSLib.Applicative.Applicative.
+Require Export Control.Functor.
+Require Export Control.Applicative.
 
 (* Definition of monad using join. *)
 Class Monad (M : Type -> Type) : Type :=
@@ -30,8 +30,6 @@ Coercion is_applicative : Monad >-> Applicative.
 
 Hint Rewrite @join_fmap_join @join_ret @join_fmap_ret @join_fmap_fmap
   @join_ap : join.
-
-Ltac monad := autorewrite with join.
 
 Definition bind
   {M : Type -> Type} {inst : Monad M} {A B : Type} (ma : M A) (f : A -> M B)
@@ -149,7 +147,8 @@ Lemma bind_ap :
   forall (A B : Type) (mf : M (A -> B)) (mx : M A),
     mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x))).
 Proof.
-  intros. unfold bind, compose. rewrite join_ap. applicative.
+  intros. unfold bind, compose. rewrite join_ap.
+  autorewrite with HSLib.
   unfold compose. reflexivity.
 Qed.
 

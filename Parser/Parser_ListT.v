@@ -1,15 +1,13 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadBind.MonadInst.
+Require Import Control.Monad.
+Require Import Control.MonadInst.
 Require Import HSLib.Instances.All.
 Require Import HSLib.InstancesT.AllT.
 
 Require Import Ascii.
 Require Import String.
-
-Set Universe Polymorphism.
 
 Definition Parser (A : Type) : Type :=
   StateT string (ListT Identity) A.
@@ -22,9 +20,12 @@ Definition fail {A : Type} : Parser A :=
 Check Applicative_ListT _ MonadIdentity.
 
 Definition Applicative_Parser := Applicative_ListT _ MonadIdentity.
+Definition Alternative_Parser := Alternative_ListT _ MonadIdentity.
 Definition Monad_Parser := Monad_ListT _ MonadIdentity.
+(*Definition MonadPlus_Parser := MonadPlus_ListT _ MonadIdentity.*)
 
 Existing Instance Applicative_Parser.
+Existing Instance Alternative_Parser.
 Existing Instance Monad_Parser.
 
 Definition item : Parser ascii :=
@@ -77,21 +78,20 @@ Definition upper : Parser ascii :=
 
 Open Scope list_scope.
 
-(*Definition plus {A : Type} (p1 p2 : Parser A) : Parser A :=
-  fun input : string => (p1 input) ++ (p2 input).*)
-
-Definition plus {A : Type} (p1 p2 : Parser A) : Parser A :=
-  fun input : string => @aplus_ListT _ _ _ (p1 input) (p2 input).
-
-Notation "x <|> y" := (plus x y) (at level 42).
-
 (* TODO *)
-(*
+
 Definition letter : Parser ascii :=
-  @plus ascii lower upper.
+  lower <|> upper.
 
 Definition alnum : Parser ascii :=
-  plus letter digit.
+  letter <|> digit.
+
+Arguments char _ _%string.
+Arguments digit _%string.
+Arguments lower _%string.
+Arguments upper _%string.
+Arguments letter _%string.
+Arguments upper _%string.
 
 (** All words of length less than or equal to n. *)
 Fixpoint words (n : nat) : Parser string :=
@@ -119,8 +119,8 @@ Compute str "abc" "abcd".
 Fixpoint many'
   {A : Type} (n : nat) (p : Parser A) : Parser (list A) :=
 match n with
-    | 0 => ret [[]]
-    | S n' => (cons <$> p <*> many' n' p) <|> ret [[]]
+    | 0 => ret []
+    | S n' => (cons <$> p <*> many' n' p) <|> ret []
 end.
 
 Arguments many' [A] _ _ _%string.
@@ -334,10 +334,10 @@ Compute expr'' "3-2"%string.
 Definition ops
   {A B : Type} (start : Parser A * B) (l : list (Parser A * B)) : Parser B :=
 match l with
-    | [[]] => let '(p, op) := start in p >> ret op
+    | [] => let '(p, op) := start in p >> ret op
     | h :: t =>
         let '(p, op) := start in
-          fold_right plus (p >> ret op)
+          fold_right aplus (p >> ret op)
             (map (fun '(p, op) => p >> ret op) l)
 end.
 
@@ -367,7 +367,7 @@ match n with
         let
           addop := ops (char "+", Z.add) [(char "-", Z.sub)]
         in let
-          expop := ops (char "^", Z.pow) [[]]
+          expop := ops (char "^", Z.pow) []
         in let
           factor := parseZ <|> bracket (char "(") (exprn4 n') (char ")")
         in let
@@ -393,28 +393,19 @@ Definition chainr
 
 Definition first
   {A : Type} (p : Parser A) : Parser A :=
-    fun input : string =>
-match p input with
-    | [[]] => [[]]
-    | h :: _ => [h]
-end.
+    fun input : string => fun X nil cons =>
+      p input X nil (fun h _ => cons h nil).
+
+Arguments first [A] _ _%string.
+
+Time Compute many digit "123".
+Time Compute first (many digit) "123".
 
 Definition plus_det
   {A : Type} (p q : Parser A) : Parser A :=
     first (p <|> q).
 
 Notation "p +++ q" := (plus_det p q) (at level 42).
-
-Theorem plus_det_spec :
-  forall (A : Type) (p q : Parser A),
-    p <|> q = (fun _ => [[]]) \/
-    (exists x : A * string, p <|> q = fun _ => [x]) ->
-      p +++ q = p <|> q.
-Proof.
-  intros. extensionality input. unfold plus_det, first.
-  (* BEWARE: ]] gives an error *)
-  destruct H as [H | [x H] ]; rewrite H; reflexivity.
-Qed.
 
 Definition isSpace (c : ascii) : bool :=
   leb (nat_of_ascii c) 32.
@@ -425,10 +416,6 @@ Definition spaces : Parser unit :=
 Definition comment : Parser unit :=
   first
     (str "--" >> many (sat (fun c => negb (ascii_eqb c "013"))) >> ret tt).
-
-Arguments comment _%string.
-
-Compute comment "-- haskellowy komentarz polityczny".
 
 Definition junk : Parser unit :=
   many (spaces +++ comment) >> ret tt.
@@ -462,18 +449,23 @@ Definition identifier (keywords : list string) : Parser string :=
 
 Arguments spaces _%string.
 Arguments comment _%string.
+Arguments junk _%string.
+Arguments parse _ _%string.
+Arguments token _ _%string.
 Arguments symbol _%string.
 Arguments natural _%string.
 Arguments identifier _%string.
 
-Compute natural "123"%string.
+Compute comment "-- haskellowy komentarz polityczny".
+Time Compute natural "123".
+Time Compute first natural "123".
 
 Module Q.
 
+Require Import QArith.
+
 Definition nonzeroDigit : Parser ascii :=
   sat (fun c : ascii => leb 49 (nat_of_ascii c) && leb (nat_of_ascii c) 58).
-
-Require Import QArith.
 
 Definition parseQ : Parser Q := do
   a <- parseZ;
@@ -481,6 +473,7 @@ Definition parseQ : Parser Q := do
   b <- parsePositive;
   ret (a # b).
 
+Arguments nonzeroDigit _%string.
 Arguments parseQ _%string.
 
 Compute parseQ "1/5".
@@ -580,4 +573,3 @@ Arguments parseExpr' _%string.
 Time Compute parseExpr' "(x x)".
 Time Compute parseExpr' "\f -> \x -> (f x)".
 Time Compute parseExpr' "let x = (x x) in x".
-*)

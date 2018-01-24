@@ -1,8 +1,6 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
-Require Import HSLib.Base.
-Require Export HSLib.Functor.Functor.
-Require Export HSLib.Applicative.Applicative.
+Require Export HSLib.Control.Applicative.
 
 (* Definition of monad using bind (monadic application). *)
 Class Monad (M : Type -> Type) : Type :=
@@ -60,15 +58,10 @@ End MonadNotations.
 Export MonadNotations.
 
 Hint Rewrite @bind_ret_l @bind_ret_r @assoc @bind_ap @fmap_bind_ret
-  : monad_laws'.
+  : HSLib.
 
-Ltac monad_simpl' :=
-  intros;
-  autorewrite with monad_laws';
-  autorewrite with applicative_laws; functor_simpl.
-
-Ltac monad_aux t :=
-repeat (t; repeat match goal with
+Ltac monad :=
+repeat (hs + functor_simpl; repeat match goal with
     | |- context [_ .> id] => rewrite id_right
     | H : _ * _ |- _ => destruct H
     | |- ?x >>= _ = ?x => rewrite <- bind_ret_r
@@ -77,9 +70,7 @@ repeat (t; repeat match goal with
     | |- (fun _ => _) = _ => let x := fresh "x" in ext x
     | |- _ = (fun _ => _) => let x := fresh "x" in ext x
     | |- context [match ?x with _ => _ end] => destruct x
-end; t); try (unfold compose, id; cbn; congruence; fail).
-
-Ltac monad' := monad_aux monad_simpl'.
+end; hs); try (unfold compose, id; cbn; congruence; fail).
 
 Section MonadicFuns.
 
@@ -108,27 +99,19 @@ Lemma fmap_bind :
   forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
     fmap g (x >>= f) = x >>= (fun a : A => fmap g (f a)).
 Proof.
-  intros. rewrite fmap_bind_ret. monad'.
+  intros. hs. f_equal. exts. hs.
 Qed.
 
 Lemma bind_fmap :
   forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
     fmap f x >>= g = x >>= (f .> g).
 Proof.
-  intros. rewrite fmap_bind_ret. monad'.
+  monad.
 Qed.
 
 End DerivedLaws.
 
-Hint Rewrite @bind_ret_l @bind_ret_r @assoc @bind_fmap @fmap_bind @bind_ap
-  : monad_laws.
-
-Ltac monad_simpl :=
-  intros;
-  autorewrite with monad_laws;
-  autorewrite with applicative_laws; functor_simpl.
-
-Ltac monad := monad_aux monad_simpl.
+Hint Rewrite @bind_fmap @fmap_bind : HSLib.
 
 Section DerivedLaws2.
 
@@ -175,7 +158,7 @@ Theorem join_fmap :
   forall (A : Type) (x : M (M (M A))),
     join (fmap join x) = join (join x).
 Proof.
-  unfold join. monad_simpl. f_equal; try reflexivity.
+  unfold join. monad.
 Qed.
 
 Theorem join_ret :

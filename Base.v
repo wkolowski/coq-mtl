@@ -17,18 +17,6 @@ Tactic Notation "ext" := let x := fresh "x" in ext x.
 
 Ltac exts := repeat ext.
 
-(*Ltac exts'_aux l :=
-match l with
-    | [] => idtac
-    | ?h :: ?t => ext h; exts'_aux t
-end.
-
-Tactic Notation "exts'" simple_intropattern(l) := exts'_aux l.
-
-Goal (fun n => 1 + n) = (fun n => n + 1).
-Proof.
-  exts' n.*)
-
 Ltac gen x := generalize dependent x.
 
 Notation "f $ x" := (f x) (left associativity, at level 40, only parsing).
@@ -51,6 +39,20 @@ Proof.
   intros. unfold compose, id. ext x. reflexivity.
 Qed.
 
-Hint Rewrite @id_eq @id_left @id_right : id.
+Hint Rewrite @id_eq @id_left @id_right : HSLib HSLib'.
 
-Ltac id := autorewrite with id.
+Definition dummy := 42.
+
+Hint Unfold dummy : HSLib HSLib'.
+
+Ltac msimpl :=
+  repeat (autorewrite with HSLib + autounfold with HSLib).
+
+Ltac msimpl' :=
+  repeat (autorewrite with HSLib' + autounfold with HSLib).
+
+Ltac hs :=
+  cbn; intros; msimpl; try congruence.
+
+Ltac hs' :=
+  cbn; intros; msimpl'; try congruence.

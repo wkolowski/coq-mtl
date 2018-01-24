@@ -2,14 +2,14 @@ Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 
-Require Import HSLib.Applicative.Applicative.
-Require Import HSLib.Alternative.Alternative.
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadPlus.MonadPlus.
-Require Import HSLib.MonadTrans.MonadTrans.
+Require Import Control.Applicative.
+Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
+Require Import Control.MonadTrans.
 
 Require Import HSLib.Instances.All.
-Require Import HSLib.MonadBind.MonadInst.
+Require Import Control.MonadInst.
 
 Definition ReaderT (E : Type) (M : Type -> Type) (A : Type)
   : Type := E -> M A.
@@ -19,16 +19,14 @@ Definition fmap_ReaderT
   : ReaderT E M A -> ReaderT E M B :=
     fun (x : ReaderT E M A) (e : E) => fmap f (x e).
 
+Hint Unfold ReaderT fmap_ReaderT : HSLib.
+
 Instance Functor_ReaderT
   {M : Type -> Type} {inst : Monad M} {E : Type} : Functor (ReaderT E M) :=
 {
     fmap := @fmap_ReaderT M inst E
 }.
-Proof.
-  all: intros; unfold fmap_ReaderT; ext x; ext e.
-    rewrite fmap_pres_id. reflexivity.
-    rewrite fmap_pres_comp. unfold compose. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Definition ret_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A)
@@ -39,6 +37,8 @@ Definition ap_ReaderT
   (f : ReaderT E M (A -> B)) (x : ReaderT E M A) : ReaderT E M B :=
     fun e : E => f e <*> x e.
 
+Hint Unfold ret_ReaderT ap_ReaderT : HSLib.
+
 Instance Applicative_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Applicative (ReaderT E M) :=
 {
@@ -46,10 +46,7 @@ Instance Applicative_ReaderT
     ret := @ret_ReaderT M inst E;
     ap := @ap_ReaderT E M inst;
 }.
-Proof.
-  all: cbn; unfold fmap_ReaderT, ret_ReaderT, ap_ReaderT; intros; ext e;
-  applicative.
-Defined.
+Proof. all: monad. Defined.
 
 Theorem ReaderT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
@@ -60,10 +57,33 @@ Proof.
   compute in aempty. apply aempty. exact tt.
 Qed.
 
+Definition aempty_ReaderT
+  (E : Type) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
+  {A : Type} : ReaderT E M A := fun _ => aempty.
+
+Definition aplus_ReaderT
+  (E : Type) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
+  {A : Type} (x y : ReaderT E M A) : ReaderT E M A :=
+    fun c => x c <|> y c.
+
+Hint Unfold aempty_ReaderT aplus_ReaderT : HSLib.
+
+Instance Alternative_ReaderT
+  (E : Type) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
+  : Alternative (ReaderT E M) :=
+{
+    is_applicative := @Applicative_ReaderT E M instM;
+    aempty := @aempty_ReaderT E M instM instA;
+    aplus := @aplus_ReaderT E M instM instA;
+}.
+Proof. all: monad. Defined.
+
 Definition bind_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
   (x : ReaderT E M A) (f : A -> ReaderT E M B) : ReaderT E M B :=
     fun e : E => x e >>= (fun a : A => f a e).
+
+Hint Unfold bind_ReaderT : HSLib.
 
 Instance Monad_ReaderT
   (E : Type) (M : Type -> Type) {inst : Monad M} : Monad (ReaderT E M) :=
@@ -71,11 +91,7 @@ Instance Monad_ReaderT
     is_applicative := @Applicative_ReaderT E M inst;
     bind := @bind_ReaderT M inst E;
 }.
-Proof.
-  all: cbn;
-  unfold fmap_ReaderT, ret_ReaderT, ap_ReaderT, bind_ReaderT;
-  monad.
-Defined.
+Proof. all: monad. Defined.
 
 Theorem ReaderT_not_MonadPlus :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
@@ -85,9 +101,20 @@ Proof.
   intros. destruct (X E M inst). assumption.
 Qed.
 
+Instance MonadPlus_ReaderT
+  (E : Type) {M : Type -> Type} {inst : MonadPlus M}
+  : MonadPlus (ReaderT E M) :=
+{
+    is_monad := @Monad_ReaderT E M inst;
+    is_alternative := @Alternative_ReaderT E M inst inst;
+}.
+Proof. all: monad. Defined.
+
 Definition lift_ReaderT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : ReaderT E M A := fun _ => ma.
+
+Hint Unfold lift_ReaderT.
 
 Instance MonadTrans_ReaderT (E : Type) : MonadTrans (ReaderT E) :=
 {

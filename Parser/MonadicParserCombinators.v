@@ -1,8 +1,10 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.MonadBind.Monad.
-Require Import HSLib.MonadBind.MonadInst.
+Require Import Control.Monad.
+Require Import Control.MonadInst.
+
+(* Doesn't work because a refactorig is in progress. *)
 
 (** * Monadic Parser Combinators *)
 
@@ -81,13 +83,16 @@ Definition ap_Parser
       pa input' >>= fun '(a, input'') =>
         ret (f a, input'').
 
+Hint Unfold Parser fmap_Parser ret_Parser ap_Parser result : HSLib.
+
 Ltac parser :=
   cbn; unfold Parser, fmap_Parser, ret_Parser, result, ap_Parser; monad.
 
 Lemma p1 :
   forall (A : Type) (ax : Parser A),
     ap_Parser (ret_Parser (A -> A) id) ax = ax.
-Proof. abstract parser. Qed.
+Proof. hs. monad. admit.
+Admitted.
 
 Lemma p2 :
   forall (A B C : Type) (af : Parser (A -> B)) (ag : Parser (B -> C))
@@ -96,7 +101,9 @@ ap_Parser
   (ap_Parser
      (ap_Parser (ret_Parser ((B -> C) -> (A -> B) -> A -> C) compose) ag) af)
   ax = ap_Parser ag (ap_Parser af ax).
-Proof. abstract parser. Qed.
+Proof.
+  intros. exts. monad. Show Proof.
+Abort.
 
 Lemma p3 :
   forall (A B : Type) (f : A -> B) (x : A),
@@ -724,11 +731,9 @@ Definition parseExpr : Parser Expr :=
 
 Arguments parseExpr _%string.
 
-Compute parseExpr "(x x)".
-
-Compute parseExpr "fun f => fun x => (f x)".
-
-Compute parseExpr "let x := (x x) in x".
+Time Compute parseExpr "(x x)".
+Time Compute parseExpr "fun f => fun x => (f x)".
+Time Compute parseExpr "let x := (x x) in x".
 
 (** Parser for lambda calculus with Haskell-like syntax taken directly
     from the paper. *)
@@ -769,10 +774,8 @@ Definition parseExpr' : Parser Expr :=
 
 Arguments parseExpr' _%string.
 
-Compute parseExpr' "(x x)".
-
-Compute parseExpr' "\f -> \x -> (f x)".
-
-Compute parseExpr' "let x = (x x) in x".
+Time Compute parseExpr' "(x x)".
+Time Compute parseExpr' "\f -> \x -> (f x)".
+Time Compute parseExpr' "let x = (x x) in x".
 
 (** ** 7 Factorising the parser monad *)

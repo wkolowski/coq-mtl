@@ -1,8 +1,8 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.Applicative.Applicative.
-Require Export HSLib.Functor.Functor.
+Require Import Control.Applicative.
+Require Export Control.Functor.
 
 Class Monad (M : Type -> Type) : Type :=
 {
@@ -30,15 +30,10 @@ End MonadNotations.
 
 Export MonadNotations.
 
-Hint Rewrite @bind_ret_l @bind_ret_r @assoc : monad_laws.
-
-Ltac monad' :=
-  intros;
-  autorewrite with monad_laws;
-  autorewrite with applicative_laws.
+Hint Rewrite @bind_ret_l @bind_ret_r @assoc : HSLib.
 
 Ltac monad :=
-repeat (monad'; repeat match goal with
+repeat (hs; repeat match goal with
     | H : _ * _ |- _ => destruct H
     | |- ?x >>= _ = ?x => rewrite <- bind_ret_r
     | |- ?x = ?x >>= _ => rewrite <- bind_ret_r at 1
@@ -46,18 +41,18 @@ repeat (monad'; repeat match goal with
     | |- (fun _ => _) = _ => let x := fresh "x" in ext x
     | |- _ = (fun _ => _) => let x := fresh "x" in ext x
     | |- context [match ?x with _ => _ end] => destruct x
-end; monad'); try (unfold compose, id; cbn; congruence; fail).
+end; hs); try (unfold compose, id; cbn; congruence; fail).
 
 Definition fmap_Monad
   {M : Type -> Type} {inst : Monad M}
   {A B : Type} (f : A -> B) (ma : M A) : M B :=
     ma >>= (f .> ret).
 
+Hint Unfold fmap_Monad compose : HSLib.
+
 Instance Functor_Monad
   (M : Type -> Type) (inst : Monad M) : Functor M :=
 {
     fmap := @fmap_Monad M inst;
 }.
-Proof.
-  all: unfold fmap_Monad, compose; monad.
-Defined.
+Proof. all: monad. Defined.

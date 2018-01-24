@@ -1,7 +1,7 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Import HSLib.MonadBind.Monad.
+Require Import HSLib.Control.Monad.
 
 Require Import HSLib.Instances.All.
 
