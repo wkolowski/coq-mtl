@@ -1,8 +1,9 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
-Require Import HSLib.Base.
-Require Import Control.Monad.
+Require Export Control.Monad.
 Require Import Control.MonadInst.
+
+Require Import HSLib.Instances.ListInst.
 
 (* Doesn't work because a refactorig is in progress. *)
 
@@ -91,7 +92,8 @@ Ltac parser :=
 Lemma p1 :
   forall (A : Type) (ax : Parser A),
     ap_Parser (ret_Parser (A -> A) id) ax = ax.
-Proof. hs. monad. admit.
+Proof. hs. monad. rewrite app_nil_r.
+  induction (ax x); cbn; monad.
 Admitted.
 
 Lemma p2 :
@@ -102,7 +104,7 @@ ap_Parser
      (ap_Parser (ret_Parser ((B -> C) -> (A -> B) -> A -> C) compose) ag) af)
   ax = ap_Parser ag (ap_Parser af ax).
 Proof.
-  intros. exts. monad. Show Proof.
+  intros. exts. monad.
 Abort.
 
 Lemma p3 :

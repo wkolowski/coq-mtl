@@ -522,7 +522,7 @@ Definition parseExpr : Parser Expr :=
 
 Arguments parseExpr _%string.
 
-Time Compute parseExpr "(x x)".
+Time Compute parseExpr "(x x)"%string.
 Time Compute parseExpr "fun f => fun x => (f x)".
 Time Compute parseExpr "let x := (x x) in x".
 
