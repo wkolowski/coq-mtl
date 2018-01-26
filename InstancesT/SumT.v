@@ -9,7 +9,6 @@ Require Import Control.MonadPlus.
 Require Import Control.MonadTrans.
 
 Require Import HSLib.Instances.All.
-Require Import Control.MonadInst.
 
 Definition SumT (E : Type) (M : Type -> Type) (A : Type)
   : Type := M (sum E A).
@@ -30,9 +29,7 @@ Instance Functor_SumT
 {
     fmap := @fmap_SumT M inst E
 }.
-Proof.
-  all: hs; mtrans.
-Defined.
+Proof. all: hs; mtrans; monad. Defined.
 
 Definition ret_SumT
   {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A)
@@ -61,9 +58,7 @@ Instance Applicative_SumT
     ret := @ret_SumT M inst E;
     ap := @ap_SumT M inst E;
 }.
-Proof.
-  all: hs; monad.
-Defined.
+Proof. all: hs; monad. Defined.
 
 Theorem SumT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
@@ -93,9 +88,7 @@ Instance Alternative_SumT
     aempty := @aempty_SumT E M inst inst;
     aplus := @aplus_SumT E M inst inst;
 }.
-Proof.
-  all: hs.
-Defined.
+Proof. all: hs. Defined.
 
 Definition bind_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
@@ -114,9 +107,7 @@ Instance Monad_SumT
     is_applicative := @Applicative_SumT E M inst;
     bind := @bind_SumT M inst E;
 }.
-Proof.
-  all: hs; monad.
-Defined.
+Proof. all: hs; monad. Defined.
 
 Theorem SumT_not_MonadPlus :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
@@ -146,6 +137,4 @@ Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
     is_monad := @Monad_SumT E;
     lift := @lift_SumT E;
 }.
-Proof.
-  all: hs; monad.
-Defined.
+Proof. all: hs; monad. Defined.

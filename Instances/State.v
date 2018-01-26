@@ -4,6 +4,8 @@ Require Import HSLib.Base.
 Require Import Control.Functor.
 Require Import Control.Applicative.
 Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
 
 Definition State (S A : Type) := S -> A * S.
 
@@ -11,13 +13,13 @@ Definition fmap_State
   (S A B : Type) (f : A -> B) (st : State S A) : State S B :=
     fun s : S => let (a, s') := st s in (f a, s').
 
+Hint Unfold State fmap_State compose : HSLib.
+
 Instance FunctorState (S : Type) : Functor (State S) :=
 {
     fmap := @fmap_State S
 }.
-Proof.
-  all: intros; ext x; ext s; compute; destruct (x s); reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Definition ret_State
   (S A : Type) : A -> State S A :=
@@ -29,20 +31,15 @@ Definition ap_State
       let (f, stf) := sf st in
       let (a, sta) := sa stf in (f a, sta).
 
+Hint Unfold ret_State ap_State : HSLib.
+
 Instance ApplicativeState (S : Type) : Applicative (State S) :=
 {
     is_functor := FunctorState S;
     ret := @ret_State S;
     ap := @ap_State S
 }.
-Proof.
-  all: intros; compute; ext st.
-    destruct (ax st). reflexivity.
-    destruct (ag st), (af s), (ax s0). reflexivity.
-    reflexivity.
-    destruct (f st). reflexivity.
-    destruct (x st). reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Theorem State_not_CommutativeApplicative :
   ~ (forall S : Type, CommutativeApplicative _ (ApplicativeState S)).
@@ -62,14 +59,24 @@ Proof.
   assumption.
 Qed.
 
-Definition join_State
-  {S A : Type} (ssa : State S (State S A)) : State S A :=
-    fun s : S => let (f, s') := ssa s in f s'.
-
 Definition bind_State
   {S A B : Type} (sa : State S A) (f : A -> State S B)
     : State S B := fun s : S => let (a, s') := sa s in f a s'.
 
-Definition compM_State
-  {S A B C : Type} (f : A -> State S B) (g : B -> State S C) (a : A)
-    : State S C := fun s : S => let (b, s') := f a s in g b s'.
+Hint Unfold bind_State : HSLib.
+
+Instance Monad_State (S : Type) : Monad (State S) :=
+{
+    is_applicative := ApplicativeState S;
+    bind := @bind_State S
+}.
+Proof. all: monad. Defined.
+
+(* TODO *) Require Import HSLib.MonadClass.MonadState.
+Instance MonadState_State
+  (S : Type) : MonadState S (State S) (Monad_State S) :=
+{
+    get := fun s : S => (s, s);
+    put := fun s : S => fun _ => (tt, s)
+}.
+Proof. all: hs. Defined.

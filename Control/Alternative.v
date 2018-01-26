@@ -1,8 +1,8 @@
 Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
-Require Export HSLib.Foldable.
 Require Export HSLib.Control.Applicative.
-Print Applicative.
+Require Export HSLib.Control.Foldable.
+
 Class Alternative (F : Type -> Type) : Type :=
 {
     is_applicative :> Applicative F;

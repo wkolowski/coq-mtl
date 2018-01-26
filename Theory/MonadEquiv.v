@@ -13,13 +13,8 @@ Require Import Control.Monad.
 Include Control.Monad.
 End Bind.
 
-Module Comp.
-Require Import HSLib.MonadComp.Monad.
-Include HSLib.MonadComp.Monad.
-End Comp.
-
 Require Import Control.Applicative.
-Require Import HSLib.KleisliTriple.
+Require Import HSLib.Misc.KleisliTriple.
 
 Instance JoinToBind
   (M : Type -> Type) (inst : Join.Monad M) : Bind.Monad M :=

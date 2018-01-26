@@ -2,14 +2,12 @@ Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 Require Import Control.Monad.
-Require Import Control.MonadInst.
-Require Import HSLib.Instances.All.
-Require Import HSLib.InstancesT.AllT.
+
+Require Import HSLib.Instances.ListInst.
+Require Import HSLib.InstancesT.StateT.
 
 Require Import Ascii.
 Require Import String.
-
-Print Monad.
 
 Definition Parser (A : Type) : Type :=
   StateT string list A.
@@ -240,7 +238,7 @@ Definition sepby {A B : Type}
 
 Fixpoint exprn (n : nat) : Parser Z :=
 match n with
-    | 0 => ret []
+    | 0 => fail
     | S n' =>
         let
           addop := char "+" >> ret Z.add <|>
@@ -301,7 +299,7 @@ Compute parseNat_chainr "211".
 
 Fixpoint exprn'' (n : nat) : Parser Z :=
 match n with
-    | 0 => ret [] (* 0%Z *)
+    | 0 => fail (* 0%Z *)
     | S n' =>
         let
           op := char "+" >> ret Z.add <|>
@@ -522,7 +520,7 @@ Definition parseExpr : Parser Expr :=
 
 Arguments parseExpr _%string.
 
-Time Compute parseExpr "(x x)"%string.
+Time Compute parseExpr "(x x)".
 Time Compute parseExpr "fun f => fun x => (f x)".
 Time Compute parseExpr "let x := (x x) in x".
 

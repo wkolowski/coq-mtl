@@ -19,6 +19,8 @@ Ltac exts := repeat ext.
 
 Ltac gen x := generalize dependent x.
 
+Ltac inv H := inversion H; subst; clear.
+
 Notation "f $ x" := (f x) (left associativity, at level 40, only parsing).
 
 Lemma id_eq :
@@ -52,7 +54,19 @@ Ltac msimpl' :=
   repeat (autorewrite with HSLib' + autounfold with HSLib).
 
 Ltac hs :=
-  cbn; intros; msimpl; try congruence.
+  try split; try reflexivity; cbn; intros; msimpl; try congruence.
 
 Ltac hs' :=
-  cbn; intros; msimpl'; try congruence.
+  try split; try reflexivity; cbn; intros; msimpl'; try congruence.
+
+(* [destruct] on steroids that handles nested [match]es. *)
+Ltac unmatch x :=
+match x with
+    | context [match ?y with _ => _ end] => unmatch y
+    | _ => destruct x
+end.
+
+Ltac unmatch_all :=
+match goal with
+    | |- context [match ?x with _ => _ end] => unmatch x
+end.

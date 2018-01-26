@@ -4,6 +4,10 @@ Require Import HSLib.Base.
 Require Import Control.Functor.
 Require Import Control.Applicative.
 Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
+
+(* TODO *) Definition List (A : Type) : Type := list A.
 
 Definition fmap_List := map.
 
@@ -123,21 +127,11 @@ Proof.
   apply app_assoc.
 Defined.
 
-Fixpoint join_List {A : Type} (lla : list (list A)) : list A :=
-match lla with
-    | [] => []
-    | hl :: tll => hl ++ join_List tll
-end.
-
 Fixpoint bind_List {A B : Type} (la : list A) (f : A -> list B) : list B :=
 match la with
     | [] => []
     | h :: t => f h ++ bind_List t f
 end.
-
-Definition compM_List
-  {A B C : Type} (f : A -> list B) (g : B -> list C) (x : A) : list C :=
-    bind_List (f x) g.
 
 Theorem bind_List_app :
   forall (A B : Type) (l1 l2 : list A) (f : A -> list B),
@@ -155,3 +149,25 @@ Proof.
   specialize (ap_comm _ _ _ (fun _ => id) [true; false] [false; true]).
   compute in ap_comm. inversion ap_comm.
 Qed.
+
+Instance MonadList : Monad list :=
+{
+    is_applicative := ApplicativeList;
+    bind := @bind_List
+}.
+Proof.
+  all: cbn.
+  intros. rewrite app_nil_r. reflexivity.
+  induction ma as [| h t]; cbn; rewrite ?IHt; reflexivity.
+  induction ma as [| h t]; cbn; intros.
+    trivial.
+    rewrite bind_List_app, <- IHt. trivial.
+  induction x as [| h t]; cbn; intros.
+    reflexivity.
+    unfold compose in *. rewrite IHt. reflexivity.
+  induction mf as [| hf tf]; cbn; intros.
+    reflexivity.
+    rewrite <- IHtf. f_equal. induction mx as [| h t]; cbn.
+      reflexivity.
+      rewrite IHt. reflexivity.
+Defined.

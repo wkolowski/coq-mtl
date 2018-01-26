@@ -4,6 +4,8 @@ Require Import HSLib.Base.
 Require Import Control.Functor.
 Require Import Control.Applicative.
 Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
 
 Definition Cont (R A : Type) : Type := (A -> R) -> R.
 
@@ -14,7 +16,7 @@ Instance FunctorCont (R : Type) : Functor (Cont R) :=
 {
     fmap := @fmap_Cont R
 }.
-Proof. all: reflexivity. Defined.
+Proof. all: hs. Defined.
 
 Definition ret_Cont
   {R A : Type} (a : A) : Cont R A :=
@@ -30,19 +32,11 @@ Instance ApplicativeCont (R : Type) : Applicative (Cont R) :=
     ret := @ret_Cont R;
     ap := @ap_Cont R
 }.
-Proof. all: reflexivity. Defined.
-
-Definition join_Cont
-  {R A : Type} (cca : Cont R (Cont R A)) : Cont R A :=
-    fun f : A -> R => cca (fun g : (A -> R) -> R => g f).
+Proof. all: hs. Defined.
 
 Definition bind_Cont
   {R A B : Type} (ca : Cont R A) (f : A -> Cont R B) : Cont R B :=
     fun g : B -> R => ca (fun x : A => f x g).
-
-Definition compM_Cont
-  {R A B C : Type} (f : A -> Cont R B) (g : B -> Cont R C) (a : A)
-    : Cont R C := fun y : C -> R => f a (fun b : B => g b y).
 
 Theorem Cont_not_Alternative :
   (forall R : Type, Alternative (Cont R)) -> False.
@@ -60,6 +54,17 @@ Proof.
   inversion ap_comm.
 Qed.
 
-Definition callCC
+Instance MonadCont (R : Type) : Monad (Cont R) :=
+{
+    is_applicative := ApplicativeCont R;
+    bind := @bind_Cont R
+}.
+Proof. all: hs. Defined.
+
+Hint Unfold Cont fmap_Cont ret_Cont ap_Cont bind_Cont : HSLib.
+
+Require Import Arith.
+
+(* TODO *) Definition callCC
   {R A B : Type} (f : (A -> Cont R B) -> Cont R A) : Cont R A :=
     fun ar : A -> R => f (fun (a : A) (_ : B -> R) => ar a) ar.

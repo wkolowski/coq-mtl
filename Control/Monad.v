@@ -59,18 +59,35 @@ Export MonadNotations.
 
 Hint Rewrite @bind_ret_l @bind_ret_r @assoc @bind_ap @fmap_bind_ret
   : HSLib.
-
+(*
 Ltac monad :=
 repeat (hs + functor_simpl; repeat match goal with
-    | |- context [_ .> id] => rewrite id_right
-    | H : _ * _ |- _ => destruct H
+(*    | |- context [_ .> id] => rewrite id_right*)
+    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
+    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
+    | |- context [let _ := ?x in _] => destruct x (* beware *)
+    | x : _ * _ |- _ => destruct x
+    | x : _ + _ |- _ => destruct x (* beware *)
     | |- ?x >>= _ = ?x => rewrite <- bind_ret_r
     | |- ?x = ?x >>= _ => rewrite <- bind_ret_r at 1 (* BEWARE *)
     | |- ?x >>= _ = ?x >>= _ => f_equal; try reflexivity
-    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
-    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
     | |- context [match ?x with _ => _ end] => destruct x
 end; hs); try (unfold compose, id; cbn; congruence; fail).
+*)
+
+Ltac monad := intros;
+repeat ((*hs + functor_simpl;*) match goal with
+(*    | |- context [_ .> id] => rewrite id_right*)
+    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
+    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
+    | x : _ * _ |- _ => destruct x
+    | x : _ + _ |- _ => destruct x (* beware *)
+    | |- ?x >>= _ = ?x => rewrite <- bind_ret_r; f_equal
+    | |- ?x = ?x >>= _ => rewrite <- bind_ret_r at 1; f_equal (* BEWARE *)
+    | |- ?x >>= _ = ?x >>= _ => f_equal; try reflexivity
+    | |- context [match ?x with _ => _ end] => hs; unmatch x
+    | _ => hs + functor_simpl
+end(*; hs*)); try (unfold compose, id; cbn; congruence; fail).
 
 Section MonadicFuns.
 
@@ -109,9 +126,24 @@ Proof.
   monad.
 Qed.
 
+(*Lemma bind_ret_expand_l :
+  forall (A : Type) (f : A -> M A) (x : M A),
+    f = ret -> x = x >>= f.
+Proof.
+  intros. subst. rewrite <- bind_ret_r at 1. reflexivity.
+Qed.
+
+Lemma bind_ret_expand_r :
+  forall (A : Type) (f : A -> M A) (x : M A),
+    f = ret -> x >>= f = x.
+Proof.
+  intros. subst. rewrite <- bind_ret_r. reflexivity.
+Qed.*)
+
 End DerivedLaws.
 
-Hint Rewrite @bind_fmap @fmap_bind : HSLib.
+Hint Rewrite @bind_fmap @fmap_bind (*bind_ret_expand_l bind_ret_expand_r*)
+  : HSLib.
 
 Section DerivedLaws2.
 

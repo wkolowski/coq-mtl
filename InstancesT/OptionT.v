@@ -9,29 +9,22 @@ Require Import Control.MonadPlus.
 Require Import Control.MonadTrans.
 
 Require Import HSLib.Instances.All.
-Require Import Control.MonadInst.
 
 Definition OptionT (M : Type -> Type) (A : Type) : Type := M (option A).
-
-Definition fmap_Option {A B : Type} (f : A -> B) (oa : option A) : option B :=
-match oa with
-    | None => None
-    | Some a => Some (f a)
-end.
 
 Definition fmap_OptionT
   {M : Type -> Type} {inst : Functor M}
   (A B : Type) (f : A -> B) : OptionT M A -> OptionT M B :=
     fmap (fmap_Option f).
 
+Hint Unfold OptionT fmap_OptionT : HSLib.
+
 Instance Functor_OptionT (M : Type -> Type) {inst : Functor M}
     : Functor (OptionT M) :=
 {
     fmap := fmap_OptionT
 }.
-Proof.
-  all: unfold fmap_OptionT, fmap_Option; mtrans.
-Defined.
+Proof. all: hs; mtrans; monad. Defined.
 
 Definition ret_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type} (x : A) : OptionT M A :=
@@ -51,6 +44,8 @@ Definition ap_OptionT
         | _ => ret None
     end).
 
+Hint Unfold ret_OptionT ap_OptionT : HSLib.
+
 Instance Applicative_OptionT
   (M : Type -> Type) (inst : Monad M) : Applicative (OptionT M) :=
 {
@@ -58,9 +53,7 @@ Instance Applicative_OptionT
     ret := @ret_OptionT M inst;
     ap := @ap_OptionT M inst;
 }.
-Proof.
-  all: cbn; unfold OptionT, fmap_OptionT, ret_OptionT, ap_OptionT; monad.
-Defined.
+Proof. Time all: monad. Defined.
 
 Definition aempty_OptionT
   (M : Type -> Type) (inst : Monad M) (A : Type) : OptionT M A :=
@@ -77,6 +70,8 @@ Definition aplus_OptionT
         | _, _ => ret None
     end)).
 
+Hint Unfold aempty_OptionT aplus_OptionT : HSLib.
+
 Instance Alternative_OptionT
   (M : Type -> Type) (inst : Monad M) : Alternative (OptionT M) :=
 {
@@ -84,9 +79,7 @@ Instance Alternative_OptionT
     aempty := aempty_OptionT M inst;
     aplus := aplus_OptionT M inst;
 }.
-Proof.
-  all: unfold OptionT, aplus_OptionT, aempty_OptionT; monad.
-Defined.
+Proof. Time all: monad. Defined.
 
 Definition bind_OptionT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -97,16 +90,15 @@ Definition bind_OptionT
         | Some a => f a
     end).
 
+Hint Unfold bind_OptionT : HSLib.
+
 Instance Monad_OptionT
   (M : Type -> Type) (inst : Monad M) : Monad (OptionT M) :=
 {
     is_applicative := Applicative_OptionT M inst;
     bind := @bind_OptionT M inst
 }.
-Proof.
-  all: cbn;
-  unfold OptionT, fmap_OptionT, ret_OptionT, ap_OptionT, bind_OptionT; monad.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadPlus_OptionT
   (M : Type -> Type) (inst : Monad M) : MonadPlus (OptionT M) :=
@@ -118,11 +110,11 @@ Instance MonadPlus_OptionT
 Definition lift_OptionT {M : Type -> Type} {_inst : Monad M} {A : Type}
   (ma : M A) : OptionT M A := fmap Some ma.
 
+Hint Unfold lift_OptionT : HSLib.
+
 Instance MonadTrans_OptionT : MonadTrans OptionT :=
 {
     is_monad := @Monad_OptionT;
     lift := @lift_OptionT;
 }.
-Proof.
-  all: cbn; unfold lift_OptionT, ret_OptionT, bind_OptionT, compose; monad.
-Defined.
+Proof. all: monad. Defined.

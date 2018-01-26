@@ -1,8 +1,8 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
+Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
-Require Export Control.Functor.
-Require Export Control.Applicative.
+Require Import Control.Functor.
+Require Import Control.Applicative.
 Require Import Control.Alternative.
 Require Import Control.Monad.
 Require Import Control.MonadPlus.
@@ -99,3 +99,5 @@ Theorem RT_not_MonadPlus :
 Proof.
   destruct 1. apply RT_not_Alternative. assumption.
 Qed.
+
+Hint Unfold fmap_RT ret_RT ap_RT bind_RT : HSLib.

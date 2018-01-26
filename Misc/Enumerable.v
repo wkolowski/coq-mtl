@@ -2,7 +2,8 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Import HSLib.Base.
 Require Import Control.Monad.
-Require Import Control.MonadInst.
+Require Import HSLib.Instances.All.
+
 
 (* Just for teh lulz. *)
 Class Enumerable (A : Type) : Type :=

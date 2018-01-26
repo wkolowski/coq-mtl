@@ -66,7 +66,7 @@ Theorem RoseTreeT_not_Alternative :
 Proof.
   unfold RoseTreeT; intros.
   Require Import HSLib.Instances.All.
-  Require Import Control.MonadInst.
+  
   specialize (X Identity (MonadIdentity)).
   unfold Identity in *. destruct X.
   apply (aempty False False); trivial.

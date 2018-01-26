@@ -17,7 +17,7 @@ Class MonadTrans (T : (Type -> Type) -> Type -> Type) : Type :=
 
 (* Tactic for dealing with functor instances specific to monad
    transformers. *)
-Ltac mtrans := intros; try
+Ltac mtrans := hs; try
 match goal with
     | |- fmap (fun x : ?A => ?e) = _ =>
           let x := fresh "x" in
@@ -27,4 +27,7 @@ match goal with
           let x := fresh "x" in
           replace f with (g .> h);
           [rewrite fmap_pres_comp | ext x; induction x]; try reflexivity
+    | |- context [fmap ?f = fun _ => fmap ?g (fmap ?h _)] =>
+          let x := fresh "x" in ext x;
+          rewrite <- fmap_pres_comp'; f_equal
 end.

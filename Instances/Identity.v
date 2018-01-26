@@ -4,6 +4,8 @@ Require Import HSLib.Base.
 Require Import Control.Functor.
 Require Import Control.Applicative.
 Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
 
 Definition Identity (A : Type) : Type := A.
 
@@ -14,7 +16,7 @@ Instance FunctorIdentity : Functor Identity :=
 {
     fmap := @fmap_Identity
 }.
-Proof. all: auto. Defined.
+Proof. all: hs. Defined.
 
 Definition ret_Identity {A : Type} (x : A) : Identity A := x.
 
@@ -28,17 +30,10 @@ Instance Applicative_Identity : Applicative Identity :=
     ret := @ret_Identity;
     ap := @ap_Identity
 }.
-Proof. all: reflexivity. Defined.
+Proof. all: hs. Defined.
 
 Definition bind_Identity
   {A B : Type} (a : Identity A) (f : A -> Identity B) : Identity B := f a.
-
-Definition join_Identity
-  {A : Type} (x : Identity (Identity A)) : Identity A := x.
-
-Definition compM_Identity
-  {A B C : Type} (f : A -> Identity B) (g : B -> Identity C)
-  (x : A) : Identity C := g (f x).
 
 Theorem Identity_not_Alternative :
   Alternative Identity -> False.
@@ -47,5 +42,15 @@ Proof.
 Qed.
 
 Instance CommutativeApplicative_Identity :
-  CommutativeApplicative _ Applicative_Identity := {}.
-Proof. reflexivity. Qed.
+  CommutativeApplicative _ Applicative_Identity.
+Proof. hs. Qed.
+
+Instance MonadIdentity : Monad Identity :=
+{
+    is_applicative := Applicative_Identity;
+    bind := @bind_Identity
+}.
+Proof. all: hs. Defined.
+
+Hint Unfold Identity fmap_Identity ret_Identity ap_Identity bind_Identity
+  : HSLib.

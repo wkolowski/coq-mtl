@@ -1,7 +1,7 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
-Require Import HSLib.Base.
-Require Import HSLib.Monoid.
+Require Export HSLib.Base.
+Require Export HSLib.Misc.Monoid.
 
 Require Import Arith.
 

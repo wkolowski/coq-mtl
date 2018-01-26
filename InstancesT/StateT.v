@@ -4,7 +4,7 @@ Require Export Control.MonadPlus.
 Require Export Control.MonadTrans.
 
 Require Import HSLib.Instances.Identity.
-Require Import Control.MonadInst.
+
 
 Definition StateT (S : Type) (M : Type -> Type) (A : Type)
   : Type := S -> M (A * S)%type.

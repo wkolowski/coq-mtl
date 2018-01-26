@@ -4,6 +4,10 @@ Require Import HSLib.Base.
 Require Import Control.Functor.
 Require Import Control.Applicative.
 Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
+
+(* TODO *) Definition Sum (E A : Type) : Type := sum E A.
 
 Definition fmap_Sum
   {E A B : Type} (f : A -> B) (x : sum E A) : sum E B :=
@@ -12,13 +16,13 @@ match x with
     | inr b => inr (f b)
 end.
 
+Hint Unfold Sum fmap_Sum : HSLib.
+
 Instance FunctorSum (E : Type) : Functor (sum E) :=
 {
     fmap := @fmap_Sum E
 }.
-Proof.
-  all: intros; ext x; destruct x; compute; reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Definition ret_Sum {E A : Type} (x : A) : sum E A := inr x.
 
@@ -30,18 +34,15 @@ match sf, sa with
     | inr f, inr x => inr (f x)
 end.
 
+Hint Unfold ret_Sum ap_Sum : HSLib.
+
 Instance ApplicativeSum (E : Type) : Applicative (sum E) :=
 {
     is_functor := FunctorSum E;
     ret := @ret_Sum E;
     ap := @ap_Sum E
 }.
-Proof.
-  all: intros; repeat
-  match goal with
-      | x : _ + _ |- _ => destruct x
-  end; compute; reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Theorem Sum_not_CommutativeApplicative :
   ~ (forall E : Type, CommutativeApplicative _ (ApplicativeSum E)).
@@ -58,16 +59,6 @@ Proof.
   destruct (aempty False); assumption. 
 Qed.
 
-Definition join_Sum {E A : Type} (ssa : sum E (sum E A)) : sum E A :=
-match ssa with
-    | inl e => inl e
-    | inr sa =>
-        match sa with
-            | inl e => inl e
-            | inr a => inr a
-        end
-end.
-
 Definition bind_Sum
   {E A B : Type} (sa : sum E A) (f : A -> sum E B) : sum E B :=
 match sa with
@@ -75,6 +66,11 @@ match sa with
     | inr a => f a
 end.
 
-Definition compM_Sum
-  {E A B C : Type} (f : A -> sum E B) (g : B -> sum E C) (x : A)
-    : sum E C := bind_Sum (f x) g.
+Hint Unfold bind_Sum : HSLib.
+
+Instance MonadSum (A : Type) : Monad (sum A) :=
+{
+    is_applicative := ApplicativeSum A;
+    bind := @bind_Sum A
+}.
+Proof. all: monad. Defined.

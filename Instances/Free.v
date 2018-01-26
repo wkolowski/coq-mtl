@@ -4,6 +4,10 @@ Require Import HSLib.Base.
 Require Import Control.Functor.
 Require Import Control.Applicative.
 Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.MonadPlus.
+
+Require Import HSLib.Instances.Identity.
 
 Definition Free (F : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> X) -> (F X -> X) -> X.
@@ -20,7 +24,7 @@ Instance Functor_Free : Functor (Free F) :=
 {
     fmap := @fmap_Free
 }.
-Proof. all: reflexivity. Defined.
+Proof. all: hs. Defined.
 
 Definition ret_Free
   {A : Type} (x : A) : Free F A :=
@@ -35,23 +39,19 @@ Instance Applicative_Free : Applicative (Free F) :=
     ret := @ret_Free;
     ap := @ap_Free;
 }.
-Proof. all: reflexivity. Defined.
+Proof. all: hs. Defined.
 
 Definition bind_Free
   {A B : Type} (x : Free F A) (f : A -> Free F B) : Free F B :=
     fun X pure free => x X (fun a => f a X pure free) free.
 
-Require Import Control.Monad.
-
 Instance Monad_Free : Monad (Free F) :=
 {
     bind := @bind_Free
 }.
-Proof. all: reflexivity. Defined.
+Proof. all: hs. Defined.
 
 End Free.
-
-Require Import HSLib.Instances.All.
 
 Theorem Free_not_Alternative :
   (forall F : Type -> Type, Alternative (Free F)) -> False.
@@ -60,15 +60,13 @@ Proof.
   apply (aempty False False); trivial.
 Qed.
 
-Require Import Control.MonadPlus.
-
 Theorem Free_not_MonadPlus :
   (forall F : Type -> Type, MonadPlus (Free F)) -> False.
 Proof.
   intro. apply Free_not_Alternative, X.
 Defined.
 
-Class MonadFree
+(* TODO *) Class MonadFree
   (F M : Type -> Type) (instF : Functor F) (instM : Monad M) : Type :=
 {
     wrap : forall {A : Type}, F (M A) -> M A;
@@ -90,4 +88,6 @@ Instance MonadFree_Free
 {
     wrap := @wrap_Free F;
 }.
-Proof. reflexivity. Defined.
+Proof. hs. Defined.
+
+Hint Unfold Free fmap_Free ret_Free ap_Free bind_Free wrap_Free.

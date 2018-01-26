@@ -9,7 +9,7 @@ Require Import Control.MonadPlus.
 Require Import Control.MonadTrans.
 
 Require Import HSLib.Instances.All.
-Require Import Control.MonadInst.
+
 
 Definition ReaderT (E : Type) (M : Type -> Type) (A : Type)
   : Type := E -> M A.
