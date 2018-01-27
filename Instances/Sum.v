@@ -24,7 +24,7 @@ Instance FunctorSum (E : Type) : Functor (sum E) :=
 }.
 Proof. all: monad. Defined.
 
-Definition ret_Sum {E A : Type} (x : A) : sum E A := inr x.
+Definition pure_Sum {E A : Type} (x : A) : sum E A := inr x.
 
 Definition ap_Sum
   {E A B : Type} (sf : sum E (A -> B)) (sa : sum E A) : sum E B :=
@@ -34,12 +34,12 @@ match sf, sa with
     | inr f, inr x => inr (f x)
 end.
 
-Hint Unfold ret_Sum ap_Sum : HSLib.
+Hint Unfold pure_Sum ap_Sum : HSLib.
 
 Instance ApplicativeSum (E : Type) : Applicative (sum E) :=
 {
     is_functor := FunctorSum E;
-    ret := @ret_Sum E;
+    pure := @pure_Sum E;
     ap := @ap_Sum E
 }.
 Proof. all: monad. Defined.

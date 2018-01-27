@@ -28,7 +28,7 @@ Proof.
   all: monad.
 Defined.
 
-Definition ret_Option := @Some.
+Definition pure_Option := @Some.
 
 Definition ap_Option
   {A B : Type} (of : option (A -> B)) (oa : option A) : option B :=
@@ -37,12 +37,12 @@ match of, oa with
     | _, _ => None
 end.
 
-Hint Unfold ret_Option ap_Option : HSLib.
+Hint Unfold pure_Option ap_Option : HSLib.
 
 Instance ApplicativeOption : Applicative option :=
 {
     is_functor := FunctorOption;
-    ret := ret_Option;
+    pure := pure_Option;
     ap := @ap_Option
 }.
 Proof. all: monad. Defined.

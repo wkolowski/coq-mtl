@@ -2,33 +2,44 @@ Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Export HSLib.Control.Applicative.
 
-(* Definition of monad using bind (monadic application). *)
+(** A [bind]-based definition of monads — the basic one in the library (see
+    MonadJoin/Monad.v and Theory/KleisliTriple.v for alternate definitions).
+    The intended categorical semantics is monoidal monad in the category of
+    Coq's types and functions.
+
+    The design here is as follows:
+    - [Applicative] is a superclass of [Monad]
+      (see https://wiki.haskell.org/Functor-Applicative-Monad_Proposal)
+    - there is no [return] and [Applicative]'s [pure] is used instead
+    - the operators [<<] and [>>] are moved to [Applicative] and replace
+      <* and *> respectively.
+
+    There are 4 laws:
+    - [bind_pure_l], [bind_pure_r] and [bind_assoc] are standard
+    - [bind_ap] ensures that [bind] is compatible with [ap] (and thus
+      also with [fmap])
+
+    Note that these laws are redundant, as [bind_pure_l] follows from
+    [bind_ap] and the [Applicative] laws. *)
 Class Monad (M : Type -> Type) : Type :=
 {
     is_applicative :> Applicative M;
     bind : forall {A B : Type}, M A -> (A -> M B) -> M B;
-    bind_ret_l :
+    bind_pure_l :
       forall (A B : Type) (f : A -> M B) (a : A),
-        bind (ret a) f = f a;
-    bind_ret_r :
+        bind (pure a) f = f a;
+    bind_pure_r :
       forall (A : Type) (ma : M A),
-        bind ma ret = ma;
-    assoc :
+        bind ma pure = ma;
+    bind_assoc :
       forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
         bind (bind ma f) g = bind ma (fun x => bind (f x) g);
-    fmap_bind_ret :
-      forall (A B : Type) (f : A -> B) (x : M A),
-        fmap f x = bind x (fun a : A => ret (f a));
     bind_ap :
       forall (A B : Type) (mf : M (A -> B)) (mx : M A),
-        mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x)));
+        mf <*> mx = bind mf (fun f => bind mx (fun x => pure (f x)));
 }.
 
 Coercion is_applicative : Monad >-> Applicative.
-
-Definition bind_
-  {M : Type -> Type} {_ : Monad M} {A B : Type} (ma : M A) (mb : M B)
-    : M B := bind ma (fun _ => mb).
 
 Definition join
   {M : Type -> Type} {_inst : Monad M} {A : Type} (mma : M (M A))
@@ -39,16 +50,22 @@ Definition compM
   (f : A -> M B) (g : B -> M C) (a : A) : M C :=
     bind (f a) g.
 
+(** Basic notations for [bind] and [compM] and a retarded do-notation. The
+    retardedness refers to these facts:
+    - [e1 >> e2] is written [e1 ;; e2] with double semicolon (instead of
+      the single semicolon as in Haskell) because otherwise [Notation] gets
+      mad
+    - pattern matches (even irrefutable ones) are not allowed
+    - you can insert a meanigless 'do' anywhere *)
 Module MonadNotations.
 
 Notation "mx >>= f" := (bind mx f) (at level 40).
-Notation "ma >> mb" := (bind_ ma mb) (at level 40).
 Notation "f >=> g" := (compM f g) (at level 40).
 
 Notation "x '<-' e1 ; e2" := (bind e1 (fun x => e2))
   (right associativity, at level 42, only parsing).
 
-Notation "e1 ;; e2" := (bind_ e1 e2)
+Notation "e1 ;; e2" := (constrA e1 e2)
   (right associativity, at level 42, only parsing).
 
 Notation "'do' e" := e (at level 50, only parsing).
@@ -57,38 +74,37 @@ End MonadNotations.
 
 Export MonadNotations.
 
-Hint Rewrite @bind_ret_l @bind_ret_r @assoc @bind_ap @fmap_bind_ret
+Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap
   : HSLib.
-(*
-Ltac monad :=
-repeat (hs + functor_simpl; repeat match goal with
-(*    | |- context [_ .> id] => rewrite id_right*)
-    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
-    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
-    | |- context [let _ := ?x in _] => destruct x (* beware *)
-    | x : _ * _ |- _ => destruct x
-    | x : _ + _ |- _ => destruct x (* beware *)
-    | |- ?x >>= _ = ?x => rewrite <- bind_ret_r
-    | |- ?x = ?x >>= _ => rewrite <- bind_ret_r at 1 (* BEWARE *)
-    | |- ?x >>= _ = ?x >>= _ => f_equal; try reflexivity
-    | |- context [match ?x with _ => _ end] => destruct x
-end; hs); try (unfold compose, id; cbn; congruence; fail).
-*)
 
-Ltac monad := intros;
-repeat ((*hs + functor_simpl;*) match goal with
-(*    | |- context [_ .> id] => rewrite id_right*)
+(** The main workhorse tactic for most of the library. It proceeds like this:
+    - apply the [functional_extensionality] axiom whenever it's possible
+    - destruct pairs, sums and [unit]s
+    - try to deal with monadic equations containig [>>=] on either side
+    - destruct possibly nested pattern matches using tha tactic [unmatch]
+      from Base.v
+    - if all else fails, use the tactic [hs] from Base.v to automatically
+      unfold definitios and perform rewriting
+    - after the main loop is done, try [congruence] after some
+      simplification *)
+Ltac monad := intros; repeat
+match goal with
     | |- (fun _ => _) = _ => let x := fresh "x" in ext x
     | |- _ = (fun _ => _) => let x := fresh "x" in ext x
     | x : _ * _ |- _ => destruct x
-    | x : _ + _ |- _ => destruct x (* beware *)
-    | |- ?x >>= _ = ?x => rewrite <- bind_ret_r; f_equal
-    | |- ?x = ?x >>= _ => rewrite <- bind_ret_r at 1; f_equal (* BEWARE *)
+    | x : _ + _ |- _ => destruct x
+    | x : unit |- _ => destruct x
+    | |- ?x >>= _ = ?x => rewrite <- bind_pure_r; f_equal
+    | |- ?x = ?x >>= _ => rewrite <- bind_pure_r at 1; f_equal
     | |- ?x >>= _ = ?x >>= _ => f_equal; try reflexivity
     | |- context [match ?x with _ => _ end] => hs; unmatch x
     | _ => hs + functor_simpl
-end(*; hs*)); try (unfold compose, id; cbn; congruence; fail).
+end; try (unfold compose, id; cbn; congruence; fail).
 
+(** All functions that in Haskell are doubled between [Applicative] and
+    [Monad] in this library are moved to [Applicative] and named with an
+    "A" at the end. The versions ending in "M" don't exist, contrary to
+    Haskell. *)
 Section MonadicFuns.
 
 Variable M : Type -> Type.
@@ -98,13 +114,13 @@ Variables A B C D E F : Type.
 Fixpoint foldM (f : A -> B -> M A) (dflt : A) (l : list B)
     : M A :=
 match l with
-    | [] => ret dflt
+    | [] => pure dflt
     | h :: t => f dflt h >>= fun a : A => foldM f a t
 end.
 
 End MonadicFuns.
 
-Arguments foldM [M] [inst] [A] [B] _ _ _.
+Arguments foldM [M inst A B] _ _ _.
 
 Section DerivedLaws.
 
@@ -126,23 +142,35 @@ Proof.
   monad.
 Qed.
 
-(*Lemma bind_ret_expand_l :
-  forall (A : Type) (f : A -> M A) (x : M A),
-    f = ret -> x = x >>= f.
+Lemma fmap_bind_pure :
+  forall (A B : Type) (f : A -> B) (x : M A),
+    fmap f x = x >>= (fun a : A => pure (f a)).
 Proof.
-  intros. subst. rewrite <- bind_ret_r at 1. reflexivity.
+  intros.
+  replace (x >>= fun a : A => pure (f a))
+  with (pure f >>= fun f => x >>= fun a => pure (f a)).
+    rewrite <- bind_ap. rewrite fmap_pure_ap. reflexivity.
+    rewrite bind_pure_l. reflexivity.
 Qed.
 
-Lemma bind_ret_expand_r :
-  forall (A : Type) (f : A -> M A) (x : M A),
-    f = ret -> x >>= f = x.
+(* TODO: pursure this *)
+Lemma bind_pure_l_derived :
+  forall (A B : Type) (f : A -> M B) (a : A),
+    pure a >>= f = f a.
 Proof.
-  intros. subst. rewrite <- bind_ret_r. reflexivity.
-Qed.*)
+  intros.
+  replace (pure a >>= f)
+  with (join (pure f >>= fun f' => pure a >>= fun a => pure (f' a))).
+    rewrite <- bind_ap. unfold join. rewrite homomorphism, bind_pure_l.
+      reflexivity.
+    rewrite <- bind_ap. unfold join. rewrite homomorphism, !bind_pure_l.
+      reflexivity.
+Qed.
 
 End DerivedLaws.
 
-Hint Rewrite @bind_fmap @fmap_bind (*bind_ret_expand_l bind_ret_expand_r*)
+Hint Rewrite @fmap_bind_pure @bind_fmap @fmap_bind
+  (*bind_pure_expand_l bind_pure_expand_r*)
   : HSLib.
 
 Section DerivedLaws2.
@@ -159,13 +187,13 @@ Proof.
 Qed.
 
 Theorem compM_id_left :
-  forall (A B : Type) (f : A -> M B), ret >=> f = f.
+  forall (A B : Type) (f : A -> M B), pure >=> f = f.
 Proof.
   unfold compM. monad.
 Qed.
 
 Theorem compM_id_right :
-  forall (A B : Type) (f : A -> M B), f >=> ret = f.
+  forall (A B : Type) (f : A -> M B), f >=> pure = f.
 Proof.
   unfold compM. monad.
 Qed.
@@ -181,9 +209,7 @@ Theorem bind_join_fmap :
   forall (A B : Type) (ma : M A) (f : A -> M B),
     bind ma f = join (fmap f ma).
 Proof.
-  unfold join.
-  
- monad.
+  unfold join. monad.
 Qed.
 
 Theorem join_fmap :
@@ -193,9 +219,9 @@ Proof.
   unfold join. monad.
 Qed.
 
-Theorem join_ret :
+Theorem join_pure :
   forall (A : Type) (x : M A),
-    join (ret x) = join (fmap ret x).
+    join (pure x) = join (fmap pure x).
 Proof.
   unfold join. monad.
 Qed.
@@ -210,34 +236,38 @@ Qed.
 
 Lemma compM_comp :
   forall (A B C : Type) (f : A -> B) (g : B -> M C),
-    (f .> ret) >=> g = f .> g.
+    (f .> pure) >=> g = f .> g.
 Proof.
   unfold compM, compose. monad.
 Qed.
 
 Lemma compM_fmap :
   forall (A B C : Type) (f : A -> M B) (g : B -> C),
-    f >=> (g .> ret) = f .> fmap g.
+    f >=> (g .> pure) = f .> fmap g.
 Proof.
   unfold compM, compose. monad.
 Qed.
 
-(* TODO
+Lemma constrA_assoc :
+  forall (A B C : Type) (ma : M A) (mb : M B) (mc : M C),
+    (ma >> mb) >> mc = ma >> (mb >> mc).
+Proof. unfold constrA, compose. monad. Qed.
+Check bind_pure_r.
 
-Lemma compM_fmap__ :
-  forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
-    ((fun _ : unit => fmap f x) >=> g) tt =
-    ((fun _ : unit => x) >=> (f .> g)) tt.
+Lemma constlA_spec :
+  forall (A B : Type) (ma : M A) (mb : M B),
+    ma << mb = ma >>= fun a => mb >>= fun _ => pure a.
 Proof.
-  intros. unfold compM. monad.
+  intros. unfold constlA, compose. monad.
+Qed.
 
+Lemma constrA_spec :
+  forall (A B : Type) (ma : M A) (mb : M B),
+    ma >> mb = ma >>= fun _ => mb.
+Proof.
+  intros. unfold constrA, compose. monad.
+Qed.
 
-    fmap_bind :
-      forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
-        fmap g (bind x f) = bind x (fun x0 : A => fmap g (f x0));
-    bind_ap :
-      forall (A B : Type) (mf : M (A -> B)) (mx : M A),
-        mf <*> mx = bind mf (fun f => bind mx (fun x => ret (f x)));
-
-*)
 End DerivedLaws2.
+
+Hint Rewrite @constlA_spec @constrA_spec : HSLib.

@@ -28,22 +28,22 @@ Instance Functor_ReaderT
 }.
 Proof. all: monad. Defined.
 
-Definition ret_ReaderT
+Definition pure_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A)
-  : ReaderT E M A := fun _ => ret x.
+  : ReaderT E M A := fun _ => pure x.
 
 Definition ap_ReaderT
   {E : Type} {M : Type -> Type} {inst : Monad M} {A B : Type}
   (f : ReaderT E M (A -> B)) (x : ReaderT E M A) : ReaderT E M B :=
     fun e : E => f e <*> x e.
 
-Hint Unfold ret_ReaderT ap_ReaderT : HSLib.
+Hint Unfold pure_ReaderT ap_ReaderT : HSLib.
 
 Instance Applicative_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Applicative (ReaderT E M) :=
 {
     is_functor := @Functor_ReaderT M inst E;
-    ret := @ret_ReaderT M inst E;
+    pure := @pure_ReaderT M inst E;
     ap := @ap_ReaderT E M inst;
 }.
 Proof. all: monad. Defined.

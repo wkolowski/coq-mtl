@@ -26,9 +26,9 @@ Instance Functor_OptionT (M : Type -> Type) {inst : Functor M}
 }.
 Proof. all: hs; mtrans; monad. Defined.
 
-Definition ret_OptionT
+Definition pure_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type} (x : A) : OptionT M A :=
-    ret $ Some x.
+    pure $ Some x.
 
 Definition ap_OptionT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -38,26 +38,26 @@ Definition ap_OptionT
         | Some f =>
             @bind M inst _ _ moa (fun oa =>
             match oa with
-                | Some a => ret (Some (f a))
-                | None => ret None
+                | Some a => pure (Some (f a))
+                | None => pure None
             end)
-        | _ => ret None
+        | _ => pure None
     end).
 
-Hint Unfold ret_OptionT ap_OptionT : HSLib.
+Hint Unfold pure_OptionT ap_OptionT : HSLib.
 
 Instance Applicative_OptionT
   (M : Type -> Type) (inst : Monad M) : Applicative (OptionT M) :=
 {
     is_functor := @Functor_OptionT M inst;
-    ret := @ret_OptionT M inst;
+    pure := @pure_OptionT M inst;
     ap := @ap_OptionT M inst;
 }.
 Proof. Time all: monad. Defined.
 
 Definition aempty_OptionT
   (M : Type -> Type) (inst : Monad M) (A : Type) : OptionT M A :=
-    ret None.
+    pure None.
 
 Definition aplus_OptionT
   (M : Type -> Type) (inst : Monad M) (A : Type) (mox moy : OptionT M A)
@@ -65,9 +65,9 @@ Definition aplus_OptionT
     @bind M inst _ _ mox (fun ox =>
     @bind M inst _ _ moy (fun oy =>
     match ox, oy with
-        | Some x, _ => ret (Some x)
-        | _, Some y => ret (Some y)
-        | _, _ => ret None
+        | Some x, _ => pure (Some x)
+        | _, Some y => pure (Some y)
+        | _, _ => pure None
     end)).
 
 Hint Unfold aempty_OptionT aplus_OptionT : HSLib.
@@ -86,7 +86,7 @@ Definition bind_OptionT
   (moa : OptionT M A) (f : A -> OptionT M B) : OptionT M B :=
     @bind M inst (option A) (option B) moa (fun oa : option A =>
     match oa with
-        | None => ret None
+        | None => pure None
         | Some a => f a
     end).
 

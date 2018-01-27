@@ -49,7 +49,7 @@ Proof.
     f_equal. ext a. kt.
 Defined.
 
-Definition ret_Kleisli {A : Type} : A -> M A := eta.
+Definition pure_Kleisli {A : Type} : A -> M A := eta.
 
 Definition bind_Kleisli
   {A B : Type} : M A -> (A -> M B) -> M B := flip star.
@@ -57,15 +57,15 @@ Definition bind_Kleisli
 Definition ap_Kleisli {A B : Type} (mf : M (A -> B)) (ma : M A) : M B :=
   bind_Kleisli mf (fun f =>
   bind_Kleisli ma (fun a =>
-    ret_Kleisli (f a))).
+    pure_Kleisli (f a))).
 
 Instance Applicative_Kleisli : Applicative M :=
 {
-    ret := @ret_Kleisli;
+    pure := @pure_Kleisli;
     ap := @ap_Kleisli;
 }.
 Proof.
-  all: unfold fmap_Kleisli, ap_Kleisli, bind_Kleisli, ret_Kleisli, flip;
+  all: unfold fmap_Kleisli, ap_Kleisli, bind_Kleisli, pure_Kleisli, flip;
   cbn; intros; try kt.
     ktl. ktr. unfold compose. f_equal. ext bc. ktr. f_equal. ext ab.
       unfold compose. ktr. f_equal. ext a. unfold compose. kt.
@@ -77,7 +77,7 @@ Instance Monad_KleisliTriple : Monad M :=
     bind := @bind_Kleisli;
 }.
 Proof.
-  all: unfold fmap_Kleisli, ap_Kleisli, bind_Kleisli, ret_Kleisli, flip;
+  all: unfold fmap_Kleisli, ap_Kleisli, bind_Kleisli, pure_Kleisli, flip;
   cbn; intros; try kt.
 Defined.
 
@@ -88,7 +88,7 @@ Section MonadBind_to_KleisliTriple.
 Variable M : Type -> Type.
 Variable inst : Monad M.
 
-Definition eta_Monad := @ret M inst.
+Definition eta_Monad := @pure M inst.
 
 Definition star_Monad {A B : Type} := flip (@bind M inst A B).
 

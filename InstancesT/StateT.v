@@ -5,7 +5,6 @@ Require Export Control.MonadTrans.
 
 Require Import HSLib.Instances.Identity.
 
-
 Definition StateT (S : Type) (M : Type -> Type) (A : Type)
   : Type := S -> M (A * S)%type.
 
@@ -13,7 +12,7 @@ Definition fmap_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A B : Type} (f : A -> B)
   : StateT S M A -> StateT S M B :=
     fun (x : StateT S M A) (s : S) =>
-      x s >>= fun '(a, s') => ret (f a, s').
+      x s >>= fun '(a, s') => pure (f a, s').
 
 Hint Unfold StateT fmap_StateT compose (* BEWAR *): HSLib.
 
@@ -37,19 +36,10 @@ Proof.
   apply f1.
   apply f2.
 Defined.
-(*
-Proof.
-  all: intros; unfold fmap_StateT; ext x; ext s.
-    replace (x s >>= _ = _) with (x s >>= ret = id x s).
-      monad.
-      do 2 f_equal. ext p. destruct p. reflexivity.
-    unfold compose. rewrite assoc. f_equal. ext p. destruct p.
-      monad.
-Defined.
-*)
-Definition ret_StateT
+
+Definition pure_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (x : A)
-    : StateT S M A := fun s => ret (x, s).
+    : StateT S M A := fun s => pure (x, s).
 
 Definition ap_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -57,47 +47,47 @@ Definition ap_StateT
     fun st : S =>
       sf st >>= fun '(f, stf) =>
       sa stf >>= fun '(a, sta) =>
-        ret (f a, sta).
+        pure (f a, sta).
 
-Hint Unfold ret_StateT ap_StateT : HSLib.
+Hint Unfold pure_StateT ap_StateT : HSLib.
 
 Lemma p1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type)
   (x : StateT S M A),
-    ap_StateT S (ret_StateT S id) x = x.
+    ap_StateT S (pure_StateT S id) x = x.
 Proof. monad. Qed.
 
 Lemma p2 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B C : Type)
   (af : StateT S M (A -> B)) (ag : StateT S M (B -> C)) (ax : StateT S M A),
-    ap_StateT S (ap_StateT S (ap_StateT S (ret_StateT S compose) ag) af) ax =
+    ap_StateT S (ap_StateT S (ap_StateT S (pure_StateT S compose) ag) af) ax =
     ap_StateT S ag (ap_StateT S af ax).
 Proof. monad. Qed.
 
 Lemma p3 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : A -> B) (x : A),
-    ap_StateT S (ret_StateT S f) (ret_StateT S x) = ret_StateT S (f x).
+    ap_StateT S (pure_StateT S f) (pure_StateT S x) = pure_StateT S (f x).
 Proof. monad. Qed.
 
 Lemma p4 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : StateT S M (A -> B)) (x : A),
-    ap_StateT S f (ret_StateT S x) =
-    ap_StateT S (ret_StateT S (fun f0 : A -> B => f0 x)) f.
+    ap_StateT S f (pure_StateT S x) =
+    ap_StateT S (pure_StateT S (fun f0 : A -> B => f0 x)) f.
 Proof. monad. Qed.
 
 Lemma p5 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : A -> B) (x : StateT S M A),
-    fmap f x = ap_StateT S (ret_StateT S f) x.
+    fmap f x = ap_StateT S (pure_StateT S f) x.
 Proof. monad. Qed.
 
 Instance Applicative_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) : Applicative (StateT S M) :=
 {
     is_functor := @Functor_StateT S M inst;
-    ret := @ret_StateT S M inst;
+    pure := @pure_StateT S M inst;
     ap := @ap_StateT S M inst;
 }.
 Proof.
@@ -150,13 +140,13 @@ Hint Unfold bind_StateT : HSLib.
 Lemma m1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : A -> StateT S M B) (a : A),
-    bind_StateT S (ret a) f = f a.
+    bind_StateT S (pure a) f = f a.
 Proof. monad. Qed.
 
 Lemma m2 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type)
   (ma : StateT S M A),
-    bind_StateT S ma ret = ma.
+    bind_StateT S ma pure = ma.
 Proof. monad. Qed.
 
 Lemma m3 :
@@ -169,7 +159,7 @@ Proof. monad. Qed.
 Lemma m4 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : A -> B) (x : StateT S M A),
-    fmap f x = bind_StateT S x (fun a : A => ret (f a)).
+    fmap f x = bind_StateT S x (fun a : A => pure (f a)).
 Proof. monad. Qed.
 
 Lemma m5 :
@@ -177,7 +167,7 @@ Lemma m5 :
   (mf : StateT S M (A -> B)) (mx : StateT S M A),
     mf <*> mx =
       bind_StateT S mf (fun f : A -> B =>
-      bind_StateT S mx (fun x : A => ret (f x))).
+      bind_StateT S mx (fun x : A => pure (f x))).
 Proof. monad. Qed.
 
 Instance Monad_StateT
@@ -190,7 +180,6 @@ Proof.
   apply m1.
   apply m2.
   apply m3.
-  apply m4.
   apply m5.
 Defined.
 
@@ -209,11 +198,11 @@ Instance MonadPlus_StateT
     is_monad := @Monad_StateT S M inst;
     is_alternative := @Alternative_StateT S M inst inst;
 }.
-Proof. monad. Defined.
+Proof. monad. Show Proof. Defined.
 
 Definition lift_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
-    : StateT S M A := fun s : S => ma >>= fun a : A => ret (a, s).
+    : StateT S M A := fun s : S => ma >>= fun a : A => pure (a, s).
 
 Hint Unfold lift_StateT : HSLib.
 

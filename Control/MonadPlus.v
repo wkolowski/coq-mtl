@@ -29,7 +29,7 @@ Variable inst : MonadPlus M.
 Variables A B C : Type.
 
 Definition mfilter (f : A -> bool) (ma : M A) : M A :=
-  ma >>= fun a : A => if f a then ret a else aempty.
+  ma >>= fun a : A => if f a then pure a else aempty.
 
 End MonadPlusFuns.
 
@@ -60,7 +60,7 @@ Definition I (a b : nat) : list nat := aux (b - a) a.
   b <- I 1 35;
   c <- I 1 35;
   guard (beq_nat (a * a + b * b) (c * c));;
-  ret (a, b, c).
+  pure (a, b, c).
 
 Eval compute in mfilter (fun _ => true) (I 1 10).
 Eval compute in mfilter (fun _ => false) (Some 42).

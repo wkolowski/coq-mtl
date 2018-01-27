@@ -26,7 +26,7 @@ Proof.
   intros. unfold compose, fmap_Lazy. ext la. reflexivity.
 Defined.
 
-Definition ret_Lazy {A : Type} (a : A) : Lazy A :=
+Definition pure_Lazy {A : Type} (a : A) : Lazy A :=
   fun _ => a.
 
 Definition ap_Lazy
@@ -36,7 +36,7 @@ Definition ap_Lazy
 Instance ApplicativeLazy : Applicative Lazy :=
 {
     is_functor := FunctorLazy;
-    ret := @ret_Lazy;
+    pure := @pure_Lazy;
     ap := @ap_Lazy;
 }.
 Proof.

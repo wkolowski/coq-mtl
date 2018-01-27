@@ -7,7 +7,7 @@ Require Import Control.Alternative.
 Require Import Control.Monad.
 Require Import Control.MonadPlus.
 
-(* TODO *) Definition List (A : Type) : Type := list A.
+Definition List (A : Type) : Type := list A.
 
 Definition fmap_List := map.
 
@@ -21,7 +21,7 @@ Proof.
     rewrite <- map_map. reflexivity.
 Defined.
 
-Definition ret_List {A : Type} (x : A) : list A := [x].
+Definition pure_List {A : Type} (x : A) : list A := [x].
 
 Fixpoint ap_list {A B : Type} (lf : list (A -> B)) (la : list A) : list B :=
 match lf with
@@ -93,7 +93,7 @@ Qed.
 Instance ApplicativeList : Applicative list :=
 {
     is_functor := FunctorList;
-    ret := @ret_List; 
+    pure := @pure_List; 
     ap := @ap_list
 }.
 Proof.
@@ -162,12 +162,12 @@ Proof.
   induction ma as [| h t]; cbn; intros.
     trivial.
     rewrite bind_List_app, <- IHt. trivial.
-  induction x as [| h t]; cbn; intros.
-    reflexivity.
-    unfold compose in *. rewrite IHt. reflexivity.
   induction mf as [| hf tf]; cbn; intros.
     reflexivity.
     rewrite <- IHtf. f_equal. induction mx as [| h t]; cbn.
       reflexivity.
       rewrite IHt. reflexivity.
 Defined.
+
+Hint Unfold List pure_List : HSLib.
+Hint Rewrite app_nil_l app_nil_r : HSLib.

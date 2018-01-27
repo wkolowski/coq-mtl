@@ -22,5 +22,5 @@ Proof. all: monad. Defined.
 Theorem Prod_not_applicative :
   (forall A : Type, Applicative (prod A)) -> False.
 Proof.
-  intro. destruct (X False). destruct (ret _ tt). assumption.
+  intro. destruct (X False). destruct (pure _ tt). assumption.
 Qed.

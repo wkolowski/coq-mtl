@@ -22,6 +22,6 @@ Variables
 Definition asks {A : Type} (f : R -> A) : M A :=
   do
     r <- ask;
-    ret $ f r.
+    pure $ f r.
 
 End MonadReader_funs.

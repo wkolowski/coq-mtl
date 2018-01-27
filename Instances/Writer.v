@@ -25,19 +25,19 @@ Instance FunctorWriter (W : Monoid) : Functor (Writer W) :=
 }.
 Proof. all: monad. Defined.
 
-Definition ret_Writer
+Definition pure_Writer
   {W : Monoid} {A : Type} (a : A) : Writer W A := (a, neutr).
 
 Definition ap_Writer
   {W : Monoid} {A B : Type} (wf : Writer W (A -> B)) (wa : Writer W A)
     : Writer W B := let '((f, w), (a, w')) := (wf, wa) in (f a, op w w').
 
-Hint Unfold ret_Writer ap_Writer : HSLib.
+Hint Unfold pure_Writer ap_Writer : HSLib.
 
 Instance ApplicativeWriter (W : Monoid) : Applicative (Writer W) :=
 {
     is_functor := FunctorWriter W;
-    ret := @ret_Writer W;
+    pure := @pure_Writer W;
     ap := @ap_Writer W
 }.
 Proof. all: monad. Defined.

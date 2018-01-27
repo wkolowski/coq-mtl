@@ -5,23 +5,23 @@ Require Export HSLib.Control.Functor.
 Class Applicative (F : Type -> Type) : Type :=
 {
     is_functor :> Functor F;
-    ret : forall {A : Type}, A -> F A;
+    pure : forall {A : Type}, A -> F A;
     ap : forall {A B : Type}, F (A -> B) -> F A -> F B;
     identity :
       forall (A : Type) (ax : F A),
-        ap (ret id) ax = ax;
+        ap (pure id) ax = ax;
     composition :
       forall (A B C : Type) (af : F (A -> B)) (ag : F (B  -> C)) (ax : F A),
-        ap (ap (ap (ret compose) ag) af) ax = ap ag (ap af ax);
+        ap (ap (ap (pure compose) ag) af) ax = ap ag (ap af ax);
     homomorphism :
       forall (A B : Type) (f : A -> B) (x : A),
-        ap (ret f) (ret x) = ret (f x);
+        ap (pure f) (pure x) = pure (f x);
     interchange :
       forall (A B : Type) (f : F (A -> B)) (x : A),
-        ap f (ret x) = ap (ret (fun f => f x)) f;
-(*    fmap_ret_ap :
+        ap f (pure x) = ap (pure (fun f => f x)) f;
+(*    fmap_pure_ap :
       forall (A B : Type) (f : A -> B) (x : F A),
-        ap (ret f) x = fmap f x*)
+        ap (pure f) x = fmap f x*)
 }.
 
 Coercion is_functor : Applicative >-> Functor.
@@ -64,11 +64,11 @@ Variables
 
 Goal
   forall (A B C : Type) (f : A -> B) (g : B -> C) (x : F A),
-    ap (ret (f .> g)) x = ap (ret g) (ap (ret f) x).
+    ap (pure (f .> g)) x = ap (pure g) (ap (pure f) x).
 Proof.
   intros.
-  replace (ap (ret (f .> g)) x)
-  with (ap (ap (ap (ret compose) (ret g)) (ret f)) x).
+  replace (ap (pure (f .> g)) x)
+  with (ap (ap (ap (pure compose) (pure g)) (pure f)) x).
     rewrite composition. reflexivity.
     rewrite composition.
 Abort.
@@ -76,35 +76,35 @@ Abort.
 
 Definition identity' : Prop :=
   forall (A : Type) (ax : F A),
-    ap (ret id) ax = ax.
+    ap (pure id) ax = ax.
 
 Definition composition' : Prop :=
   forall (A B C : Type) (af : F (A -> B)) (ag : F (B  -> C)) (ax : F A),
-    ap (ap (ap (ret compose) ag) af) ax = ap ag (ap af ax).
+    ap (ap (ap (pure compose) ag) af) ax = ap ag (ap af ax).
 
 Definition homomorphism' : Prop :=
   forall (A B : Type) (f : A -> B) (x : A),
-    ap (ret f) (ret x) = ret (f x).
+    ap (pure f) (pure x) = pure (f x).
 
 Definition interchange' : Prop :=
   forall (A B : Type) (f : F (A -> B)) (x : A),
-    ap f (ret x) = ap (ret (fun f => f x)) f.
+    ap f (pure x) = ap (pure (fun f => f x)) f.
 
-Definition fmap_ret_ap' : Prop :=
+Definition fmap_pure_ap' : Prop :=
   forall (A B : Type) (f : A -> B) (x : F A),
-    fmap f x = ap (ret f) x.
+    fmap f x = ap (pure f) x.
 
 Goal
-  fmap_ret_ap' -> identity'.
+  fmap_pure_ap' -> identity'.
 Proof.
-  unfold fmap_ret_ap', identity'. intros.
+  unfold fmap_pure_ap', identity'. intros.
   rewrite <- H. functor.
 Qed.
 
 Goal
-  fmap_ret_ap' -> homomorphism'.
+  fmap_pure_ap' -> homomorphism'.
 Proof.
-  unfold fmap_ret_ap', homomorphism'.
+  unfold fmap_pure_ap', homomorphism'.
   intros. rewrite <- H.
 Abort.
 End ApplicativeLaws.

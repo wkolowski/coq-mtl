@@ -27,7 +27,7 @@ Proof.
   all: reflexivity.
 Defined.
 
-Definition ret_RoseTreeT
+Definition pure_RoseTreeT
   {A : Type} (x : A) : RoseTreeT M A :=
     fun X leaf _ => leaf x.
 
@@ -38,7 +38,7 @@ Definition ap_RoseTreeT
 
 Instance Applicative_RoseTreeT : Applicative (RoseTreeT M) :=
 {
-    ret := @ret_RoseTreeT;
+    pure := @pure_RoseTreeT;
     ap := @ap_RoseTreeT;
 }.
 Proof.

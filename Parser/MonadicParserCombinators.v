@@ -1,4 +1,4 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
+(*Add Rec LoadPath "/home/zeimer/Code/Coq".
 
 Require Export Control.Monad.
 
@@ -25,7 +25,7 @@ Definition Parser (A : Type) : Type := string -> list (A * string).
 (** *** 2.2 Primitive parsers *)
 
 Definition result {A : Type} (x : A) : Parser A :=
-  fun input : string => ret (x, input).
+  fun input : string => pure (x, input).
 
 Arguments result [A] _ _%string.
 
@@ -74,24 +74,39 @@ Proof.
   apply f2.
 Defined.
 
-Definition ret_Parser := @result.
+Definition pure_Parser := @result.
 
 Definition ap_Parser
   {A B : Type} (pf : Parser (A -> B)) (pa : Parser A) : Parser B :=
     fun input : string =>
       pf input >>= fun '(f, input') =>
       pa input' >>= fun '(a, input'') =>
-        ret (f a, input'').
+        pure (f a, input'').
 
-Hint Unfold Parser fmap_Parser ret_Parser ap_Parser result : HSLib.
+Hint Unfold Parser fmap_Parser pure_Parser ap_Parser result : HSLib.
 
 Ltac parser :=
-  cbn; unfold Parser, fmap_Parser, ret_Parser, result, ap_Parser; monad.
+  cbn; unfold Parser, fmap_Parser, pure_Parser, result, ap_Parser; monad.
+
+Ltac monad := intros;
+repeat ((*hs + functor_simpl;*) match goal with
+(*    | |- context [_ .> id] => rewrite id_right*)
+    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
+    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
+    | x : _ * _ |- _ => destruct x
+    | x : _ + _ |- _ => destruct x (* beware *)
+    | |- ?x >>= _ = ?x => rewrite <- bind_pure_r; f_equal
+    | |- ?x = ?x >>= _ => rewrite <- bind_pure_r at 1; f_equal (* BEWARE *)
+    | |- ?x >>= _ = ?x >>= _ => f_equal; try reflexivity
+    | |- context [match ?x with _ => _ end] => hs; unmatch x
+    | _ => hs + functor_simpl
+end(*; hs*)); try (unfold compose, id; cbn; congruence; fail).
+
 
 Lemma p1 :
   forall (A : Type) (ax : Parser A),
-    ap_Parser (ret_Parser (A -> A) id) ax = ax.
-Proof. hs. monad. autounfold. rewrite app_nil_r.
+    ap_Parser (pure_Parser (A -> A) id) ax = ax.
+Proof. parser. rewrite <- bind_pure_r. f_equal.  parser. f_equal. monad. reflexivity.  cbn. hs. monad. autounfold. rewrite app_nil_r.
   induction (ax x); cbn; monad.
 Admitted.
 
@@ -100,7 +115,7 @@ Lemma p2 :
   (ax : Parser A),
 ap_Parser
   (ap_Parser
-     (ap_Parser (ret_Parser ((B -> C) -> (A -> B) -> A -> C) compose) ag) af)
+     (ap_Parser (pure_Parser ((B -> C) -> (A -> B) -> A -> C) compose) ag) af)
   ax = ap_Parser ag (ap_Parser af ax).
 Proof.
   intros. exts. monad.
@@ -108,18 +123,19 @@ Abort.
 
 Lemma p3 :
   forall (A B : Type) (f : A -> B) (x : A),
-    ap_Parser (ret_Parser (A -> B) f) (ret_Parser A x) = ret_Parser B (f x).
-Proof. parser. unfold ret_List. cbn. abstract parser. Qed.
+    ap_Parser (pure_Parser (A -> B) f) (pure_Parser A x) = pure_Parser B (f x).
+Proof. abstract parser. Qed.
 
 Lemma p4 :
   forall (A B : Type) (f : Parser (A -> B)) (x : A),
-    ap_Parser f (ret_Parser A x) =
-    ap_Parser (ret_Parser ((A -> B) -> B) (fun f0 : A -> B => f0 x)) f.
-Proof. abstract parser. Qed.
+    ap_Parser f (pure_Parser A x) =
+    ap_Parser (pure_Parser ((A -> B) -> B) (fun f0 : A -> B => f0 x)) f.
+Proof. parser. Hint Unfold pure_List : HSLib. autounfold with HSLib.
+  f_equal.
 
 Lemma p5 :
   forall (A B : Type) (f : A -> B) (x : Parser A),
-    fmap f x = ap_Parser (ret_Parser (A -> B) f) x.
+    fmap f x = ap_Parser (pure_Parser (A -> B) f) x.
 Proof.
   abstract (parser; induction (x x0); cbn; try
     reflexivity; destruct a; cbn; rewrite IHl; reflexivity).
@@ -128,7 +144,7 @@ Qed.
 Instance Applicative_Parser : Applicative Parser :=
 {
     is_functor := Functor_Parser;
-    ret := ret_Parser;
+    pure := pure_Parser;
     ap := @ap_Parser;
 }.
 Proof.
@@ -145,7 +161,7 @@ Definition bind_Parser
       p input >>= fun '(a, input') => f a input'.
 
 Ltac parser' :=
-  cbn; unfold fmap_Parser, ret_Parser, result, bind_Parser; monad.
+  cbn; unfold fmap_Parser, pure_Parser, result, bind_Parser; monad.
 
 Instance Monad_Parser : Monad Parser :=
 {
@@ -155,10 +171,10 @@ Instance Monad_Parser : Monad Parser :=
 Proof.
   Lemma m1 :
     forall (A B : Type) (f : A -> Parser B) (a : A),
-      bind_Parser (ret a) f = f a.
+      bind_Parser (pure a) f = f a.
   Proof. abstract parser'. Qed.
   Lemma m2 :
-    forall (A : Type) (ma : Parser A), bind_Parser ma ret = ma.
+    forall (A : Type) (ma : Parser A), bind_Parser ma pure = ma.
   Proof. abstract parser'. Qed.
   Lemma m3 :
     forall (A B C : Type) (ma : Parser A) (f : A -> Parser B) (g : B -> Parser C),
@@ -178,7 +194,7 @@ bind_Parser ma (fun x : A => bind_Parser (f x) g).
   Qed.
   Lemma new_m45 :
     forall (A B : Type) (f : A -> B) (x : Parser A),
-      fmap f x = bind_Parser x (fun a : A => ret (f a)).
+      fmap f x = bind_Parser x (fun a : A => pure (f a)).
   Proof.
     abstract (parser'; induction (x x0); try (destruct a; cbn; rewrite IHl);
     reflexivity).
@@ -186,7 +202,7 @@ bind_Parser ma (fun x : A => bind_Parser (f x) g).
   Lemma m6 :
   forall (A B : Type) (mf : Parser (A -> B)) (mx : Parser A),
     mf <*> mx =
-    bind_Parser mf (fun f : A -> B => bind_Parser mx (fun x : A => ret (f x))).
+    bind_Parser mf (fun f : A -> B => bind_Parser mx (fun x : A => pure (f x))).
   Proof. abstract parser'. Qed.
   apply m1.
   apply m2.
@@ -197,10 +213,10 @@ Defined.
 
 Definition seq
   {A B : Type} (pa : Parser A) (pb : Parser B) : Parser (A * B) :=
-    pa >>= fun a => pb >>= fun b => ret (a, b).
+    pa >>= fun a => pb >>= fun b => pure (a, b).
 
 Definition sat (p : ascii -> bool) : Parser ascii :=
-  item >>= fun c : ascii => if p c then ret c else zero.
+  item >>= fun c : ascii => if p c then pure c else zero.
 
 Require Import Bool.
 
@@ -320,7 +336,7 @@ Compute word' "abc"%string.
 Definition ident : Parser string := do
   c <- lower;
   cs <- fmap toString (many alphanum);
-  ret (String c cs).
+  pure (String c cs).
 
 Compute ident "wut123"%string.
 
@@ -345,7 +361,7 @@ Require Import ZArith.
 Definition parseNeg : Parser nat := do
   char "-";;
   r <- many1 digit;
-  ret $ eval (rev r).
+  pure $ eval (rev r).
 
 Definition parseZ : Parser Z :=
   plus
@@ -356,14 +372,14 @@ Compute parseZ "-12345"%string.
 
 Definition parseSign : Parser (Z -> Z) :=
   plus
-    (char "-" >> ret (fun k => Z.sub 0%Z k))
-    (ret id).
+    (char "-" >> pure (fun k => Z.sub 0%Z k))
+    (pure id).
 
 (*  liftM2 (fun f x => f x) parseSign (fmap Z_of_nat parseNat).*)
 Definition parseZ' : Parser Z := do
   sgn <- parseSign;
   n <- parseNat;
-  ret $ sgn (Z_of_nat n).
+  pure $ sgn (Z_of_nat n).
 
 Compute parseZ' "-12345"%string.
 
@@ -373,14 +389,14 @@ Definition sepby1 {A B : Type} (p : Parser A) (sep : Parser B) :
   Parser (list A) := do
     h <- p;
     t <- many (sep >> p);
-    ret (h :: t).
+    pure (h :: t).
 
 Definition bracket {A B C : Type}
   (open : Parser A) (content : Parser B) (close : Parser C) : Parser B := do
     open;;
     res <- content;
     close;;
-    ret res.
+    pure res.
 
 Definition ints : Parser (list Z) :=
   bracket (char "[") (sepby1 parseZ (char ",")) (char "]").
@@ -404,8 +420,8 @@ match n with
     | 0 => result 42%Z
     | S n' =>
         let
-          addop := plus (char "+" >> ret Z.add)
-                        (char "-" >> ret Z.sub)
+          addop := plus (char "+" >> pure Z.add)
+                        (char "-" >> pure Z.sub)
         in let
           factor := plus parseZ
                          (bracket (char "(") (exprn n') (char ")"))
@@ -415,7 +431,7 @@ match n with
               x <- exprn n';
               op <- addop;
               y <- factor;
-              ret $ op x y)*)
+              pure $ op x y)*)
             (liftA3 (fun x op y => op x y) (exprn n') addop factor)
             factor
 end.
@@ -436,19 +452,19 @@ Notation "a |: b" := (plus a b) (at level 50).
     t <- many $ do
       op <- p_op;
       arg <- p;
-      ret (op, arg);
-    ret $ fold_left (fun x '(f, y) => f x y) t h.*)
+      pure (op, arg);
+    pure $ fold_left (fun x '(f, y) => f x y) t h.*)
 
 Definition chainl1
   {A : Type} (obj : Parser A) (op : Parser (A -> A -> A)) : Parser A :=
   do
     h <- obj;
     t <- many $ liftA2 pair op obj;
-    ret $ fold_left (fun x '(f, y) => f x y) t h.
+    pure $ fold_left (fun x '(f, y) => f x y) t h.
 
 Definition parseNat_chainl : Parser nat :=
   let op m n := 10 * m + n in
-    chainl1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (ret op).
+    chainl1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (pure op).
 
 Compute parseNat_chainl "211"%string.
 
@@ -458,7 +474,7 @@ match n with
     | 0 => zero
     | S n' => do
         x <- arg;
-        plus (op $$ ret x $$ chainr1_aux arg op n') (ret x)
+        plus (op $$ pure x $$ chainr1_aux arg op n') (pure x)
 end.
 
 Definition chainr1 {A : Type} (arg : Parser A) (op : Parser (A -> A -> A))
@@ -467,7 +483,7 @@ Definition chainr1 {A : Type} (arg : Parser A) (op : Parser (A -> A -> A))
 
 Definition parseNat_chainr : Parser nat :=
   let op m n := m + 10 * n in
-    chainr1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (ret op).
+    chainr1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (pure op).
 
 Compute parseNat_chainr "211"%string.
 
@@ -476,8 +492,8 @@ match n with
     | 0 => result 0%Z
     | S n' =>
         let
-          op := do (char "+";; ret Z.add) |:
-                do (char "-";; ret Z.sub)
+          op := do (char "+";; pure Z.add) |:
+                do (char "-";; pure Z.sub)
         in let
           factor := parseZ |: bracket (char "(") (exprn'' n') (char ")")
         in
@@ -492,11 +508,11 @@ Compute expr'' "3-2"%string.
 Definition ops
   {A B : Type} (start : Parser A * B) (l : list (Parser A * B)) : Parser B :=
 match l with
-    | [] => let '(p, op) := start in p >> ret op
+    | [] => let '(p, op) := start in p >> pure op
     | h :: t =>
         let '(p, op) := start in
-          fold_right plus (p >> ret op)
-            (map (fun '(p, op) => p >> ret op) l)
+          fold_right plus (p >> pure op)
+            (map (fun '(p, op) => p >> pure op) l)
 end.
 
 Fixpoint exprn3 (n : nat) : Parser Z :=
@@ -541,11 +557,11 @@ Compute expr4 "(1-2)^3"%string.
 
 Definition chainl {A : Type} (p : Parser A) (op : Parser (A -> A -> A))
   (default : A) : Parser A :=
-    chainl1 p op |: ret default.
+    chainl1 p op |: pure default.
 
 Definition chainr {A : Type} (p : Parser A) (op : Parser (A -> A -> A))
   (default : A) : Parser A :=
-    (chainr1 p op) |: ret default.
+    (chainr1 p op) |: pure default.
 
 (** ** 5 Efficiency of parsers *)
 
@@ -570,7 +586,7 @@ Qed.
 (** *** 5.3 Limiting the number of results *)
 
 Definition number : Parser nat :=
-  parseNat |: ret 0.
+  parseNat |: pure 0.
 
 Definition first {A : Type} (p : Parser A) : Parser A :=
   fun input : string =>
@@ -608,16 +624,16 @@ Definition isSpace (c : ascii) : bool :=
   leb (nat_of_ascii c) 32.
 
 Definition spaces : Parser unit :=
-  many1 (sat isSpace) >> ret tt.
+  many1 (sat isSpace) >> pure tt.
 
 Definition comment : Parser unit :=
   first
-    (str "--" >> many (sat (fun c => negb (ascii_eqb c "013"))) >> ret tt).
+    (str "--" >> many (sat (fun c => negb (ascii_eqb c "013"))) >> pure tt).
 
 Compute comment "-- haskellowy komentarz polityczny"%string.
 
 Definition junk : Parser unit :=
-  many (spaces +++ comment) >> ret tt.
+  many (spaces +++ comment) >> pure tt.
 
 Definition parse {A : Type} (p : Parser A) : Parser A :=
   junk >> p.
@@ -626,7 +642,7 @@ Definition token {A : Type} (p : Parser A) : Parser A :=
   do
     x <- p;
     junk;;
-    ret x.
+    pure x.
 
 Definition natural : Parser nat :=
   token parseNat.
@@ -644,7 +660,7 @@ Definition in_decb {A : Type} (eq_dec : forall x y : A, {x = y} + {x <> y})
 Definition identifier (keywords : list string) : Parser string :=
   do
     id <- token ident;
-    if in_decb string_dec id keywords then zero else ret id.
+    if in_decb string_dec id keywords then zero else pure id.
 
 Arguments spaces _%string.
 Arguments comment _%string.
@@ -664,7 +680,7 @@ Definition parsePositive : Parser positive :=
   parseNat >>= fun n =>
   match n with
       | 0 => zero
-      | S n' => ret $ Pos.of_nat n
+      | S n' => pure $ Pos.of_nat n
   end.
 
 Require Import QArith.
@@ -673,7 +689,7 @@ Definition parseQ : Parser Q := do
   a <- parseZ;
   char "/";;
   b <- parsePositive;
-  ret (a # b).
+  pure (a # b).
 
 Arguments parseQ _%string.
 
@@ -702,14 +718,14 @@ match n with
             e1 <- parseExprn n';
             e2 <- parseExprn n';
             token $ char ")";;
-            ret $ App e1 e2
+            pure $ App e1 e2
         in let
           lam := do
             token $ str "fun";;
             var <- id;
             token $ str "=>";;
             body <- parseExprn n';
-            ret $ Lam var body
+            pure $ Lam var body
         in let
           parseLet := do
             token $ str "let";;
@@ -718,7 +734,7 @@ match n with
             body <- parseExprn n';
             token $ str "in";;
             let_body <- parseExprn n';
-            ret $ Let var body let_body
+            pure $ Let var body let_body
         in let
           var := fmap Var id
         in
@@ -756,18 +772,18 @@ match n with
             e <- parseExprn' n';
             symbol "in";;
             e' <- parseExprn' n';
-            ret $ Let x e e'
+            pure $ Let x e e'
         in let
           lam := do
             symbol "\";;
             x <- variable;
             symbol "->";;
             e <- parseExprn' n';
-            ret $ Lam x e
+            pure $ Lam x e
         in let
           atom := token (lam +++ local +++ var +++ paren)
         in
-          chainl1 atom (ret App)
+          chainl1 atom (pure App)
 end.
 
 Definition parseExpr' : Parser Expr :=
@@ -780,3 +796,5 @@ Time Compute parseExpr' "\f -> \x -> (f x)".
 Time Compute parseExpr' "let x = (x x) in x".
 
 (** ** 7 Factorising the parser monad *)
+*)
+

@@ -47,23 +47,23 @@ Definition asum : T (F A) -> F A := foldr aplus aempty.
 Definition aFromOption (oa : option A) : F A :=
 match oa with
     | None => aempty
-    | Some a => ret a
+    | Some a => pure a
 end.
 
 Fixpoint aFromList (la : list A) : F A :=
 match la with
     | [] => aempty
-    | h :: t => ret h <|> aFromList t
+    | h :: t => pure h <|> aFromList t
 end.
 
 Definition afold (ta : T A) : F A :=
   aFromList (toListF ta).
 
 Definition optional (x : F A) : F (option A) :=
-  aplus (fmap (@Some A) x) (ret None).
+  aplus (fmap (@Some A) x) (pure None).
 
 Definition guard (b : bool) : F unit :=
-  if b then ret tt else aempty.
+  if b then pure tt else aempty.
 
 End AlternativeFuns.
 

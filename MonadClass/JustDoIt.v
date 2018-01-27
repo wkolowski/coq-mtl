@@ -11,7 +11,7 @@ Require Import Control.Monad.
 
 (** ** 3. A counter example: Towers of Hanoi *)
 
-Set Universe Polymorphism.
+(*Set Universe Polymorphism.*)
 Set Implicit Arguments.
 
 Section S0.
@@ -25,7 +25,7 @@ Class MonadCount : Type :=
     tick : M unit;
 }.
 
-Definition skip : M unit := ret tt.
+Definition skip : M unit := pure tt.
 
 Fixpoint hanoi {inst' : MonadCount} (n : nat) : M unit :=
 match n with
@@ -41,27 +41,19 @@ end.
 
 Require Import Arith.
 
-Lemma bind__assoc :
-  forall (A B C : Type) (ma : M A) (mb : M B) (mc : M C),
-    (ma >> mb) >> mc = ma >> (mb >> mc).
-Proof.
-  intros. unfold bind_. rewrite assoc. reflexivity.
-Qed.
-
-Lemma rep_bind_ :
+Lemma rep_constrA :
   forall (x : M unit) (n m : nat),
     rep (n + m) x = rep n x >> rep m x.
 Proof.
   induction n as [| n']; cbn; intros.
-    unfold skip, bind_. rewrite bind_ret_l. reflexivity.
-    rewrite IHn'. rewrite bind__assoc. reflexivity.
+    unfold skip. rewrite constrA_spec. rewrite bind_pure_l. reflexivity.
+    rewrite IHn'. rewrite constrA_assoc. reflexivity.
 Qed.
 
 Lemma rep1 :
   forall x : M unit, rep 1 x = x.
 Proof.
-  intros. cbn. unfold skip, bind_. rewrite <- bind_ret_r.
-  f_equal. ext u. destruct u. reflexivity.
+  intros. cbn. unfold skip, constrA, compose. monad.
 Qed.
 
 Require Import Nat.
@@ -72,8 +64,8 @@ Theorem hanoi_rep :
     hanoi n = rep (2 ^ n - 1) tick.
 Proof.
   induction n as [| n']; cbn; try reflexivity.
-  rewrite IHn', bind__assoc. rewrite <- (rep1 tick) at 2.
-  rewrite <- !rep_bind_, <- plus_n_O, <- !pred_of_minus. f_equal.
+  rewrite IHn'. rewrite <- (rep1 tick) at 2.
+  rewrite <- !rep_constrA, <- plus_n_O, <- !pred_of_minus. f_equal.
   induction n' as [| n'']; cbn.
     reflexivity. erewrite (Nat.lt_succ_pred 0).
       omega.
@@ -87,14 +79,16 @@ Qed.
 Class MonadFail : Type :=
 {
     fail : forall {A :  Type}, M A;
-    bind_fail_l :
+    constrA_fail_l :
       forall (A B : Type) (mb : M B),
         @fail A >> mb = @fail B;
 (** TODO: BEWARE! Custom laws *)
-    bind_fail_l' :
+    bind_fail_l :
       forall (A B : Type) (f : A -> M B),
         fail >>= f = fail
 }.
+
+Hint Rewrite @constrA_fail_l : HSLib.
 
 Definition guard {inst' : MonadFail} (b : bool) : M unit :=
   if b then skip else fail.
@@ -104,7 +98,7 @@ Definition assert
   do
     a <- ma;
     guard (p a);;
-    ret a.
+    pure a.
 
 (** *** 4.2 Choice *)
 
@@ -139,7 +133,6 @@ Coercion instA : MonadNondet >-> MonadAlt.
 End S0.
 
 Require Import HSLib.Instances.All.
-
 
 Instance MonadFail_List : MonadFail MonadList :=
 {
@@ -183,22 +176,22 @@ Fixpoint select
 match l with
     | [] => fail
     | x :: xs => 
-        choose (ret (x, xs)) $ do
+        choose (pure (x, xs)) $ do
           p <- select xs;
           let '(y, ys) := p in
-            ret (y, x :: ys)
+            pure (y, x :: ys)
 end.
 
 Fixpoint perms' (n : nat)
   {inst' : MonadNondet inst} {A : Type} (l : list A) : M (list A) :=
 match n, l with
     | 0, _ => fail
-    | _, [] => ret []
+    | _, [] => pure []
     | S n', _ => do
         p <- select l;
         let '(h, t) := p in
         rest <- perms' n' t;
-        ret (h :: rest)
+        pure (h :: rest)
 end.
 
 Definition perms 
@@ -232,15 +225,17 @@ Class MonadExcept
     catch_assoc :
       forall (A : Type) (x y z : M A),
         catch (catch x y) z = catch x (catch y z);
-    catch_ret :
+    catch_pure :
       forall (A : Type) (x : A) (h : M A),
-        catch (ret x) h = ret x;
+        catch (pure x) h = pure x;
 }.
+
+Hint Rewrite @catch_fail_l @catch_fail_r @catch_assoc @catch_pure : HSLib.
 
 Goal
   forall (instF : MonadFail inst)
   (instE : MonadExcept instF) (A : Type) (f : A -> A) (x : M A) (h : M A),
-    catch (ret f <*> x) h = ret f <*> catch x h.
+    catch (pure f <*> x) h = pure f <*> catch x h.
 Proof.
   intros.
 Abort. (* TODO *)
@@ -279,20 +274,20 @@ Qed.
 
 Definition work
   {inst' : MonadFail inst} (l : list nat) : M nat :=
-    if has 0 l then fail else ret (product l).
+    if has 0 l then fail else pure (product l).
 
 Definition fastprod
   {inst' : MonadFail inst} {inst'' : MonadExcept inst'}
-    (l : list nat) : M nat := catch (work l) (ret 0).
+    (l : list nat) : M nat := catch (work l) (pure 0).
 
 Theorem fastprod_spec :
   forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
-    fastprod l = ret (product l).
+    fastprod l = pure (product l).
 Proof.
   unfold fastprod, work; intros.
   case_eq (has 0 l); intros.
     rewrite catch_fail_l, product_has_0; auto.
-    rewrite catch_ret. reflexivity.
+    rewrite catch_pure. reflexivity.
 Qed.
 
 (** wut *)
@@ -303,46 +298,52 @@ Definition next
 
 Lemma work_foldr :
   forall (inst' : MonadFail inst),
-    work = fold_right next (ret 1).
+    work = fold_right next (pure 1).
 Proof.
   intros. ext l. induction l as [| h t]; cbn.
     reflexivity.
     unfold work in *. cbn. destruct h as [| h']; cbn.
       reflexivity.
       case_eq (has 0 t); intros.
-        rewrite H in *. rewrite <- IHt. rewrite fmap_bind_ret.
-          rewrite bind_fail_l'. reflexivity.
-        rewrite H in *. rewrite <- IHt. rewrite fmap_ret. reflexivity.
+        rewrite H in *. rewrite <- IHt. rewrite fmap_bind_pure.
+          rewrite bind_fail_l. reflexivity.
+        rewrite H in *. rewrite <- IHt. rewrite fmap_pure. reflexivity.
 Qed.
 
 Fixpoint hasE
   {inst' : MonadFail inst} {inst'' : MonadExcept inst'}
   (n : nat) (l : list nat) : M unit :=
 match l with
-    | [] => ret tt
+    | [] => pure tt
     | h :: t => if beq_nat n h then fail else hasE n t
 end.
 
 Definition fastprod'
   {inst' : MonadFail inst} {inst'' : MonadExcept inst'}
   (l : list nat) : M nat :=
-    catch (hasE 0 l >> ret (product l)) (ret 0).
+    catch (hasE 0 l >> pure (product l)) (pure 0).
+
+Lemma aux_TODO :
+  forall (inst' : MonadFail inst) (inst'' : MonadExcept inst')
+  (n m : nat) (l : list nat),
+    catch (hasE 0 l >> pure n) (pure m) =
+    if has 0 l then pure m else pure n.
+Proof.
+  induction l as [| h t]; cbn in *; intros.
+    rewrite constrA_spec. monad.
+    destruct h as [| h'].
+      rewrite constrA_fail_l, catch_fail_l. cbn. reflexivity.
+      rewrite IHt. cbn. reflexivity.
+Qed.
 
 Theorem fastprod'_spec :
   forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
-    fastprod' l = ret (product l).
+    fastprod' l = pure (product l).
 Proof.
-  intros. unfold fastprod'.
-  assert (forall n m : nat, catch (hasE 0 l >> ret n) (ret m) =
-          if has 0 l then ret m else ret n).
-    induction l as [| h t]; cbn in *; intros.
-      unfold bind_. rewrite bind_ret_l, catch_ret. reflexivity.
-      destruct h as [| h'].
-        rewrite bind_fail_l, catch_fail_l. cbn. reflexivity.
-        rewrite IHt. cbn. reflexivity.
-    rewrite H. case_eq (has 0 l); intros.
-      rewrite product_has_0; auto.
-      reflexivity.
+  intros. unfold fastprod'. rewrite aux_TODO.
+  case_eq (has 0 l); intros.
+    rewrite product_has_0; auto.
+    reflexivity.
 Qed.
 
 End S2.
@@ -361,7 +362,7 @@ Class MonadState
         put s >> put s' = put s';
     put_get :
       forall s : S,
-        put s >> get = put s >> ret s;
+        put s >> get = put s >> pure s;
     get_put :
       get >>= put = skip;
     get_get :
@@ -394,13 +395,13 @@ Variable inst : Monad M.
 Lemma guard_seq_bind :
   forall (S : Type) (inst' : MonadStateNondet S inst) (A : Type)
   (b : bool) (ma : M A),
-    guard b >> ma = ma >>= fun a : A => guard b >> ret a.
+    guard b >> ma = ma >>= fun a : A => guard b >> pure a.
 Proof.
   intros. unfold guard. destruct b.
-    unfold skip, bind_. monad.
-    rewrite bind_fail_l. rewrite <- (seq_fail_r _ _ ma).
-      unfold bind_. f_equal. ext a.
-      assert (H := bind_fail_l). unfold bind_ in H. rewrite H. reflexivity.
+    unfold skip, constrA. monad.
+    rewrite constrA_fail_l. rewrite <- (seq_fail_r _ _ ma).
+      rewrite constrA_spec. f_equal. ext a. rewrite constrA_fail_l.
+        reflexivity.
 Qed.
 
 End S3.

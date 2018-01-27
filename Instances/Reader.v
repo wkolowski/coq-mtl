@@ -19,7 +19,7 @@ Instance FunctorReader (R : Type) : Functor (Reader R) :=
 }.
 Proof. all: hs. Defined.
 
-Definition ret_Reader
+Definition pure_Reader
   {R A : Type} (a : A) : Reader R A :=
     fun _ : R => a.
 
@@ -30,7 +30,7 @@ Definition ap_Reader
 Instance ApplicativeReader (R : Type) : Applicative (Reader R) :=
 {
     is_functor := FunctorReader R;
-    ret := @ret_Reader R;
+    pure := @pure_Reader R;
     ap := @ap_Reader R
 }.
 Proof. all: hs. Defined.
@@ -50,4 +50,4 @@ Instance MonadReader (R : Type) : Monad (Reader R) :=
 }.
 Proof. all: hs. Defined.
 
-Hint Unfold Reader fmap_Reader ret_Reader ap_Reader bind_Reader : HSLib.
+Hint Unfold Reader fmap_Reader pure_Reader ap_Reader bind_Reader : HSLib.

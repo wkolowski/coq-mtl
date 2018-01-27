@@ -6,14 +6,14 @@ Require Export Control.Functor.
 
 Class Monad (M : Type -> Type) : Type :=
 {
-    ret : forall {A : Type}, A -> M A;
+    pure : forall {A : Type}, A -> M A;
     bind : forall {A B : Type}, M A -> (A -> M B) -> M B;
-    bind_ret_l :
+    bind_pure_l :
       forall (A B : Type) (f : A -> M B) (a : A),
-        bind (ret a) f = f a;
-    bind_ret_r :
+        bind (pure a) f = f a;
+    bind_pure_r :
       forall (A : Type) (ma : M A),
-        bind ma ret = ma;
+        bind ma pure = ma;
     assoc :
       forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
         bind (bind ma f) g = bind ma (fun x => bind (f x) g);
@@ -30,13 +30,13 @@ End MonadNotations.
 
 Export MonadNotations.
 
-Hint Rewrite @bind_ret_l @bind_ret_r @assoc : HSLib.
+Hint Rewrite @bind_pure_l @bind_pure_r @assoc : HSLib.
 
 Ltac monad :=
 repeat (hs; repeat match goal with
     | H : _ * _ |- _ => destruct H
-    | |- ?x >>= _ = ?x => rewrite <- bind_ret_r
-    | |- ?x = ?x >>= _ => rewrite <- bind_ret_r at 1
+    | |- ?x >>= _ = ?x => rewrite <- bind_pure_r
+    | |- ?x = ?x >>= _ => rewrite <- bind_pure_r at 1
     | |- ?x >>= _ = ?x >>= _ => f_equal
     | |- (fun _ => _) = _ => let x := fresh "x" in ext x
     | |- _ = (fun _ => _) => let x := fresh "x" in ext x
@@ -46,7 +46,7 @@ end; hs); try (unfold compose, id; cbn; congruence; fail).
 Definition fmap_Monad
   {M : Type -> Type} {inst : Monad M}
   {A B : Type} (f : A -> B) (ma : M A) : M B :=
-    ma >>= (f .> ret).
+    ma >>= (f .> pure).
 
 Hint Unfold fmap_Monad compose : HSLib.
 

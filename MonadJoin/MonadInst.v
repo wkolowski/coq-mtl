@@ -122,7 +122,7 @@ Instance MonadState (S : Type) : Monad (State S) :=
     join := @join_State S
 }.
 Proof.
-  all: cbn; unfold join_State, fmap_State, ret_State, ap_State, compose;
+  all: cbn; unfold join_State, fmap_State, pure_State, ap_State, compose;
   intros; ext s; try destruct (x s); try reflexivity.
     destruct (mf s), (ma s0). reflexivity.
 Defined.

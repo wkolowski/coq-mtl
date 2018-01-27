@@ -1,5 +1,7 @@
 Add Rec LoadPath "/home/zeimer/Code/Coq".
 
+Print LoadPath.
+
 Require Import HSLib.Base.
 Require Import Control.Monad.
 
@@ -21,17 +23,17 @@ Definition item : Parser ascii :=
   fun input : string =>
   match input with
       | EmptyString => []
-      | String c cs => ret (c, cs)
+      | String c cs => pure (c, cs)
   end.
 
 (** *** 2.3 Parser combinators *)
 
 Definition seq
   {A B : Type} (pa : Parser A) (pb : Parser B) : Parser (A * B) :=
-    pa >>= fun a => pb >>= fun b => ret (a, b).
+    pa >>= fun a => pb >>= fun b => pure (a, b).
 
 Definition sat (p : ascii -> bool) : Parser ascii :=
-  item >>= fun c : ascii => if p c then ret c else fail.
+  item >>= fun c : ascii => if p c then pure c else fail.
 
 Require Import Bool.
 
@@ -67,11 +69,6 @@ Definition upper : Parser ascii :=
 
 Open Scope list_scope.
 
-(*Definition aplus {A : Type} (p1 p2 : Parser A) : Parser A :=
-  fun input : string => (p1 input) ++ (p2 input).
-
-Notation "x <|> y" := (aplus x y) (at level 42).*)
-
 Definition letter : Parser ascii :=
   lower <|> upper.
 
@@ -81,8 +78,8 @@ Definition alnum : Parser ascii :=
 (** All words of length less than or equal to n. *)
 Fixpoint words (n : nat) : Parser string :=
 match n with
-    | 0 => ret ""
-    | S n' => (String <$> letter <*> words n') <|> ret ""
+    | 0 => pure ""
+    | S n' => (String <$> letter <*> words n') <|> pure ""
 end.
 
 (** A word of any length. *)
@@ -95,7 +92,7 @@ Compute word "dupa konia".
 
 Fixpoint str (s : string) : Parser string :=
 match s with
-    | "" => ret ""
+    | "" => pure ""
     | String c cs => String <$> char c <*> str cs
 end.
 
@@ -104,8 +101,8 @@ Compute str "abc" "abcd".
 Fixpoint many'
   {A : Type} (n : nat) (p : Parser A) : Parser (list A) :=
 match n with
-    | 0 => ret []
-    | S n' => (cons <$> p <*> many' n' p) <|> ret []
+    | 0 => pure []
+    | S n' => (cons <$> p <*> many' n' p) <|> pure []
 end.
 
 Arguments many' [A] _ _ _%string.
@@ -138,7 +135,7 @@ Compute word' "abc".
 Definition ident : Parser string := do
   c <- lower;
   cs <- fmap toString (many alnum);
-  ret (String c cs).
+  pure (String c cs).
 
 Arguments ident _%string.
 
@@ -170,7 +167,7 @@ Require Import ZArith.
 Definition parseNeg : Parser nat := do
   char "-";;
   r <- many1 digit;
-  ret $ eval (rev r).
+  pure $ eval (rev r).
 
 Definition parseZ : Parser Z :=
   fmap Z_of_nat parseNat <|>
@@ -181,25 +178,25 @@ Arguments parseZ _%string.
 Compute parseZ "-12345".
 
 Definition parseSign : Parser (Z -> Z) :=
-  (char "-" >> ret (fun k => Z.sub 0%Z k)) <|>
-  ret id.
+  (char "-" >> pure (fun k => Z.sub 0%Z k)) <|>
+  pure id.
 
 Definition parsePositive : Parser positive :=
   parseNat >>= fun n : nat =>
   match n with
       | 0 => fail
-      | _ => ret $ Pos.of_nat n
+      | _ => pure $ Pos.of_nat n
   end.
 
 Definition parseSign' : Parser (Z -> Z) :=
-  char "-" >> ret Z.opp <|> ret id.
+  char "-" >> pure Z.opp <|> pure id.
 
 Arguments parseSign' _%string.
 
 Definition parseZ' : Parser Z := do
   sgn <- parseSign;
   n <- parseNat;
-  ret $ sgn (Z_of_nat n).
+  pure $ sgn (Z_of_nat n).
 
 Arguments parseZ' _%string.
 
@@ -210,14 +207,14 @@ Definition sepby1
   : Parser (list A) := do
     h <- p;
     t <- many (sep >> p);
-    ret (h :: t).
+    pure (h :: t).
 
 Definition bracket {A B C : Type}
   (open : Parser A) (content : Parser B) (close : Parser C) : Parser B := do
     open;;
     res <- content;
     close;;
-    ret res.
+    pure res.
 
 Definition ints : Parser (list Z) :=
   bracket (char "[") (sepby1 parseZ (char ",")) (char "]").
@@ -228,7 +225,7 @@ Compute ints "[1,2,3,4,5,6,7,8]".
 
 Definition sepby {A B : Type}
   (item : Parser A) (sep : Parser B) : Parser (list A) :=
-    sepby1 item sep <|> ret [].
+    sepby1 item sep <|> pure [].
 
 (**
     expr    ::= expr addop factor | factor
@@ -241,8 +238,8 @@ match n with
     | 0 => fail
     | S n' =>
         let
-          addop := char "+" >> ret Z.add <|>
-                   char "-" >> ret Z.sub
+          addop := char "+" >> pure Z.add <|>
+                   char "-" >> pure Z.sub
         in let
           factor := parseZ <|>
                     bracket (char "(") (exprn n') (char ")")
@@ -265,11 +262,11 @@ Definition chainl1
   do
     h <- obj;
     t <- many $ liftA2 pair op obj;
-    ret $ fold_left (fun x '(f, y) => f x y) t h.
+    pure $ fold_left (fun x '(f, y) => f x y) t h.
 
 Definition parseNat_chainl : Parser nat :=
   let op m n := 10 * m + n in
-    chainl1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (ret op).
+    chainl1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (pure op).
 
 Arguments parseNat_chainl _%string.
 
@@ -291,7 +288,7 @@ Arguments chainr1 {A} _ _ _%string.
 
 Definition parseNat_chainr : Parser nat :=
   let op m n := m + 10 * n in
-    chainr1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (ret op).
+    chainr1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (pure op).
 
 Arguments parseNat_chainr _%string.
 
@@ -299,11 +296,11 @@ Compute parseNat_chainr "211".
 
 Fixpoint exprn'' (n : nat) : Parser Z :=
 match n with
-    | 0 => fail (* 0%Z *)
+    | 0 => fail
     | S n' =>
         let
-          op := char "+" >> ret Z.add <|>
-                char "-" >> ret Z.sub
+          op := char "+" >> pure Z.add <|>
+                char "-" >> pure Z.sub
         in let
           factor := parseZ <|> bracket (char "(") (exprn'' n') (char ")")
         in
@@ -320,16 +317,16 @@ Compute expr'' "3-2"%string.
 Definition ops
   {A B : Type} (start : Parser A * B) (l : list (Parser A * B)) : Parser B :=
 match l with
-    | [] => let '(p, op) := start in p >> ret op
+    | [] => let '(p, op) := start in p >> pure op
     | h :: t =>
         let '(p, op) := start in
-          fold_right aplus (p >> ret op)
-            (map (fun '(p, op) => p >> ret op) l)
+          fold_right aplus (p >> pure op)
+            (map (fun '(p, op) => p >> pure op) l)
 end.
 
 Fixpoint exprn3 (n : nat) : Parser Z :=
 match n with
-    | 0 => fail (* ret [] *) (* 0%Z *)
+    | 0 => fail
     | S n' =>
         let
           op := ops (char "+", Z.add) [(char "-", Z.sub)]
@@ -371,11 +368,11 @@ Compute expr4 "(1-2)^3".
 
 Definition chainl
   {A : Type} (p : Parser A) (op : Parser (A -> A -> A)) (default : A)
-    : Parser A := chainl1 p op <|> ret default.
+    : Parser A := chainl1 p op <|> pure default.
 
 Definition chainr
   {A : Type} (p : Parser A) (op : Parser (A -> A -> A)) (default : A)
-    : Parser A := chainr1 p op <|> ret default.
+    : Parser A := chainr1 p op <|> pure default.
 
 Definition first
   {A : Type} (p : Parser A) : Parser A :=
@@ -406,18 +403,18 @@ Definition isSpace (c : ascii) : bool :=
   leb (nat_of_ascii c) 32.
 
 Definition spaces : Parser unit :=
-  many1 (sat isSpace) >> ret tt.
+  many1 (sat isSpace) >> pure tt.
 
 Definition comment : Parser unit :=
   first
-    (str "--" >> many (sat (fun c => negb (ascii_eqb c "013"))) >> ret tt).
+    (str "--" >> many (sat (fun c => negb (ascii_eqb c "013"))) >> pure tt).
 
 Arguments comment _%string.
 
 Compute comment "-- haskellowy komentarz polityczny".
 
 Definition junk : Parser unit :=
-  many (spaces +++ comment) >> ret tt.
+  many (spaces +++ comment) >> pure tt.
 
 Definition parse {A : Type} (p : Parser A) : Parser A :=
   junk >> p.
@@ -426,7 +423,7 @@ Definition token {A : Type} (p : Parser A) : Parser A :=
   do
     x <- p;
     junk;;
-    ret x.
+    pure x.
 
 Definition natural : Parser nat :=
   token parseNat.
@@ -444,7 +441,7 @@ Definition in_decb {A : Type}
 Definition identifier (keywords : list string) : Parser string :=
   do
     id <- token ident;
-    if in_decb string_dec id keywords then fail else ret id.
+    if in_decb string_dec id keywords then fail else pure id.
 
 Arguments spaces _%string.
 Arguments comment _%string.
@@ -465,7 +462,7 @@ Definition parseQ : Parser Q := do
   a <- parseZ;
   char "/";;
   b <- parsePositive;
-  ret (a # b).
+  pure (a # b).
 
 Arguments parseQ _%string.
 
@@ -492,14 +489,14 @@ match n with
             e1 <- parseExprn n';
             e2 <- parseExprn n';
             token $ char ")";;
-            ret $ App e1 e2
+            pure $ App e1 e2
         in let
           lam := do
             token $ str "fun";;
             var <- id;
             token $ str "=>";;
             body <- parseExprn n';
-            ret $ Lam var body
+            pure $ Lam var body
         in let
           parseLet := do
             token $ str "let";;
@@ -508,7 +505,7 @@ match n with
             body <- parseExprn n';
             token $ str "in";;
             let_body <- parseExprn n';
-            ret $ Let var body let_body
+            pure $ Let var body let_body
         in let
           var := fmap Var id
         in
@@ -544,18 +541,18 @@ match n with
             e <- parseExprn' n';
             symbol "in";;
             e' <- parseExprn' n';
-            ret $ Let x e e'
+            pure $ Let x e e'
         in let
           lam := do
             symbol "\";;
             x <- variable;
             symbol "->";;
             e <- parseExprn' n';
-            ret $ Lam x e
+            pure $ Lam x e
         in let
           atom := token (lam +++ local +++ var +++ paren)
         in
-          chainl1 atom (ret App)
+          chainl1 atom (pure App)
 end.
 
 Definition parseExpr' : Parser Expr :=

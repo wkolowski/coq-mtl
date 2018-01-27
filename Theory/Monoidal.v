@@ -36,10 +36,3 @@ Class isMonoidal (F : Type -> Type) : Type :=
 }.
 
 Hint Rewrite @pairF_default_l @pairF_default_r @pairF_assoc : monoidal.
-
-Lemma strength :
-  forall (F : Type -> Type) (inst : Functor F)
-  (A B : Type) (a : A) (fb : F B), F (A * B)%type.
-Proof.
-  intros. exact (fmap (pair a) fb).
-Qed.

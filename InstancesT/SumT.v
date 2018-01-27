@@ -31,31 +31,31 @@ Instance Functor_SumT
 }.
 Proof. all: hs; mtrans; monad. Defined.
 
-Definition ret_SumT
+Definition pure_SumT
   {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A)
-  : SumT E M A := ret (inr x).
+  : SumT E M A := pure (inr x).
 
 Definition ap_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
   (msf : SumT E M (A -> B)) (msx : SumT E M A) : SumT E M B :=
     @bind M inst _ _ msf (fun sf =>
       match sf with
-          | inl e => ret (inl e)
+          | inl e => pure (inl e)
           | inr f =>
               @bind M inst _ _ msx (fun sx =>
               match sx with
-                  | inl e => ret (inl e)
-                  | inr x => ret (inr (f x))
+                  | inl e => pure (inl e)
+                  | inr x => pure (inr (f x))
               end)
       end).
 
-Hint Unfold ret_SumT ap_SumT : HSLib.
+Hint Unfold pure_SumT ap_SumT : HSLib.
 
 Instance Applicative_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Applicative (SumT E M) :=
 {
     is_functor := @Functor_SumT M inst E;
-    ret := @ret_SumT M inst E;
+    pure := @pure_SumT M inst E;
     ap := @ap_SumT M inst E;
 }.
 Proof. all: hs; monad. Defined.
@@ -95,7 +95,7 @@ Definition bind_SumT
   (ma : SumT E M A) (f : A -> SumT E M B) : SumT E M B :=
     @bind M inst _ _ ma (fun sa : E + A =>
     match sa with
-        | inl e => ret (inl e)
+        | inl e => pure (inl e)
         | inr a => f a
     end).
 

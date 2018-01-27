@@ -26,7 +26,7 @@ Instance Functor_Free : Functor (Free F) :=
 }.
 Proof. all: hs. Defined.
 
-Definition ret_Free
+Definition pure_Free
   {A : Type} (x : A) : Free F A :=
     fun X pure _ => pure x.
 
@@ -36,7 +36,7 @@ Definition ap_Free
 
 Instance Applicative_Free : Applicative (Free F) :=
 {
-    ret := @ret_Free;
+    pure := @pure_Free;
     ap := @ap_Free;
 }.
 Proof. all: hs. Defined.
@@ -72,7 +72,7 @@ Defined.
     wrap : forall {A : Type}, F (M A) -> M A;
     wrap_law :
       forall (A B : Type) (f : A -> M B) (x : F A),
-        wrap (fmap f x) = wrap (@fmap F instF _ _ ret x) >>= f
+        wrap (fmap f x) = wrap (@fmap F instF _ _ pure x) >>= f
 }.
 
 Definition wrap_Free
@@ -90,4 +90,4 @@ Instance MonadFree_Free
 }.
 Proof. hs. Defined.
 
-Hint Unfold Free fmap_Free ret_Free ap_Free bind_Free wrap_Free.
+Hint Unfold Free fmap_Free pure_Free ap_Free bind_Free wrap_Free.

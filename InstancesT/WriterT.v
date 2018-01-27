@@ -30,25 +30,25 @@ Proof.
   all: monad.
 Defined.
 
-Definition ret_WriterT
+Definition pure_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A : Type} (x : A)
-    : WriterT W M A := ret (x, neutr).
+    : WriterT W M A := pure (x, neutr).
 
 Definition ap_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (mf : WriterT W M (A -> B)) (mx : WriterT W M A) : WriterT W M B :=
     @bind M inst _ _ mf (fun '(f, w) =>
     @bind M inst _ _ mx (fun '(x, w') =>
-      ret (f x, op w w'))).
+      pure (f x, op w w'))).
 
-Hint Unfold ret_WriterT ap_WriterT : HSLib.
+Hint Unfold pure_WriterT ap_WriterT : HSLib.
 
 Instance Applicative_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M)
   : Applicative (WriterT W M) :=
 {
     is_functor := @Functor_WriterT W M inst;
-    ret := @ret_WriterT W M inst;
+    pure := @pure_WriterT W M inst;
     ap := @ap_WriterT W M inst;
 }.
 Proof. all: monad. Defined.
@@ -91,7 +91,7 @@ Definition bind_WriterT
   (x : WriterT W M A) (f : A -> WriterT W M B) : WriterT W M B :=
     @bind M inst _ _ x (fun '(a, w) =>
     @bind M inst _ _ (f a) (fun '(b, w') =>
-      ret (b, op w w'))).
+      pure (b, op w w'))).
 
 Hint Unfold bind_WriterT : HSLib.
 

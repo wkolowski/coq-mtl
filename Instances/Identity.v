@@ -18,7 +18,7 @@ Instance FunctorIdentity : Functor Identity :=
 }.
 Proof. all: hs. Defined.
 
-Definition ret_Identity {A : Type} (x : A) : Identity A := x.
+Definition pure_Identity {A : Type} (x : A) : Identity A := x.
 
 Definition ap_Identity
   {A B : Type} (f : Identity A -> Identity B) (x : Identity A)
@@ -27,7 +27,7 @@ Definition ap_Identity
 Instance Applicative_Identity : Applicative Identity :=
 {
     is_functor := FunctorIdentity;
-    ret := @ret_Identity;
+    pure := @pure_Identity;
     ap := @ap_Identity
 }.
 Proof. all: hs. Defined.
@@ -52,5 +52,5 @@ Instance MonadIdentity : Monad Identity :=
 }.
 Proof. all: hs. Defined.
 
-Hint Unfold Identity fmap_Identity ret_Identity ap_Identity bind_Identity
+Hint Unfold Identity fmap_Identity pure_Identity ap_Identity bind_Identity
   : HSLib.

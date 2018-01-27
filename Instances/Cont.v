@@ -18,7 +18,7 @@ Instance FunctorCont (R : Type) : Functor (Cont R) :=
 }.
 Proof. all: hs. Defined.
 
-Definition ret_Cont
+Definition pure_Cont
   {R A : Type} (a : A) : Cont R A :=
     fun f : A -> R => f a.
 
@@ -29,7 +29,7 @@ Definition ap_Cont
 Instance ApplicativeCont (R : Type) : Applicative (Cont R) :=
 {
     is_functor := FunctorCont R;
-    ret := @ret_Cont R;
+    pure := @pure_Cont R;
     ap := @ap_Cont R
 }.
 Proof. all: hs. Defined.
@@ -61,7 +61,7 @@ Instance MonadCont (R : Type) : Monad (Cont R) :=
 }.
 Proof. all: hs. Defined.
 
-Hint Unfold Cont fmap_Cont ret_Cont ap_Cont bind_Cont : HSLib.
+Hint Unfold Cont fmap_Cont pure_Cont ap_Cont bind_Cont : HSLib.
 
 Require Import Arith.
 

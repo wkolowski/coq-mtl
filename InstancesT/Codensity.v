@@ -23,7 +23,7 @@ Instance FunctorCodensity
 }.
 Proof. all: reflexivity. Defined.
 
-Definition ret_Codensity
+Definition pure_Codensity
   (F : Type -> Type) {A : Type} (a : A) : Codensity F A :=
     fun (R : Type) (f : A -> F R) => f a.
 
@@ -37,7 +37,7 @@ Instance Applicative_Codensity
   (F : Type -> Type) : Applicative (Codensity F) :=
 {
     is_functor := FunctorCodensity F;
-    ret := @ret_Codensity F;
+    pure := @pure_Codensity F;
     ap := @ap_Codensity F;
 }.
 Proof. all: reflexivity. Defined.
@@ -148,21 +148,21 @@ Definition inject
     fun _ c => x >>= c.
 
 Definition extract
-  {A : Type} (x : Codensity M A) : M A := x _ ret.
+  {A : Type} (x : Codensity M A) : M A := x _ pure.
 
 Definition improve
   {A : Type} (x : M A) : M A :=
     extract (inject x).
 
-Hint Unfold Codensity fmap_Codensity ret_Codensity ap_Codensity bind_Codensity
+Hint Unfold Codensity fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
             inject extract : HSLib.
 
-Lemma extract_ret :
+Lemma extract_pure :
   forall (A : Type) (x : A),
-    extract (ret x) = ret x.
+    extract (pure x) = pure x.
 Proof. monad. Qed.
 
-Lemma extract_ret' :
+Lemma extract_pure' :
   forall (A : Type) (x : M A),
     extract (fun _ c => x >>= c) = x.
 Proof. monad. Qed.

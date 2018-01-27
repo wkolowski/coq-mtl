@@ -21,7 +21,7 @@ Instance FunctorState (S : Type) : Functor (State S) :=
 }.
 Proof. all: monad. Defined.
 
-Definition ret_State
+Definition pure_State
   (S A : Type) : A -> State S A :=
     fun (a : A) (s : S) => (a, s).
 
@@ -31,12 +31,12 @@ Definition ap_State
       let (f, stf) := sf st in
       let (a, sta) := sa stf in (f a, sta).
 
-Hint Unfold ret_State ap_State : HSLib.
+Hint Unfold pure_State ap_State : HSLib.
 
 Instance ApplicativeState (S : Type) : Applicative (State S) :=
 {
     is_functor := FunctorState S;
-    ret := @ret_State S;
+    pure := @pure_State S;
     ap := @ap_State S
 }.
 Proof. all: monad. Defined.

@@ -1,7 +1,7 @@
 Add LoadPath "/home/Zeimer/Code/Coq".
 
 Require Export HSLib.Control.Applicative.
-Require Export HSLib.Control.Monoidal.
+Require Export HSLib.Theory.Monoidal.
 
 Lemma par_id :
   forall (A B : Type), @id A *** @id B = id.
@@ -24,7 +24,7 @@ Proof.
   intros. unfold compose, par. ext p. destruct p. cbn. reflexivity.
 Qed.
 
-Definition ret_isMonoidal
+Definition pure_isMonoidal
   {F : Type -> Type} {inst : isMonoidal F} {A : Type} (x : A) : F A :=
     fmap (fun u : unit => x) default.
 
@@ -46,32 +46,32 @@ multimatch goal with
     | |- ?x =?x => reflexivity
     | |- context [fmap snd (pairF _ _)] => rewrite pairF_default_l
     | |- context [fmap fst (pairF _ _)] => rewrite pairF_default_r
-    | |- context [fmap id _] => rewrite !fmap_pres_id
+    | |- context [fmap id _] => rewrite !fmap_id
     | |- context [id _] => rewrite !id_eq
     | |- context [id .> _] => rewrite !id_left
     | |- context [_ .> id] => rewrite !id_right
-    | |- context [fmap (fst .> _)] => rewrite !fmap_pres_comp'
-    | |- context [fmap (snd .> _)] => rewrite !fmap_pres_comp'
+    | |- context [fmap (fst .> _)] => rewrite !fmap_comp'
+    | |- context [fmap (snd .> _)] => rewrite !fmap_comp'
     | _ => rewrite ?wutzor_snd
     | |- context [pairF (fmap ?f ?a) ?x] =>
           replace x with (fmap id x) by functor;
-          rewrite <- ?natural, <- ?fmap_pres_comp', ?fmap_pres_id
+          rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
     | |- context [pairF ?x (fmap ?f ?a)] =>
             replace x with (fmap id x) by functor;
-            rewrite <- ?natural, <- ?fmap_pres_comp', ?fmap_pres_id
+            rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
 end).
 
 Instance isMonoidal_Applicative (F : Type -> Type) (inst : isMonoidal F)
   : Applicative F :=
 {
     is_functor := @isMonoidal_functor F inst;
-    ret := @ret_isMonoidal F inst;
+    pure := @pure_isMonoidal F inst;
     ap := @ap_isMonoidal F inst
 }.
 Proof.
-  all: unfold ret_isMonoidal, ap_isMonoidal; intros.
+  all: unfold pure_isMonoidal, ap_isMonoidal; intros.
     (*replace ax with (fmap id ax) by functor.
-    rewrite <- natural. rewrite <- fmap_pres_comp'.
+    rewrite <- natural. rewrite <- fmap_comp'.
     unfold compose, par, apply. cbn.
     replace
     (fun x : unit * A =>
@@ -80,12 +80,12 @@ Proof.
     with
     (@snd unit A).
        Focus 2. ext p. destruct p. cbn. reflexivity.
-       rewrite pairF_default_l. rewrite fmap_pres_id. reflexivity.*)
+       rewrite pairF_default_l. rewrite fmap_id. reflexivity.*)
     monoidal.
     monoidal. rewrite !par_wut. cbn. unfold apply. admit.
-    monoidal. functor.
+    monoidal. rewrite <- fmap_comp'. f_equal. (* TODO: functor. *)
     monoidal.
-      rewrite <- fmap_pres_comp', par_wut. cbn.
+      rewrite <- fmap_comp', par_wut. cbn.
       replace (fun p : (A -> B) * unit => id (fst p) x)
       with (@fst (A -> B) unit .> flip apply x).
         Focus 2. ext p. destruct p. cbn. reflexivity.
@@ -94,7 +94,7 @@ Proof.
 Admitted.
 
 Definition default_Applicative
-  {F : Type -> Type} {inst : Applicative F} : F unit := ret tt.
+  {F : Type -> Type} {inst : Applicative F} : F unit := pure tt.
 
 Definition pairF_Applicative
   {F : Type -> Type} {inst : Applicative F} {A B : Type}
@@ -102,7 +102,7 @@ Definition pairF_Applicative
 
 Hint Unfold default_Applicative pairF_Applicative compose (* WUT *): HSLib.
 
-Hint Rewrite @identity @interchange @homomorphism @fmap_ret_ap
+Hint Rewrite @identity @interchange @homomorphism @fmap_pure_ap
   : HSLib'.
 Hint Rewrite <- @composition
   : HSLib'.

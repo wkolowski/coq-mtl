@@ -28,7 +28,7 @@ Instance FunctorContT
 }.
 Proof. all: trivial. Defined.
 
-Definition ret_ContT
+Definition pure_ContT
   (R : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (x : A)
     : ContT R M A := fun y : A -> M R => y x.
 
@@ -37,13 +37,13 @@ Definition ap_ContT
   (f : ContT R M (A -> B)) (x : ContT R M A) : ContT R M B :=
     fun y : B -> M R => f (fun h : A -> B => x (fun a : A => y (h a))).
 
-Hint Unfold ret_ContT ap_ContT : HSLib.
+Hint Unfold pure_ContT ap_ContT : HSLib.
 
 Instance Applicative_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) : Applicative (ContT R M) :=
 {
     is_functor := FunctorContT R M inst;
-    ret := @ret_ContT R M inst;
+    pure := @pure_ContT R M inst;
     ap := @ap_ContT R M inst
 }.
 Proof. all: reflexivity. Defined.

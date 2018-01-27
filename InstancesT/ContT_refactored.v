@@ -23,9 +23,9 @@ Instance FunctorContT : Functor (ContT R M) :=
 {
     fmap := fmap_ContT
 }.
-Proof. all: reflexivity. Defined.
+Proof. all: hs. Defined.
 
-Definition ret_ContT (A : Type) (x : A) : ContT R M A :=
+Definition pure_ContT (A : Type) (x : A) : ContT R M A :=
   fun y : A -> M R => y x.
 
 Definition ap_ContT
@@ -35,10 +35,10 @@ Definition ap_ContT
 Instance ApplicativeContT : Applicative (ContT R M) :=
 {
     is_functor := FunctorContT;
-    ret := ret_ContT;
+    pure := pure_ContT;
     ap := ap_ContT;
 }.
-Proof. all: reflexivity. Defined.
+Proof. all: hs. Defined.
 
 Definition bind_ContT
   (A B : Type) (x : ContT R M A) (f : A -> ContT R M B) : ContT R M B :=
@@ -49,7 +49,7 @@ Instance Monad_ContT : Monad (ContT R M) :=
     is_applicative := ApplicativeContT;
     bind := bind_ContT;
 }.
-Proof. all: reflexivity. Defined.
+Proof. all: hs. Defined.
 
 Definition lift_ContT
   (A : Type) (ma : M A) : ContT R M A :=
@@ -57,13 +57,12 @@ Definition lift_ContT
 
 End ContT_instances.
 
+Hint Unfold ContT fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT
+  : HSLib.
+
 Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
 {
     is_monad := fun M _ => @Monad_ContT R M;
     lift := @lift_ContT R;
 }.
-Proof.
-  all: cbn; intros; unfold lift_ContT, ret_ContT, bind_ContT; ext y.
-    apply bind_ret_l.
-    apply assoc.
-Defined.
+Proof. all: monad. Defined.

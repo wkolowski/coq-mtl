@@ -10,9 +10,9 @@ Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
     put_put :
       forall s1 s2 : S, put s1 >> put s2 = put s2;
     put_get :
-      forall s : S, put s >> get = put s >> ret s;
+      forall s : S, put s >> get = put s >> pure s;
     get_put :
-      get >>= put = ret tt;
+      get >>= put = pure tt;
     get_put' :
       forall s : S,
         get >> put s = put s;
@@ -20,6 +20,8 @@ Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
       forall (A : Type) (k : S -> S -> M A),
         get >>= (fun s : S => get >>= k s) = get >>= fun s : S => k s s
 }.
+
+Hint Rewrite @put_put @put_get @get_put @get_get : HSLib.
 
 Section MonadState_funs.
 
@@ -35,7 +37,7 @@ Definition state {A : Type} (f : S -> (A * S)%type) : M A :=
     let '(a, s') := f s in
     do
       put s';;
-      ret a.
+      pure a.
 
 Definition modify (f : S -> S) : M unit :=
   do
@@ -45,14 +47,19 @@ Definition modify (f : S -> S) : M unit :=
 Definition gets {A : Type} (f : S -> A) : M A :=
   do
     s <- get;
-    ret $ f s.
+    pure $ f s.
+
+  Hint Rewrite @constrA_spec : HSLib.
 
 Lemma put_gets :
   forall (A : Type) (s : S) (f : S -> A),
-    put s >> gets f = put s >> ret (f s).
+    put s >> gets f = put s >> pure (f s).
 Proof.
-  intros. assert (H := put_get). unfold gets, bind_ in *.
-  rewrite <- assoc, H, assoc, bind_ret_l. reflexivity.
+  intros. monad.
+
+  assert (H := put_get). unfold gets. specialize (H s).
+  rewrite ?constrA_spec in *.
+  rewrite <- bind_assoc, H, bind_assoc, bind_pure_l. reflexivity.
 Qed.
 
 Lemma modify_put :
@@ -60,15 +67,15 @@ Lemma modify_put :
     modify f >> put s = put s.
 Proof.
   intros. assert (H := put_put). assert (H' := get_put).
-  unfold modify, bind_ in *.
-  rewrite assoc.
+  unfold modify in *. rewrite constrA_spec in *.
+  rewrite bind_assoc.
   replace (fun x : S => put (f x) >>= (fun _ : unit => put s))
      with (fun x : S => put (f x) >> put s).
-    Focus 2. ext x. rewrite put_put, H. reflexivity.
+    Focus 2. ext x. rewrite put_put. Abort. (* H. reflexivity.
     replace (fun x : S => put (f x) >> put s)
        with (fun x : S => put s).
       Focus 2. ext x. rewrite put_put. reflexivity.
-      assert (H'' := get_put'). unfold bind_ in H''. rewrite H''.
+      assert (H'' := get_put'). unfold constrA in H''. rewrite H''.
         reflexivity.
 Qed.
 
@@ -76,7 +83,7 @@ Lemma modify_get :
   forall f : S -> S,
     modify f >> get = fmap f get.
 Proof.
-  intros. unfold modify, bind_. rewrite assoc.
-Abort.
+  intros. unfold modify, bind_. rewrite bind_assoc.
+Abort.*)
 
 End MonadState_funs.
