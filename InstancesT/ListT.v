@@ -112,9 +112,3 @@ Instance MonadTrans_ListT : MonadTrans ListT :=
     lift := @lift_ListT;
 }.
 Proof. all: monad. Defined.
-
-Print Functor_ListT.
-Print Applicative_ListT.
-Print Monad_ListT.
-Print Alternative_ListT.
-Print MonadPlus_ListT.

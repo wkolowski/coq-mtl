@@ -44,7 +44,7 @@ end.
 
 Instance MonadList : Monad list :=
 {
-    is_applicative := ApplicativeList;
+    is_applicative := Applicative_List;
     join := @join_List
 }.
 Proof.

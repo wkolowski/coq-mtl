@@ -52,6 +52,9 @@ Notation "f $$ x" := (ap f x)
 Notation "f <*> x" := (ap f x)
   (left associativity, at level 40).
 
+Notation "x <**> f" := (ap f x)
+  (left associativity, at level 40, only parsing).
+
 Definition constlA
   {F : Type -> Type} {inst : Applicative F} {A B : Type} (a : F A) (b : F B)
     : F A := const <$> a <*> b.
@@ -95,6 +98,10 @@ Hint Rewrite @fmap_pure : HSLib.
 
 End DerivedApplicativeLaws.
 
+(** Utility functions for applicative functors. In Haskell, most of these
+    require the [F] to be a monad, but in this library they requiere only
+    an [Applicative]. They are consistently named with "A" at the end and
+    the ones with "M" at the end you can find in Haskell don't exist here. *)
 Section ApplicativeFuns1.
 
 Variable F : Type -> Type.
@@ -154,16 +161,16 @@ Definition unless (cond : bool) (a : F unit) : F unit :=
 
 End ApplicativeFuns1.
 
-Arguments liftA2 [F inst A B C] _ _ _.
-Arguments liftA3 [F inst A B C D ] _ _ _ _.
-Arguments liftA4 [F inst A B C D E] _ _ _ _ _.
+Arguments liftA2 {F inst A B C} _ _ _.
+Arguments liftA3 {F inst A B C D } _ _ _ _.
+Arguments liftA4 {F inst A B C D E} _ _ _ _ _.
 
-Arguments filterA [F inst A] _ _.
-Arguments sequenceA [F inst A] _.
-Arguments replicateA [F inst A] _ _.
-Arguments zipWithA [F inst A B C] _ _ _.
-Arguments when [F inst] _ _.
-Arguments unless [F inst] _ _.
+Arguments filterA {F inst A} _ _.
+Arguments sequenceA {F inst A} _.
+Arguments replicateA {F inst A} _ _.
+Arguments zipWithA {F inst A B C} _ _ _.
+Arguments when {F inst} _ _.
+Arguments unless {F inst} _ _.
 
 Section ApplicativeFuns2.
 
@@ -179,9 +186,10 @@ Definition forA (la : list A) (f : A -> F B) : F (list B) :=
 
 End ApplicativeFuns2.
 
-(** An applicative functor commutes if its [ap]'s arguments can be evaluated
-    in any order. The intended categorical semantics is therefore strong
-    commutative monoidal functor.
+(** An applicative functor is commutative if its [ap]'s arguments can be
+    evaluated in any order. The intended categorical semantics is therefore
+    strong commutative monoidal functor.
+
     TODO: check the semantics. *)
 Class CommutativeApplicative
   (F : Type -> Type) (inst : Applicative F) : Prop :=

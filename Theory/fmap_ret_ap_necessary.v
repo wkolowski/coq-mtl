@@ -26,14 +26,14 @@ Class Applicative (F : Type -> Type) : Type :=
 
 Coercion is_functor : Applicative >-> Functor.
 
-(* TODO: sprawdzić czy ostatnie prawo jest potrzbne. *)
+(* TODO: check if the last law is necessary *)
 
 CoInductive Stream (A : Type) : Type :=
     | snil : Stream A
     | scons : A -> Stream A -> Stream A .
 
-Arguments snil [A].
-Arguments scons [A] _ _.
+Arguments snil {A}.
+Arguments scons {A} _ _.
 
 CoFixpoint fmap_Stream
   {A B : Type} (f : A -> B) (sa : Stream A) : Stream B :=

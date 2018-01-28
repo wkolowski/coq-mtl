@@ -70,13 +70,13 @@ match l with
     | h :: t => f dflt h >>= fun a : A => foldM f a t
 end.
 
-Definition ab {A B : Type} (mf : M (A -> B)) (ma : M A) : M B :=
+(* TODO : Definition ab {A B : Type} (mf : M (A -> B)) (ma : M A) : M B :=
   mf >>= fun f =>
-  ma >>= fun a => pure (f a).
+  ma >>= fun a => pure (f a).*)
 
 End MonadicFuns.
 
-Arguments foldM [M] [inst] [A] [B] _ _ _.
+Arguments foldM {M inst A B} _ _ _.
 
 Section DerivedLaws.
 

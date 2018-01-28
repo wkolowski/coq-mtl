@@ -2,6 +2,11 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Export HSLib.Control.Monad.
 
+(** Haskell-style monad transformers. The categorical semantics is not yet
+    clear to me (a monad morphism?, a natural transformation preserving the
+    [Applicative]/[Monad] structure?).
+
+    The laws are standard, taken from Haskell's standard library. *)
 Class MonadTrans (T : (Type -> Type) -> Type -> Type) : Type :=
 {
     is_monad : forall (M : Type -> Type), Monad M -> Monad (T M);
@@ -15,8 +20,8 @@ Class MonadTrans (T : (Type -> Type) -> Type -> Type) : Type :=
         (f : A -> M B), lift (x >>= f) = lift x >>= (f .> lift)
 }.
 
-(* Tactic for dealing with functor instances specific to monad
-   transformers. *)
+(** A tactic for dealing with functor instances specific to monad
+    transformers. *)
 Ltac mtrans := hs; try
 match goal with
     | |- fmap (fun x : ?A => ?e) = _ =>

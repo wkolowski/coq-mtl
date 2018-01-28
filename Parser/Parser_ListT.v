@@ -127,7 +127,7 @@ match n with
     | S n' => (cons <$> p <*> many' n' p) <|> pure []
 end.
 
-Arguments many' [A] _ _ _%string.
+Arguments many' {A} _ _ _%string.
 
 Open Scope char_scope.
 
@@ -167,7 +167,7 @@ Definition many1
   {A : Type} (p : Parser A) : Parser (list A) :=
     cons <$> p <*> (many p).
 
-Arguments many1 [A] _ _%string.
+Arguments many1 {A} _ _%string.
 
 Compute many1 (char "a") "aaab".
 
@@ -400,7 +400,7 @@ Definition first
     fun input : string => fun X nil cons =>
       p input X nil (fun h _ => cons h nil).
 
-Arguments first [A] _ _%string.
+Arguments first {A} _ _%string.
 
 Time Compute many digit "123".
 Time Compute first (many digit) "123".

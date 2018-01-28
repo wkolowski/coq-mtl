@@ -134,7 +134,7 @@ End S0.
 
 Require Import HSLib.Instances.All.
 
-Instance MonadFail_List : MonadFail MonadList :=
+Instance MonadFail_List : MonadFail Monad_List :=
 {
     fail := @nil
 }.
@@ -142,7 +142,7 @@ Proof.
   all: compute; reflexivity.
 Defined.
 
-Instance MonadAlt_List : MonadAlt MonadList :=
+Instance MonadAlt_List : MonadAlt Monad_List :=
 {
     choose := @app;
 }.
@@ -152,7 +152,7 @@ Proof.
     cbn. apply bind_List_app.
 Defined.
 
-Instance MonadNondet_List : MonadNondet MonadList :=
+Instance MonadNondet_List : MonadNondet Monad_List :=
 {
     instF := MonadFail_List;
     instA := MonadAlt_List;
@@ -163,8 +163,8 @@ Proof.
     rewrite app_nil_r. reflexivity.
 Defined.
 
-Arguments fail [M inst MonadFail A].
-Arguments choose [M inst MonadAlt A] _ _.
+Arguments fail {M inst MonadFail A}.
+Arguments choose {M inst MonadAlt A} _ _.
 
 Section S1.
 
@@ -350,7 +350,7 @@ End S2.
 
 (** ** 6. Stateful computations *)
 
-Arguments skip [M inst].
+Arguments skip {M inst}.
 
 Class MonadState
   (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=

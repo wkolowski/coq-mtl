@@ -6,8 +6,7 @@ Require Import Control.Applicative.
 Require Import Control.Alternative.
 Require Import Control.Monad.
 Require Import Control.MonadPlus.
-
-(* option is already there, so we won't redefine it. *)
+Require Import Control.Foldable.
 
 Definition Option (A : Type) : Type := option A.
 
@@ -86,3 +85,25 @@ Instance MonadOption : Monad option :=
     bind := @bind_Option
 }.
 Proof. all: monad. Defined.
+
+Instance MonadPlus_Option : MonadPlus option :=
+{
+    is_monad := MonadOption;
+    is_alternative := AlternativeOption;
+}.
+Proof. all: hs. Defined.
+
+Definition foldMap_Option
+  {A : Type} {M : Monoid} (f : A -> M) (oa : option A) : M :=
+match oa with
+    | None => neutr
+    | Some a => f a
+end.
+
+Hint Unfold foldMap_Option : HSLib.
+
+Instance FoldableOption : Foldable option :=
+{
+    foldMap := @foldMap_Option
+}.
+Proof. monad. Defined.

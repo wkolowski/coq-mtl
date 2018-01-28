@@ -4,14 +4,13 @@ Require Import HSLib.Base.
 Require Import Control.Monad.
 Require Import HSLib.Instances.All.
 
-
 (* Just for teh lulz. *)
 Class Enumerable (A : Type) : Type :=
 {
     enum : nat -> list A;
 }.
 
-Arguments enum _ [Enumerable] _.
+Arguments enum _ {Enumerable} _.
 
 Instance Enumerable_Empty_set : Enumerable Empty_set :=
 {

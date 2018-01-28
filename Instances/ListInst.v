@@ -6,10 +6,13 @@ Require Import Control.Applicative.
 Require Import Control.Alternative.
 Require Import Control.Monad.
 Require Import Control.MonadPlus.
+Require Import Control.Foldable.
 
 Definition List (A : Type) : Type := list A.
 
 Definition fmap_List := map.
+
+Hint Rewrite app_nil_l app_nil_r : HSLib.
 
 Instance FunctorList : Functor list :=
 {
@@ -22,6 +25,8 @@ Proof.
 Defined.
 
 Definition pure_List {A : Type} (x : A) : list A := [x].
+
+Hint Unfold List pure_List : HSLib.
 
 Fixpoint ap_list {A B : Type} (lf : list (A -> B)) (la : list A) : list B :=
 match lf with
@@ -90,7 +95,7 @@ Proof.
         rewrite IHgs. trivial.
 Qed.
 
-Instance ApplicativeList : Applicative list :=
+Instance Applicative_List : Applicative list :=
 {
     is_functor := FunctorList;
     pure := @pure_List; 
@@ -115,9 +120,9 @@ Definition aempty_List {A : Type} : list A := [].
 
 Definition aplus_List {A : Type} (x y : list A) : list A := app x y.
 
-Instance AlternativeList : Alternative list :=
+Instance Alternative_List : Alternative list :=
 {
-    is_applicative := ApplicativeList;
+    is_applicative := Applicative_List;
     aempty := @aempty_List;
     aplus := @aplus_List
 }.
@@ -143,16 +148,16 @@ Proof.
 Qed.
 
 Theorem List_not_CommutativeApplicative :
-  ~ CommutativeApplicative list ApplicativeList.
+  ~ CommutativeApplicative list Applicative_List.
 Proof.
   destruct 1.
   specialize (ap_comm _ _ _ (fun _ => id) [true; false] [false; true]).
   compute in ap_comm. inversion ap_comm.
 Qed.
 
-Instance MonadList : Monad list :=
+Instance Monad_List : Monad list :=
 {
-    is_applicative := ApplicativeList;
+    is_applicative := Applicative_List;
     bind := @bind_List
 }.
 Proof.
@@ -169,5 +174,25 @@ Proof.
       rewrite IHt. reflexivity.
 Defined.
 
-Hint Unfold List pure_List : HSLib.
-Hint Rewrite app_nil_l app_nil_r : HSLib.
+Instance MonadPlus_List : MonadPlus list :=
+{
+    is_monad := Monad_List;
+    is_alternative := Alternative_List;
+}.
+Proof. monad. Defined.
+
+Fixpoint foldMap_List
+  {A : Type} {M : Monoid} (f : A -> M) (l : list A) : M :=
+match l with
+    | [] => neutr
+    | h :: t => op (f h) (foldMap_List f t)
+end.
+
+Instance FoldableList : Foldable list :=
+{
+    foldMap := @foldMap_List
+}.
+Proof.
+  intros. ext l.
+  induction l as [| h t]; unfold compose in *; cbn; congruence.
+Defined.

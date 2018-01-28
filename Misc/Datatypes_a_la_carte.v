@@ -20,12 +20,12 @@ Definition Expr (F : Type -> Type) : Type :=
 Inductive Val (E : Type) : Type :=
     | Val' : nat -> Val E.
 
-Arguments Val' [E] _.
+Arguments Val' {E} _.
 
 Inductive Add (E : Type) : Type :=
     | Add' : E -> E -> Add E.
 
-Arguments Add' [E] _ _.
+Arguments Add' {E} _ _.
 
 Inductive Coproduct (F G : Type -> Type) (E : Type) :=
     | Inl : F E -> Coproduct F G E

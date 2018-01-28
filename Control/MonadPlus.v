@@ -2,68 +2,102 @@ Add Rec LoadPath "/home/Zeimer/Code/Coq".
 
 Require Export HSLib.Control.Alternative.
 Require Export HSLib.Control.Monad.
+Require Export HSLib.Control.Foldable.
 
-(*Require Import HSLib.Instances.Option.
-Require Import HSLib.Instances.ListInst.*)
+(** A functor that is both a [Monad] and an [Alternative]. The intended
+    categorical semantics are unclear (strong monoidal monad with a bonus
+    monoid structure?).
 
-Require Import Arith.
-
+    Loosely based on Haskell's MonadPlus, but this is not yet well-developed.
+    There's only one law to make sure that [aempty] is the left annihilator
+    of [>>=]. The other law given in Haskell's standard library, namely
+    [x >> aempty = aempty] is not present. *)
 Class MonadPlus (M : Type -> Type) : Type :=
 {
     is_monad :> Monad M;
     is_alternative :> Alternative M;
-    bind_aempty :
+    bind_aempty_l :
       forall (A B : Type) (f : A -> M B),
         aempty >>= f = aempty
 }.
 
+(** Note that there's yet nothing to make sure that the [Applicative] instance
+    coming from [Monad] is the same as the one coming from [Alternative]. This
+    gives the warning "ambiguous paths". *)
 Coercion is_monad : MonadPlus >-> Monad.
 Coercion is_alternative : MonadPlus >-> Alternative.
 
-Hint Rewrite @bind_aempty : HSLib.
+Hint Rewrite @bind_aempty_l : HSLib.
 
-Section MonadPlusFuns.
+(** Functions from Haskell's Control.Monad.Plus, but without the ones that
+    can be generalized to [Alternative].
 
-Variable M : Type -> Type.
-Variable inst : MonadPlus M.
+    TODO: check if there's anything more than can be generalized or removed. *)
+Section MonadPlusFunctions1.
+
+Variables M T : Type -> Type.
+Variable instM : MonadPlus M.
+Variable instT : Foldable T.
 Variables A B C : Type.
 
 Definition mfilter (f : A -> bool) (ma : M A) : M A :=
   ma >>= fun a : A => if f a then pure a else aempty.
 
-End MonadPlusFuns.
+Definition mpartition (p : A -> bool) (ma : M A) : M A * M A :=
+  (mfilter p ma, mfilter (p .> negb) ma).
 
-Arguments mfilter [M] [inst] [A] _ _.
+Definition mcatOptions (x : M (option A)) : M A :=
+  x >>= @aFromOption _ _ _.
 
-(*Instance MonadPlusOption : MonadPlus option :=
-{
-    is_monad := MonadOption;
-    is_alternative := AlternativeOption
-}.
+Definition mscatter (x : M (T A)) : M A :=
+    x >>= @afold _ _ _ _ _.
 
-Instance MonadPlusList : MonadPlus list :=
-{
-    is_monad := MonadList;
-    is_alternative := AlternativeList
-}.*)
+End MonadPlusFunctions1.
 
-Fixpoint aux (n k : nat) : list nat :=
-match n with
-    | 0 => [k]
-    | S n' => k :: aux n' (S k)
+Arguments mfilter {M instM A} _ _.
+Arguments mpartition {M instM A} _ _.
+Arguments mcatOptions {M instM A} _.
+Arguments mscatter {M T instM instT A} _.
+
+Section MonadPlusFunctions2.
+
+Variables M T : Type -> Type.
+Variable instM : MonadPlus M.
+Variable instT : Foldable T.
+Variables A B C : Type.
+
+Definition sum_left (x : A + B) : option A :=
+match x with
+    | inl a => Some a
+    | _ => None
 end.
 
-Definition I (a b : nat) : list nat := aux (b - a) a.
+Definition sum_right (x : A + B) : option B :=
+match x with
+    | inr b => Some b
+    | _ => None
+end.
 
-(*Compute do
-  a <- I 1 35;
-  b <- I 1 35;
-  c <- I 1 35;
-  guard (beq_nat (a * a + b * b) (c * c));;
-  pure (a, b, c).
+Definition mlefts (x : M (A + B)) : M A :=
+  mcatOptions (fmap sum_left x).
 
-Eval compute in mfilter (fun _ => true) (I 1 10).
-Eval compute in mfilter (fun _ => false) (Some 42).
+Definition mrights (x : M (A + B)) : M B :=
+  mcatOptions (fmap sum_right x).
 
-Compute zipWithA
-  (fun _ _ => [true; false]) [1; 2; 3] [4; 5; 6; 7].*)
+Definition mpartitionEithers (x : M (A + B)) : M A * M B :=
+  (mlefts x, mrights x).
+
+Definition mmapOption (f : A -> option B) (x : M A) : M B :=
+  mcatOptions (fmap f x).
+
+(** TODO: beware! This causes a circular dependency. [mconcatMap] is the
+    less general of these two functions anyway. *)
+(*Require Import HSLib.Instances.ListInst.
+
+Definition mconcatMap (f : A -> list B) (x : M A) : M B :=
+  mscatter (fmap f x).*)
+
+Definition mconcatMap' (f : A -> T B) (x : M A) : M B :=
+  mscatter (fmap f x).
+
+End MonadPlusFunctions2.

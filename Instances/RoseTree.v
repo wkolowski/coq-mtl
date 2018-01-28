@@ -6,14 +6,15 @@ Require Import Control.Applicative.
 Require Import Control.Alternative.
 Require Import Control.Monad.
 Require Import Control.MonadPlus.
+Require Import Control.Foldable.
 
 (* Rose Trees *)
 Inductive RT (A : Type) : Type :=
     | Leaf : A -> RT A
     | Node : RT A -> RT A -> RT A.
 
-Arguments Leaf [A] _.
-Arguments Node [A] _ _.
+Arguments Leaf {A} _.
+Arguments Node {A} _ _.
 
 Fixpoint fmap_RT {A B : Type} (f : A -> B) (t : RT A) : RT B :=
 match t with
@@ -99,4 +100,20 @@ Proof.
   destruct 1. apply RT_not_Alternative. assumption.
 Qed.
 
-Hint Unfold fmap_RT pure_RT ap_RT bind_RT : HSLib.
+(*Hint Unfold fmap_RT pure_RT ap_RT bind_RT : HSLib.*)
+
+Fixpoint foldMap_RT
+  {A : Type} {M : Monoid} (f : A -> M) (t : RT A) : M :=
+match t with
+    | Leaf x => f x
+    | Node l r => op (foldMap_RT f l) (foldMap_RT f r)
+end.
+
+Instance Foldable_RT : Foldable RT :=
+{
+    foldMap := @foldMap_RT
+}.
+Proof.
+  intros. ext t.
+  induction t as [| l IHl r IHr]; unfold compose in *; cbn; congruence.
+Defined.

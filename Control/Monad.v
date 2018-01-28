@@ -4,7 +4,7 @@ Require Export HSLib.Control.Applicative.
 
 (** A [bind]-based definition of monads — the basic one in the library (see
     MonadJoin/Monad.v and Theory/KleisliTriple.v for alternate definitions).
-    The intended categorical semantics is monoidal monad in the category of
+    The intended categorical semantics is a monoidal monad in the category of
     Coq's types and functions.
 
     The design here is as follows:
@@ -19,8 +19,8 @@ Require Export HSLib.Control.Applicative.
     - [bind_ap] ensures that [bind] is compatible with [ap] (and thus
       also with [fmap])
 
-    Note that these laws are redundant, as [bind_pure_l] follows from
-    [bind_ap] and the [Applicative] laws. *)
+    Note that these laws are redundant, as [bind_pure_l] and [bind_pure_r]
+    follow from [bind_ap] and the [Applicative] laws. *)
 Class Monad (M : Type -> Type) : Type :=
 {
     is_applicative :> Applicative M;
@@ -42,11 +42,11 @@ Class Monad (M : Type -> Type) : Type :=
 Coercion is_applicative : Monad >-> Applicative.
 
 Definition join
-  {M : Type -> Type} {_inst : Monad M} {A : Type} (mma : M (M A))
+  {M : Type -> Type} {inst : Monad M} {A : Type} (mma : M (M A))
     : M A := bind mma id.
 
 Definition compM
-  {M : Type -> Type} {_inst : Monad M} {A B C : Type}
+  {M : Type -> Type} {inst : Monad M} {A B C : Type}
   (f : A -> M B) (g : B -> M C) (a : A) : M C :=
     bind (f a) g.
 
@@ -74,8 +74,7 @@ End MonadNotations.
 
 Export MonadNotations.
 
-Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap
-  : HSLib.
+Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : HSLib.
 
 (** The main workhorse tactic for most of the library. It proceeds like this:
     - apply the [functional_extensionality] axiom whenever it's possible
@@ -120,9 +119,14 @@ end.
 
 End MonadicFuns.
 
-Arguments foldM [M inst A B] _ _ _.
+Arguments foldM {M inst A B} _ _ _.
 
-Section DerivedLaws.
+(** Some of the laws I thought were fundamental, but turned out to be
+    redundant. Notably there's [bind_pure_l_derived], showing that
+    [bind_pure_l] is redundant.
+
+    TODO: maybe prove these by hand? *)
+Section DerivedMonadLaws.
 
 Variables
   (M : Type -> Type)
@@ -138,9 +142,7 @@ Qed.
 Lemma bind_fmap :
   forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
     fmap f x >>= g = x >>= (f .> g).
-Proof.
-  monad.
-Qed.
+Proof. monad. Qed.
 
 Lemma fmap_bind_pure :
   forall (A B : Type) (f : A -> B) (x : M A),
@@ -153,7 +155,6 @@ Proof.
     rewrite bind_pure_l. reflexivity.
 Qed.
 
-(* TODO: pursure this *)
 Lemma bind_pure_l_derived :
   forall (A B : Type) (f : A -> M B) (a : A),
     pure a >>= f = f a.
@@ -167,71 +168,38 @@ Proof.
       reflexivity.
 Qed.
 
-End DerivedLaws.
+End DerivedMonadLaws.
 
-Hint Rewrite @fmap_bind_pure @bind_fmap @fmap_bind
-  (*bind_pure_expand_l bind_pure_expand_r*)
-  : HSLib.
+Hint Rewrite @fmap_bind_pure @bind_fmap @fmap_bind : HSLib.
 
-Section DerivedLaws2.
+(** Laws relating fundamental monadic operations ([>>=], [>=>], [join])
+    with themselves and other operations, like [fmap] and [>>]. At the
+    end there's a proof that the law [bind_pure_r] is redundant. *)
+Section DerivedMonadLaws2.
 
 Variables
   (M : Type -> Type)
   (inst : Monad M).
 
-Theorem compM_assoc :
+Lemma compM_assoc :
   forall (A B C D : Type) (f : A -> M B) (g : B -> M C) (h : C -> M D),
     f >=> (g >=> h) = (f >=> g) >=> h.
 Proof.
   unfold compM. monad.
 Qed.
 
-Theorem compM_id_left :
-  forall (A B : Type) (f : A -> M B), pure >=> f = f.
+Lemma compM_pure_left :
+  forall (A B : Type) (f : A -> M B),
+    pure >=> f = f.
 Proof.
   unfold compM. monad.
 Qed.
 
-Theorem compM_id_right :
-  forall (A B : Type) (f : A -> M B), f >=> pure = f.
+Lemma compM_pure_right :
+  forall (A B : Type) (f : A -> M B),
+    f >=> pure = f.
 Proof.
   unfold compM. monad.
-Qed.
-
-Theorem bind_compM :
-  forall (A B : Type) (ma : M A) (f : A -> M B),
-    bind ma f = ((fun _ : unit => ma) >=> f) tt.
-Proof.
-  unfold compM. monad.
-Qed.
-
-Theorem bind_join_fmap :
-  forall (A B : Type) (ma : M A) (f : A -> M B),
-    bind ma f = join (fmap f ma).
-Proof.
-  unfold join. monad.
-Qed.
-
-Theorem join_fmap :
-  forall (A : Type) (x : M (M (M A))),
-    join (fmap join x) = join (join x).
-Proof.
-  unfold join. monad.
-Qed.
-
-Theorem join_pure :
-  forall (A : Type) (x : M A),
-    join (pure x) = join (fmap pure x).
-Proof.
-  unfold join. monad.
-Qed.
-
-Theorem fmap_join :
-  forall (A B C : Type) (f : A -> M B) (g : B -> C) (x : M A),
-    fmap g (join (fmap f x)) =
-    join (fmap (fun x : A => fmap g (f x)) x).
-Proof.
-  unfold join. monad.
 Qed.
 
 Lemma compM_comp :
@@ -248,11 +216,53 @@ Proof.
   unfold compM, compose. monad.
 Qed.
 
+Lemma bind_compM :
+  forall (A B : Type) (ma : M A) (f : A -> M B),
+    ma >>= f = ((fun _ : unit => ma) >=> f) tt.
+Proof.
+  unfold compM. monad.
+Qed.
+
+Lemma bind_join_fmap :
+  forall (A B : Type) (ma : M A) (f : A -> M B),
+    ma >>= f = join (fmap f ma).
+Proof.
+  unfold join. monad.
+Qed.
+
+Lemma join_fmap_join :
+  forall (A : Type) (x : M (M (M A))),
+    join (fmap join x) = join (join x).
+Proof.
+  unfold join. monad.
+Qed.
+
+Lemma join_fmap_pure :
+  forall (A : Type) (x : M A),
+    join (fmap pure x) = join (pure x).
+Proof.
+  unfold join. monad.
+Qed.
+
+Lemma join_pure :
+  forall (A : Type) (x : M A),
+    join (pure x) = x.
+Proof.
+  intros. unfold join. monad.
+Qed.
+
+Lemma fmap_join :
+  forall (A B C : Type) (f : A -> M B) (g : B -> C) (x : M A),
+    fmap g (join (fmap f x)) =
+    join (fmap (fun x : A => fmap g (f x)) x).
+Proof.
+  unfold join. monad.
+Qed.
+
 Lemma constrA_assoc :
   forall (A B C : Type) (ma : M A) (mb : M B) (mc : M C),
     (ma >> mb) >> mc = ma >> (mb >> mc).
 Proof. unfold constrA, compose. monad. Qed.
-Check bind_pure_r.
 
 Lemma constlA_spec :
   forall (A B : Type) (ma : M A) (mb : M B),
@@ -268,6 +278,29 @@ Proof.
   intros. unfold constrA, compose. monad.
 Qed.
 
-End DerivedLaws2.
+Lemma bind_pure_r_derived :
+  forall (A : Type) (ma : M A),
+    ma >>= pure = ma.
+Proof.
+  intros.
+  replace (ma >>= pure)
+  with (join (pure pure >>= fun f => ma >>= fun a => pure (f a))).
+    rewrite <- bind_ap, <- fmap_pure_ap, join_fmap_pure, join_pure.
+      reflexivity.
+    rewrite <- bind_ap, <- fmap_pure_ap, <- bind_join_fmap.
+      reflexivity.
+Qed.
+
+(* TODO *) Lemma bind_assoc_derived :
+  forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
+    (ma >>= f) >>= g = ma >>= fun x => f x >>= g.
+Proof.
+  intros.
+  rewrite !bind_join_fmap. f_equal; intros; subst.
+    rewrite H2. reflexivity.
+    replace (fun x : A => f x >>= g) with (f .> fmap g .> join).
+Abort.
+
+End DerivedMonadLaws2.
 
 Hint Rewrite @constlA_spec @constrA_spec : HSLib.

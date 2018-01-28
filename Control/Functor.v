@@ -74,9 +74,9 @@ Definition void (ma : F A) : F unit := fmap (fun _ => tt) ma.
 
 End FunctorFuns.
 
-Arguments replaceL [F inst A B] _ _.
-Arguments replaceR [F inst A B] _ _.
-Arguments void [F inst A] _.
+Arguments replaceL {F inst A B} _ _.
+Arguments replaceR {F inst A B} _ _.
+Arguments void {F inst A} _.
 
 (** Notations mimicking those from Haskell's Data.Functor. The last
     one is used mainly when programming with applicative functors.

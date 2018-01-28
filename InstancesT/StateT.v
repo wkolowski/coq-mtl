@@ -14,7 +14,7 @@ Definition fmap_StateT
     fun (x : StateT S M A) (s : S) =>
       x s >>= fun '(a, s') => pure (f a, s').
 
-Hint Unfold StateT fmap_StateT compose (* BEWAR *): HSLib.
+Hint Unfold StateT fmap_StateT compose : HSLib.
 
 Lemma f1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type),

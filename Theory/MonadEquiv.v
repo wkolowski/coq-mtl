@@ -14,7 +14,7 @@ Include Control.Monad.
 End Bind.
 
 Require Import Control.Applicative.
-Require Import HSLib.Misc.KleisliTriple.
+(*Require Import HSLib.Misc.KleisliTriple.*)
 
 Instance JoinToBind
   (M : Type -> Type) (inst : Join.Monad M) : Bind.Monad M :=

@@ -6,8 +6,9 @@ Require Import Control.Applicative.
 Require Import Control.Alternative.
 Require Import Control.Monad.
 Require Import Control.MonadPlus.
+Require Import Control.Foldable.
 
-(* TODO *) Definition Sum (E A : Type) : Type := sum E A.
+Definition Sum (E A : Type) : Type := sum E A.
 
 Definition fmap_Sum
   {E A B : Type} (f : A -> B) (x : sum E A) : sum E B :=
@@ -74,3 +75,18 @@ Instance MonadSum (A : Type) : Monad (sum A) :=
     bind := @bind_Sum A
 }.
 Proof. all: monad. Defined.
+
+Definition foldMap_Sum
+  {E A : Type} {M : Monoid} (f : A -> M) (x : sum E A) : M :=
+match x with
+    | inl _ => neutr
+    | inr a => f a
+end.
+
+Hint Unfold foldMap_Sum : HSLib.
+
+Instance FoldableSum (E : Type) : Foldable (sum E) :=
+{
+    foldMap := @foldMap_Sum E
+}.
+Proof. monad. Defined.
