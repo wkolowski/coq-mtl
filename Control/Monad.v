@@ -297,7 +297,6 @@ Qed.
 Proof.
   intros.
   rewrite !bind_join_fmap. f_equal; intros; subst.
-    rewrite H2. reflexivity.
     replace (fun x : A => f x >>= g) with (f .> fmap g .> join).
 Abort.
 

@@ -8,11 +8,11 @@ Export ListNotations.
     however: I encountered universe inconsistencies a few times.
 
     TODO: investigate universe consistency next time something breaks down. *)
-Global Set Universe Polymorphism.
+(*Global Set Universe Polymorphism.*)
 
 (** Useful shorthand tactics for doing generalization and inversion. *)
 Ltac gen x := generalize dependent x.
-Ltac inv H := inversion H; subst; clear.
+Ltac inv H := inversion H; subst; clear H.
 
 (** We will reason by functional extensionality quite a lot. For this, we
     have three tactics:
@@ -35,7 +35,7 @@ Ltac exts := repeat ext.
 Require Export Coq.Program.Basics.
 
 Notation "f .> g" := (compose g f) (at level 40).
-Notation "f $ x" := (f x) (left associativity, at level 40, only parsing).
+Notation "f $ x" := (f x) (right associativity, at level 30, only parsing).
 
 (** We will need some obvious lemmas about [id]. *)
 Lemma id_eq :

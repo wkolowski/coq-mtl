@@ -49,17 +49,15 @@ Definition gets {A : Type} (f : S -> A) : M A :=
     s <- get;
     pure $ f s.
 
-  Hint Rewrite @constrA_spec : HSLib.
+Hint Rewrite @constrA_spec : HSLib.
 
 Lemma put_gets :
   forall (A : Type) (s : S) (f : S -> A),
     put s >> gets f = put s >> pure (f s).
 Proof.
-  intros. monad.
-
-  assert (H := put_get). unfold gets. specialize (H s).
-  rewrite ?constrA_spec in *.
-  rewrite <- bind_assoc, H, bind_assoc, bind_pure_l. reflexivity.
+  intros. assert (H := put_get). unfold gets. specialize (H s).
+  rewrite ?constrA_spec, <- bind_assoc, H, bind_assoc, bind_pure_l in *.
+  reflexivity.
 Qed.
 
 Lemma modify_put :

@@ -43,7 +43,7 @@ Instances/ contains instances for the typeclasses from Control/ for the followin
 
 InstancesT/ are instances for monad transformers and include: Codensity, ContT (along with a refactored version; ignore it), ListT (a fully working and verified one, based on the proposal "ListT Done right", but implemented using Church encoding; it even has a nice notation), OptionT, ReaderT, RoseTreeT, StateT, SumT, WriterT.
 
-In the directory Parser/ there are two versions of working monadic parsers combinators with all the necessary instances: one using StateT list and the other using StateT (ListT Identity). The first one seems faster for now. There are general efficiency problems due to (I think) problems with typesclass resolution.
+In the directory Parser/ there are two versions of working monadic parsers combinators with all the necessary instances: one using StateT list and the other using StateT (ListT Identity). The first one seems faster for now. EDIT 16.02.18: the efficiency problems were related to universe polymorphism and are now solved.
 
 ## Build
 
