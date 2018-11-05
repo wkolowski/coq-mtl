@@ -8,7 +8,7 @@ Export ListNotations.
     however: I encountered universe inconsistencies a few times.
 
     TODO: investigate universe consistency next time something breaks down. *)
-(*Global Set Universe Polymorphism.*)
+Global Set Universe Polymorphism.
 
 (** Useful shorthand tactics for doing generalization and inversion. *)
 Ltac gen x := generalize dependent x.

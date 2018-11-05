@@ -23,8 +23,10 @@ Notation "[[ x ]]" :=
   (fun X nil cons => cons x nil).
 Notation "[[ x ; y ; .. ; z ]]" :=
   (fun X nil cons => cons x (cons y .. (cons z nil) ..)).
+(* BEWARE: Compatibility with 8.4 not supported in 8.8.1
 Notation "[[ x ; .. ; y ]]" :=
   (fun X nil cons => cons x .. (cons y nil) ..) (compat "8.4").
+*)
 
 End ListT_Notations.
 

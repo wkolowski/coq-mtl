@@ -3,5 +3,8 @@
 *.v.d
 *.glob
 *.crashcoqide
+*aux
 *~
 makefile
+*.conf
+*.d

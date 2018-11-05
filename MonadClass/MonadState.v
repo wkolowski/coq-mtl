@@ -69,7 +69,13 @@ Proof.
   rewrite bind_assoc.
   replace (fun x : S => put (f x) >>= (fun _ : unit => put s))
      with (fun x : S => put (f x) >> put s).
-    Focus 2. ext x. rewrite put_put. Abort. (* H. reflexivity.
+    Focus 2. ext x. rewrite put_put.
+Restart.
+  unfold modify. intros.
+  Search bind.
+  Check get_get.
+Abort.
+ (* H. reflexivity.
     replace (fun x : S => put (f x) >> put s)
        with (fun x : S => put s).
       Focus 2. ext x. rewrite put_put. reflexivity.

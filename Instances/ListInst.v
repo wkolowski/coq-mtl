@@ -1,4 +1,4 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Add Rec LoadPath "~/Code/Coq".
 
 Require Import HSLib.Base.
 Require Import Control.Functor.

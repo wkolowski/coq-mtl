@@ -1,7 +1,7 @@
 Add LoadPath "/home/Zeimer/Code/Coq".
 
 Require Export HSLib.Control.Functor.
-
+Set Universe Polymorphism.
 (** Haskell-style applicative functors. The intended categorical semantics
     is a (strong) monoidal functor in the category of Coq's types and
     functions (see Theory/Monoidal.v for more).
@@ -10,7 +10,7 @@ Require Export HSLib.Control.Functor.
     [homomorphism] and [interchange]) are standard and the fifth one,
     [fmap_pure_ap], ensures compatibility with the given [Functor] instance.
     These laws are redundant: [identity] follows from [fmap_pure_ap]. *)
-Class Applicative (F : Type -> Type) : Type :=
+Cumulative Class Applicative (F : Type -> Type) : Type :=
 {
     is_functor :> Functor F;
     pure : forall {A : Type}, A -> F A;
@@ -54,6 +54,18 @@ Notation "f <*> x" := (ap f x)
 
 Notation "x <**> f" := (ap f x)
   (left associativity, at level 40, only parsing).
+
+(** TODO: Time to do idiom brackets. *)
+
+Notation "[/  f  /]" := (pure f).
+Notation "[/ f x .. y /]" := (ap .. (ap (pure f) x) .. y)
+  (format
+    "'[v' [/ f '/' x '/' .. '/' y '/' /] ']'", only parsing).
+
+Check [/ plus /].
+(*
+Check [| plus (Some 2) (Some 3) |].
+*)
 
 Definition constlA
   {F : Type -> Type} {inst : Applicative F} {A B : Type} (a : F A) (b : F B)
@@ -122,6 +134,18 @@ Definition liftA4
   (f : A -> B -> C -> D -> E)
   (fa : F A) (fb : F B) (fc : F C) (fd : F D) : F E :=
     pure f <*> fa <*> fb <*> fc <*> fd.
+
+(*
+Definition liftA4'
+  (f : A -> B -> C -> D -> E)
+  (fa : F A) (fb : F B) (fc : F C) (fd : F D) : F E :=
+    [| f | fa | fb | fc | fd |].
+
+Definition liftA5 (G : Type)
+  (f : A -> B -> C -> D -> E -> G)
+  (fa : F A) (fb : F B) (fc : F C) (fd : F D) (fe : F E) : F G :=
+    [| f | fa | fb | fc | fd | fe |].
+*)
 
 Fixpoint filterA (p : A -> F bool) (la : list A) : F (list A) :=
 match la with
