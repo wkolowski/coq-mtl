@@ -1,12 +1,10 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
-
 Require Export Bool.
 Require Export Arith.
 
 Require Export Ascii.
 Require Export String.
 
-Require Export Control.Monad.
+Require Import Control.
 
 Require Export HSLib.Instances.ListInst.
 Require Export HSLib.InstancesT.StateT.
@@ -262,8 +260,6 @@ match l with
             (map (fun '(p, op) => p >> pure op) l)
 end.
 
-(* TODO: chainl1 alternative *)
-
 (** Like [chainl1], but with a default value. *)
 Definition chainl
   {A : Type} (p : Parser A) (op : Parser (A -> A -> A)) (default : A)
@@ -283,10 +279,7 @@ match p input with
     | h :: _ => [h]
 end.
 
-(** A deterministic version of [aplus].
-
-    TODO: check if using it all the time would makes the parsers more
-    efficient. *)
+(** A deterministic version of [aplus]. *)
 Definition aplus_det
   {A : Type} (p q : Parser A) : Parser A :=
     first (p <|> q).
@@ -300,9 +293,7 @@ Theorem aplus_det_spec :
       p +++ q = p <|> q.
 Proof.
   intros. extensionality input. unfold aplus_det, first.
-  (* BEWARE: ]] gives an error because its a part of the notation for
-     the ListT monad transformer. *)
-  destruct H as [H | [x H] ]; rewrite H; reflexivity.
+  destruct H as [H | [x H]]; rewrite H; reflexivity.
 Qed.
 
 Definition isSpace (c : ascii) : bool :=

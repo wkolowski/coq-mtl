@@ -5,10 +5,9 @@ Require Export List.
 Export ListNotations.
 
 (** All definitions are universe polymorphic. Things are not that fine
-    however: I encountered universe inconsistencies a few times.
-
-    TODO: investigate universe consistency next time something breaks down. *)
+    however: I encountered universe inconsistencies a few times. *)
 Global Set Universe Polymorphism.
+Set Polymorphic Inductive Cumulativity.
 
 (** Useful shorthand tactics for doing generalization and inversion. *)
 Ltac gen x := generalize dependent x.
@@ -62,8 +61,8 @@ Qed.
     to mark which lemmas and definitions we want rewritten/unfolded.
 
     We need to make sure the rewriting doesn't loop and that unfolding
-    doesn't rewriting. In practice, this is very straightforward. We
-    will only add as hints those lemmas that "simplify", in some
+    doesn't prevent rewriting. In practice, this is very straightforward.
+    We will only add as hints those lemmas that "simplify", in some
     subjective sense, the theorem's statement. Since rewriting is
     performed before unfolding, we don't need to worry about it breaking
     anything.
@@ -116,3 +115,7 @@ Ltac unmatch_all :=
 match goal with
     | |- context [match ?x with _ => _ end] => unmatch x
 end.
+
+(* A nice name for the identity function stolen from Idris. Probably not
+   very useful. *)
+Definition the (A : Type) (x : A) : A := x.

@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
-
 Require Export HSLib.Control.Applicative.
 
 (** A [bind]-based definition of monads — the basic one in the library (see
@@ -123,9 +121,7 @@ Arguments foldM {M inst A B} _ _ _.
 
 (** Some of the laws I thought were fundamental, but turned out to be
     redundant. Notably there's [bind_pure_l_derived], showing that
-    [bind_pure_l] is redundant.
-
-    TODO: maybe prove these by hand? *)
+    [bind_pure_l] is redundant. *)
 Section DerivedMonadLaws.
 
 Variables
@@ -291,7 +287,7 @@ Proof.
       reflexivity.
 Qed.
 
-(* TODO *) Lemma bind_assoc_derived :
+Lemma bind_assoc_derived :
   forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
     (ma >>= f) >>= g = ma >>= fun x => f x >>= g.
 Proof.

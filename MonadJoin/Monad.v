@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
-
 Require Import HSLib.Base.
 Require Export Control.Functor.
 Require Export Control.Applicative.
@@ -69,10 +67,6 @@ match l with
     | [] => pure dflt
     | h :: t => f dflt h >>= fun a : A => foldM f a t
 end.
-
-(* TODO : Definition ab {A B : Type} (mf : M (A -> B)) (ma : M A) : M B :=
-  mf >>= fun f =>
-  ma >>= fun a => pure (f a).*)
 
 End MonadicFuns.
 

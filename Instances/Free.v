@@ -1,11 +1,4 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
-Require Import HSLib.Base.
-Require Import Control.Functor.
-Require Import Control.Applicative.
-Require Import Control.Alternative.
-Require Import Control.Monad.
-Require Import Control.MonadPlus.
+Require Import Control.
 
 Require Import HSLib.Instances.Identity.
 
@@ -66,7 +59,7 @@ Proof.
   intro. apply Free_not_Alternative, X.
 Defined.
 
-(* TODO *) Class MonadFree
+Class MonadFree
   (F M : Type -> Type) (instF : Functor F) (instM : Monad M) : Type :=
 {
     wrap : forall {A : Type}, F (M A) -> M A;

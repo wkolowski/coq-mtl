@@ -1,5 +1,3 @@
-Add LoadPath "/home/Zeimer/Code/Coq".
-
 Require Export HSLib.Control.Functor.
 
 (* Auxiliary functions needed to define Monoidal. *)

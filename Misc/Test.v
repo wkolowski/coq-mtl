@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
 Require Export HSLib.Control.Alternative.
 Require Export HSLib.Control.Monad.
 Require Export HSLib.Control.MonadPlus.

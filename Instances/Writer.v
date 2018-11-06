@@ -1,13 +1,4 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
-Require Import HSLib.Base.
-Require Import Control.Functor.
-Require Import Control.Applicative.
-Require Import Control.Alternative.
-Require Import Control.Monad.
-Require Import Control.MonadPlus.
-
-Require Export HSLib.Misc.Monoid.
+Require Import Control.
 
 Definition Writer (W : Monoid) (A : Type) : Type := (A * W)%type.
 

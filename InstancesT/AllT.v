@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
 Require Export HSLib.Base.
 
 Require Export HSLib.InstancesT.OptionT.

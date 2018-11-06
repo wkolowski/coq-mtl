@@ -1,7 +1,4 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
-
-Require Export Control.MonadPlus.
-Require Export Control.MonadTrans.
+Require Import Control.
 
 Require Import HSLib.Instances.Identity.
 

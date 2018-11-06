@@ -1,23 +1,25 @@
 Require Import Control.
 
-Inductive Vec : nat -> Type -> Type :=
-    | vnil : forall A : Type, Vec 0 A
-    | vcons : forall (n : nat) (A : Type), A -> Vec n A -> Vec (S n) A.
+Inductive Vec (A : Type) : nat -> Type :=
+    | vnil : Vec A 0
+    | vcons : forall n :nat, A -> Vec A n -> Vec A (S n).
 
 Arguments vnil {A}.
-Arguments vcons {n} {A}.
+Arguments vcons {A} {n}.
 
 Fixpoint fmap_Vec
-  {n : nat} {A B : Type} (f : A -> B) (va : Vec n A) : Vec n B.
-Proof.
-  destruct va as [| n A h t].
-    exact vnil.
-    exact (vcons (f h) (fmap_Vec n A B f t)).
-Defined.
+  {A B : Type} {n : nat} (f : A -> B) (va : Vec A n) : Vec B n :=
+match va with
+    | vnil => vnil
+    | vcons h t => vcons (f h) (fmap_Vec f t)
+end.
 
-Instance Functor_Vec (n : nat) : Functor (Vec n) :=
+Definition Vec' n A := Vec A n.
+
+(*
+Instance Functor_Vec (n : nat) : Functor (Vec' n) :=
 {
-    fmap := @fmap_Vec n
+    fmap := fmap_Vec
 }.
 Proof.
   intros. ext va. induction va; cbn.
@@ -27,6 +29,8 @@ Proof.
     reflexivity.
     rewrite IHva. reflexivity.
 Defined.
+
+Print Functor_Vec.
 
 Fixpoint pure_Vec {n : nat} {A : Type} (x : A) : Vec n A :=
 match n with
@@ -44,12 +48,11 @@ Proof.
       exact (vcons (f x) (ap_Vec _ _ _ fs xs)).
 Defined.
 
-(*
+Print Applicative.
+Print Monad.
+Print Applicative.
+Print Vec.
+
 Instance Applicative_Vec (n : nat) : Applicative (Vec n).
-Proof.
-  esplit. Unshelve. all: cycle 5.
-    apply (Functor_Vec n).
-{
-}.
-Proof.
+Abort.
 *)

@@ -1,12 +1,5 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
+Require Import Control.
 
-Require Import HSLib.Base.
-Require Import Control.Functor.
-Require Import Control.Applicative.
-Require Import Control.Alternative.
-
-(* Zrobić Codensity (F : Type -> Type) funktora F oraz pokazać
-   Codensity F izomorficzne z F. *)
 Definition Codensity
   (F : Type -> Type) (A : Type) : Type :=
     forall {R : Type}, (A -> F R) -> F R.
@@ -77,7 +70,7 @@ Proof.
   split. intros. compute in *. ext R; ext y. f_equal.
 Abort.
 
-(* TODO:  Theorem Codensity_not_CommutativeApplicative :
+(* Theorem Codensity_not_CommutativeApplicative :
   ~ CommutativeApplicative _ Applicative_Codensity.
 Proof.
   destruct 1. compute in *. Require Import Bool.
@@ -128,8 +121,6 @@ Abort. *)
 
 (*Definition callCC_Type : Type :=
   forall A B : Type, ((A -> Codensity B) -> Codensity A) -> Codensity A.
-
-(* TODO: why no callCC? *)
 
 Theorem no_callCC :
   callCC_Type -> False.

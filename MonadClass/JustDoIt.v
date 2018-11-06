@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
-
 Require Import HSLib.Base.
 Require Import Control.Monad.
 
@@ -82,7 +80,7 @@ Class MonadFail : Type :=
     constrA_fail_l :
       forall (A B : Type) (mb : M B),
         @fail A >> mb = @fail B;
-(** TODO: BEWARE! Custom laws *)
+(** BEWARE! This law is custom, not from the paper. *)
     bind_fail_l :
       forall (A B : Type) (f : A -> M B),
         fail >>= f = fail
@@ -232,14 +230,6 @@ Class MonadExcept
 
 Hint Rewrite @catch_fail_l @catch_fail_r @catch_assoc @catch_pure : HSLib.
 
-Goal
-  forall (instF : MonadFail inst)
-  (instE : MonadExcept instF) (A : Type) (f : A -> A) (x : M A) (h : M A),
-    catch (pure f <*> x) h = pure f <*> catch x h.
-Proof.
-  intros.
-Abort. (* TODO *)
-
 Fixpoint product (l : list nat) : nat :=
 match l with
     | [] => 1
@@ -323,7 +313,7 @@ Definition fastprod'
   (l : list nat) : M nat :=
     catch (hasE 0 l >> pure (product l)) (pure 0).
 
-Lemma aux_TODO :
+Lemma aux :
   forall (inst' : MonadFail inst) (inst'' : MonadExcept inst')
   (n m : nat) (l : list nat),
     catch (hasE 0 l >> pure n) (pure m) =
@@ -340,7 +330,7 @@ Theorem fastprod'_spec :
   forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
     fastprod' l = pure (product l).
 Proof.
-  intros. unfold fastprod'. rewrite aux_TODO.
+  intros. unfold fastprod'. rewrite aux.
   case_eq (has 0 l); intros.
     rewrite product_has_0; auto.
     reflexivity.

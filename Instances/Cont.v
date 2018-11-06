@@ -1,16 +1,10 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
-Require Import HSLib.Base.
-Require Import Control.Functor.
-Require Import Control.Applicative.
-Require Import Control.Alternative.
-Require Import Control.Monad.
-Require Import Control.MonadPlus.
+Require Import Control.
 
 Definition Cont (R A : Type) : Type := (A -> R) -> R.
 
-Definition fmap_Cont {R A B : Type} (f : A -> B) (ca : Cont R A)
-    : Cont R B := fun g : B -> R => ca (f .> g).
+Definition fmap_Cont
+  {R A B : Type} (f : A -> B) (ca : Cont R A) : Cont R B :=
+    fun g : B -> R => ca (f .> g).
 
 Instance FunctorCont (R : Type) : Functor (Cont R) :=
 {
@@ -65,6 +59,6 @@ Hint Unfold Cont fmap_Cont pure_Cont ap_Cont bind_Cont : HSLib.
 
 Require Import Arith.
 
-(* TODO *) Definition callCC
+Definition callCC
   {R A B : Type} (f : (A -> Cont R B) -> Cont R A) : Cont R A :=
     fun ar : A -> R => f (fun (a : A) (_ : B -> R) => ar a) ar.

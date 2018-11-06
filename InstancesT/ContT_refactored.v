@@ -1,9 +1,4 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
-Require Import HSLib.Base.
-
-Require Import Control.Monad.
-Require Import Control.MonadTrans.
+Require Import Control.
 
 Definition ContT (R : Type) (M : Type -> Type) (A : Type)
   : Type := (A -> M R) -> M R.

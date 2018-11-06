@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
-
 Require Export HSLib.Base.
 Require Export HSLib.Misc.Monoid.
 
@@ -115,7 +113,7 @@ Arguments anyF {A T inst} _ _.
 
 (** Some laws. *)
 
-(* TODO *) Lemma isEmpty_size :
+Lemma isEmpty_size :
   forall (F : Type -> Type) (inst : Foldable F) (A : Type) (x : F A),
     isEmpty x = true <-> size x = 0.
 Proof.

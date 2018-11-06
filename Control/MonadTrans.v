@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
 Require Export HSLib.Control.Monad.
 
 (** Haskell-style monad transformers. The categorical semantics is not yet

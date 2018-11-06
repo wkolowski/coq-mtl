@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
 Require Export HSLib.Base.
 
 (** A standard presentation of Haskell-style functors. The intended
@@ -35,6 +33,7 @@ Qed.
 
 Hint Rewrite @fmap_comp' : HSLib Functor.
 
+(** All [Functor]s are strong. *)
 Lemma strength :
   forall A B : Type, A -> F B -> F (A * B)%type.
 Proof.
@@ -79,8 +78,7 @@ Arguments replaceR {F inst A B} _ _.
 Arguments void {F inst A} _.
 
 (** Notations mimicking those from Haskell's Data.Functor. The last
-    one is used mainly when programming with applicative functors.
-    TODO: make sure that associativity and levels are fine. *)
+    one is used mainly when programming with applicative functors. *)
 Infix "<$" := replaceL (at level 40).
 Infix "$>" := replaceR (at level 40).
 Infix "<$>" := fmap (left associativity, at level 40, only parsing).

@@ -1,11 +1,4 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
-Require Import HSLib.Base.
-Require Import Control.Functor.
-Require Import Control.Applicative.
-Require Import Control.Alternative.
-Require Import Control.Monad.
-Require Import Control.MonadPlus.
+Require Import Control.
 
 Definition State (S A : Type) := S -> A * S.
 
@@ -72,7 +65,8 @@ Instance Monad_State (S : Type) : Monad (State S) :=
 }.
 Proof. all: monad. Defined.
 
-(* TODO *) Require Import HSLib.MonadClass.MonadState.
+Require Import HSLib.MonadClass.MonadState.
+
 Instance MonadState_State
   (S : Type) : MonadState S (State S) (Monad_State S) :=
 {

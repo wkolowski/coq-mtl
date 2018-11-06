@@ -1,7 +1,5 @@
-Add LoadPath "/home/Zeimer/Code/Coq".
-
 Require Export HSLib.Control.Functor.
-Set Universe Polymorphism.
+
 (** Haskell-style applicative functors. The intended categorical semantics
     is a (strong) monoidal functor in the category of Coq's types and
     functions (see Theory/Monoidal.v for more).
@@ -10,7 +8,7 @@ Set Universe Polymorphism.
     [homomorphism] and [interchange]) are standard and the fifth one,
     [fmap_pure_ap], ensures compatibility with the given [Functor] instance.
     These laws are redundant: [identity] follows from [fmap_pure_ap]. *)
-Cumulative Class Applicative (F : Type -> Type) : Type :=
+Class Applicative (F : Type -> Type) : Type :=
 {
     is_functor :> Functor F;
     pure : forall {A : Type}, A -> F A;
@@ -55,15 +53,13 @@ Notation "f <*> x" := (ap f x)
 Notation "x <**> f" := (ap f x)
   (left associativity, at level 40, only parsing).
 
-(** TODO: Time to do idiom brackets. *)
-
-Notation "[/  f  /]" := (pure f).
+(*
+Notation "[/  f  /]" := (pure f) (only parsing).
 Notation "[/ f x .. y /]" := (ap .. (ap (pure f) x) .. y)
   (format
     "'[v' [/ f '/' x '/' .. '/' y '/' /] ']'", only parsing).
 
 Check [/ plus /].
-(*
 Check [| plus (Some 2) (Some 3) |].
 *)
 
@@ -209,16 +205,3 @@ Definition forA (la : list A) (f : A -> F B) : F (list B) :=
   mapA f la.
 
 End ApplicativeFuns2.
-
-(** An applicative functor is commutative if its [ap]'s arguments can be
-    evaluated in any order. The intended categorical semantics is therefore
-    strong commutative monoidal functor.
-
-    TODO: check the semantics. *)
-Class CommutativeApplicative
-  (F : Type -> Type) (inst : Applicative F) : Prop :=
-{
-    ap_comm :
-      forall (A B C : Type) (f : A -> B -> C) (u : F A) (v : F B),
-        f <$> u <*> v = flip f <$> v <*> u
-}.

@@ -59,7 +59,7 @@ Potential problems you may encounter:
 * permission denied — use sudo.
 * coq_makefile not found — probably your root user doesn't know where coq_makefile is. Try chown and chmod to allow your non-root user to run it.
 * ./rebuild.sh fails — a problem most likely related to CoqPath. Try COQPATH=path to HSLib on your computer.
-* incompatible version of Coq — I have tested this only for Coq 8.6 and it works, dunno about 8.7 though.
+* incompatible version of Coq — the most recent commit known to work with Coq 8.8.1
 
 A more foolproof solution is therefore:
 
@@ -72,31 +72,65 @@ cd HSLib
 sudo ./rebuild.sh
 ```
 
-You can then compile the project at any time using `make` and recompile (for example in case where you add a new file) using `./rebuild.sh`.
+You can then compile the project at any time using `make` and recompile (for example in case you add a new file) using `./rebuild.sh`.
 
 ## TODO
 
-The project is not over yet (and I'm not even sure if its ready to be added to OPAM). There are a few more things to be done:
+### General
 
-* Investigate universe consistency next time something breaks down. 
-* Pin down the precise categorical semantics of all classes.
-* Make sure that associativity and operator precedence are correct.
-* Find minimal sets of laws for each class.
-* Prove all the derived laws for monads (and other clases too) by hand to give an example of reasoning with monads.
-* Derive more laws.
-* Refactor all the laws not to be point-free (point-free sucks for theorem proving).
-* Try a different design in which laws come bundled in separate classes of Sort Prop.
-* State MonadPlus laws. Take a look at the MonadPlus reform proposal.
-* Take a look at other Haskell proposals relating to the standard library design.
-* Investigate commutative applicative functors and commutative monads.
-* Define Traversable and all its instances.
-* Finish proving that Applicative is equivalent to Monoidal.
-* Finish reading the paper Just Do It. Implement all the monadic classes from there are make sure they are useful for working with monad transformers.
-* Decide the existence of callCC for Codensity (I don't think it exists)
-* Decide if Codensity is commutative applicative functor.
-* Prove Codensity F isomorphic to F (?) or something like that.
-* Investigate the class for Free Monads.
-* Investigate using Church encoding for dealing with problems related to Datatypes à la carte.
-* Write reflective tactics to make proofs quicker and lighter.
-* Try to make this reflection modular using the Datatypes à la carte approach.
-* Define all instances for Foldable.
+* Decide what should I write about in my thesis:
+  * Precise semantics of Functor, Applicative, Monad.
+  * Equivalences between definitions.
+  * Which laws are there, which ones are needed and which ones are redundant.
+  * Not only which types implement which classes, but also which classes they can't implement.
+  * Develop pen and paper proofs so they can be put into the thesis.
+* Investigate concepts:
+  * Commutative applicative functors.
+  * Commutative monads.
+  * Free Monads.
+* Classes:
+  * Pin down the precise categorical semantics.
+  * See how classes for monad transformers/monad are implemented in transformer/mtl/Just Do It paper.
+  * Define Traversable and all its instances.
+  * Define all instances for Foldable.
+  * Learn how to prove general laws for Foldable.
+  * Define a class that has just bind so it can be used for overloading the do notation.
+* Laws:
+  * Find minimal sets of laws for each class.
+  * Prove all the derived laws for monads (and other clases too) by hand to give an example of reasoning with monads.
+  * Derive more laws.
+  * Refactor all the laws not to be point-free (point-free sucks for theorem proving).
+  * Try a different design in which laws come bundled in separate classes of Sort Prop.
+  * State MonadPlus laws. Take a look at the MonadPlus reform proposal.
+* Notation:
+  * Make sure that associativity and operator precedence are correct.
+  * Implement idiom bracket notation.
+  * Improve do notation.
+* Tactics:
+  * Implement a reflective tactic for reasoning with functors, applicatives, monads and so on.
+  * Make this reflection modular using the Datatypes à la carte approach (dubious).
+* Thievery:
+  * Take a look at other Haskell proposals relating to the standard library design.
+  * Browse Idris standard library and steal good stuff from there.
+
+### Particular
+
+* Investigate universe consistency issues with Applicative, Monad etc. instances for Vec.
+* Codensity:
+  * Decide the existence of callCC (I don't think it exists).
+  * Decide if it is a commutative applicative functor or a commutative monad.
+  * Prove Codensity F isomorphic to F (?) or something like that.
+* Check if there are more functions for MonadPlus that can be generalized to Alternative.
+* Parsers:
+  * Develop parsers for lists.
+  * Check if using `aplus_det` would make parsers more efficient.
+* Investigate callCC for the Cont monad.
+* Check if the law `fmap_pure_ap` is necessary for Applicative.
+* Something practical: maybe use the monadic stuff for Enumerable/Finite classes.
+* Datatypes à la carte:
+  * Remove and put it somewhere else.
+  * Investigate using Church encoding.
+
+### Technical
+
+* Revise the compilation steps from this README file.

@@ -1,11 +1,4 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
-
-Require Import HSLib.Base.
-Require Export Control.Functor.
-Require Export Control.Applicative.
-Require Import Control.Alternative.
-Require Import Control.Monad.
-Require Import Control.MonadPlus.
+Require Import Control.
 
 Definition RoseTreeT (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (M X -> M X -> M X) -> M X.

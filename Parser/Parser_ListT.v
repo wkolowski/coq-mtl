@@ -1,7 +1,4 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
-
-Require Import HSLib.Base.
-Require Import Control.Monad.
+Require Import Control.
 
 Require Import HSLib.Instances.All.
 Require Import HSLib.InstancesT.AllT.
@@ -81,8 +78,6 @@ Definition upper : Parser ascii :=
     Nat.leb 65 (nat_of_ascii c) && Nat.leb (nat_of_ascii c) 90).
 
 Open Scope list_scope.
-
-(* TODO *)
 
 Definition letter : Parser ascii :=
   lower <|> upper.
@@ -361,8 +356,6 @@ Definition expr3 : Parser Z :=
   fun input : string => exprn3 (String.length input) input.
 
 Compute expr'' "1-(2-(3-4)-5)"%string.
-
-(* TODO: chainl1 alternative *)
 
 Fixpoint exprn4 (n : nat) : Parser Z :=
 match n with

@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
 Require Import HSLib.Base.
 Require Import Control.Monad.
 Require Import HSLib.Instances.All.
@@ -19,12 +17,20 @@ Instance Enumerable_Empty_set : Enumerable Empty_set :=
 
 Instance Enumerable_unit : Enumerable unit :=
 {
-    enum n := [tt]
+    enum n :=
+    match n with
+        | 1 => [tt]
+        | _ => []
+    end
 }.
 
 Instance Enumerable_bool : Enumerable bool :=
 {
-    enum := fun _ => [false; true]
+    enum n :=
+    match n with
+        | 1 => [false; true]
+        | _ => []
+    end
 }.
 
 Instance Enumerable_prod
@@ -32,6 +38,11 @@ Instance Enumerable_prod
   : Enumerable (A * B)%type :=
 {
     enum n := liftA2 pair (enum A n) (enum B n)
+}.
+
+Instance Enumerable_nat : Enumerable nat :=
+{
+    enum n := [n]
 }.
 
 Instance Enumerable_list
@@ -44,11 +55,33 @@ Instance Enumerable_list
     end
 }.
 
+Instance Enumerable_sigma
+  (A : Type) (P : A -> Type)
+  (instA : Enumerable A) (instP : forall x : A, Enumerable (P x)) :
+    Enumerable {x : A & P x} :=
+{
+    enum n := do
+      x <- enum A n;
+      p <- enum (P x) n;
+      pure $ existT P x p
+}.
+
+Fixpoint cumulative (A : Type) {inst : Enumerable A} (n : nat) : list A :=
+match n with
+    | 0 => enum A 0
+    | S n' => cumulative A n' ++ enum A n
+end.
+
 Compute enum Empty_set 123.
 Compute enum unit 11.
+Compute cumulative unit 11.
 Compute enum bool 5.
+Compute cumulative bool 5.
 Compute enum (bool * bool) 3.
+Compute cumulative (bool * bool) 3.
 Compute enum (list Empty_set) 0.
 Compute enum (list unit) 20.
-Compute enum (list bool) 5.
-(*Compute length (enum (list bool * list bool) 5).*)
+Compute enum (list bool) 4.
+Compute cumulative nat 10.
+Compute length (enum (list bool * list bool) 5).
+Compute cumulative (list bool * list bool) 5.

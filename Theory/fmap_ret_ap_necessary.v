@@ -1,5 +1,3 @@
-Add LoadPath "/home/Zeimer/Code/Coq".
-
 Require Export HSLib.Control.Functor.
 
 Class Applicative (F : Type -> Type) : Type :=
@@ -26,8 +24,6 @@ Class Applicative (F : Type -> Type) : Type :=
 
 Coercion is_functor : Applicative >-> Functor.
 
-(* TODO: check if the last law is necessary *)
-
 CoInductive Stream (A : Type) : Type :=
     | snil : Stream A
     | scons : A -> Stream A -> Stream A .
@@ -48,15 +44,9 @@ Instance Functor_Stream : Functor Stream :=
 }.
 Proof.
   intro. ext s.
-Abort. 
+Abort.
 
-(*Definition ap'_List :
-  {A B : Type} (lf : list (A -> B)) (la : list A) : list B :=
-*)
-
-
-
-(* TODO: *) Section ApplicativeLaws.
+Section ApplicativeLaws.
 
 Variables
   (F : Type -> Type)
@@ -107,4 +97,5 @@ Proof.
   unfold fmap_pure_ap', homomorphism'.
   intros. rewrite <- H.
 Abort.
+
 End ApplicativeLaws.

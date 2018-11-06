@@ -1,5 +1,3 @@
-Add LoadPath "/home/Zeimer/Code/Coq".
-
 Require Export HSLib.Control.Applicative.
 Require Export HSLib.Theory.Monoidal.
 
@@ -69,29 +67,18 @@ Instance isMonoidal_Applicative (F : Type -> Type) (inst : isMonoidal F)
     ap := @ap_isMonoidal F inst
 }.
 Proof.
-  all: unfold pure_isMonoidal, ap_isMonoidal; intros.
-    (*replace ax with (fmap id ax) by functor.
-    rewrite <- natural. rewrite <- fmap_comp'.
-    unfold compose, par, apply. cbn.
-    replace
-    (fun x : unit * A =>
-   fst (let '(_, b) := x in (id, id b))
-     (snd (let '(_, b) := x in (id, id b))))
-    with
-    (@snd unit A).
-       Focus 2. ext p. destruct p. cbn. reflexivity.
-       rewrite pairF_default_l. rewrite fmap_id. reflexivity.*)
-    monoidal.
-    monoidal. rewrite !par_wut. cbn. unfold apply. admit.
-    monoidal. rewrite <- fmap_comp'. f_equal. (* TODO: functor. *)
-    monoidal.
-      rewrite <- fmap_comp', par_wut. cbn.
+  all: unfold pure_isMonoidal, ap_isMonoidal; intros; monoidal.
+    rewrite !par_wut. cbn. unfold apply.
+      rewrite <- (pairF_default_l _ (pairF ag (pairF af ax))).
+      rewrite <- ?pairF_assoc, <- ?fmap_comp'. repeat f_equal.
+      ext p. destruct p as [[[u g] f] x]. cbn. reflexivity.
+    rewrite <- fmap_comp'. reflexivity.
+    rewrite <- fmap_comp', par_wut. cbn.
       replace (fun p : (A -> B) * unit => id (fst p) x)
       with (@fst (A -> B) unit .> flip apply x).
-        Focus 2. ext p. destruct p. cbn. reflexivity.
         monoidal. unfold flip, apply, id, compose. reflexivity.
-    monoidal.
-Admitted.
+        ext p. destruct p. cbn. reflexivity.
+Qed.
 
 Definition default_Applicative
   {F : Type -> Type} {inst : Applicative F} : F unit := pure tt.

@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/zeimer/Code/Coq".
-
 Require Import HSLib.Base.
 Require Import Control.Monad.
 
@@ -72,8 +70,6 @@ Proof.
     Focus 2. ext x. rewrite put_put.
 Restart.
   unfold modify. intros.
-  Search bind.
-  Check get_get.
 Abort.
  (* H. reflexivity.
     replace (fun x : S => put (f x) >> put s)

@@ -1,5 +1,3 @@
-Add Rec LoadPath "/home/Zeimer/Code/Coq".
-
 Require Export HSLib.Control.Alternative.
 Require Export HSLib.Control.Monad.
 Require Export HSLib.Control.Foldable.
@@ -30,9 +28,7 @@ Coercion is_alternative : MonadPlus >-> Alternative.
 Hint Rewrite @bind_aempty_l : HSLib.
 
 (** Functions from Haskell's Control.Monad.Plus, but without the ones that
-    can be generalized to [Alternative].
-
-    TODO: check if there's anything more than can be generalized or removed. *)
+    can be generalized to [Alternative]. *)
 Section MonadPlusFunctions1.
 
 Variables M T : Type -> Type.
@@ -90,14 +86,7 @@ Definition mpartitionEithers (x : M (A + B)) : M A * M B :=
 Definition mmapOption (f : A -> option B) (x : M A) : M B :=
   mcatOptions (fmap f x).
 
-(** TODO: beware! This causes a circular dependency. [mconcatMap] is the
-    less general of these two functions anyway. *)
-(*Require Import HSLib.Instances.ListInst.
-
-Definition mconcatMap (f : A -> list B) (x : M A) : M B :=
-  mscatter (fmap f x).*)
-
-Definition mconcatMap' (f : A -> T B) (x : M A) : M B :=
+Definition mconcatMap (f : A -> T B) (x : M A) : M B :=
   mscatter (fmap f x).
 
 End MonadPlusFunctions2.
