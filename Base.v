@@ -23,8 +23,10 @@ Require Export Coq.Logic.FunctionalExtensionality.
 Ltac ext_aux x := extensionality x.
 
 Tactic Notation "ext" ident(x) := extensionality x.
-Tactic Notation "ext" := let x := fresh "x" in ext x.
+Tactic Notation "ext2" ident(x) ident(y) := ext x; ext y.
+Tactic Notation "ext3" ident(x) ident(y) ident(z) := ext x; ext y; ext z.
 
+Tactic Notation "ext" := let x := fresh "x" in ext x.
 Ltac exts := repeat ext.
 
 (** Program.Basics has the rest of the things we need, namely [id] and

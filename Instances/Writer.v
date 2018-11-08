@@ -33,32 +33,6 @@ Instance ApplicativeWriter (W : Monoid) : Applicative (Writer W) :=
 }.
 Proof. all: monad. Defined.
 
-Instance Monoid_bool_andb : Monoid :=
-{
-    carr := bool;
-    neutr := true;
-    op := andb;
-}.
-Proof.
-  all: intros; repeat
-  match goal with
-      | b : bool |- _ => destruct b
-  end; cbn; reflexivity.
-Defined.
-
-Instance Monoid_list_app (A : Type) : Monoid :=
-{
-    carr := list A;
-    neutr := [];
-    op := @app A;
-}.
-Proof.
-  all: intros.
-    reflexivity.
-    rewrite app_nil_r. reflexivity.
-    rewrite app_assoc. reflexivity.
-Defined.
-
 Theorem Writer_not_CommutativeApplicative :
   ~ (forall W : Monoid, CommutativeApplicative _ (ApplicativeWriter W)).
 Proof.

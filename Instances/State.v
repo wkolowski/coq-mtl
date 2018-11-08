@@ -45,7 +45,7 @@ Proof.
   cbn in ap_comm. congruence.
 Qed.
 
-Theorem State_not_alternative :
+Theorem State_not_Alternative :
   (forall S : Type, Alternative (State S)) -> False.
 Proof.
   unfold State. intro. destruct (X unit). destruct (aempty False tt).

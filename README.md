@@ -90,7 +90,7 @@ You can then compile the project at any time using `make` and recompile (for exa
   * Free Monads.
 * Classes:
   * Pin down the precise categorical semantics.
-  * See how classes for monad transformers/monad are implemented in transformer/mtl/Just Do It paper.
+  * See how classes for monad transformers/monads are implemented in transformer/mtl/Just Do It paper.
   * Define Traversable and all its instances.
   * Define all instances for Foldable.
   * Learn how to prove general laws for Foldable.
@@ -105,17 +105,18 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Notation:
   * Make sure that associativity and operator precedence are correct.
   * Implement idiom bracket notation.
-  * Improve do notation.
+  * Improve do notation (irrefutable patterns).
 * Tactics:
   * Implement a reflective tactic for reasoning with functors, applicatives, monads and so on.
-  * Make this reflection modular using the Datatypes à la carte approach (dubious).
+  * Make this reflection modular using the Datatypes à la carte approach.
 * Thievery:
   * Take a look at other Haskell proposals relating to the standard library design.
   * Browse Idris standard library and steal good stuff from there.
+  * Interesting Idris classes: Cast, Uninhabited, Sized
 
 ### Particular
 
-* Investigate universe consistency issues with Applicative, Monad etc. instances for Vec.
+* Investigate universe consistency issues for Vec.
 * Codensity:
   * Decide the existence of callCC (I don't think it exists).
   * Decide if it is a commutative applicative functor or a commutative monad.
@@ -127,9 +128,7 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Investigate callCC for the Cont monad.
 * Check if the law `fmap_pure_ap` is necessary for Applicative.
 * Something practical: maybe use the monadic stuff for Enumerable/Finite classes.
-* Datatypes à la carte:
-  * Remove and put it somewhere else.
-  * Investigate using Church encoding.
+* Check what is the relation between bind and ap.
 
 ### Technical
 

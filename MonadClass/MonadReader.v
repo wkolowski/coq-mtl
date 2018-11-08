@@ -23,3 +23,5 @@ Definition asks {A : Type} (f : R -> A) : M A :=
     pure $ f r.
 
 End MonadReader_funs.
+
+Check asks.
