@@ -128,8 +128,9 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Investigate callCC for the Cont monad.
 * Check if the law `fmap_pure_ap` is necessary for Applicative.
 * Something practical: maybe use the monadic stuff for Enumerable/Finite classes.
-* Check what is the relation between bind and ap.
+* Check what is the precise relation between bind and ap (and if it's possible to define monads in two nonequivalent ways due to this).
 
 ### Technical
 
 * Revise the compilation steps from this README file.
+* Rename all objects that contain 'wut' in their names.

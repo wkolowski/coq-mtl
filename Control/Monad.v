@@ -15,10 +15,7 @@ Require Export HSLib.Control.Applicative.
     There are 4 laws:
     - [bind_pure_l], [bind_pure_r] and [bind_assoc] are standard
     - [bind_ap] ensures that [bind] is compatible with [ap] (and thus
-      also with [fmap])
-
-    Note that these laws are redundant, as [bind_pure_l] and [bind_pure_r]
-    follow from [bind_ap] and the [Applicative] laws. *)
+      also with [fmap]) *)
 Class Monad (M : Type -> Type) : Type :=
 {
     is_applicative :> Applicative M;
@@ -113,8 +110,7 @@ Variable M : Type -> Type.
 Variable inst : Monad M.
 Variables A B C D E F : Type.
 
-Fixpoint foldM (f : A -> B -> M A) (dflt : A) (l : list B)
-    : M A :=
+Fixpoint foldM (f : A -> B -> M A) (dflt : A) (l : list B) : M A :=
 match l with
     | [] => pure dflt
     | h :: t => f dflt h >>= fun a : A => foldM f a t
@@ -125,8 +121,7 @@ End MonadicFuns.
 Arguments foldM {M inst A B} _ _ _.
 
 (** Some of the laws I thought were fundamental, but turned out to be
-    redundant. Notably there's [bind_pure_l_derived], showing that
-    [bind_pure_l] is redundant. *)
+    redundant. *)
 Section DerivedMonadLaws.
 
 Variables
@@ -156,26 +151,12 @@ Proof.
     rewrite bind_pure_l. reflexivity.
 Qed.
 
-Lemma bind_pure_l_derived :
-  forall (A B : Type) (f : A -> M B) (a : A),
-    pure a >>= f = f a.
-Proof.
-  intros.
-  replace (pure a >>= f)
-  with (join (pure f >>= fun f' => pure a >>= fun a => pure (f' a))).
-    rewrite <- bind_ap. unfold join. rewrite homomorphism, bind_pure_l.
-      reflexivity.
-    rewrite <- bind_ap. unfold join. rewrite homomorphism, !bind_pure_l.
-      reflexivity.
-Qed.
-
 End DerivedMonadLaws.
 
 Hint Rewrite @fmap_bind_pure @bind_fmap @fmap_bind : HSLib.
 
 (** Laws relating fundamental monadic operations ([>>=], [>=>], [join])
-    with themselves and other operations, like [fmap] and [>>]. At the
-    end there's a proof that the law [bind_pure_r] is redundant. *)
+    with themselves and other operations, like [fmap] and [>>]. *)
 Section DerivedMonadLaws2.
 
 Variables
@@ -278,28 +259,6 @@ Lemma constrA_spec :
 Proof.
   intros. unfold constrA, compose. monad.
 Qed.
-
-Lemma bind_pure_r_derived :
-  forall (A : Type) (ma : M A),
-    ma >>= pure = ma.
-Proof.
-  intros.
-  replace (ma >>= pure)
-  with (join (pure pure >>= fun f => ma >>= fun a => pure (f a))).
-    rewrite <- bind_ap, <- fmap_pure_ap, join_fmap_pure, join_pure.
-      reflexivity.
-    rewrite <- bind_ap, <- fmap_pure_ap, <- bind_join_fmap.
-      reflexivity.
-Qed.
-
-Lemma bind_assoc_derived :
-  forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
-    (ma >>= f) >>= g = ma >>= fun x => f x >>= g.
-Proof.
-  intros.
-  rewrite !bind_join_fmap. f_equal; intros; subst.
-    replace (fun x : A => f x >>= g) with (f .> fmap g .> join).
-Abort.
 
 End DerivedMonadLaws2.
 

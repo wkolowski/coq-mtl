@@ -88,14 +88,6 @@ Variables
   (F : Type -> Type)
   (inst : Applicative F).
 
-(** [identity] can be derived from [fmap_pure_ap] and [fmap_id]. *)
-Lemma identity_derived :
-  forall (A : Type) (x : F A),
-    pure id <*> x = x.
-Proof.
-  intros. rewrite <- fmap_pure_ap, fmap_id. reflexivity.
-Qed.
-
 Lemma fmap_pure :
   forall (F : Type -> Type) (inst : Applicative F)
   (A B : Type) (f : A -> B) (x : A),

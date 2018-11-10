@@ -1,13 +1,36 @@
 Require Export HSLib.Control.Functor.
 
 (* Auxiliary functions needed to define Monoidal. *)
-Definition reassoc {A B C : Type} : (A * B) * C -> A * (B * C) :=
-  fun '((a, b), c) => (a, (b, c)).
+Definition reassoc
+  {A B C : Type} : (A * B) * C -> A * (B * C) :=
+    fun '((a, b), c) => (a, (b, c)).
 
-Definition par {A A' B B' : Type} (f : A -> B) (g : A' -> B')
-  : A * A' -> B * B' := fun '(a, b) => (f a, g b).
+Definition par
+  {A A' B B' : Type} (f : A -> B) (g : A' -> B') : A * A' -> B * B' :=
+    fun '(a, b) => (f a, g b).
 
 Notation "f *** g" := (par f g) (at level 40).
+
+Lemma par_id :
+  forall (A B : Type), @id A *** @id B = id.
+Proof.
+  intros. unfold par, id. ext p. destruct p. reflexivity.
+Qed.
+
+Lemma comp_par_par :
+  forall (A B C A' B' C' : Type)
+  (f1 : A -> B) (f2 : B -> C) (g1 : A' -> B') (g2 : B' -> C'),
+    (f1 *** g1) .> (f2 *** g2) = (f1 .> f2) *** (g1 .> g2).
+Proof.
+  intros. unfold compose, par. ext p. destruct p. reflexivity.
+Qed.
+
+Lemma par_comp :
+  forall (A B A' B' X : Type) (f : A -> B) (g : A' -> B') (h : B * B' -> X),
+    (f *** g) .> h = fun p : A * A' => h (f (fst p), g (snd p)).
+Proof.
+  intros. unfold compose, par. ext p. destruct p. cbn. reflexivity.
+Qed.
 
 (* An alternative characterization of applicative functors as lax monoidal
    functors (or rather, strong monoidal functors, because in the category

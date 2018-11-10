@@ -1,27 +1,6 @@
 Require Export HSLib.Control.Applicative.
 Require Export HSLib.Theory.Monoidal.
 
-Lemma par_id :
-  forall (A B : Type), @id A *** @id B = id.
-Proof.
-  intros. unfold par, id. ext p. destruct p. reflexivity.
-Qed.
-
-Lemma par_comp :
-  forall (A B C A' B' C' : Type)
-  (f1 : A -> B) (f2 : B -> C) (g1 : A' -> B') (g2 : B' -> C'),
-    (f1 *** g1) .> (f2 *** g2) = (f1 .> f2) *** (g1 .> g2).
-Proof.
-  intros. unfold compose, par. ext p. destruct p. reflexivity.
-Qed.
-
-Lemma par_wut :
-  forall (A B A' B' X : Type) (f : A -> B) (g : A' -> B') (h : B * B' -> X),
-    (f *** g) .> h = fun p : A * A' => h (f (fst p), g (snd p)).
-Proof.
-  intros. unfold compose, par. ext p. destruct p. cbn. reflexivity.
-Qed.
-
 Definition pure_isMonoidal
   {F : Type -> Type} {inst : isMonoidal F} {A : Type} (x : A) : F A :=
     fmap (fun u : unit => x) default.
@@ -68,12 +47,12 @@ Instance isMonoidal_Applicative (F : Type -> Type) (inst : isMonoidal F)
 }.
 Proof.
   all: unfold pure_isMonoidal, ap_isMonoidal; intros; monoidal.
-    rewrite !par_wut. cbn. unfold apply.
+    rewrite !par_comp. cbn. unfold apply.
       rewrite <- (pairF_default_l _ (pairF ag (pairF af ax))).
       rewrite <- ?pairF_assoc, <- ?fmap_comp'. repeat f_equal.
       ext p. destruct p as [[[u g] f] x]. cbn. reflexivity.
     rewrite <- fmap_comp'. reflexivity.
-    rewrite <- fmap_comp', par_wut. cbn.
+    rewrite <- fmap_comp', par_comp. cbn.
       replace (fun p : (A -> B) * unit => id (fst p) x)
       with (@fst (A -> B) unit .> flip apply x).
         monoidal. unfold flip, apply, id, compose. reflexivity.
