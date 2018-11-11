@@ -26,19 +26,19 @@ match lf with
     | f :: fs => map f la ++ ap_list fs la
 end.
 
-Theorem ap_list_nil_l :
+Lemma ap_list_nil_l :
   forall (A B : Type) (la : list A),
     @ap_list A B [] la = [].
 Proof. cbn. reflexivity. Qed.
 
-Theorem ap_list_nil_r :
+Lemma ap_list_nil_r :
   forall (A B : Type) (lf : list (A -> B)),
     ap_list lf [] = [].
 Proof.
   induction lf as [| f fs]; auto.
 Qed.
 
-Theorem ap_list_app :
+Lemma ap_list_app :
   forall (A B : Type) (lf lf' : list (A -> B)) (la : list A),
       ap_list (lf ++ lf') la = ap_list lf la ++ ap_list lf' la.
 Proof.
@@ -47,7 +47,7 @@ Proof.
     rewrite <- app_assoc. rewrite IHfs. trivial.
 Qed.
 
-Theorem ap_list_map :
+Lemma ap_list_map :
   forall (A B : Type) (f : A -> B) (la : list A),
     ap_list [f] la = map f la.
 Proof.
@@ -56,7 +56,7 @@ Proof.
     rewrite IHxs. trivial.
 Qed.
 
-Theorem ap_list_exchange :
+Lemma ap_list_exchange :
   forall (A B : Type) (x : A) (lf : list (A -> B)),
     ap_list [fun f : A -> B => f x] lf = ap_list lf [x].
 Proof.
@@ -65,7 +65,7 @@ Proof.
     rewrite IHfs. trivial.
 Qed.
 
-Theorem ap_list_exchange2 :
+Lemma ap_list_exchange2 :
   forall (A B C : Type) (g : B -> C) (fs : list (A -> B)) (xs : list A),
       ap_list (map (compose g) fs) xs = map g (ap_list fs xs).
 Proof.
@@ -74,7 +74,7 @@ Proof.
     intro. rewrite map_app, map_map. f_equal. apply IHfs.
 Qed.
 
-Theorem ap_list_exchange3 :
+Lemma ap_list_exchange3 :
   forall (A B C : Type) (f : A -> B) (fs : list (A -> B)) (gs : list (B -> C))
   (xs : list A),
     ap_list (ap_list (map compose gs) (f :: fs)) xs =
@@ -130,7 +130,7 @@ match la with
     | h :: t => f h ++ bind_List t f
 end.
 
-Theorem bind_List_app :
+Lemma bind_List_app :
   forall (A B : Type) (l1 l2 : list A) (f : A -> list B),
     bind_List (l1 ++ l2) f = bind_List l1 f ++ bind_List l2 f.
 Proof.
@@ -139,7 +139,7 @@ Proof.
     rewrite IHt1, app_assoc. trivial.
 Qed.
 
-Theorem List_not_CommutativeApplicative :
+Lemma List_not_CommutativeApplicative :
   ~ CommutativeApplicative list Applicative_List.
 Proof.
   destruct 1.

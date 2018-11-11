@@ -1,5 +1,5 @@
-Require Export HSLib.Control.Applicative.
-Require Export HSLib.Theory.Monoidal.
+Require Export Control.Applicative.
+Require Export Control.Monoidal.
 
 Definition pure_isMonoidal
   {F : Type -> Type} {inst : isMonoidal F} {A : Type} (x : A) : F A :=
@@ -10,7 +10,7 @@ Definition ap_isMonoidal
   (f : F (A -> B)) (a : F A) : F B :=
     fmap (fun p => apply (fst p) (snd p)) (pairF f a).
 
-Lemma wutzor_snd :
+Lemma aux :
   forall {W A B C : Type} (f : B -> C) (g : A -> B),
     ((fun _ : W => f) *** g) .>
     (fun p : (B -> C) * B => apply (fst p) (snd p)) = snd .> g .> f.
@@ -29,7 +29,7 @@ multimatch goal with
     | |- context [_ .> id] => rewrite !id_right
     | |- context [fmap (fst .> _)] => rewrite !fmap_comp'
     | |- context [fmap (snd .> _)] => rewrite !fmap_comp'
-    | _ => rewrite ?wutzor_snd
+    | _ => rewrite ?aux
     | |- context [pairF (fmap ?f ?a) ?x] =>
           replace x with (fmap id x) by functor;
           rewrite <- ?natural, <- ?fmap_comp', ?fmap_id

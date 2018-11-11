@@ -91,3 +91,18 @@ Instance Monad_RWST
     bind := @bind_RWST W R S M inst
 }.
 Proof. all: monad. Defined.
+
+Definition lift_RWST
+  {W : Monoid} {R S : Type} {M : Type -> Type} {inst : Monad M} {A : Type}
+  (x : M A) : RWST W R S M A :=
+    fun r s =>
+      x >>= fun a : A => pure (a, s, neutr).
+
+Hint Unfold lift_RWST : HSLib.
+
+Instance MonadTrans_RWST
+  {W : Monoid} {R S : Type} : MonadTrans (RWST W R S) :=
+{
+    lift := @lift_RWST W R S
+}.
+Proof. all: unfold compose; monad. Defined.

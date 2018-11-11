@@ -1,11 +1,9 @@
 Require Import Applicative_minimal.
 
-Print Applicative_minimal.
+Definition M := F.
 
-(*
-
-Variables
-  (bind : forall {A B : Type}, F A -> (A -> F B) -> F B).
+Axiom
+  (bind : forall {A B : Type}, M A -> (A -> M B) -> M B).
 
 Definition bind_pure_l : Prop :=
   forall (A B : Type) (f : A -> M B) (a : A),
@@ -24,8 +22,7 @@ Definition bind_ap : Prop :=
 
 Notation "mx >>= f" := (bind mx f) (at level 40).
 
-
-
+(*
 Lemma bind_pure_l' :
   forall (A B : Type) (f : A -> M B) (a : A),
     pure a >>= f = f a.
@@ -37,24 +34,27 @@ Proof.
       admit.
     rewrite <- bind_ap. rewrite homomorphism. admit.
 Admitted.
+*)
 
 Lemma fmap_bind_pure :
-  forall (A B : Type) (f : A -> B) (x : M A),
-    fmap f x = x >>= (fun a : A => pure (f a)).
+  ap_pure_fmap -> bind_ap -> bind_pure_l ->
+    forall (A B : Type) (f : A -> B) (x : M A),
+      fmap f x = x >>= (fun a : A => pure (f a)).
 Proof.
-  intros.
+  unfold ap_pure_fmap, bind_ap, bind_pure_l.
+  intros ap_pure_fmap bind_ap bind_pure_l A B f x.
   replace (x >>= fun a : A => pure (f a))
   with (pure f >>= fun f => x >>= fun a => pure (f a)).
-    rewrite <- bind_ap. rewrite fmap_pure_ap. reflexivity.
+    rewrite <- bind_ap, ap_pure_fmap. reflexivity.
     rewrite bind_pure_l. reflexivity.
 Qed.
 
-Lemma bind_pure_r :
-  forall (A : Type) (ma : M A),
-    ma >>= pure = ma.
+Lemma bind_pure_r' :
+  fmap_id -> ap_pure_fmap -> bind_ap -> bind_pure_l ->
+    bind_pure_r.
 Proof.
-  intros. change pure with (fun x : A => pure (id x)).
-  rewrite <- fmap_bind_pure. rewrite fmap_id. reflexivity.
+  unfold fmap_id, ap_pure_fmap, bind_ap, bind_pure_l, bind_pure_r.
+  intros fmap_id ap_pure_fmap bind_ap bind_pure_l A ma.
+  change pure with (fun x : A => pure (id x)).
+  rewrite <- fmap_bind_pure; auto. rewrite fmap_id. reflexivity.
 Qed.
-
-*)

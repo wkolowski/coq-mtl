@@ -47,8 +47,6 @@ Proof.
   apply (aempty False). intro. assumption.
 Qed.
 
-Require Import Control.Monad.
-
 Instance MonadCodensity
   (F : Type -> Type) : Monad (Codensity F) :=
 {
@@ -106,7 +104,7 @@ Proof.
           match f with
               | (fun x : _ => _) => idtac x;
                   let x' := fresh x in
-                  assert (forall x', f (let wut := x' in wut) = g x')
+                  assert (forall x', f (let w := x' in w) = g x')
           end
 (*      | ?f = ?g =>
           let H' := fresh "H" in
@@ -129,7 +127,7 @@ Proof.
   specialize (X False unit). apply X.
 Abort.*)
 
-Section wut.
+Section CodensityFuns.
 
 Variable M : Type -> Type.
 Variable inst : Monad M.
@@ -145,8 +143,9 @@ Definition improve
   {A : Type} (x : M A) : M A :=
     extract (inject x).
 
-Hint Unfold Codensity fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
-            inject extract : HSLib.
+Hint Unfold
+  Codensity fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
+  inject extract : HSLib.
 
 Lemma extract_pure :
   forall (A : Type) (x : A),
@@ -172,9 +171,10 @@ Lemma inject_extract :
   forall (A : Type) (x : Codensity M A),
     inject (extract x) = x.
 Proof.
-  intros. unfold inject, extract.
+  intros. unfold inject, extract. ext2 R c.
+  unfold Codensity in *.
 Abort.
 
-End wut.
+End CodensityFuns.
 
 Arguments improve {M inst A } _.

@@ -39,7 +39,7 @@ Defined.
 
 Definition bind_Lazy
   {A B : Type} (la : Lazy A) (f : A -> Lazy B) : Lazy B :=
-    f (la tt).
+    fun _ => f (la tt) tt.
 
 Instance MonadLazy : Monad Lazy :=
 {
@@ -47,14 +47,14 @@ Instance MonadLazy : Monad Lazy :=
     bind := @bind_Lazy
 }.
 Proof.
-  all: try reflexivity.
-  all: compute; intros.
+  all: compute; intros; try reflexivity.
+    ext u. destruct u. reflexivity.
     ext u. destruct u. reflexivity.
 Defined.
 
-Eval lazy in
+Eval cbn in
   delay 5 >>= fun n : nat =>
   delay 2 >>= fun m : nat => delay (n * m).
 
-Eval lazy in
+Eval cbn in
   delay (2 + 2) >>= fun n : nat => delay (2 * n).

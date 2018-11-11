@@ -2,7 +2,6 @@ Require Import Control.
 
 Require Import HSLib.Instances.All.
 
-
 Definition ContT (R : Type) (M : Type -> Type) (A : Type)
   : Type := (A -> M R) -> M R.
 
@@ -18,7 +17,7 @@ Instance FunctorContT
 {
     fmap := @fmap_ContT R M inst
 }.
-Proof. all: trivial. Defined.
+Proof. all: reflexivity. Defined.
 
 Definition pure_ContT
   (R : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (x : A)

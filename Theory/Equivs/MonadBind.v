@@ -1,6 +1,5 @@
 Require Import HSLib.Base.
 Require Import Control.Applicative.
-Require Export Control.Functor.
 
 Class Monad (M : Type -> Type) : Type :=
 {
@@ -17,16 +16,7 @@ Class Monad (M : Type -> Type) : Type :=
         bind (bind ma f) g = bind ma (fun x => bind (f x) g);
 }.
 
-Module MonadNotations.
-
 Notation "mx >>= f" := (bind mx f) (at level 40).
-
-Notation "x '<-' e1 ; e2" := (bind e1 (fun x => e2))
-  (right associativity, at level 42, only parsing).
-
-End MonadNotations.
-
-Export MonadNotations.
 
 Hint Rewrite @bind_pure_l @bind_pure_r @assoc : HSLib.
 
@@ -41,16 +31,51 @@ repeat (hs; repeat match goal with
     | |- context [match ?x with _ => _ end] => destruct x
 end; hs); try (unfold compose, id; cbn; congruence; fail).
 
-Definition fmap_Monad
+Definition fmap_MonadBind
   {M : Type -> Type} {inst : Monad M}
   {A B : Type} (f : A -> B) (ma : M A) : M B :=
     ma >>= (f .> pure).
 
-Hint Unfold fmap_Monad compose : HSLib.
+Hint Unfold fmap_MonadBind compose : HSLib.
 
-Instance Functor_Monad
+Instance MonadBind_to_Functor
   (M : Type -> Type) (inst : Monad M) : Functor M :=
 {
-    fmap := @fmap_Monad M inst;
+    fmap := @fmap_MonadBind M inst;
 }.
 Proof. all: monad. Defined.
+
+Definition ap_MonadBind
+  (M : Type -> Type) (inst : Monad M)
+  (A B : Type) (mf : M (A -> B)) (ma : M A) : M B :=
+    bind mf (fun f => bind ma (fun a => pure (f a))).
+
+Hint Unfold ap_MonadBind : HSLib.
+
+Instance MonadBind_to_Applicative
+  (M : Type -> Type) (inst : Monad M) : Applicative M :=
+{
+    pure := @pure M inst;
+    ap := @ap_MonadBind M inst;
+}.
+Proof.
+  all: cbn; unfold ap_MonadBind; monad.
+Defined.
+
+Section DerivedLaws.
+
+Variables
+  (M : Type -> Type)
+  (inst : Monad M).
+
+Lemma fmap_bind_pure :
+  forall (A B : Type) (f : A -> B) (x : M A),
+    fmap f x = x >>= (fun a : A => pure (f a)).
+Proof. monad. Qed.
+
+Lemma bind_ap :
+  forall (A B : Type) (mf : M (A -> B)) (mx : M A),
+    mf <*> mx = bind mf (fun f => bind mx (fun x => pure (f x))).
+Proof. monad. Qed.
+
+End DerivedLaws.

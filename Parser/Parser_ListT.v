@@ -14,8 +14,6 @@ Definition Parser (A : Type) : Type :=
 Definition fail {A : Type} : Parser A :=
   fun _ => [[]].
 
-Check Applicative_ListT _ MonadIdentity.
-
 Definition Applicative_Parser := Applicative_ListT _ MonadIdentity.
 Definition Alternative_Parser := Alternative_ListT _ MonadIdentity.
 Definition Monad_Parser := Monad_ListT _ MonadIdentity.
@@ -156,7 +154,7 @@ Definition ident : Parser string := do
 
 Arguments ident _%string.
 
-Compute ident "wut123".
+Compute ident "varname".
 
 Definition many1
   {A : Type} (p : Parser A) : Parser (list A) :=

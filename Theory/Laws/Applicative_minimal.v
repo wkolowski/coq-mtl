@@ -1,10 +1,13 @@
 Require Export HSLib.Base.
 
-Variables
+Axiom
   (F : Type -> Type)
   (fmap : forall {A B : Type}, (A -> B) -> F A -> F B)
   (pure : forall {A : Type}, A -> F A)
   (ap : forall {A B : Type}, F (A -> B) -> F A -> F B).
+
+Notation "f <*> x" := (ap f x)
+  (left associativity, at level 40).
 
 Definition fmap_id : Prop :=
   forall A : Type, fmap (@id A) = id.

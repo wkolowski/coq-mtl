@@ -3,7 +3,7 @@ Require Import Control.
 Definition RoseTreeT (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (M X -> M X -> M X) -> M X.
 
-Section wut.
+Section RoseTreeT_Instances.
 
 Variable M : Type -> Type.
 Variable inst : Monad M.
@@ -51,11 +51,11 @@ Proof.
   all: reflexivity.
 Defined.
 
-End wut.
+End RoseTreeT_Instances.
 
 Theorem RoseTreeT_not_Alternative :
   (forall (M : Type -> Type) (inst : Monad M), Alternative (RoseTreeT M)) ->
-  False.
+    False.
 Proof.
   unfold RoseTreeT; intros.
   Require Import HSLib.Instances.All.

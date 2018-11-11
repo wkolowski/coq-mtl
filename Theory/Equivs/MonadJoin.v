@@ -2,7 +2,6 @@ Require Import HSLib.Base.
 Require Export Control.Functor.
 Require Export Control.Applicative.
 
-(* Definition of monad using join. *)
 Class Monad (M : Type -> Type) : Type :=
 {
     is_applicative :> Applicative M;

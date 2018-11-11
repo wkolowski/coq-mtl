@@ -74,16 +74,12 @@ end.
 Definition word : Parser string :=
   fun input : string => words (String.length input) input.
 
-Compute word "dupa konia".
-
 (** Parse precisely the given string. *)
 Fixpoint str (s : string) : Parser string :=
 match s with
     | "" => pure ""
     | String c cs => String <$> char c <*> str cs
 end.
-
-Compute str "abc" "abcd".
 
 (** Run the parser [p] zero or more times. Fail if the input is longer than
     [n] characters. *)
@@ -94,13 +90,9 @@ match n with
     | S n' => (cons <$> p <*> many' n' p) <|> pure []
 end.
 
-Compute many' 5 letter "asdsd".
-
 (** Run [p] zero or more times. The same remark as for [word] applies. *)
 Definition many {A : Type} (p : Parser A) : Parser (list A) :=
   fun input : string => many' (String.length input) p input.
-
-Compute many digit "123".
 
 Fixpoint toString (l : list ascii) : string :=
 match l with
@@ -114,9 +106,6 @@ end.
 Definition word' : Parser string :=
   fmap toString (many letter).
 
-Compute word "abc".
-Compute word' "abc".
-
 (** Parse an identifier, which is defined as a lowercase letter followed
     by any number of alphanumeric characters. *)
 Definition ident : Parser string := do
@@ -124,14 +113,10 @@ Definition ident : Parser string := do
   cs <- fmap toString (many alnum);
   pure (String c cs).
 
-Compute ident "wut123".
-
 (** Run a parser one or more times. *)
 Definition many1
   {A : Type} (p : Parser A) : Parser (list A) :=
     cons <$> p <*> (many p).
-
-Compute many1 (char "a") "aaab".
 
 Fixpoint eval (cs : list ascii) : nat :=
 match cs with
@@ -142,8 +127,6 @@ end.
 (** Parse a natural number written in decimal. *)
 Definition parseNat : Parser nat :=
   fmap (fun l => eval (rev l)) (many1 digit).
-
-Compute parseNat "123".
 
 Require Export ZArith.
 
@@ -158,8 +141,6 @@ Definition parseNeg : Parser nat := do
 Definition parseZ : Parser Z :=
   fmap Z_of_nat parseNat <|>
   fmap (fun n => Z.sub 0%Z (Z_of_nat n)) parseNeg.
-
-Compute parseZ "-12345".
 
 (** Try to parse a single character and return a function corresponding to it:
     negation in case if the character is "-" or identity otherwise. *)
@@ -179,8 +160,6 @@ Definition parseZ' : Parser Z := do
   sgn <- parseSign;
   n <- parseNat;
   pure $ sgn (Z_of_nat n).
-
-Compute parseZ' "-12345".
 
 (** Parse a sequence of [p]'s separated by the separator [sep] like this:
     p sep p sep p ... sep p. There has to be at least one [p]. *)
@@ -205,8 +184,6 @@ Definition bracket {A B C : Type}
 Definition ints : Parser (list Z) :=
   bracket (char "[") (sepby1 parseZ (char ",")) (char "]").
 
-Compute ints "[1,2,3,4,5,6,7,8]".
-
 (** Like [sepby1], but possibly empty. *)
 Definition sepby {A B : Type}
   (item : Parser A) (sep : Parser B) : Parser (list A) :=
@@ -226,8 +203,6 @@ Definition parseNat_chainl : Parser nat :=
     chainl1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit)
             (pure op).
 
-Compute parseNat_chainl "211".
-
 Fixpoint chainr1_aux
   {A : Type} (arg : Parser A) (op : Parser (A -> A -> A)) (n : nat)
   : Parser A :=
@@ -245,8 +220,6 @@ Definition parseNat_chainr : Parser nat :=
   let op m n := m + 10 * n in
     chainr1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit)
             (pure op).
-
-Compute parseNat_chainr "211".
 
 (** Parse all matching things from a nonempty list and interpret them
     accordingly. *)
@@ -310,8 +283,6 @@ Definition comment : Parser unit :=
   first
     (str "--" >> many (sat (fun c => negb (ascii_eqb c "013"))) >> pure tt).
 
-Compute comment "-- haskellowy komentarz polityczny".
-
 (** Throw away spaes and Haskell-style comments. *)
 Definition junk : Parser unit :=
   many (spaces +++ comment) >> pure tt.
@@ -334,8 +305,6 @@ Definition token {A : Type} (p : Parser A) : Parser A :=
 Definition natural : Parser nat :=
   token parseNat.
 
-Compute natural "123".
-
 Definition integer : Parser Z :=
   token parseZ.
 
@@ -346,12 +315,14 @@ Definition in_decb {A : Type}
   (eq_dec : forall x y : A, {x = y} + {x <> y}) (x : A) (l : list A)
     : bool := if in_dec eq_dec x l then true else false.
 
-(** Parse an identifier. An identifier here is any string taht doesn't
+(** Parse an identifier. An identifier here is any string that doesn't
     belong to the given list of forbidden keywords. *)
 Definition identifier (keywords : list string) : Parser string :=
   do
     id <- token ident;
-    if in_decb string_dec id keywords then aempty else pure id.
+    if in_decb string_dec id keywords
+    then aempty
+    else pure id.
 
 Require Import QArith.
 
@@ -362,4 +333,20 @@ Definition parseQ : Parser Q := do
   b <- parsePositive;
   pure (a # b).
 
+Compute str "abc" "abcd".
+Compute word "dupa konia".
+Compute many' 5 letter "asdsd".
+Compute many digit "123".
+Compute word' "abc".
+Compute word "abc".
+Compute ident "varname".
+Compute many1 (char "a") "aaab".
+Compute parseNat "123".
+Compute parseZ "-12345".
+Compute parseZ' "-12345".
+Compute ints "[1,2,3,4,5,6,7,8]".
+Compute parseNat_chainl "211".
+Compute parseNat_chainr "211".
+Compute natural "123".
 Compute parseQ "1/5".
+Compute comment "-- haskellowy komentarz polityczny".

@@ -2,6 +2,7 @@ Require Import HSLib.Base.
 Require Export Control.Functor.
 Require Export Control.Applicative.
 
+(* This looks identical to MonadBind. *)
 Class KleisliTriple (M : Type -> Type) : Type :=
 {
     eta : forall {A : Type}, A -> M A;

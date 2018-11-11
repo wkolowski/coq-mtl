@@ -14,7 +14,7 @@ Instance FunctorProd (A : Type) : Functor (prod A) :=
 }.
 Proof. all: monad. Defined.
 
-Theorem Prod_not_applicative :
+Theorem Prod_not_Applicative :
   (forall A : Type, Applicative (prod A)) -> False.
 Proof.
   intro. destruct (X False). destruct (pure _ tt). assumption.

@@ -280,7 +280,7 @@ Proof.
     rewrite catch_pure. reflexivity.
 Qed.
 
-(** wut *)
+(** TODO *)
 
 Definition next
   {inst' : MonadFail inst} (n : nat) (ml : M nat) : M nat :=

@@ -17,7 +17,7 @@ Instance Functor_Free : Functor (Free F) :=
 {
     fmap := @fmap_Free
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 Definition pure_Free
   {A : Type} (x : A) : Free F A :=
@@ -32,7 +32,7 @@ Instance Applicative_Free : Applicative (Free F) :=
     pure := @pure_Free;
     ap := @ap_Free;
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 Definition bind_Free
   {A B : Type} (x : Free F A) (f : A -> Free F B) : Free F B :=
@@ -42,7 +42,7 @@ Instance Monad_Free : Monad (Free F) :=
 {
     bind := @bind_Free
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 End Free.
 

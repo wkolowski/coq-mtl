@@ -33,7 +33,7 @@ Instance ApplicativeContT : Applicative (ContT R M) :=
     pure := pure_ContT;
     ap := ap_ContT;
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 Definition bind_ContT
   (A B : Type) (x : ContT R M A) (f : A -> ContT R M B) : ContT R M B :=
@@ -44,7 +44,7 @@ Instance Monad_ContT : Monad (ContT R M) :=
     is_applicative := ApplicativeContT;
     bind := bind_ContT;
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 Definition lift_ContT
   (A : Type) (ma : M A) : ContT R M A :=
@@ -52,8 +52,8 @@ Definition lift_ContT
 
 End ContT_instances.
 
-Hint Unfold ContT fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT
-  : HSLib.
+Hint Unfold
+  ContT fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT : HSLib.
 
 Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
 {
