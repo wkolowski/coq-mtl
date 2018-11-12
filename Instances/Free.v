@@ -11,7 +11,7 @@ Variable F : Type -> Type.
 
 Definition fmap_Free
   {A B : Type} (f : A -> B) (x : Free F A) : Free F B :=
-    fun X pure free => x X (f .> pure) free.
+    fun X pure wrap => x X (f .> pure) wrap.
 
 Instance Functor_Free : Functor (Free F) :=
 {
@@ -25,7 +25,7 @@ Definition pure_Free
 
 Definition ap_Free
   {A B : Type} (mf : Free F (A -> B)) (ma : Free F A) : Free F B :=
-    fun X pure free => mf X (fun f => fmap f ma X pure free) free.
+    fun X pure wrap => mf X (fun f => fmap f ma X pure wrap) wrap.
 
 Instance Applicative_Free : Applicative (Free F) :=
 {
@@ -36,7 +36,7 @@ Proof. all: reflexivity. Defined.
 
 Definition bind_Free
   {A B : Type} (x : Free F A) (f : A -> Free F B) : Free F B :=
-    fun X pure free => x X (fun a => f a X pure free) free.
+    fun X pure wrap => x X (fun a => f a X pure wrap) wrap.
 
 Instance Monad_Free : Monad (Free F) :=
 {
@@ -59,28 +59,48 @@ Proof.
   intro. apply Free_not_Alternative, X.
 Defined.
 
-Class MonadFree
-  (F M : Type -> Type) (instF : Functor F) (instM : Monad M) : Type :=
+Definition lift_Free
+  {M : Type -> Type} {inst : Monad M} {A : Type}
+  (x : M A) : Free M A :=
+    fun X pure wrap => wrap (fmap pure x).
+
+Hint Unfold fmap_Free pure_Free ap_Free bind_Free lift_Free : HSLib.
+
+Instance MonadTrans_Free : MonadTrans Free :=
 {
-    wrap : forall {A : Type}, F (M A) -> M A;
-    wrap_law :
-      forall (A B : Type) (f : A -> M B) (x : F A),
-        wrap (fmap f x) = wrap (@fmap F instF _ _ pure x) >>= f
+    is_monad := fun F _ => @Monad_Free F;
+    lift := @lift_Free;
 }.
+Proof.
+  intros.
+  cbn. monad. unfold lift_Free, pure_Free.
+
+ Focus 2. monad. unfold compose. Check bind_pure_r.
+ rewrite <- !fmap_bind. rewrite <- fmap_bind_pure.
+  Search bind fmap.
+  f_equal.
+  Search fmap bind.
+  rewrite fmap_bind.
+  unfold compose. f_equal.
+Abort.
+
+Require Import MonadClass.MonadFree.
 
 Definition wrap_Free
-  {F : Type -> Type} {A : Type} (x : Free F (Free F A)) : Free F A :=
-    fun X pure free =>
-      x X (fun f : forall X : Type, (A -> X) -> (F X -> X) -> X =>
-               f X pure free)
-        free.
+  {F : Type -> Type} {instF : Functor F} {A : Type}
+  (x : F (Free F A)) : Free F A :=
+    fun X pure wrap =>
+      wrap (fmap (fun f : forall X : Type, (A -> X) -> (F X -> X) -> X =>
+               f X pure wrap) x).
+
+Hint Unfold Free fmap_Free pure_Free ap_Free bind_Free wrap_Free : HSLib.
 
 Instance MonadFree_Free
-  (F : Type -> Type) (inst : Functor F)
-  : MonadFree (Free F) (Free F) (Functor_Free F) (Monad_Free F) :=
+  (F : Type -> Type) (instF : Functor F)
+  : MonadFree F (Free F) instF (Monad_Free F) :=
 {
-    wrap := @wrap_Free F;
+    wrap := @wrap_Free F instF
 }.
-Proof. hs. Defined.
-
-Hint Unfold Free fmap_Free pure_Free ap_Free bind_Free wrap_Free.
+Proof.
+  monad. rewrite <- !fmap_comp'. unfold compose. reflexivity.
+Defined.

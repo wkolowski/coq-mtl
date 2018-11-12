@@ -117,15 +117,33 @@ Proof.
   end.
 Abort. *)
 
-(*Definition callCC_Type : Type :=
-  forall A B : Type, ((A -> Codensity B) -> Codensity A) -> Codensity A.
+(*
+Definition callCC_Type : Type :=
+  forall (F : Type -> Type) (A B : Type),
+    ((A -> Codensity F B) -> Codensity F A) -> Codensity F A.
+
+Require Import Instances.All.
 
 Theorem no_callCC :
   callCC_Type -> False.
 Proof.
   unfold callCC_Type, Codensity. intro.
-  specialize (X False unit). apply X.
-Abort.*)
+  specialize (X Identity). unfold Identity in X.
+  apply (X unit unit).
+    firstorder.
+    intros.
+Restart.
+  unfold callCC_Type, Codensity. intro.
+  specialize (X option False False ltac:(firstorder)).
+Restart.
+  unfold callCC_Type, Codensity. intro.
+  specialize (X (Writer Monoid_unit) unit False ltac:(firstorder)).
+  specialize (X False). unfold Writer in X.
+Restart.
+  unfold callCC_Type, Codensity. intro.
+  specialize (X (fun _ => unit)). cbn in X.
+Abort.
+*)
 
 Section CodensityFuns.
 
@@ -173,8 +191,34 @@ Lemma inject_extract :
 Proof.
   intros. unfold inject, extract. ext2 R c.
   unfold Codensity in *.
+  
 Abort.
 
 End CodensityFuns.
 
 Arguments improve {M inst A } _.
+
+Require Import MonadClass.MonadFree.
+
+Print MonadFree.
+
+Definition wrap_Codensity
+  {F M : Type -> Type} {instF : Functor F} {instM : Monad M}
+  {instMF : MonadFree F M instF instM} {A : Type}
+  (x : F (Codensity M A)) : Codensity M A :=
+    fun R g => wrap (fmap (fun f => f R g) x).
+
+Hint Unfold
+  Codensity fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
+  wrap_Codensity : HSLib.
+
+Instance MonadFree_Free
+  {F M : Type -> Type} {instF : Functor F} {instM : Monad M}
+  {instMF : MonadFree F M instF instM}
+  : MonadFree F (Codensity M) instF (MonadCodensity M) :=
+{
+    wrap := @wrap_Codensity F M instF instM instMF
+}.
+Proof.
+  monad. rewrite <- !fmap_comp'. unfold compose. reflexivity.
+Defined.

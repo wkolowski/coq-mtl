@@ -131,7 +131,10 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Check what is the precise relation between bind and ap (and if it's possible to define monads in two nonequivalent ways due to this).
 * Check if the Lazy monad makes sense.
 * Decide what to do with ContT and ContT_refactored.
+* Fix free monads.
+* Define a transformer instance for Free.
 
 ### Technical
 
 * Revise the compilation steps from this README file.
+* Update this README.
