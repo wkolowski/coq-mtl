@@ -62,67 +62,29 @@ Proof.
   intros. rewrite H. reflexivity.
 Qed.
 
-Instance CommutativeApplicative_Codensity
-  (F : Type -> Type) : CommutativeApplicative _ (Applicative_Codensity F).
-Proof.
-  split. intros. compute in *. ext R; ext y. f_equal.
-Abort.
+Require Import Instances.Identity.
 
-(* Theorem Codensity_not_CommutativeApplicative :
-  ~ CommutativeApplicative _ Applicative_Codensity.
+Theorem Codensity_not_CommutativeApplicative :
+  (forall F : Type -> Type,
+    CommutativeApplicative _ (Applicative_Codensity F)) -> False.
 Proof.
-  destruct 1. compute in *. Require Import Bool.
-  assert (
-  forall (A B C : Type) (f : A -> B -> C)
-         (u : forall R : Type, (A -> R) -> R)
-         (v : forall R : Type, (B -> R) -> R),
-         (fun (R : Type) (y : C -> R) =>
-          u R (fun a : A => v R (f a .> y))) =
-         (fun (R : Type) (y : C -> R) =>
-          v R (fun b : B => u R (flip f b .> y)))).
-  intros. unfold flip, compose. rewrite <- ap_comm. ext R; ext y.
-    f_equal. clear H.
-(*
-  specialize (
-    ap_comm nat bool unit).
-  replace (fun a : nat => v R (fun a0 : bool => y (f a a0)))
-  with (fun a : nat => v R (f a .> y)) in ap_comm.*)
-  specialize (
-    ap_comm _ _ _
-      (fun a b =>
-      match a ++ b with
-          | [] => a ++ b ++ b
-          | [1] => b ++ b ++ b
-          | [2] => a ++ a ++ a
-          | _ => []
-      end)
-    (fun _ f => f [2]) (fun _ f => f [1])). cbn in ap_comm.
-  compute in ap_comm.
-  Ltac ext_in H :=
-  match type of H with
-      | ?f = ?g =>
-          match f with
-              | (fun x : _ => _) => idtac x;
-                  let x' := fresh x in
-                  assert (forall x', f (let w := x' in w) = g x')
-          end
-(*      | ?f = ?g =>
-          let H' := fresh "H" in
-          assert (H' := @id_to_homotopy _ _ f g H);
-          clear H; rename H' into H; cbn in H*)
-  end. ext_in ap_comm.
-  match goal with
-      | H : ?f = ?g |- _ =>
-          assert (f nat = g nat)
-  end.
-Abort. *)
+  intros.
+  specialize (H list).
+  destruct H. cbn in *. compute in *.
+  specialize (ap_comm bool bool bool (fun a b => andb a b)). cbn in *.
+  specialize (ap_comm (fun R f => f false ++ f true) (fun _ f => f true ++ f false)).
+  cbn in *.
+  apply (f_equal (fun f => f bool)) in ap_comm.
+  apply (f_equal (fun f => f (fun b => [b]))) in ap_comm.
+  cbn in ap_comm. inv ap_comm.
+Qed.
 
-(*
 Definition callCC_Type : Type :=
   forall (F : Type -> Type) (A B : Type),
     ((A -> Codensity F B) -> Codensity F A) -> Codensity F A.
 
-Require Import Instances.All.
+(*
+Require Import Instances.Identity.
 
 Theorem no_callCC :
   callCC_Type -> False.
@@ -141,7 +103,18 @@ Restart.
   specialize (X False). unfold Writer in X.
 Restart.
   unfold callCC_Type, Codensity. intro.
-  specialize (X (fun _ => unit)). cbn in X.
+  specialize (X list False False).
+Restart.
+  unfold callCC_Type, Codensity. intro.
+  specialize (X Identity). unfold Identity in X.
+  eapply (X False False).
+    2: auto.
+    intros _ R _. eapply (X (R + (R -> False))%type True).
+      firstorder. admit.
+      destruct 1.
+        assumption.
+        eapply (X (R + ((R -> False) -> False))%type True).
+
 Abort.
 *)
 

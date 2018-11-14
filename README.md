@@ -41,7 +41,7 @@ For more information see the sources in Control/ — most things are a bit docum
 
 Instances/ contains instances for the typeclasses from Control/ for the following things: Cont, Free, Identity, Lazy (an attempt to monadiz laziness in Coq, but failed I think), list, option, prod, Reader, RoseTree, State, Sum, Writer. There's also a module All to ease importing verything at once. Note that, however, some instances for Foldable may be missing.
 
-InstancesT/ are instances for monad transformers and include: Codensity, ContT (along with a refactored version; ignore it), ListT (a fully working and verified one, based on the proposal "ListT Done right", but implemented using Church encoding; it even has a nice notation), OptionT, ReaderT, RoseTreeT, StateT, SumT, WriterT.
+InstancesT/ are instances for monad transformers and include: Codensity, ContT, ListT (a fully working and verified one, based on the proposal "ListT Done right", but implemented using Church encoding; it even has a nice notation), OptionT, ReaderT, RoseTreeT, StateT, SumT, WriterT.
 
 In the directory Parser/ there are two versions of working monadic parsers combinators with all the necessary instances: one using StateT list and the other using StateT (ListT Identity). The first one seems faster for now. EDIT 16.02.18: the efficiency problems were related to universe polymorphism and are now solved.
 
@@ -90,7 +90,7 @@ You can then compile the project at any time using `make` and recompile (for exa
   * Free Monads.
 * Classes:
   * Pin down the precise categorical semantics.
-  * See how classes for monad transformers/monads are implemented in transformer/mtl/Just Do It paper.
+  * See how classes for monad transformers/monads are implemented in transformer/mtl/Just Do It paper (stuff like MonadCont).
   * Define Traversable and all its instances.
   * Define all instances for Foldable.
   * Learn how to prove general laws for Foldable.
@@ -100,7 +100,7 @@ You can then compile the project at any time using `make` and recompile (for exa
   * Prove all the derived laws for monads (and other clases too) by hand to give an example of reasoning with monads.
   * Derive more laws.
   * Refactor all the laws not to be point-free (point-free sucks for theorem proving).
-  * Try a different design in which laws come bundled in separate classes of Sort Prop.
+  * Try a different design in which laws come bundled in separate classes of Sort Prop (dubious).
   * State MonadPlus laws. Take a look at the MonadPlus reform proposal.
 * Notation:
   * Make sure that associativity and operator precedence are correct.
@@ -118,21 +118,17 @@ You can then compile the project at any time using `make` and recompile (for exa
 
 * Investigate universe consistency issues for Vec.
 * Codensity:
-  * Decide the existence of callCC (I don't think it exists).
-  * Decide if it is a commutative applicative functor or a commutative monad.
-  * Prove Codensity F isomorphic to F (?) or something like that.
+  * Prove there's no callCC.
+  * Learn more.
 * Check if there are more functions for MonadPlus that can be generalized to Alternative.
 * Parsers:
   * Develop parsers for lists.
   * Check if using `aplus_det` would make parsers more efficient.
-* Investigate callCC for the Cont monad.
 * Check if the law `fmap_pure_ap` is necessary for Applicative.
 * Something practical: maybe use the monadic stuff for Enumerable/Finite classes.
 * Check what is the precise relation between bind and ap (and if it's possible to define monads in two nonequivalent ways due to this).
 * Check if the Lazy monad makes sense.
-* Decide what to do with ContT and ContT_refactored.
-* Fix free monads.
-* Define a transformer instance for Free.
+* Prove Free is not a monad transformer.
 
 ### Technical
 

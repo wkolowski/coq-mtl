@@ -66,12 +66,26 @@ Definition lift_Free
 
 Hint Unfold fmap_Free pure_Free ap_Free bind_Free lift_Free : HSLib.
 
+Lemma Free_not_MonadTrans :
+  MonadTrans Free -> False.
+Proof.
+  destruct 1. Print Functor.
+  unfold Free in *.
+  assert (wut :
+    forall
+      (M : Type -> Type) (_inst : Monad M) (A : Type) (x : A)
+      (X : Type) (f : A -> X) (wrap : M X -> X),
+        lift M _inst A (pure x) X f wrap = (@pure (Free M) _ _) x X f wrap).
+    intros. rewrite lift_pure. reflexivity.
+  unfold pure in wut. fold (@pure _ _) in wut.
+Abort.
+
 Instance MonadTrans_Free : MonadTrans Free :=
 {
     is_monad := fun F _ => @Monad_Free F;
     lift := @lift_Free;
 }.
-Proof.
+Proof. monad.
   intros.
   cbn. monad. unfold lift_Free, pure_Free.
 

@@ -25,6 +25,8 @@ Ltac ext_aux x := extensionality x.
 Tactic Notation "ext" ident(x) := extensionality x.
 Tactic Notation "ext2" ident(x) ident(y) := ext x; ext y.
 Tactic Notation "ext3" ident(x) ident(y) ident(z) := ext x; ext y; ext z.
+Tactic Notation "ext4" ident(x) ident(y) ident(z) ident(w) :=
+  ext x; ext y; ext z; ext w.
 
 Tactic Notation "ext" := let x := fresh "x" in ext x.
 Ltac exts := repeat ext.
