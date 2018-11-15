@@ -354,7 +354,7 @@ Class MonadState
       forall s : S,
         put s >> get = put s >> pure s;
     get_put :
-      get >>= put = skip;
+      get >>= put = skip; (* skip = pure tt *)
     get_get :
       forall (A : Type) (f : S -> S -> M A),
         get >>= (fun s : S => get >>= f s) =
@@ -443,7 +443,6 @@ Class MonadProb
       forall (A B : Type) (p : Prob) (ma : M A) (f g : A -> M B),
         ma >>= (fun x : A => (f x) <| p |> (g x)) =
         (ma >>= f) <| p |> (ma >>= g)
-      
 }.
 
 End S4.

@@ -16,7 +16,12 @@ Class MonadPlus (M : Type -> Type) : Type :=
     is_alternative :> Alternative M;
     bind_aempty_l :
       forall (A B : Type) (f : A -> M B),
-        aempty >>= f = aempty
+        aempty >>= f = aempty;
+(* Not satisfied by lists.
+    bind_aempty_r :
+      forall (A : Type) (x : M A),
+        x >> aempty = x;
+*)
 }.
 
 (** Note that there's yet nothing to make sure that the [Applicative] instance

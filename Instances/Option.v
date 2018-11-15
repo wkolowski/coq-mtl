@@ -99,3 +99,13 @@ Instance FoldableOption : Foldable option :=
     foldMap := @foldMap_Option
 }.
 Proof. monad. Defined.
+
+Require Import MonadClass.All.
+
+Definition fail_Option {A : Type} : option A := None.
+
+Instance MonadFail_Option : MonadFail option MonadOption :=
+{
+    fail := @fail_Option
+}.
+Proof. intros. compute. reflexivity. Defined.

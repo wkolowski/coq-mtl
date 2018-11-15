@@ -120,7 +120,6 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Codensity:
   * Prove there's no callCC.
   * Learn more.
-* Check if there are more functions for MonadPlus that can be generalized to Alternative.
 * Parsers:
   * Develop parsers for lists.
   * Check if using `aplus_det` would make parsers more efficient.
@@ -129,6 +128,7 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Check what is the precise relation between bind and ap (and if it's possible to define monads in two nonequivalent ways due to this).
 * Check if the Lazy monad makes sense.
 * Prove Free is not a monad transformer.
+* Partition MonadPlus and its function into more sane classes.
 
 ### Technical
 

@@ -188,3 +188,13 @@ Proof.
   intros. ext l.
   induction l as [| h t]; unfold compose in *; cbn; congruence.
 Defined.
+
+Require Import MonadClass.All.
+
+Definition fail_List {A : Type} : list A := [].
+
+Instance MonadFail_List : MonadFail list Monad_List :=
+{
+    fail := @fail_List
+}.
+Proof. intros. compute. reflexivity. Defined.

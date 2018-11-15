@@ -79,3 +79,17 @@ Instance Monad_RWS
     bind := @bind_RWS W R S
 }.
 Proof. all: monad. Defined.
+
+Require Import MonadClass.All.
+
+Require Import Misc.Monoid.
+
+Instance MonadState_RWS
+  (W : Monoid) (R S : Type) : MonadState S (RWS W R S) (Monad_RWS W R S) :=
+{
+    get := fun _ (s : S) => (s, s, neutr);
+    put := fun s : S => fun _ _ => (tt, s, neutr)
+}.
+Proof.
+  all: hs; monad.
+Defined.

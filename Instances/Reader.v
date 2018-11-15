@@ -36,7 +36,7 @@ Definition bind_Reader
   {R A B : Type} (ra : Reader R A) (f : A -> Reader R B) : Reader R B :=
     fun r : R => f (ra r) r.
 
-Instance MonadReader (R : Type) : Monad (Reader R) :=
+Instance Monad_Reader (R : Type) : Monad (Reader R) :=
 {
     is_applicative := ApplicativeReader R;
     bind := @bind_Reader R
@@ -44,3 +44,14 @@ Instance MonadReader (R : Type) : Monad (Reader R) :=
 Proof. all: hs. Defined.
 
 Hint Unfold Reader fmap_Reader pure_Reader ap_Reader bind_Reader : HSLib.
+
+Require Import MonadClass.All.
+
+Print MonadReader.
+
+Instance MonadReader_Reader
+  (R : Type) : MonadReader R (Reader R) (Monad_Reader R) :=
+{
+    ask := id
+}.
+Proof. compute. reflexivity. Defined.

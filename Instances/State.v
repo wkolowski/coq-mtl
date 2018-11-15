@@ -65,7 +65,7 @@ Instance Monad_State (S : Type) : Monad (State S) :=
 }.
 Proof. all: monad. Defined.
 
-Require Import HSLib.MonadClass.MonadState.
+Require Import MonadClass.All.
 
 Instance MonadState_State
   (S : Type) : MonadState S (State S) (Monad_State S) :=
