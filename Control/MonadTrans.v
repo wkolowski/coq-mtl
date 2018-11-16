@@ -39,9 +39,9 @@ Lemma lift_constrA :
   forall
     (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
     (M : Type -> Type) (instM : Monad M)
-    (A : Type) (x : M A),
-      @constrA (T M) (is_monad _ instM) _ _ (lift x) (lift x) =
-      @lift T instT M instM A (x >> x).
+    (A B : Type) (x : M A) (y : M B),
+      @constrA (T M) (is_monad _ instM) _ _ (lift x) (lift y) =
+      @lift T instT M instM B (x >> y).
 Proof.
   intros.
     rewrite !constrA_spec.

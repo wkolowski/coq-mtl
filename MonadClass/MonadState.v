@@ -11,9 +11,11 @@ Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
       forall s : S, put s >> get = put s >> pure s;
     get_put :
       get >>= put = pure tt;
+(*
     get_put' :
       forall s : S,
         get >> put s = put s;
+*)
     get_get :
       forall (A : Type) (k : S -> S -> M A),
         get >>= (fun s : S => get >>= k s) = get >>= fun s : S => k s s
@@ -26,8 +28,8 @@ Section MonadState_funs.
 Variables
   (S : Type)
   (M : Type -> Type)
-  (inst : Monad M)
-  (inst' : MonadState S M inst).
+  (instM : Monad M)
+  (instMS : MonadState S M instM).
 
 Definition state {A : Type} (f : S -> (A * S)%type) : M A :=
   do
@@ -87,3 +89,30 @@ Proof.
 Abort.*)
 
 End MonadState_funs.
+
+Require Import Control.MonadTrans.
+
+Variables
+  (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
+  (M : Type -> Type) (instM : Monad M)
+  (S : Type)
+  (instMF : MonadState S M instM).
+
+Instance MonadState_MonadTrans
+  : MonadState S (T M) (is_monad M instM).
+Proof.
+  esplit. Unshelve.
+    Focus 5. exact (lift get).
+    Focus 5. intro s. exact (lift (put s)).
+    intros. cbn. rewrite lift_constrA, put_put. reflexivity.
+    intros. cbn. rewrite lift_constrA, put_get, <- lift_constrA, lift_pure.
+      reflexivity.
+    rewrite <- lift_pure, <- get_put, lift_bind.
+      unfold compose. reflexivity.
+    intros. Print MonadState. Print MonadTrans.
+    assert (
+      forall c : S -> S -> M A,
+        lift (get >>= (fun s : S => c s s)) =
+        lift (get >>= (fun s : S => c s s))).
+      intros. rewrite lift_bind. unfold compose.
+Abort.

@@ -89,12 +89,33 @@ Variables
   (inst : Applicative F).
 
 Lemma fmap_pure :
-  forall (F : Type -> Type) (inst : Applicative F)
-  (A B : Type) (f : A -> B) (x : A),
+  forall (A B : Type) (f : A -> B) (x : A),
     fmap f (pure x) = pure (f x).
 Proof. hs. Qed.
 
 Hint Rewrite @fmap_pure : HSLib.
+
+Lemma constrA_pure_l :
+  forall (A B : Type) (a : A) (fb : F B),
+    pure a >> fb = fb.
+Proof.
+  intros. unfold constrA, compose.
+  rewrite fmap_pure_ap, homomorphism, identity.
+  reflexivity.
+Qed.
+
+(*
+Lemma constrA_pure_r :
+  forall (A B : Type) (fa : F A) (b : B),
+    fa >> pure b = pure b.
+Proof.
+  intros. unfold constrA, compose.
+  rewrite interchange.
+  Print Applicative. rewrite identity.
+  rewrite fmap_pure_ap, homomorphism, identity.
+  reflexivity.
+Qed.
+*)
 
 End DerivedApplicativeLaws.
 

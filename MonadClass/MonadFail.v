@@ -70,3 +70,23 @@ Arguments mfilter {M instM instMF A} _ _.
 Check mfilter.
 Arguments mpartition {M instM instMF A} _ _.
 Arguments mcatOptions {M instM instMF A} _.
+
+Require Import Control.MonadTrans.
+
+Print MonadTrans.
+
+Variables
+  (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
+  (M : Type -> Type) (instM : Monad M)
+  (instMF : MonadFail M instM).
+
+Instance MonadFail_MonadTrans : MonadFail (T M) (is_monad M instM).
+Proof.
+  esplit. Unshelve.
+    Focus 2. intro. exact (lift fail). Check @pure (T M) (is_monad _ instM).
+    monad.
+    replace fail with (@constrA M instM A A fail fail).
+      rewrite <- lift_constrA. rewrite constrA_spec.
+      rewrite bind_assoc. Print MonadTrans.
+
+Abort.

@@ -22,8 +22,10 @@ Compute do
   guard (beq_nat (a * a + b * b) (c * c));;
   pure (a, b, c).
 
+(*
 Check mfilter (fun _ => true) (I 1 10).
 Eval compute in mfilter (fun _ => false) (Some 42).
+*)
 
 Compute zipWithA
   (fun _ _ => [true; false]) [1; 2; 3] [4; 5; 6; 7].

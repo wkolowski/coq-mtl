@@ -88,27 +88,19 @@ You can then compile the project at any time using `make` and recompile (for exa
   * Commutative applicative functors.
   * Commutative monads.
   * Free Monads.
+  * Codensity (prove there's no callCC).
 * Classes:
   * Pin down the precise categorical semantics.
-  * See how classes for monad transformers/monads are implemented in transformer/mtl/Just Do It paper (stuff like MonadCont).
+  * See how classes for monad transformers/monads are implemented in transformer/mtl/Just Do It paper.
   * Define Traversable and all its instances.
   * Define all instances for Foldable.
   * Learn how to prove general laws for Foldable.
-  * Define a class that has just bind so it can be used for overloading the do notation.
 * Laws:
   * Find minimal sets of laws for each class.
-  * Prove all the derived laws for monads (and other clases too) by hand to give an example of reasoning with monads.
-  * Derive more laws.
-  * Refactor all the laws not to be point-free (point-free sucks for theorem proving).
-  * Try a different design in which laws come bundled in separate classes of Sort Prop (dubious).
-  * State MonadPlus laws. Take a look at the MonadPlus reform proposal.
 * Notation:
-  * Make sure that associativity and operator precedence are correct.
   * Implement idiom bracket notation.
   * Improve do notation (irrefutable patterns).
-* Tactics:
-  * Implement a reflective tactic for reasoning with functors, applicatives, monads and so on.
-  * Make this reflection modular using the Datatypes à la carte approach.
+  * Define a class that has just bind so it can be used for overloading the do notation.
 * Thievery:
   * Take a look at other Haskell proposals relating to the standard library design.
   * Browse Idris standard library and steal good stuff from there.
@@ -117,9 +109,6 @@ You can then compile the project at any time using `make` and recompile (for exa
 ### Particular
 
 * Investigate universe consistency issues for Vec.
-* Codensity:
-  * Prove there's no callCC.
-  * Learn more.
 * Parsers:
   * Develop parsers for lists.
   * Check if using `aplus_det` would make parsers more efficient.
@@ -134,3 +123,7 @@ You can then compile the project at any time using `make` and recompile (for exa
 
 * Revise the compilation steps from this README file.
 * Update this README.
+
+### Potential
+* Try a different design in which laws come bundled in separate classes of Sort Prop (dubious).
+* Implement a reflective tactic for reasoning with functors, applicatives, monads and so on.

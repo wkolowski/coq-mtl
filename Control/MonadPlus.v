@@ -41,23 +41,11 @@ Variable instM : MonadPlus M.
 Variable instT : Foldable T.
 Variables A B C : Type.
 
-Definition mfilter (f : A -> bool) (ma : M A) : M A :=
-  ma >>= fun a : A => if f a then pure a else aempty.
-
-Definition mpartition (p : A -> bool) (ma : M A) : M A * M A :=
-  (mfilter p ma, mfilter (p .> negb) ma).
-
-Definition mcatOptions (x : M (option A)) : M A :=
-  x >>= @aFromOption _ _ _.
-
 Definition mscatter (x : M (T A)) : M A :=
     x >>= @afold _ _ _ _ _.
 
 End MonadPlusFunctions1.
 
-Arguments mfilter {M instM A} _ _.
-Arguments mpartition {M instM A} _ _.
-Arguments mcatOptions {M instM A} _.
 Arguments mscatter {M T instM instT A} _.
 
 Section MonadPlusFunctions2.
@@ -67,29 +55,6 @@ Variable instM : MonadPlus M.
 Variable instT : Foldable T.
 Variables A B C : Type.
 
-Definition sum_left (x : A + B) : option A :=
-match x with
-    | inl a => Some a
-    | _ => None
-end.
-
-Definition sum_right (x : A + B) : option B :=
-match x with
-    | inr b => Some b
-    | _ => None
-end.
-
-Definition mlefts (x : M (A + B)) : M A :=
-  mcatOptions (fmap sum_left x).
-
-Definition mrights (x : M (A + B)) : M B :=
-  mcatOptions (fmap sum_right x).
-
-Definition mpartitionEithers (x : M (A + B)) : M A * M B :=
-  (mlefts x, mrights x).
-
-Definition mmapOption (f : A -> option B) (x : M A) : M B :=
-  mcatOptions (fmap f x).
 
 Definition mconcatMap (f : A -> T B) (x : M A) : M B :=
   mscatter (fmap f x).

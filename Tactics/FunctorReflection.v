@@ -5,13 +5,26 @@ Variables
   (F_inst : Functor F)
   (pure : forall A : Type, A -> F A).
 
-Inductive FExp : Type -> Type :=
-    | Var : forall A : Type, A -> FExp A
-    | Id : forall A : Type, FExp (A -> A)
+Inductive type : Type :=
+    | TVar : Type -> type
+    | TArr : type -> type -> type
+    | TF : type -> type.
+
+Fixpoint typeDenote (t : type) : Type :=
+match t with
+    | TVar A => A
+    | TArr t1 t2 => typeDenote t1 -> typeDenote t2
+    | TF t => F (typeDenote t)
+end.
+
+Inductive Exp : type -> Type :=
+    | Var : forall A : Type, A -> Exp (TVar A)
+    | Id : forall A : type, Exp (TArr A A)
     | Comp :
-        forall A B C : Type, FExp (A -> B) -> FExp (B -> C) -> FExp (A -> C)
-    | App : forall A B : Type, FExp (A -> B) -> FExp A -> FExp B
-    | Fmap : forall A B : Type, FExp (A -> B) -> FExp (F A -> F B).
+        forall A B C : type,
+          Exp (TArr A B) -> Exp (TArr B C) -> Exp (TArr A C)
+    | App : forall A B : type, Exp (TArr A B) -> Exp A -> Exp B
+    | Fmap : forall A B : type, Exp (TArr A B) -> Exp (TArr (TF A) (TF B)).
 
 Arguments Var {A}.
 Arguments Id {A}.
@@ -19,7 +32,7 @@ Arguments Comp {A B C}.
 Arguments App {A B}.
 Arguments Fmap {A B}.
 
-Fixpoint denote {A : Type} (t : FExp A) : A :=
+Fixpoint denote {A : type} (t : Exp A) : typeDenote A :=
 match t with
     | Var x => x
     | Id => id
@@ -28,39 +41,36 @@ match t with
     | Fmap f => fmap (denote f)
 end.
 
+(*
 Eval cbn in denote (App (Fmap (Var (plus 2))) (Var (pure _ 42))).
+*)
 
 Require Import Coq.Logic.JMeq.
+Require Import Coq.Program.Equality.
 
+Definition simplify {A : type} (e : Exp A) : Exp A.
 (*
-Program Fixpoint simplify {A : Type} (e : FExp A) : FExp A :=
 match e with
     | Var x => Var x
     | Id => Id
     | Comp e1 e2 =>
         match simplify e1 with
             | Id => simplify e2
-            | _ => Comp e1 e2
-        end
-end.
-            | e1', Id => e1'
-            | e1', e2' => Comp e1' e2'
+            | e1' => Comp e1' (simplify e2)
         end
     | _ => e
 end.
+*)
 Proof.
   induction e.
     exact (Var a).
     exact Id.
-    inv IHe1.
-      Focus 2. 
-Qed.
-*)
+Abort.
 
 (*
 Class Reify {A : Type} (x : A) : Type :=
 {
-    reify : FExp A;
+    reify : Exp A;
     denote_reify : denote reify = x
 }.
 
@@ -106,7 +116,7 @@ Variables
   (f : A -> A)
   (x y : A).
 
-Print FExp.
+Print Exp.
 
 Ltac reify e :=
 match e with
