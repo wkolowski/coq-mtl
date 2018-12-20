@@ -62,18 +62,12 @@ Definition mmapOption {A B : Type} (f : A -> option B) (x : M A) : M B :=
   mcatOptions (fmap f x).
 
 End MonadFailFuns.
-Print mfilter.
-Check mfilter _.
-Arguments mfilter : default implicits.
-Check mfilter.
+
 Arguments mfilter {M instM instMF A} _ _.
-Check mfilter.
 Arguments mpartition {M instM instMF A} _ _.
 Arguments mcatOptions {M instM instMF A} _.
 
 Require Import Control.MonadTrans.
-
-Print MonadTrans.
 
 Variables
   (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)

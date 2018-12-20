@@ -52,9 +52,14 @@ Proof.
     ext u. destruct u. reflexivity.
 Defined.
 
-Eval cbn in
+(*
+Time Eval cbn in repeat 42 10000.
+Time Eval lazy in repeat 42 10000.
+Time Eval lazy in delay $ repeat 42 10000.
+Time Eval cbn in delay $ repeat 42 10000.
   delay 5 >>= fun n : nat =>
   delay 2 >>= fun m : nat => delay (n * m).
 
 Eval cbn in
   delay (2 + 2) >>= fun n : nat => delay (2 * n).
+*)

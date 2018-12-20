@@ -53,6 +53,8 @@ Inductive hasType : Exp -> type -> Type :=
 
 Hint Constructors hasType.
 
+Require Import Recdef.
+
 Function denote {e : Exp} {t : type} (ht : hasType e t) : typeDenote t :=
 match ht with
     | ht_Var _ x => x

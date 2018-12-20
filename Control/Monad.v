@@ -52,6 +52,7 @@ Definition compM
       mad
     - pattern matches (even irrefutable ones) are not allowed
     - you can insert a meanigless 'do' anywhere *)
+
 Module MonadNotations.
 
 Notation "mx >>= f" := (bind mx f) (at level 40).
@@ -60,15 +61,15 @@ Notation "f >=> g" := (compM f g) (at level 40).
 Notation "x '<-' e1 ; e2" := (bind e1 (fun x => e2))
   (right associativity, at level 42, only parsing).
 
-(* TODO
-Notation "x '<<--' e1 ;;; e2" := (bind e1 (fun y => let x := y in e2))
-  (right associativity, at level 42, only parsing).
-*)
-
 Notation "e1 ;; e2" := (constrA e1 e2)
   (right associativity, at level 42, only parsing).
 
 Notation "'do' e" := e (at level 50, only parsing).
+
+(* TODO
+Notation "x '<<--' e1 ;;; e2" := (bind e1 (fun y => let x := y in e2))
+  (right associativity, at level 42, only parsing).
+*)
 
 End MonadNotations.
 

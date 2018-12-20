@@ -87,11 +87,11 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Investigate concepts:
   * Commutative applicative functors.
   * Commutative monads.
-  * Free Monads.
+  * Free Monads (prove it is not a transformer).
   * Codensity (prove there's no callCC).
 * Classes:
   * Pin down the precise categorical semantics.
-  * See how classes for monad transformers/monads are implemented in transformer/mtl/Just Do It paper.
+  * See how classes for monad transformers/monads are implemented in transformers/mtl/Just Do It paper.
   * Define Traversable and all its instances.
   * Define all instances for Foldable.
   * Learn how to prove general laws for Foldable.
@@ -100,7 +100,6 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Notation:
   * Implement idiom bracket notation.
   * Improve do notation (irrefutable patterns).
-  * Define a class that has just bind so it can be used for overloading the do notation.
 * Thievery:
   * Take a look at other Haskell proposals relating to the standard library design.
   * Browse Idris standard library and steal good stuff from there.
@@ -116,8 +115,8 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Something practical: maybe use the monadic stuff for Enumerable/Finite classes.
 * Check what is the precise relation between bind and ap (and if it's possible to define monads in two nonequivalent ways due to this).
 * Check if the Lazy monad makes sense.
-* Prove Free is not a monad transformer.
 * Partition MonadPlus and its function into more sane classes.
+* Implement the Set monad.
 
 ### Technical
 

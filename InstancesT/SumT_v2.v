@@ -3,16 +3,15 @@ Require Import Control.
 Require Import HSLib.Instances.All.
 
 Definition SumT (E : Type) (M : Type -> Type) (A : Type)
-  : Type := M (sum E A).
+  : Type := sum E (M A).
 
 Definition fmap_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type} (f : A -> B)
-  : SumT E M A -> SumT E M B :=
-    fmap (fun sa : sum E A =>
-    match sa with
-        | inl e => inl e
-        | inr a => inr (f a)
-    end).
+  (ema : SumT E M A) : SumT E M B :=
+  match ema with
+      | inl e => inl e
+      | inr a => inr (fmap f a)
+  end.
 
 Hint Unfold SumT fmap_SumT : HSLib.
 
@@ -21,25 +20,22 @@ Instance Functor_SumT
 {
     fmap := @fmap_SumT M inst E
 }.
-Proof. all: hs; mtrans; monad. Defined.
+Proof.
+  all: hs; mtrans; monad. f_equal. monad.
+Defined.
 
 Definition pure_SumT
-  {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A)
-  : SumT E M A := pure (inr x).
+  {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A) : SumT E M A :=
+    inr (pure x).
 
 Definition ap_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
-  (msf : SumT E M (A -> B)) (msx : SumT E M A) : SumT E M B :=
-    @bind M inst _ _ msf (fun sf =>
-      match sf with
-          | inl e => pure (inl e)
-          | inr f =>
-              @bind M inst _ _ msx (fun sx =>
-              match sx with
-                  | inl e => pure (inl e)
-                  | inr x => pure (inr (f x))
-              end)
-      end).
+  (emf : SumT E M (A -> B)) (emx : SumT E M A) : SumT E M B :=
+  match emf, emx with
+      | inl e, _ => inl e
+      | _, inl e => inl e
+      | inr mf, inr mx => inr (ap mf mx)
+  end.
 
 Hint Unfold pure_SumT ap_SumT : HSLib.
 
@@ -50,9 +46,11 @@ Instance Applicative_SumT
     pure := @pure_SumT M inst E;
     ap := @ap_SumT M inst E;
 }.
-Proof. all: hs; monad. Defined.
+Proof.
+  all: hs; monad; f_equal; monad.
+Defined.
 
-Theorem SumT_not_Alternative :
+Lemma SumT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (SumT E M)) -> False.
 Proof.
@@ -63,12 +61,16 @@ Qed.
 
 Definition aempty_SumT
   (E : Type) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
-  {A : Type} : SumT E M A := fmap inr aempty.
+  {A : Type} : SumT E M A := inr aempty.
 
 Definition aplus_SumT
   {E : Type} {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
-  {A : Type} (x y : SumT E M A) : SumT E M A :=
-    @aplus _ instA _ x y.
+  {A : Type} (emx emy : SumT E M A) : SumT E M A :=
+    match emx, emy with
+        | inl e, _ => inl e
+        | _, inl e => inl e
+        | inr x, inr y => inr (aplus x y)
+    end.
 
 Hint Unfold aempty_SumT aplus_SumT : HSLib.
 
@@ -80,12 +82,41 @@ Instance Alternative_SumT
     aempty := @aempty_SumT E M inst inst;
     aplus := @aplus_SumT E M inst inst;
 }.
-Proof. all: hs. Defined.
+Proof.
+  all: hs.
+    destruct fa; f_equal; hs.
+    destruct fa; f_equal; hs.
+    destruct x, y, z; hs.
+Defined.
+
+Lemma sumt_not_Monad :
+  exists (E : Type) (M : Type -> Type) (inst : Monad M),
+    Monad (SumT E M) -> False.
+Proof.
+  Require Import Instances.Option.
+  exists False, Identity, MonadIdentity. (* option, MonadOption.*)
+  destruct 1. clear - bind.
+  specialize (bind unit False).
+Abort.
 
 Definition bind_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
-  (ma : SumT E M A) (f : A -> SumT E M B) : SumT E M B :=
-    @bind M inst _ _ ma (fun sa : E + A =>
+  (ema : SumT E M A) (f : A -> SumT E M B) : SumT E M B.
+Proof.
+  destruct ema.
+    exact (inl e).
+    Check fmap f m.
+    apply f.
+    match ema with
+        | inl e => inl e
+        | inr ma => ma >>= fun a =>
+            match f a with
+                | inl e => inl e
+                | inr b => b
+            end
+    end.
+
+@bind M inst _ _ ma (fun sa : E + A =>
     match sa with
         | inl e => pure (inl e)
         | inr a => f a
