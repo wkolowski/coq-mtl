@@ -8,3 +8,11 @@
 makefile
 *.conf
 *.d
+
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.toc
+
