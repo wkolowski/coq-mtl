@@ -126,3 +126,4 @@ You can then compile the project at any time using `make` and recompile (for exa
 ### Potential
 * Try a different design in which laws come bundled in separate classes of Sort Prop (dubious).
 * Implement a reflective tactic for reasoning with functors, applicatives, monads and so on.
+
