@@ -109,3 +109,16 @@ Proof.
   intros. ext t.
   induction t as [| l IHl r IHr]; unfold compose in *; cbn; congruence.
 Defined.
+
+Require Import MonadClass.All.
+
+Print MonadAlt.
+
+Instance MonadAlt_RT : MonadAlt RT Monad_RT :=
+{
+    choose := @Node
+}.
+Proof.
+  
+  Focus 2. reflexivity.
+Abort.

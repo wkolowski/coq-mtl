@@ -47,8 +47,6 @@ Hint Unfold Reader fmap_Reader pure_Reader ap_Reader bind_Reader : HSLib.
 
 Require Import MonadClass.All.
 
-Print MonadReader.
-
 Instance MonadReader_Reader
   (R : Type) : MonadReader R (Reader R) (Monad_Reader R) :=
 {

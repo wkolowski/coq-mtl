@@ -73,20 +73,6 @@ Proof.
 Restart.
   unfold modify. intros.
 Abort.
- (* H. reflexivity.
-    replace (fun x : S => put (f x) >> put s)
-       with (fun x : S => put s).
-      Focus 2. ext x. rewrite put_put. reflexivity.
-      assert (H'' := get_put'). unfold constrA in H''. rewrite H''.
-        reflexivity.
-Qed.
-
-Lemma modify_get :
-  forall f : S -> S,
-    modify f >> get = fmap f get.
-Proof.
-  intros. unfold modify, bind_. rewrite bind_assoc.
-Abort.*)
 
 End MonadState_funs.
 

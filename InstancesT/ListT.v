@@ -104,3 +104,33 @@ Instance MonadTrans_ListT : MonadTrans ListT :=
     lift := @lift_ListT;
 }.
 Proof. all: monad. Defined.
+
+Require Import MonadClass.All.
+
+Definition fail_ListT
+  {M : Type -> Type} {inst : Monad M} {A : Type} : ListT M A := [[]].
+
+Instance MonadFail_ListT
+  (M : Type -> Type) (inst : Monad M)
+  : MonadFail (ListT M) (Monad_ListT M inst) :=
+{
+    fail := @fail_ListT M inst
+}.
+Proof. reflexivity. Defined.
+
+Instance MonadAlt_ListT
+  (M : Type -> Type) (inst : Monad M)
+  : MonadAlt (ListT M) (Monad_ListT M inst) :=
+{
+    choose := @aplus_ListT M inst
+}.
+Proof. all: reflexivity. Defined.
+
+Instance MonadNondet_ListT
+  (M : Type -> Type) (inst : Monad M)
+  : MonadNondet (ListT M) (Monad_ListT M inst) :=
+{
+    instF := MonadFail_ListT M inst;
+    instA := MonadAlt_ListT M inst;
+}.
+Proof. all: reflexivity. Defined.

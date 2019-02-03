@@ -39,6 +39,8 @@ match x with
     | Bind x f => extract (f (extract x))
 end.
 
+Compute fib 23.
+
 Compute extract (fib 23).
 
 Definition fibF (self : nat -> Memoize nat) (n : nat) : Memoize nat :=

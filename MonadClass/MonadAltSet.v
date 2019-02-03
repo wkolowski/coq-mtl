@@ -11,7 +11,7 @@ Class MonadAltSet (M : Type -> Type) (inst : Monad M) : Type :=
         choose (choose a b) c = choose a (choose b c);
     choose_comm :
       forall {A : Type} (x y : M A),
-        choose x y = choose y x
+        choose x y = choose y x;
     choose_idempotent :
       forall {A : Type} (x : M A), choose x x = x
 }.

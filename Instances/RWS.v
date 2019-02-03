@@ -84,6 +84,22 @@ Require Import MonadClass.All.
 
 Require Import Misc.Monoid.
 
+Print MonadReader.
+
+Definition ask_RWS (W : Monoid) (R S : Type) : RWS W R S R :=
+  fun (r : R) (s : S) => (r, s, neutr).
+
+Instance MonadReader_RWS
+  (W : Monoid) (R S : Type)
+  : MonadReader R (RWS W R S) (Monad_RWS W R S) :=
+{
+    ask := ask_RWS W R S;
+}.
+Proof.
+  ext r. ext s. cbn. unfold ask_RWS, const, id.
+  rewrite id_left. reflexivity.
+Defined.
+
 Instance MonadState_RWS
   (W : Monoid) (R S : Type) : MonadState S (RWS W R S) (Monad_RWS W R S) :=
 {

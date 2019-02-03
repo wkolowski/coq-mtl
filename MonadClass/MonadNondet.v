@@ -6,8 +6,8 @@ Require Import MonadClass.MonadAlt.
 
 Class MonadNondet (M : Type -> Type) (inst : Monad M) : Type :=
 {
-    instF :> MonadFail;
-    instA :> MonadAlt;
+    instF :> MonadFail M inst;
+    instA :> MonadAlt M inst;
     choose_fail_l :
       forall (A : Type) (x : M A),
         choose fail x = x;

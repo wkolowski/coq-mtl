@@ -82,3 +82,15 @@ Instance FoldableSum (E : Type) : Foldable (sum E) :=
     foldMap := @foldMap_Sum E
 }.
 Proof. monad. Defined.
+
+Require Import MonadClass.All.
+
+Definition fail_Sum {E : Type} (e : E) {A : Type} : Sum E A := inl e.
+
+Instance MonadFail_Sum
+  (E : Type) (e : E)
+  : MonadFail (Sum E) (MonadSum E) :=
+{
+    fail := @fail_Sum E e
+}.
+Proof. reflexivity. Defined.

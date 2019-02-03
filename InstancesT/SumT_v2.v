@@ -89,6 +89,12 @@ Proof.
     destruct x, y, z; hs.
 Defined.
 
+Search SumT Alternative.
+
+Check SumT_not_Alternative.
+Check Alternative_SumT.
+
+
 Lemma sumt_not_Monad :
   exists (E : Type) (M : Type -> Type) (inst : Monad M),
     Monad (SumT E M) -> False.
@@ -107,21 +113,9 @@ Proof.
     exact (inl e).
     Check fmap f m.
     apply f.
-    match ema with
-        | inl e => inl e
-        | inr ma => ma >>= fun a =>
-            match f a with
-                | inl e => inl e
-                | inr b => b
-            end
-    end.
+Abort.
 
-@bind M inst _ _ ma (fun sa : E + A =>
-    match sa with
-        | inl e => pure (inl e)
-        | inr a => f a
-    end).
-
+(* TODO
 Hint Unfold bind_SumT : HSLib.
 
 Instance Monad_SumT
@@ -161,3 +155,4 @@ Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
     lift := @lift_SumT E;
 }.
 Proof. all: hs; monad. Defined.
+*)

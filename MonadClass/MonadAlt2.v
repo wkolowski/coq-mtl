@@ -3,7 +3,7 @@ Require Import Control.Monad.
 Require Import Control.Alternative.
 Require Import Control.Foldable.
 
-Class MonadAlt (M : Type -> Type) (inst : Monad M) : Type :=
+Class MonadAltR (M : Type -> Type) (inst : Monad M) : Type :=
 {
     choose : forall {A : Type}, M A -> M A -> M A;
     choose_assoc :

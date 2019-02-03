@@ -198,3 +198,28 @@ Instance MonadFail_List : MonadFail list Monad_List :=
     fail := @fail_List
 }.
 Proof. intros. compute. reflexivity. Defined.
+
+Definition choose_List {A : Type} : list A -> list A -> list A := @app A.
+
+Instance MonadAlt_List : MonadAlt list Monad_List :=
+{
+    choose := @choose_List
+}.
+Proof.
+  all: unfold choose_List.
+    intros. rewrite app_assoc. reflexivity.
+    induction x as [| h t]; cbn in *; intros.
+      reflexivity.
+      rewrite IHt, app_assoc. reflexivity.
+Defined.
+
+Instance MonadNondet_List : MonadNondet list Monad_List :=
+{
+    instF := MonadFail_List;
+    instA := MonadAlt_List;
+}.
+Proof.
+  all: cbn; unfold fail_List, choose_List.
+    reflexivity.
+    intros. apply app_nil_r.
+Defined.
