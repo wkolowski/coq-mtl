@@ -1,6 +1,5 @@
-Require Import HSLib.Base.
-Require Import Control.Monad.
-Require Import HSLib.Instances.All.
+Require Import Control.
+Require Import Control.Monad.All.
 
 (* Just for teh lulz. *)
 Class Enumerable (A : Type) : Type :=
@@ -72,6 +71,7 @@ match n with
     | S n' => cumulative A n' ++ enum A n
 end.
 
+(*
 Compute enum Empty_set 123.
 Compute enum unit 11.
 Compute cumulative unit 11.
@@ -85,3 +85,4 @@ Compute enum (list bool) 4.
 Compute cumulative nat 10.
 Compute length (enum (list bool * list bool) 5).
 Compute cumulative (list bool * list bool) 5.
+*)

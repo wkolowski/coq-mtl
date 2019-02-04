@@ -57,7 +57,7 @@ Proof.
       with (@fst (A -> B) unit .> flip apply x).
         monoidal. unfold flip, apply, id, compose. reflexivity.
         ext p. destruct p. cbn. reflexivity.
-Qed.
+Defined.
 
 Definition default_Applicative
   {F : Type -> Type} {inst : Applicative F} : F unit := pure tt.

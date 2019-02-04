@@ -119,6 +119,5 @@ Lemma isEmpty_size :
 Proof.
   split.
     unfold isEmpty, size, foldr. intro.
-    Print Foldable.
     Focus 2. unfold size, isEmpty, foldr.
 Admitted.

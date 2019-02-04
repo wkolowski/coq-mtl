@@ -6,8 +6,8 @@ Require Export String.
 
 Require Import Control.
 
-Require Export HSLib.Instances.ListInst.
-Require Export HSLib.InstancesT.StateT.
+Require Export HSLib.Control.Monad.ListInst.
+Require Export HSLib.Control.Monad.Trans.StateT.
 
 (** A parser is just a nondeterministic monad with state. *)
 Definition Parser (A : Type) : Type :=
