@@ -61,3 +61,84 @@ Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
     lift := @lift_ContT R;
 }.
 Proof. all: monad. Defined.
+
+Require Import Control.Monad.Class.All.
+
+Instance MonadAlt_ContT
+  (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (ContT R M) (Monad_ContT R M) :=
+{
+    choose :=
+      fun A x y k => choose (x k) (y k)
+}.
+Proof.
+  intros. ext k. rewrite choose_assoc. reflexivity.
+  intros. ext k. cbn. reflexivity.
+Defined.
+
+Instance MonadFail_ContT
+  (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
+  : MonadFail (ContT R M) (Monad_ContT R M) :=
+{
+    fail := fun A k => fail >>= k
+}.
+Proof.
+  intros. cbn. monad. rewrite !bind_fail_l. reflexivity.
+Defined.
+
+Instance MonadNondet_ContT
+  (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
+  : MonadNondet (ContT R M) (Monad_ContT R M) :=
+{
+    instF := @MonadFail_ContT R M inst (@instF _ _ inst');
+    instA := @MonadAlt_ContT R M inst (@instA _ _ inst');
+}.
+Proof.
+  intros. cbn. ext k. rewrite bind_fail_l, choose_fail_l. reflexivity.
+  intros. cbn. ext k. rewrite bind_fail_l, choose_fail_r. reflexivity.
+Defined.
+
+Instance MonadReader_ContT
+  (E R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadReader E M inst)
+  : MonadReader E (ContT R M) (Monad_ContT R M) :=
+{
+    ask := fun k => ask >>= k
+}.
+Proof.
+  ext k. cbn. unfold fmap_ContT. unfold const, id.
+Abort.
+
+Instance MonadState_ContT
+  (S R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadState S M inst)
+  : MonadState S (ContT R M) (Monad_ContT R M) :=
+{
+    get := fun k => get >>= k;
+    put := fun s k => put s >> k tt;
+}.
+Proof.
+  intros. ext k. cbn. unfold fmap_ContT, const, id.
+    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
+  Focus 3.
+  intros A f. ext k. cbn. unfold bind_ContT, pure_ContT.
+    rewrite get_get. reflexivity.
+Abort.
+
+(*
+Instance MonadFree_ContT
+  (R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadFree S M inst)
+  : MonadFree S (ContT R M) (Monad_ContT R M) :=
+{
+    get := fun k => get >>= k;
+    put := fun s k => put s >> k tt;
+}.
+Proof.
+  intros. ext k. cbn. unfold fmap_ContT, const, id.
+    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
+  Focus 3.
+  intros A f. ext k. cbn. unfold bind_ContT, pure_ContT.
+    rewrite get_get. reflexivity.
+Abort.
+*)

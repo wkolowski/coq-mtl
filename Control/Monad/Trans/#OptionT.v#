@@ -149,7 +149,7 @@ Proof.
   intros.
     rewrite !bind_assoc. f_equal. ext ox.
     rewrite !bind_assoc. f_equal. ext oy.
-    rewrite !bind_assoc. destruct ox, oy; cbn.
+    rewrite !bind_assoc. cbn. destruct ox, oy; cbn.
       rewrite choose_bind_l.
   monad. 
   intros. unfold OptionT in *.
