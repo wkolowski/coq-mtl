@@ -223,3 +223,69 @@ Proof.
   1-3: monad.
   intros. ext s. cbn. unfold bind_StateT. rewrite !bind_pure_l. reflexivity.
 Defined.
+
+Require Import Control.Monad.Class.All.
+
+Instance MonadAlt_StateT
+  (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (StateT S M) (Monad_StateT S M inst) :=
+{
+    choose :=
+      fun A x y s => choose (x s) (y s)
+}.
+Proof.
+  intros. ext s. rewrite choose_assoc. reflexivity.
+  intros. ext s. cbn. monad. rewrite choose_bind_l. reflexivity.
+Defined.
+
+Instance MonadFail_StateT
+  (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
+  : MonadFail (StateT S M) (Monad_StateT S M inst) :=
+{
+    fail := fun A s => fail
+}.
+Proof.
+  intros. cbn. monad. rewrite bind_fail_l. reflexivity.
+Defined.
+
+Instance MonadNondet_StateT
+  (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
+  : MonadNondet (StateT S M) (Monad_StateT S M inst) :=
+{
+    instF := @MonadFail_StateT S M inst (@instF _ _ inst');
+    instA := @MonadAlt_StateT S M inst (@instA _ _ inst');
+}.
+Proof.
+  intros. cbn. ext s. rewrite choose_fail_l. reflexivity.
+  intros. cbn. ext s. rewrite choose_fail_r. reflexivity.
+Defined.
+
+Instance MonadReader_StateT
+  (E S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadReader E M inst)
+  : MonadReader E (StateT S M) (Monad_StateT S M inst) :=
+{
+    ask := fun s => ask >>= fun e => pure (e, s);
+}.
+Proof.
+  ext s. Print MonadReader. cbn. unfold ap_StateT, fmap_StateT. rewrite !bind_assoc.
+    
+Abort.
+
+(*
+Instance MonadFree_StateT
+  (R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadFree S M inst)
+  : MonadFree S (StateT R M) (Monad_StateT R M) :=
+{
+    get := fun k => get >>= k;
+    put := fun s k => put s >> k tt;
+}.
+Proof.
+  intros. ext k. cbn. unfold fmap_StateT, const, id.
+    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
+  Focus 3.
+  intros A f. ext k. cbn. unfold bind_StateT, pure_StateT.
+    rewrite get_get. reflexivity.
+Abort.
+*)

@@ -149,46 +149,10 @@ Proof.
   intros.
     rewrite !bind_assoc. f_equal. ext ox.
     rewrite !bind_assoc. f_equal. ext oy.
-    rewrite !bind_assoc. destruct ox, oy; cbn.
-      rewrite choose_bind_l.
-  monad. 
-  intros. unfold OptionT in *.
-    Check (@bind_assoc M inst _ _ _ x).
-    Check x >>= f.
-    rewrite <- bind_assoc. f_equal. ext ox.
-    rewrite !bind_assoc. f_equal. ext oy.
-    rewrite !bind_assoc. destruct ox, oy; cbn. all: monad.
-    
- Check
-      fun ox oy => ox >>= fun x => oy >>= fun y =>
-        match x, y with
-            | Some a, _ => pure (Some a)
-            | _, Some a => pure (Some a)
-            | _, _ => pure None
-        end.
-    intros.
-{
-    choose :=
-      fun A x y => (do
-        x' <- x;
-        y' <- y;
-        pure (choose x' y'));
-}.
-Proof.
-  intros. ext k. rewrite choose_assoc. reflexivity.
-  intros. ext k. cbn. reflexivity.
-Defined.
+    rewrite !bind_assoc. cbn. destruct ox, oy; cbn.
+Abort.
 
-Instance MonadFail_OptionT
-  (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
-  : MonadFail (OptionT M) (Monad_OptionT M) :=
-{
-    fail := fun A k => fail >>= k
-}.
-Proof.
-  intros. cbn. monad. rewrite !bind_fail_l. reflexivity.
-Defined.
-
+(*
 Instance MonadNondet_OptionT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (OptionT M) (Monad_OptionT M) :=
@@ -200,33 +164,55 @@ Proof.
   intros. cbn. ext k. rewrite bind_fail_l, choose_fail_l. reflexivity.
   intros. cbn. ext k. rewrite bind_fail_l, choose_fail_r. reflexivity.
 Defined.
+*)
 
 Instance MonadReader_OptionT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
-  : MonadReader E (OptionT M) (Monad_OptionT M) :=
+  : MonadReader E (OptionT M) (Monad_OptionT M inst) :=
 {
-    ask := fun k => ask >>= k
+    ask := fmap Some ask
 }.
 Proof.
-  ext k. cbn. unfold fmap_OptionT. unfold const, id.
+  unfold constrA, const, id, compose. cbn.
+  unfold ap_OptionT, fmap_OptionT, fmap_Option.
+    do 2 (rewrite bind_fmap; unfold compose). monad.
+    Print Monad.
 Abort.
 
+Require Export Setoid.
+
 Instance MonadState_OptionT
-  (S R : Type) (M : Type -> Type)
+  (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
-  : MonadState S (OptionT M) (Monad_OptionT M) :=
+  : MonadState S (OptionT M) (Monad_OptionT M inst) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    get := fmap Some get;
+    put s := put s >> pure (Some tt);
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_OptionT, const, id.
+  intros. cbn. unfold ap_OptionT, fmap_OptionT, const, id, compose.
+    rewrite !bind_fmap. unfold fmap_Option, compose.
+    do 2 (rewrite <- constrA_bind_assoc, bind_pure_l).
     rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_OptionT, pure_OptionT.
-    rewrite get_get. reflexivity.
-Abort.
+  intros. cbn. unfold ap_OptionT, fmap_OptionT, const, compose, id.
+    rewrite !bind_fmap.
+    do 2 (rewrite <- constrA_bind_assoc; rewrite bind_pure_l).
+    unfold fmap_Option, compose, pure_OptionT.
+    rewrite bind_fmap, bind_pure_l. unfold compose.
+    rewrite constrA_bind_assoc, put_get.
+    rewrite <- constrA_bind_assoc, bind_pure_l. reflexivity.
+  cbn. unfold bind_OptionT, pure_OptionT. rewrite bind_fmap.
+    unfold compose.
+    replace (fun x : S => put x >> pure (Some tt))
+       with (fun s : S => put s >>= fun _ => pure (Some tt)).
+      rewrite <- bind_assoc, get_put, bind_pure_l. reflexivity.
+      ext s. monad.
+  intros. cbn. unfold bind_OptionT. rewrite !bind_fmap. unfold compose.
+    rewrite <- get_get. f_equal. ext s. rewrite bind_fmap. unfold compose.
+    reflexivity.
+Defined.
+
 
 (*
 Instance MonadFree_OptionT

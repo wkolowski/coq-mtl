@@ -261,6 +261,16 @@ Proof.
   intros. unfold constrA, compose. monad.
 Qed.
 
+Lemma constrA_bind_assoc :
+  forall
+    (A B C : Type) (x : M A) (y : M B) (f : B -> M C),
+      x >> y >>= f = (x >> y) >>= f.
+Proof.
+  intros. unfold constrA, const, compose, id. hs.
+  f_equal. ext a. f_equal. ext b.
+  rewrite bind_pure_l, bind_pure_r. reflexivity.
+Qed.
+
 End DerivedMonadLaws2.
 
 Hint Rewrite @constlA_spec @constrA_spec : HSLib.

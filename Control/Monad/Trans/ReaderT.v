@@ -31,7 +31,8 @@ Definition ap_ReaderT
 Hint Unfold pure_ReaderT ap_ReaderT : HSLib.
 
 Instance Applicative_ReaderT
-  (E : Type) (M : Type -> Type) (inst : Monad M) : Applicative (ReaderT E M) :=
+  (E : Type) (M : Type -> Type) (inst : Monad M)
+  : Applicative (ReaderT E M) :=
 {
     is_functor := @Functor_ReaderT M inst E;
     pure := @pure_ReaderT M inst E;
@@ -123,3 +124,76 @@ Instance MonadReader_Reader
     ask := pure
 }.
 Proof. monad. Defined.
+
+Require Import Control.Monad.Class.All.
+
+Instance MonadAlt_ReaderT
+  (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (ReaderT R M) (Monad_ReaderT R M inst) :=
+{
+    choose :=
+      fun A x y r => choose (x r) (y r)
+}.
+Proof.
+  intros. ext r. rewrite choose_assoc. reflexivity.
+  intros. ext r. cbn. unfold bind_ReaderT. apply choose_bind_l.
+Defined.
+
+Instance MonadFail_ReaderT
+  (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
+  : MonadFail (ReaderT R M) (Monad_ReaderT R M inst) :=
+{
+    fail := fun A r => fail
+}.
+Proof.
+  intros. cbn. monad. rewrite !bind_fail_l. reflexivity.
+Defined.
+
+Instance MonadNondet_ReaderT
+  (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
+  : MonadNondet (ReaderT R M) (Monad_ReaderT R M inst) :=
+{
+    instF := @MonadFail_ReaderT R M inst (@instF _ _ inst');
+    instA := @MonadAlt_ReaderT R M inst (@instA _ _ inst');
+}.
+Proof.
+  intros. cbn. ext r. rewrite choose_fail_l. reflexivity.
+  intros. cbn. ext r. rewrite choose_fail_r. reflexivity.
+Defined.
+
+Instance MonadState_ReaderT
+  (S R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadState S M inst)
+  : MonadState S (ReaderT R M) (Monad_ReaderT R M inst) :=
+{
+    get := fun r => get;
+    put := fun s r => put s;
+}.
+Proof. Print MonadState.
+  intros. ext r. cbn. unfold ap_ReaderT, fmap_ReaderT, const, id. monad.
+    rewrite <- constrA_spec, put_put. reflexivity.
+  intros. rewrite constrA_spec. cbn.
+    unfold bind_ReaderT, ap_ReaderT, fmap_ReaderT, pure_ReaderT, const, id.
+    ext r. rewrite <- constrA_spec. rewrite put_get. monad.
+  ext r. cbn. unfold bind_ReaderT, pure_ReaderT.
+    rewrite get_put. reflexivity.
+  intros. ext r. cbn. unfold bind_ReaderT. rewrite get_get. reflexivity.
+Defined.
+
+(*
+Instance MonadFree_ReaderT
+  (R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadFree S M inst)
+  : MonadFree S (ReaderT R M) (Monad_ReaderT R M) :=
+{
+    get := fun k => get >>= k;
+    put := fun s k => put s >> k tt;
+}.
+Proof.
+  intros. ext k. cbn. unfold fmap_ReaderT, const, id.
+    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
+  Focus 3.
+  intros A f. ext k. cbn. unfold bind_ReaderT, pure_ReaderT.
+    rewrite get_get. reflexivity.
+Abort.
+*)

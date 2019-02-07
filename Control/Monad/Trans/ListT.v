@@ -147,13 +147,6 @@ Proof.
   ext X. ext nil. ext cons. cbn. unfold fmap_ListT, const, id.
 Abort.
 
-(* TODO *) Lemma constrA_bind_assoc :
-  forall
-    (M : Type -> Type) (inst : Monad M)
-    (A B C : Type) (x : M A) (y : M B) (f : B -> M C),
-      x >> y >>= f = (x >> y) >>= f.
-Proof. monad. Defined.
-
 Instance MonadState_ListT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
