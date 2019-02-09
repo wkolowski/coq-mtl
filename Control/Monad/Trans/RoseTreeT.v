@@ -71,3 +71,90 @@ Theorem RoseTreeT_not_MonadPlus :
 Proof.
   intros. apply RoseTreeT_not_Alternative, X.
 Qed.
+
+Require Import Control.Monad.Class.All.
+
+Instance MonadAlt_RoseTreeT
+  (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (RoseTreeT M) (Monad_RoseTreeT M) :=
+{
+    choose :=
+      fun A x y =>
+        fun X empty node => choose (x X empty node) (y X empty node)
+}.
+Proof.
+  intros A x y z. ext X. ext e. ext n. rewrite choose_assoc. reflexivity.
+  reflexivity.
+Defined.
+
+Instance MonadFail_RoseTreeT
+  (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
+  : MonadFail (RoseTreeT M) (Monad_RoseTreeT M) :=
+{
+    fail := fun A => fun X empty node => fail
+}.
+Proof. reflexivity. Defined.
+
+Instance MonadNondet_RoseTreeT
+  (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
+  : MonadNondet (RoseTreeT M) (Monad_RoseTreeT M) :=
+{
+    instF := @MonadFail_RoseTreeT M inst (@instF _ _ inst');
+    instA := @MonadAlt_RoseTreeT M inst (@instA _ _ inst');
+}.
+Proof.
+  intros. cbn. ext X. ext e. ext n. rewrite choose_fail_l. reflexivity.
+  intros. cbn. ext X. ext e. ext n. rewrite choose_fail_r. reflexivity.
+Defined.
+
+Instance MonadReader_RoseTreeT
+  (E : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadReader E M inst)
+  : MonadReader E (RoseTreeT M) (Monad_RoseTreeT M) :=
+{
+    ask := fun X empty node => ask >>= empty
+}.
+Proof.
+  ext X. ext empty. ext node. cbn. unfold fmap_RoseTreeT, const, id, compose.
+  rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
+Defined.
+
+Instance MonadState_RoseTreeT
+  (S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadState S M inst)
+  : MonadState S (RoseTreeT M) (Monad_RoseTreeT M) :=
+{
+    get := fun X empty node => get >>= empty;
+    put := fun s X empty node => put s >> empty tt;
+}.
+Proof.
+  intros. ext X. ext empty. ext node. cbn.
+    unfold fmap_RoseTreeT, const, id, compose.
+    rewrite <- constrA_assoc, put_put. reflexivity.
+  intros. ext X. ext empty. ext node. cbn.
+    unfold fmap_RoseTreeT, const, id, compose, pure_RoseTreeT.
+    rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
+    reflexivity.
+  intros. ext X. ext empty. ext node. cbn.
+    unfold bind_RoseTreeT, pure_RoseTreeT.
+    rewrite bind_constrA_comm, get_put, constrA_pure_l.
+Admitted.
+
+
+(*
+Instance MonadFree_RoseTreeT
+  (R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadFree S M inst)
+  : MonadFree S (RoseTreeT R M) (Monad_RoseTreeT R M) :=
+{
+    get := fun k => get >>= k;
+    put := fun s k => put s >> k tt;
+}.
+Proof.
+  intros. ext k. cbn. unfold fmap_RoseTreeT, const, id.
+    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
+  Focus 3.
+  intros A f. ext k. cbn. unfold bind_RoseTreeT, pure_RoseTreeT.
+    rewrite get_get. reflexivity.
+Abort.
+*)

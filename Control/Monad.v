@@ -271,6 +271,15 @@ Proof.
   rewrite bind_pure_l, bind_pure_r. reflexivity.
 Qed.
 
+Lemma bind_constrA_comm :
+  forall (A B C : Type) (x : M A) (f : A -> M B) (y : M C),
+    x >>= (fun x : A => f x >> y) =
+    (x >>= f) >> y.
+Proof.
+  intros. rewrite constrA_spec, bind_assoc.
+  f_equal. ext a. apply constrA_spec.
+Defined.
+
 End DerivedMonadLaws2.
 
 Hint Rewrite @constlA_spec @constrA_spec : HSLib.

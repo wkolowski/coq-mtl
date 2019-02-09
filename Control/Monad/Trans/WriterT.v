@@ -123,3 +123,138 @@ Instance MonadTrans_WriterT (W : Monoid) : MonadTrans (WriterT W) :=
     lift := @lift_WriterT W;
 }.
 Proof. all: monad. Defined.
+
+Require Import Control.Monad.Class.All.
+
+Instance MonadAlt_WriterT
+  (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (WriterT W M) (Monad_WriterT W M) :=
+{
+    choose := fun A x y => @choose M inst inst' (A * W) x y
+}.
+Proof.
+  intros.  cbn. rewrite choose_assoc. reflexivity.
+  intros. cbn. unfold bind_WriterT. rewrite choose_bind_l. reflexivity.
+Defined.
+
+Instance MonadFail_WriterT
+  (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
+  : MonadFail (WriterT W M) (Monad_WriterT W M) :=
+{
+    fail := fun A => @fail M inst inst' (A * W)
+}.
+Proof.
+  intros. cbn. unfold bind_WriterT. rewrite bind_fail_l. reflexivity.
+Defined.
+
+Instance MonadNondet_WriterT
+  (W : Monoid) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadNondet M inst)
+  : MonadNondet (WriterT W M) (Monad_WriterT W M) :=
+{
+    instF := @MonadFail_WriterT W M inst (@instF _ _ inst');
+    instA := @MonadAlt_WriterT W M inst (@instA _ _ inst');
+}.
+Proof.
+  intros. destruct inst'. apply choose_fail_l.
+  intros. destruct inst'. apply choose_fail_r.
+Defined.
+
+Instance MonadReader_WriterT
+  (W : Monoid) (E : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadReader E M inst)
+  : MonadReader E (WriterT W M) (Monad_WriterT W M) :=
+{
+    ask := ask >>= fun e => pure (e, neutr)
+}.
+Proof.
+  unfold constrA, const, id, compose.
+  rewrite bind_ap, bind_fmap. unfold compose.
+  rewrite <- bind_assoc. cbn. unfold bind_WriterT, pure_WriterT.
+  rewrite !bind_assoc.
+  replace
+    (fun x : E =>
+ @pure M inst (E * W) (x, @neutr W) >>=
+ (fun x0 : E * W =>
+  (let
+   '(_, w) := x0 in
+    (@ask E M inst inst' >>=
+     (fun e : E => @pure M inst (E * W) (e, @neutr W))) >>=
+    (fun '(b, w') => @pure M inst (E * W) (b, @op W w w'))) >>=
+  (fun '(a, w) =>
+   @pure M inst (E * W) (a, @neutr W) >>=
+   (fun '(b, w') => @pure M inst (E * W) (b, @op W w w')))))
+  with
+    (fun e : E =>
+      ((ask >>= (fun e0 : E => pure (e0, neutr))) >>=
+ (fun '(b, w') => pure (b, op neutr w'))) >>=
+(fun '(a, w) => pure (a, neutr) >>= (fun '(b, w') => pure (b, op w w')))
+    ).
+  2: {
+    ext e. rewrite bind_pure_l. reflexivity.
+  }
+  rewrite <- constrA_spec.
+  rewrite !bind_assoc, constrA_bind_assoc, ask_ask.
+  f_equal.
+  ext e. monad.
+Defined.
+
+Instance MonadState_WriterT
+  (W : Monoid) (S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadState S M inst)
+  : MonadState S (WriterT W M) (Monad_WriterT W M) :=
+{
+    get := get >>= fun s => pure (s, neutr);
+    put := fun s => put s >> pure (tt, neutr);
+}.
+Proof.
+  intros. cbn. unfold ap_WriterT, fmap_WriterT.
+    rewrite bind_fmap. unfold compose, const, id.
+    rewrite <- constrA_bind_assoc. rewrite bind_pure_l. monad.
+    rewrite <- !constrA_spec, <- constrA_assoc, put_put.
+    reflexivity.
+  intro. cbn. unfold ap_WriterT, fmap_WriterT, pure_WriterT, const, id.
+    rewrite !bind_fmap. unfold compose.
+    rewrite <- !constrA_bind_assoc, !bind_pure_l.
+    rewrite 2!constrA_bind_assoc. rewrite put_get.
+    rewrite <- 2!constrA_bind_assoc. rewrite !bind_pure_l.
+    reflexivity.
+  cbn. unfold bind_WriterT, pure_WriterT.
+    rewrite bind_assoc.
+    replace
+
+      (fun x : S =>
+ @pure M inst (S * W) (x, @neutr W) >>=
+ (fun '(a, w) =>
+  (@put S M inst inst' a >> @pure M inst (unit * W) (tt, @neutr W)) >>=
+  (fun '(b, w') => @pure M inst (unit * W) (b, @op W w w'))))
+
+    with
+
+      (fun s : S =>
+        put s >> @pure M inst _ (tt, neutr))
+
+    by monad.
+
+    rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
+  intros. cbn. unfold bind_WriterT.
+    rewrite bind_assoc.
+Admitted. (* TODO *)
+
+(*
+Instance MonadFree_WriterT
+  (W : Monoid) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadFree S M inst)
+  : MonadFree S (WriterT W M) (Monad_WriterT W M) :=
+{
+    get := fun k => get >>= k;
+    put := fun s k => put s >> k tt;
+}.
+Proof.
+  intros. ext k. cbn. unfold fmap_WriterT, const, id.
+    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
+  Focus 3.
+  intros A f. ext k. cbn. unfold bind_WriterT, pure_WriterT.
+    rewrite get_get. reflexivity.
+Abort.
+*)

@@ -130,3 +130,61 @@ Proof.
   1-3: monad.
   intros. ext r. ext s. cbn. monad.
 Defined.
+
+Require Import Control.Monad.Class.All.
+
+Instance MonadAlt_RWST
+  (W : Monoid) (R S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (RWST W R S M) (Monad_RWST W R S M inst) :=
+{
+    choose :=
+      fun A x y => fun r s => choose (x r s) (y r s )
+}.
+Proof.
+  intros. ext r. ext s. rewrite choose_assoc. reflexivity.
+  intros. ext r. ext s. cbn. unfold bind_RWST. apply choose_bind_l.
+Defined.
+
+Instance MonadFail_RWST
+  (W : Monoid) (R S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadFail M inst)
+  : MonadFail (RWST W R S M) (Monad_RWST W R S M inst) :=
+{
+    fail := fun A _ _ => @fail M inst inst' (A * S * W)
+}.
+Proof.
+  intros. ext r. ext s. cbn. unfold bind_RWST.
+  rewrite bind_fail_l. reflexivity.
+Defined.
+
+Instance MonadNondet_RWST
+  (W : Monoid) (R S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadNondet M inst)
+  : MonadNondet (RWST W R S M) (Monad_RWST W R S M inst) :=
+{
+    instF := @MonadFail_RWST W R S M inst (@instF _ _ inst');
+    instA := @MonadAlt_RWST W R S M inst (@instA _ _ inst');
+}.
+Proof.
+  intros. cbn. ext r. ext s. rewrite choose_fail_l. reflexivity.
+  intros. cbn. ext r. ext s. rewrite choose_fail_r. reflexivity.
+Defined.
+
+(*
+Instance MonadFree_RWST
+  (R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadFree S M inst)
+  : MonadFree S (RWST R M) (Monad_RWST R M) :=
+{
+    get := fun k => get >>= k;
+    put := fun s k => put s >> k tt;
+}.
+Proof.
+  intros. ext k. cbn. unfold fmap_RWST, const, id.
+    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
+  Focus 3.
+  intros A f. ext k. cbn. unfold bind_RWST, pure_RWST.
+    rewrite get_get. reflexivity.
+Abort.
+*)
