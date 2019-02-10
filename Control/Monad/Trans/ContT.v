@@ -83,6 +83,7 @@ Instance MonadFail_ContT
     fail := fun A k => fail >>= k
 }.
 Proof.
+(*  Hint Unfold fail : HSLib.*)
   intros. cbn. monad. rewrite !bind_fail_l. reflexivity.
 Defined.
 
@@ -106,8 +107,9 @@ Instance MonadReader_ContT
     ask := fun k => ask >>= k
 }.
 Proof.
-  ext k. cbn. unfold fmap_ContT. unfold const, id.
-Abort.
+  rewrite constrA_spec. cbn. unfold bind_ContT. ext e.
+  rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
+Defined.
 
 Instance MonadState_ContT
   (S R : Type) (M : Type -> Type)
@@ -118,15 +120,21 @@ Instance MonadState_ContT
     put := fun s k => put s >> k tt;
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_ContT, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_ContT, pure_ContT.
-    rewrite get_get. reflexivity.
-Abort.
+  all: intros.
+    rewrite constrA_spec. cbn. unfold bind_ContT. ext u.
+      rewrite <- constrA_assoc, put_put. reflexivity.
+    rewrite constrA_spec. cbn.
+      unfold bind_ContT, pure_ContT, ap_ContT, fmap_ContT, const, id, compose.
+      ext k. rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc.
+      rewrite bind_pure_l. reflexivity.
+    cbn. unfold bind_ContT, pure_ContT.
+      ext k. rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
+    cbn. unfold bind_ContT.
+      ext k'. rewrite get_get. reflexivity.
+Defined.
 
 (*
-Instance MonadFree_ContT
+TODO Instance MonadFree_ContT
   (R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadFree S M inst)
   : MonadFree S (ContT R M) (Monad_ContT R M) :=
@@ -140,5 +148,4 @@ Proof.
   Focus 3.
   intros A f. ext k. cbn. unfold bind_ContT, pure_ContT.
     rewrite get_get. reflexivity.
-Abort.
 *)

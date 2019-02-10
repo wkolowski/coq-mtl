@@ -268,12 +268,19 @@ Instance MonadReader_StateT
     ask := fun s => ask >>= fun e => pure (e, s);
 }.
 Proof.
-  ext s. Print MonadReader. cbn. unfold ap_StateT, fmap_StateT. rewrite !bind_assoc.
-    
-Abort.
+  rewrite constrA_spec. cbn. unfold bind_StateT.
+  ext s. rewrite bind_assoc.
+  replace
+    (fun x : E => pure (x, s) >>=
+      (fun '(_, s') => ask >>= (fun e : E => pure (e, s'))))
+  with
+    (fun _ : E => ask >>= fun e : E => pure (e, s)).
+    rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
+    ext e. rewrite bind_pure_l. reflexivity.
+Defined.
 
 (*
-Instance MonadFree_StateT
+TODO Instance MonadFree_StateT
   (R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadFree S M inst)
   : MonadFree S (StateT R M) (Monad_StateT R M) :=
@@ -287,5 +294,4 @@ Proof.
   Focus 3.
   intros A f. ext k. cbn. unfold bind_StateT, pure_StateT.
     rewrite get_get. reflexivity.
-Abort.
 *)

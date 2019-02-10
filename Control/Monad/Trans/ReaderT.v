@@ -181,7 +181,8 @@ Proof. Print MonadState.
 Defined.
 
 (*
-Instance MonadFree_ReaderT
+
+TODO Instance MonadFree_ReaderT
   (R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadFree S M inst)
   : MonadFree S (ReaderT R M) (Monad_ReaderT R M) :=
@@ -195,5 +196,4 @@ Proof.
   Focus 3.
   intros A f. ext k. cbn. unfold bind_ReaderT, pure_ReaderT.
     rewrite get_get. reflexivity.
-Abort.
 *)

@@ -242,7 +242,8 @@ Proof.
 Admitted. (* TODO *)
 
 (*
-Instance MonadFree_WriterT
+
+TODO Instance MonadFree_WriterT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadFree S M inst)
   : MonadFree S (WriterT W M) (Monad_WriterT W M) :=
@@ -256,5 +257,4 @@ Proof.
   Focus 3.
   intros A f. ext k. cbn. unfold bind_WriterT, pure_WriterT.
     rewrite get_get. reflexivity.
-Abort.
 *)

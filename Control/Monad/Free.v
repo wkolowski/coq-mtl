@@ -71,13 +71,8 @@ Lemma Free_not_MonadTrans :
 Proof.
   destruct 1.
   unfold Free in *.
-  assert (wut :
-    forall
-      (M : Type -> Type) (_inst : Monad M) (A : Type) (x : A)
-      (X : Type) (f : A -> X) (wrap : M X -> X),
-        lift M _inst A (pure x) X f wrap = (@pure (Free M) _ _) x X f wrap).
-    intros. rewrite lift_pure. reflexivity.
-  unfold pure in wut. fold (@pure _ _) in wut.
+  clear -lift_pure.
+  
 Abort.
 
 Instance MonadTrans_Free : MonadTrans Free :=
@@ -85,15 +80,17 @@ Instance MonadTrans_Free : MonadTrans Free :=
     is_monad := fun F _ => @Monad_Free F;
     lift := @lift_Free;
 }.
-Proof. monad.
+Proof.
+  intros. unfold lift_Free.
+    ext X. ext pure. ext wrap. cbn. unfold pure_Free.
   intros.
   cbn. monad. unfold lift_Free, pure_Free.
 
- Focus 2. monad. unfold compose.
- rewrite <- !fmap_bind. rewrite <- fmap_bind_pure.
-  f_equal.
-  rewrite fmap_bind.
-  unfold compose. f_equal.
+ Focus 2. intros. unfold lift_Free.
+  ext X. ext pure. ext wrap. cbn. unfold bind_Free, compose.
+  f_equal. rewrite !fmap_bind. Search fmap bind.
+  rewrite fmap_bind_pure. f_equal. ext a.
+  rewrite <- fmap_pure. rewrite fmap_pure.
 Abort.
 
 Require Import Control.Monad.Class.MonadFree.

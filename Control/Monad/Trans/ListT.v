@@ -145,7 +145,9 @@ Instance MonadReader_ListT
 }.
 Proof.
   ext X. ext nil. ext cons. cbn. unfold fmap_ListT, const, id.
-Abort.
+  rewrite <- constrA_spec, constrA_bind_assoc, ask_ask.
+  reflexivity.
+Defined.
 
 Instance MonadState_ListT
   (S : Type) (M : Type -> Type)
@@ -156,27 +158,25 @@ Instance MonadState_ListT
     put := fun s X nil cons => put s >> cons tt nil;
 }.
 Proof.
-  intros. ext X. ext nil. ext cons. cbn.
+  all: intros; ext X; ext nil; ext cons; cbn.
     unfold fmap_ListT, const, id.
-    rewrite <- constrA_assoc, put_put. reflexivity.
-  intros. ext X. ext nil. ext cons. cbn.
+      rewrite <- constrA_assoc, put_put. reflexivity.
     unfold fmap_ListT, pure_ListT.
-    rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
-    reflexivity.
-  intros. ext X. ext nil. ext cons. cbn.
+      rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
+      reflexivity.
     unfold bind_ListT, pure_ListT.
-    replace (fun s : S => put s >> cons tt nil)
-       with (fun s : S => put s >>= fun _ => cons tt nil).
-      rewrite <- (bind_assoc _ _ _ get put). rewrite get_put, bind_pure_l.
+      replace (fun s : S => put s >> cons tt nil)
+         with (fun s : S => put s >>= fun _ => cons tt nil).
+        rewrite <- (bind_assoc _ _ _ get put), get_put, bind_pure_l.
         reflexivity.
       ext s. rewrite constrA_spec. reflexivity.
-  intros. ext X. ext nil. ext cons. cbn.
     unfold bind_ListT, pure_ListT.
-    rewrite get_get. reflexivity.
+      rewrite get_get. reflexivity.
 Defined.
 
 (*
-Instance MonadFree_ListT
+
+TODO Instance MonadFree_ListT
   (R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadFree S M inst)
   : MonadFree S (ListT M) (Monad_ListT M) :=
@@ -190,5 +190,4 @@ Proof.
   Focus 3.
   intros A f. ext k. cbn. unfold bind_ListT, pure_ListT.
     rewrite get_get. reflexivity.
-Abort.
 *)

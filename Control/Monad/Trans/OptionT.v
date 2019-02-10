@@ -130,6 +130,15 @@ Defined.
 
 Require Import Control.Monad.Class.All.
 
+Goal
+  forall
+    (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
+    (A B : Type) (x : M A) (f g : A -> M B),
+      choose (x >>= f) (x >>= g) =
+      x >>= fun a : A => choose (f a) (g a).
+Proof.
+Abort.
+
 Instance MonadAlt_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (OptionT M) (Monad_OptionT M inst) :=
@@ -149,7 +158,14 @@ Proof.
   intros.
     rewrite !bind_assoc. f_equal. ext ox.
     rewrite !bind_assoc. f_equal. ext oy.
-    rewrite !bind_assoc. cbn. destruct ox, oy; cbn.
+    destruct ox, oy; cbn.
+      Focus 4. rewrite bind_pure_l. rewrite bind_assoc. f_equal.
+        ext y. destruct y; rewrite bind_pure_l; reflexivity.
+      Focus 3. rewrite bind_pure_l, bind_assoc. f_equal.
+        ext y. destruct y; monad.
+      Focus 2. rewrite bind_pure_l, bind_assoc. f_equal.
+        ext y. destruct y; monad.
+      monad. rewrite choose_bind_l. rewrite 2!bind_pure_l.
 Abort.
 
 (*
@@ -171,16 +187,23 @@ Instance MonadReader_OptionT
   (inst : Monad M) (inst' : MonadReader E M inst)
   : MonadReader E (OptionT M) (Monad_OptionT M inst) :=
 {
-    ask := fmap Some ask
+    ask := ask >>= fun e => pure (Some e)
 }.
 Proof.
-  unfold constrA, const, id, compose. cbn.
-  unfold ap_OptionT, fmap_OptionT, fmap_Option.
-    do 2 (rewrite bind_fmap; unfold compose). monad.
-    Print Monad.
-Abort.
-
-Require Export Setoid.
+  rewrite constrA_spec. cbn. unfold bind_OptionT.
+  rewrite bind_assoc.
+  replace
+    (fun x : E => pure (Some x) >>=
+      fun oa : option E =>
+      match oa with
+          | Some _ => ask >>= (fun e : E => pure (Some e))
+          | None => pure None
+      end)
+  with
+    (fun _ : E => ask >>= fun e : E => pure (Some e)).
+    rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
+    ext e. rewrite bind_pure_l. reflexivity.
+Defined.
 
 Instance MonadState_OptionT
   (S : Type) (M : Type -> Type)
@@ -215,7 +238,8 @@ Defined.
 
 
 (*
-Instance MonadFree_OptionT
+
+TODO Instance MonadFree_OptionT
   (R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadFree S M inst)
   : MonadFree S (OptionT M) (Monad_OptionT M) :=
@@ -229,5 +253,4 @@ Proof.
   Focus 3.
   intros A f. ext k. cbn. unfold bind_OptionT, pure_OptionT.
     rewrite get_get. reflexivity.
-Abort.
 *)

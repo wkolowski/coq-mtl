@@ -23,6 +23,15 @@ Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 
 Hint Rewrite @put_put @put_get @get_put @get_get : HSLib.
 
+Polymorphic Lemma bind_constrA_assoc :
+  forall
+    (M : Type -> Type) (inst : Monad M) 
+    (A B C : Type) (x : M A) (f : A -> M B) (y : M C),
+       x >>= f >> y = x >>= (fun a : A => f a >> y).
+Proof.
+  intros. monad.
+Qed.
+
 Section MonadState_funs.
 
 Variables
@@ -64,14 +73,19 @@ Lemma modify_put :
   forall (f : S -> S) (s : S),
     modify f >> put s = put s.
 Proof.
-  intros. assert (H := put_put). assert (H' := get_put).
-  unfold modify in *. rewrite constrA_spec in *.
-  rewrite bind_assoc.
-  replace (fun x : S => put (f x) >>= (fun _ : unit => put s))
-     with (fun x : S => put (f x) >> put s).
-    Focus 2. ext x. rewrite put_put.
-Restart.
-  unfold modify. intros.
+  intros. unfold modify.
+(*  rewrite (bind_constrA_assoc M instM S unit unit
+    (@get S M instM instMS)
+    (fun s0 : S => @put S M instM instMS (f s0))
+    (@put S M instM instMS s)).
+*)
+  replace
+    (get >>= (fun s0 : S => put (f s0)) >> put s)
+  with
+    (get >>= (fun s : S => put (f s) >> put s)).
+  Check get_put.
+  assert (fmap f get >>= put = pure tt).
+    rewrite bind_fmap.
 Abort.
 
 End MonadState_funs.
@@ -85,20 +99,19 @@ Variables
   (instMF : MonadState S M instM).
 
 Instance MonadState_MonadTrans
-  : MonadState S (T M) (is_monad M instM).
+  : MonadState S (T M) (is_monad M instM) :=
+{
+    get := lift get;
+    put := put .> lift;
+}.
 Proof.
-  esplit. Unshelve.
-    Focus 5. exact (lift get).
-    Focus 5. intro s. exact (lift (put s)).
-    intros. cbn. rewrite lift_constrA, put_put. reflexivity.
-    intros. cbn. rewrite lift_constrA, put_get, <- lift_constrA, lift_pure.
-      reflexivity.
-    rewrite <- lift_pure, <- get_put, lift_bind.
-      unfold compose. reflexivity.
-    intros.
-    assert (
-      forall c : S -> S -> M A,
-        lift (get >>= (fun s : S => c s s)) =
-        lift (get >>= (fun s : S => c s s))).
-      intros. rewrite lift_bind. unfold compose.
+  intros. unfold compose. rewrite lift_constrA, put_put. reflexivity.
+  intros. unfold compose.
+    rewrite lift_constrA, put_get, <- lift_constrA, lift_pure. reflexivity.
+  rewrite <- lift_pure, <- get_put, lift_bind. reflexivity.
+  intros.
+    Check bind_assoc.
+    Check get_get.
+  Print MonadTrans.
+  Compute lift_bind _ _ get (fun s => get >>= k s).
 Abort.
