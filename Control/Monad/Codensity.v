@@ -72,7 +72,8 @@ Proof.
   specialize (H list).
   destruct H. cbn in *. compute in *.
   specialize (ap_comm bool bool bool (fun a b => andb a b)). cbn in *.
-  specialize (ap_comm (fun R f => f false ++ f true) (fun _ f => f true ++ f false)).
+  specialize (ap_comm (fun R f => f false ++ f true)
+                      (fun _ f => f true ++ f false)).
   cbn in *.
   apply (f_equal (fun f => f bool)) in ap_comm.
   apply (f_equal (fun f => f (fun b => [b]))) in ap_comm.

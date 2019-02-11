@@ -161,6 +161,22 @@ Proof.
   intros. cbn. ext r. rewrite choose_fail_r. reflexivity.
 Defined.
 
+Instance MonadExcept_ReaderT
+  (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (ReaderT E M) (Monad_ReaderT E M inst) :=
+{
+    instF := @MonadFail_ReaderT E M inst inst';
+    catch :=
+      fun A x y => fun e => catch (x e) (y e);
+}.
+Proof.
+  all: cbn; intros; ext e.
+    apply catch_fail_l.
+    apply catch_fail_r.
+    apply catch_assoc.
+    unfold pure_ReaderT. apply catch_pure.
+Defined.
+
 Instance MonadState_ReaderT
   (S R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)

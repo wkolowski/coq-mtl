@@ -107,6 +107,23 @@ Proof.
   intros. cbn. ext X. ext e. ext n. rewrite choose_fail_r. reflexivity.
 Defined.
 
+Instance MonadExcept_RoseTreeT
+  (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (RoseTreeT M) (Monad_RoseTreeT M) :=
+{
+    instF := @MonadFail_RoseTreeT M inst inst';
+    catch :=
+      fun A x y =>
+        fun X empty node => catch (x X empty node) (y X empty node)
+}.
+Proof.
+  all: cbn; intros; ext X; ext empty; ext node.
+    apply catch_fail_l.
+    apply catch_fail_r.
+    apply catch_assoc.
+    unfold pure_RoseTreeT.
+Abort.
+
 Instance MonadReader_RoseTreeT
   (E : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)

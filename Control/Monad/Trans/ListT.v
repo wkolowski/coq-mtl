@@ -135,6 +135,19 @@ Instance MonadNondet_ListT
 }.
 Proof. all: reflexivity. Defined.
 
+Instance MonadExcept_ListT
+  (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (ListT M) (Monad_ListT M inst) :=
+{
+    instF := @MonadFail_ListT M inst;
+    catch :=
+      fun A x y =>
+        fun X nil cons => catch (x X nil cons) (y X nil cons)
+}.
+Proof.
+  all: intros; ext X; ext nil; ext cons; cbn.
+Abort.
+
 Instance MonadReader_ListT
   (E : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)

@@ -171,6 +171,23 @@ Proof.
   intros. cbn. ext r. ext s. rewrite choose_fail_r. reflexivity.
 Defined.
 
+Instance MonadExcept_RWST
+  (W : Monoid) (R S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (RWST W R S M) (Monad_RWST W R S M inst) :=
+{
+    instF := @MonadFail_RWST W R S M inst inst';
+    catch :=
+      fun A x y => fun r s => catch (x r s) (y r s);
+}.
+Proof.
+  all: cbn; intros; ext r; ext s.
+    apply catch_fail_l.
+    apply catch_fail_r.
+    apply catch_assoc.
+    unfold pure_RWST. apply catch_pure.
+Defined.
+
 (*
 Instance MonadFree_RWST
   (R : Type) (M : Type -> Type)

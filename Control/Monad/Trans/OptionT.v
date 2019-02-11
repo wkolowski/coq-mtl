@@ -117,7 +117,7 @@ Definition fail_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type}
     : OptionT M A := pure None.
 
-Instance MonadFail_Option
+Instance MonadFail_OptionT
   (M : Type -> Type) (inst : Monad M)
   : MonadFail (OptionT M) (Monad_OptionT M inst) :=
 {
@@ -181,6 +181,30 @@ Proof.
   intros. cbn. ext k. rewrite bind_fail_l, choose_fail_r. reflexivity.
 Defined.
 *)
+
+Instance MonadExcept_OptionT
+  (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (OptionT M) (Monad_OptionT M inst) :=
+{
+    instF := @MonadFail_OptionT M inst;
+    catch :=
+      fun A x y =>
+        @bind M inst _ _ x (fun x' : option A =>
+        match x' with
+            | None => y
+            | Some a => pure (Some a)
+        end)
+}.
+Proof.
+  all: intros; cbn.
+    unfold fail_OptionT. rewrite bind_pure_l. reflexivity.
+    rewrite <- (@bind_pure_r M inst). f_equal.
+      ext oa. destruct oa; reflexivity.
+    rewrite bind_assoc. f_equal. ext oa. destruct oa; cbn.
+      rewrite bind_pure_l. reflexivity.
+      reflexivity.
+    unfold pure_OptionT. rewrite bind_pure_l. reflexivity.
+Defined.
 
 Instance MonadReader_OptionT
   (E R : Type) (M : Type -> Type)

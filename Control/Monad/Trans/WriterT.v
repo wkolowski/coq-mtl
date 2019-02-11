@@ -160,6 +160,23 @@ Proof.
   intros. destruct inst'. apply choose_fail_r.
 Defined.
 
+Instance MonadExcept_WriterT
+  (W : Monoid) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (WriterT W M) (Monad_WriterT W M) :=
+{
+    instF := @MonadFail_WriterT W M inst inst';
+    catch := fun A x y => @catch M inst _ _ x y;
+}.
+Proof.
+  all: cbn; intros.
+    apply (@catch_fail_l _ _ _ (A * W)).
+    apply (@catch_fail_r _ _ _ (A * W)).
+    apply (@catch_assoc _ _ _ (A * W)).
+    unfold pure_WriterT.
+      apply (@catch_pure _ _ _ (A * W)).
+Defined.
+
 Instance MonadReader_WriterT
   (W : Monoid) (E : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)

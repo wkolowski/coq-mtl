@@ -144,3 +144,25 @@ Instance MonadFail_SumT
     fail := @fail_SumT E M inst e
 }.
 Proof. intros. unfold fail_SumT. monad. Defined.
+
+Instance MonadExcept_SumT
+  (E : Type) (e : E) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (SumT E M) (Monad_SumT E M inst) :=
+{
+    instF := @MonadFail_SumT E M inst e;
+    catch :=
+      fun A x y =>
+      @bind M inst _ _ x (fun ea =>
+      match ea with
+          | inl e => y (*pure (inl e)*)
+          | inr _ => x
+      end)
+}.
+Proof.
+  all: cbn; intros.
+    unfold fail_SumT. rewrite bind_pure_l. reflexivity.
+    rewrite <- (@bind_pure_r M inst _ x) at 2.
+      f_equal. ext ea.
+    Focus 2. rewrite bind_assoc.
+Abort.

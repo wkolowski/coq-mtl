@@ -1,8 +1,8 @@
 Require Import HSLib.Base.
 Require Import Control.Monad.
 
-Require Import Control.Monad.Class.MonadFail.
-Require Import Control.Monad.Class.MonadAlt.
+Require Export Control.Monad.Class.MonadFail.
+Require Export Control.Monad.Class.MonadAlt.
 
 Class MonadNondet (M : Type -> Type) (inst : Monad M) : Type :=
 {
@@ -15,3 +15,6 @@ Class MonadNondet (M : Type -> Type) (inst : Monad M) : Type :=
       forall (A : Type) (x : M A),
         choose x fail = x;
 }.
+
+Coercion instF : MonadNondet >-> MonadFail.
+Coercion instA : MonadNondet >-> MonadAlt.

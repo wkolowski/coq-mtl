@@ -99,6 +99,21 @@ Proof.
   intros. cbn. ext k. rewrite bind_fail_l, choose_fail_r. reflexivity.
 Defined.
 
+(* TODO *) Instance MonadExcept_ContT
+  (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (ContT R M) (Monad_ContT R M) :=
+{
+    instF := @MonadFail_ContT R M inst inst';
+    catch := fun A x y k => catch (x k) (y k);
+}.
+Proof.
+  all: intros; ext k; cbn.
+    rewrite bind_fail_l, catch_fail_l. reflexivity.
+    rewrite bind_fail_l, catch_fail_r. reflexivity.
+    rewrite catch_assoc. reflexivity.
+    unfold pure_ContT. Print MonadExcept.
+Abort.
+
 Instance MonadReader_ContT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
