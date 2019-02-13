@@ -196,6 +196,21 @@ Proof. Print MonadState.
   intros. ext r. cbn. unfold bind_ReaderT. rewrite get_get. reflexivity.
 Defined.
 
+Instance MonadStateNondet_ReaderT
+  (E S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadStateNondet S M inst)
+  : MonadStateNondet S (ReaderT E M) (Monad_ReaderT E M inst) :=
+{
+    instS := MonadState_ReaderT S E M inst inst';
+    instN := MonadNondet_ReaderT E M inst inst';
+}.
+Proof.
+  intros. rewrite constrA_spec. cbn. unfold bind_ReaderT.
+    ext e. rewrite <- constrA_spec. rewrite seq_fail_r. reflexivity.
+  intros. cbn. unfold bind_ReaderT.
+    ext e. rewrite bind_choose_distr. reflexivity.
+Defined.
+
 (*
 
 TODO Instance MonadFree_ReaderT

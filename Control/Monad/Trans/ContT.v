@@ -80,11 +80,11 @@ Instance MonadFail_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (ContT R M) (Monad_ContT R M) :=
 {
-    fail := fun A k => fail >>= k
+    fail := fun A k => fail
 }.
 Proof.
 (*  Hint Unfold fail : HSLib.*)
-  intros. cbn. monad. rewrite !bind_fail_l. reflexivity.
+  intros. cbn. monad. (* rewrite !bind_fail_l. reflexivity.*)
 Defined.
 
 Instance MonadNondet_ContT
@@ -95,8 +95,8 @@ Instance MonadNondet_ContT
     instA := @MonadAlt_ContT R M inst (@instA _ _ inst');
 }.
 Proof.
-  intros. cbn. ext k. rewrite bind_fail_l, choose_fail_l. reflexivity.
-  intros. cbn. ext k. rewrite bind_fail_l, choose_fail_r. reflexivity.
+  intros. cbn. ext k. rewrite (*bind_fail_l,*) choose_fail_l. reflexivity.
+  intros. cbn. ext k. rewrite (*bind_fail_l,*) choose_fail_r. reflexivity.
 Defined.
 
 (* TODO *) Instance MonadExcept_ContT
@@ -108,8 +108,8 @@ Defined.
 }.
 Proof.
   all: intros; ext k; cbn.
-    rewrite bind_fail_l, catch_fail_l. reflexivity.
-    rewrite bind_fail_l, catch_fail_r. reflexivity.
+    rewrite (*bind_fail_l,*) catch_fail_l. reflexivity.
+    rewrite (*bind_fail_l,*) catch_fail_r. reflexivity.
     rewrite catch_assoc. reflexivity.
     unfold pure_ContT. Print MonadExcept.
 Abort.
@@ -147,6 +147,20 @@ Proof.
     cbn. unfold bind_ContT.
       ext k'. rewrite get_get. reflexivity.
 Defined.
+
+Instance MonadStateNondet_ContT
+  (S R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadStateNondet S M inst)
+  : MonadStateNondet S (ContT R M) (Monad_ContT R M) :=
+{
+    instS := MonadState_ContT S R M inst inst';
+    instN := MonadNondet_ContT R M inst inst';
+}.
+Proof.
+  intros. rewrite constrA_spec. Print MonadStateNondet.
+  cbn. unfold bind_ContT.
+  Focus 2. intros. cbn. unfold bind_ContT. ext k. 
+Abort.
 
 (*
 TODO Instance MonadFree_ContT

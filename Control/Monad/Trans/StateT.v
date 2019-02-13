@@ -212,7 +212,7 @@ Proof. all: monad. Defined.
 
 Require Import Control.Monad.Class.All.
 
-Instance MonadState_State
+Instance MonadState_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (StateT S M) (Monad_StateT S M inst) :=
 {
@@ -295,6 +295,21 @@ Proof.
     rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
     ext e. rewrite bind_pure_l. reflexivity.
 Defined.
+
+Instance MonadStateNondet_StateT
+  (S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadNondet M inst)
+  : MonadStateNondet S (StateT S M) (Monad_StateT S M inst) :=
+{
+    instS := MonadState_StateT S M inst;
+    instN := MonadNondet_StateT S M inst inst';
+}.
+Proof.
+  intros. rewrite constrA_spec. cbn. unfold bind_StateT.
+    ext s.
+  Focus 2. intros. cbn. unfold bind_StateT.
+    ext s.
+Abort.
 
 (*
 TODO Instance MonadFree_StateT

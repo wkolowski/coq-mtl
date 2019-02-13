@@ -87,7 +87,7 @@ Definition bind_WriterT
 Hint Unfold bind_WriterT : HSLib.
 
 Instance Monad_WriterT
-  (W : Monoid) (M : Type -> Type) {inst : Monad M} : Monad (WriterT W M) :=
+  (W : Monoid) (M : Type -> Type) (inst : Monad M) : Monad (WriterT W M) :=
 {
     is_applicative := @Applicative_WriterT W M inst;
     bind := @bind_WriterT W M inst;
@@ -128,7 +128,7 @@ Require Import Control.Monad.Class.All.
 
 Instance MonadAlt_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
-  : MonadAlt (WriterT W M) (Monad_WriterT W M) :=
+  : MonadAlt (WriterT W M) (Monad_WriterT W M inst) :=
 {
     choose := fun A x y => @choose M inst inst' (A * W) x y
 }.
@@ -139,7 +139,7 @@ Defined.
 
 Instance MonadFail_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
-  : MonadFail (WriterT W M) (Monad_WriterT W M) :=
+  : MonadFail (WriterT W M) (Monad_WriterT W M inst) :=
 {
     fail := fun A => @fail M inst inst' (A * W)
 }.
@@ -150,7 +150,7 @@ Defined.
 Instance MonadNondet_WriterT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadNondet M inst)
-  : MonadNondet (WriterT W M) (Monad_WriterT W M) :=
+  : MonadNondet (WriterT W M) (Monad_WriterT W M inst) :=
 {
     instF := @MonadFail_WriterT W M inst (@instF _ _ inst');
     instA := @MonadAlt_WriterT W M inst (@instA _ _ inst');
@@ -163,7 +163,7 @@ Defined.
 Instance MonadExcept_WriterT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
-  : MonadExcept (WriterT W M) (Monad_WriterT W M) :=
+  : MonadExcept (WriterT W M) (Monad_WriterT W M inst) :=
 {
     instF := @MonadFail_WriterT W M inst inst';
     catch := fun A x y => @catch M inst _ _ x y;
@@ -180,7 +180,7 @@ Defined.
 Instance MonadReader_WriterT
   (W : Monoid) (E : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
-  : MonadReader E (WriterT W M) (Monad_WriterT W M) :=
+  : MonadReader E (WriterT W M) (Monad_WriterT W M inst) :=
 {
     ask := ask >>= fun e => pure (e, neutr)
 }.
@@ -219,7 +219,7 @@ Defined.
 Instance MonadState_WriterT
   (W : Monoid) (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
-  : MonadState S (WriterT W M) (Monad_WriterT W M) :=
+  : MonadState S (WriterT W M) (Monad_WriterT W M inst) :=
 {
     get := get >>= fun s => pure (s, neutr);
     put := fun s => put s >> pure (tt, neutr);
@@ -257,6 +257,30 @@ Proof.
   intros. cbn. unfold bind_WriterT.
     rewrite bind_assoc.
 Admitted. (* TODO *)
+
+Instance MonadStateNondet_WriterT
+  (W : Monoid) (S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadStateNondet S M inst)
+  : MonadStateNondet S (WriterT W M) (Monad_WriterT W M inst) :=
+{
+    instS := MonadState_WriterT W S M inst inst';
+    instN := MonadNondet_WriterT W M inst inst';
+}.
+Proof.
+  intros. rewrite constrA_spec. cbn.
+    unfold bind_WriterT.
+    replace
+      (fun '(_, w) =>
+        @fail M inst inst' (B * W) >>=
+        (fun '(b, w') => @pure M inst (B * W) (b, @op W w w'))
+      )
+    with (fun _ : A * W => @fail M inst inst' (B * W)).
+      rewrite <- constrA_spec. rewrite seq_fail_r. reflexivity.
+      ext aw. destruct aw as [a w]. rewrite bind_fail_l. reflexivity.
+  intros. cbn. unfold bind_WriterT.
+    rewrite <- bind_choose_distr. f_equal.
+    ext aw. destruct aw as [a w]. apply choose_bind_l.
+Defined.
 
 (*
 

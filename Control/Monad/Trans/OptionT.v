@@ -171,7 +171,7 @@ Abort.
 (*
 Instance MonadNondet_OptionT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
-  : MonadNondet (OptionT M) (Monad_OptionT M) :=
+  : MonadNondet (OptionT M) (Monad_OptionT M inst) :=
 {
     instF := @MonadFail_OptionT M inst (@instF _ _ inst');
     instA := @MonadAlt_OptionT M inst (@instA _ _ inst');
@@ -260,6 +260,21 @@ Proof.
     reflexivity.
 Defined.
 
+(*
+Instance MonadStateNondet_OptionT
+  (S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadState S M inst)
+  : MonadStateNondet S (OptionT M) (Monad_OptionT M inst) :=
+{
+    instS := MonadState_OptionT S M inst inst';
+    instN := MonadNondet_OptionT M inst inst';
+}.
+Proof.
+  intros. rewrite constrA_spec. cbn. compute.
+    ext X. ext nil. ext cons. admit.
+  intros. cbn. compute. ext X. ext nil. ext cons.
+Abort.
+*)
 
 (*
 

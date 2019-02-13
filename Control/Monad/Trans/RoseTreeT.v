@@ -157,6 +157,19 @@ Proof.
     rewrite bind_constrA_comm, get_put, constrA_pure_l.
 Admitted.
 
+Instance MonadStateNondet_RoseTreeT
+  (S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadStateNondet S M inst)
+  : MonadStateNondet S (RoseTreeT M) (Monad_RoseTreeT M) :=
+{
+    instS := MonadState_RoseTreeT S M inst inst';
+    instN := MonadNondet_RoseTreeT M inst inst';
+}.
+Proof.
+  intros. rewrite constrA_spec. cbn.
+    unfold bind_RoseTreeT. ext X. ext empty. ext node.
+Abort.
+
 
 (*
 Instance MonadFree_RoseTreeT

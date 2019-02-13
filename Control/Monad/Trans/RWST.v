@@ -119,7 +119,7 @@ Instance MonadReader_RWST
 }.
 Proof. monad. Defined.
 
-Instance MonadState_RWS
+Instance MonadState_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (RWST W R S M) (Monad_RWST W R S M inst) :=
 {
@@ -186,6 +186,26 @@ Proof.
     apply catch_fail_r.
     apply catch_assoc.
     unfold pure_RWST. apply catch_pure.
+Defined.
+
+Instance MonadStateNondet_RWST
+  (W : Monoid) (R S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadStateNondet S M inst)
+  : MonadStateNondet S (RWST W R S M) (Monad_RWST W R S M inst) :=
+{
+    instS := MonadState_RWST W R S M inst;
+    instN := MonadNondet_RWST W R S M inst inst';
+}.
+Proof.
+  intros. rewrite constrA_spec. cbn.
+    unfold bind_RWST. ext r. ext s.
+    replace (fun _ => _)
+       with (fun _ : A * S * W => @fail M inst inst' (B * S * W)).
+      rewrite <- constrA_spec. apply seq_fail_r.
+      ext asw. destruct asw as [[_ _] w]. rewrite bind_fail_l. reflexivity.
+  intros. cbn. unfold bind_RWST. ext r. ext s.
+    rewrite <- bind_choose_distr. f_equal.
+    ext asw. destruct asw as [[a sa] wa]. apply choose_bind_l.
 Defined.
 
 (*

@@ -187,6 +187,20 @@ Proof.
       rewrite get_get. reflexivity.
 Defined.
 
+Instance MonadStateNondet_ListT
+  (S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadState S M inst)
+  : MonadStateNondet S (ListT M) (Monad_ListT M inst) :=
+{
+    instS := MonadState_ListT S M inst inst';
+    instN := MonadNondet_ListT M inst;
+}.
+Proof.
+  intros. rewrite constrA_spec. cbn. compute.
+    ext X. ext nil. ext cons. admit.
+  intros. cbn. compute. ext X. ext nil. ext cons.
+Abort.
+
 (*
 
 TODO Instance MonadFree_ListT
