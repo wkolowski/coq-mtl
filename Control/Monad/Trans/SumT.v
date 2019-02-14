@@ -156,15 +156,127 @@ Instance MonadExcept_SumT
       @bind M inst _ _ x (fun ea =>
       match ea with
           | inl e => y (*pure (inl e)*)
-          | inr _ => x
+          | inr a => pure (inr a)
       end)
 }.
-Proof.
+Proof. Print MonadExcept.
   all: cbn; intros.
     unfold fail_SumT. rewrite bind_pure_l. reflexivity.
-    rewrite <- (@bind_pure_r M inst _ x) at 2.
-      f_equal. ext ea.
-    Focus 2. rewrite bind_assoc.
+    Focus 2. rewrite bind_assoc. f_equal. ext ea. destruct ea.
+      reflexivity.
+      rewrite bind_pure_l. reflexivity.
+    Focus 2. unfold pure_SumT. rewrite bind_pure_l. reflexivity.
+    rewrite <- (@bind_pure_r M inst _ x) at 2. f_equal.
+      ext ea. destruct ea. unfold fail_SumT.
+    rewrite <- bind_pure_r. cbn. unfold bind_SumT.
+      f_equal.
 Abort.
 
 (* BIG TODO *)
+
+Instance MonadAlt_SumT
+  (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (SumT E M) (Monad_SumT E M inst) :=
+{
+    choose :=
+      fun A x y => @choose M inst inst' _ x y
+}.
+Proof.
+  intros. rewrite choose_assoc. reflexivity.
+  intros. cbn. unfold bind_SumT. rewrite choose_bind_l. reflexivity.
+Defined.
+
+Instance MonadNondet_ContT
+  (E : Type) (e : E) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadNondet M inst)
+  : MonadNondet (SumT E M) (Monad_SumT E M inst) :=
+{
+    instF := @MonadFail_SumT E M inst e;
+    instA := @MonadAlt_SumT E M inst (@instA _ _ inst');
+}.
+Proof.
+  intros. cbn. unfold fail_SumT. Print MonadAlt. admit.
+  intros. cbn. unfold fail_SumT. Print MonadNondet. admit.
+Admitted.
+
+Instance MonadReader_SumT
+  (E R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadReader R M inst)
+  : MonadReader R (SumT E M) (Monad_SumT E M inst) :=
+{
+    ask := ask >>= fun x => pure (inr x)
+}.
+Proof.
+  rewrite <- ask_ask at 3. monad.
+Defined.
+
+Ltac wut :=
+match goal with
+    | |- context C [pure ?x >>= ?f] =>
+        replace (pure x >>= f) with (f x) by monad
+end.
+
+Instance MonadState_SumT
+  (E S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadState S M inst)
+  : MonadState S (SumT E M) (Monad_SumT E M inst) :=
+{
+    get := get >>= fun x => pure (inr x);
+    put := fun s => put s >> pure (inr tt);
+}.
+Proof.
+  all: intros.
+    rewrite !constrA_spec. cbn. unfold bind_SumT. monad.
+      rewrite <- constrA_spec, constrA_bind_assoc, put_put. reflexivity.
+    Focus 2. cbn. unfold bind_SumT, pure_SumT.
+      rewrite bind_assoc, <- fmap_pure at 1.
+      rewrite <- get_put, fmap_bind. f_equal. monad.
+    Focus 2. cbn. unfold bind_SumT. rewrite !bind_assoc.
+      replace
+        (fun x : S =>
+ pure (inr x) >>=
+ (fun sa : E + S =>
+  match sa with
+  | inl e => pure (inl e)
+  | inr a => k a a
+  end))
+         with (fun s : S => k s s).
+        rewrite <- get_get. f_equal. monad.
+        ext s. rewrite bind_pure_l. reflexivity.
+    rewrite !constrA_spec. cbn. unfold bind_SumT, pure_SumT.
+    rewrite !bind_assoc. wut. wut.
+    rewrite <- constrA_spec, constrA_bind_assoc, put_get.
+    rewrite <- constrA_bind_assoc, bind_pure_l, <- constrA_spec.
+    reflexivity.
+Defined.
+
+Instance MonadStateNondet_SumT
+  (E S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadStateNondet S M inst)
+  : MonadStateNondet S (SumT E M) (Monad_SumT E M inst) :=
+{
+    instS := MonadState_SumT E S M inst inst';
+    instN := MonadNondet_SumT E S M inst inst';
+}.
+Proof.
+  intros. rewrite constrA_spec. Print MonadStateNondet.
+  cbn. unfold bind_ContT.
+  Focus 2. intros. cbn. unfold bind_ContT. ext k. 
+Abort.
+
+(*
+TODO Instance MonadFree_ContT
+  (R : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadFree S M inst)
+  : MonadFree S (ContT R M) (Monad_ContT R M) :=
+{
+    get := fun k => get >>= k;
+    put := fun s k => put s >> k tt;
+}.
+Proof.
+  intros. ext k. cbn. unfold fmap_ContT, const, id.
+    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
+  Focus 3.
+  intros A f. ext k. cbn. unfold bind_ContT, pure_ContT.
+    rewrite get_get. reflexivity.
+*)

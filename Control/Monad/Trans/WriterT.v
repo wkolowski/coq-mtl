@@ -255,7 +255,8 @@ Proof.
 
     rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
   intros. cbn. unfold bind_WriterT.
-    rewrite bind_assoc.
+    rewrite !bind_assoc. f_equal.
+    ext s. rewrite 2!bind_pure_l. rewrite !bind_assoc.
 Admitted. (* TODO *)
 
 Instance MonadStateNondet_WriterT
