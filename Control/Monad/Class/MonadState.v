@@ -23,6 +23,39 @@ Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 
 Hint Rewrite @put_put @put_get @get_put @get_get : HSLib.
 
+Section MonadStateLaws_bind.
+
+Variables
+  (S : Type)
+  (M : Type -> Type)
+  (instM : Monad M)
+  (instMS : MonadState S M instM).
+
+Lemma put_put' :
+  forall s1 s2 : S, put s1 >>= (fun _ => put s2) = put s2.
+Proof.
+  intros. rewrite <- constrA_spec. apply put_put.
+Qed.
+
+Lemma put_put'' :
+  forall (A : Type) (f : unit -> M A) (s1 s2 : S),
+    put s1 >>= (fun _ : unit => put s2 >>= f) = put s2 >>= f.
+Proof.
+  intros. rewrite <- bind_assoc, put_put'. reflexivity.
+Qed.
+
+Lemma put_get' :
+  forall s : S,
+    put s >>= (fun _ => get) =
+    put s >>= (fun _ => pure s).
+Proof.
+  intros. rewrite <- constrA_spec, put_get, constrA_spec. reflexivity.
+Qed.
+
+End MonadStateLaws_bind.
+
+Hint Rewrite put_put' put_put'' put_get' : HSLib.
+
 Polymorphic Lemma bind_constrA_assoc :
   forall
     (M : Type -> Type) (inst : Monad M) 

@@ -132,10 +132,7 @@ Instance MonadAlt_WriterT
 {
     choose := fun A x y => @choose M inst inst' (A * W) x y
 }.
-Proof.
-  intros.  cbn. rewrite choose_assoc. reflexivity.
-  intros. cbn. unfold bind_WriterT. rewrite choose_bind_l. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadFail_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
@@ -143,9 +140,7 @@ Instance MonadFail_WriterT
 {
     fail := fun A => @fail M inst inst' (A * W)
 }.
-Proof.
-  intros. cbn. unfold bind_WriterT. rewrite bind_fail_l. reflexivity.
-Defined.
+Proof. monad. Defined.
 
 Instance MonadNondet_WriterT
   (W : Monoid) (M : Type -> Type)
@@ -155,10 +150,7 @@ Instance MonadNondet_WriterT
     instF := @MonadFail_WriterT W M inst (@instF _ _ inst');
     instA := @MonadAlt_WriterT W M inst (@instA _ _ inst');
 }.
-Proof.
-  intros. destruct inst'. apply choose_fail_l.
-  intros. destruct inst'. apply choose_fail_r.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadExcept_WriterT
   (W : Monoid) (M : Type -> Type)
@@ -168,14 +160,7 @@ Instance MonadExcept_WriterT
     instF := @MonadFail_WriterT W M inst inst';
     catch := fun A x y => @catch M inst _ _ x y;
 }.
-Proof.
-  all: cbn; intros.
-    apply (@catch_fail_l _ _ _ (A * W)).
-    apply (@catch_fail_r _ _ _ (A * W)).
-    apply (@catch_assoc _ _ _ (A * W)).
-    unfold pure_WriterT.
-      apply (@catch_pure _ _ _ (A * W)).
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadReader_WriterT
   (W : Monoid) (E : Type) (M : Type -> Type)
@@ -185,35 +170,9 @@ Instance MonadReader_WriterT
     ask := ask >>= fun e => pure (e, neutr)
 }.
 Proof.
-  unfold constrA, const, id, compose.
-  rewrite bind_ap, bind_fmap. unfold compose.
-  rewrite <- bind_assoc. cbn. unfold bind_WriterT, pure_WriterT.
-  rewrite !bind_assoc.
-  replace
-    (fun x : E =>
- @pure M inst (E * W) (x, @neutr W) >>=
- (fun x0 : E * W =>
-  (let
-   '(_, w) := x0 in
-    (@ask E M inst inst' >>=
-     (fun e : E => @pure M inst (E * W) (e, @neutr W))) >>=
-    (fun '(b, w') => @pure M inst (E * W) (b, @op W w w'))) >>=
-  (fun '(a, w) =>
-   @pure M inst (E * W) (a, @neutr W) >>=
-   (fun '(b, w') => @pure M inst (E * W) (b, @op W w w')))))
-  with
-    (fun e : E =>
-      ((ask >>= (fun e0 : E => pure (e0, neutr))) >>=
- (fun '(b, w') => pure (b, op neutr w'))) >>=
-(fun '(a, w) => pure (a, neutr) >>= (fun '(b, w') => pure (b, op w w')))
-    ).
-  2: {
-    ext e. rewrite bind_pure_l. reflexivity.
-  }
-  rewrite <- constrA_spec.
-  rewrite !bind_assoc, constrA_bind_assoc, ask_ask.
-  f_equal.
-  ext e. monad.
+  rewrite <- ask_ask at 3.
+  rewrite !constrA_spec.
+  monad.
 Defined.
 
 Instance MonadState_WriterT
@@ -225,11 +184,7 @@ Instance MonadState_WriterT
     put := fun s => put s >> pure (tt, neutr);
 }.
 Proof.
-  intros. cbn. unfold ap_WriterT, fmap_WriterT.
-    rewrite bind_fmap. unfold compose, const, id.
-    rewrite <- constrA_bind_assoc. rewrite bind_pure_l. monad.
-    rewrite <- !constrA_spec, <- constrA_assoc, put_put.
-    reflexivity.
+  intros. cbn. unfold ap_WriterT, fmap_WriterT. monad.
   intro. cbn. unfold ap_WriterT, fmap_WriterT, pure_WriterT, const, id.
     rewrite !bind_fmap. unfold compose.
     rewrite <- !constrA_bind_assoc, !bind_pure_l.
@@ -254,9 +209,7 @@ Proof.
     by monad.
 
     rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
-  intros. cbn. unfold bind_WriterT.
-    rewrite !bind_assoc. f_equal.
-    ext s. rewrite 2!bind_pure_l. rewrite !bind_assoc.
+  intros. cbn. unfold bind_WriterT. rewrite !bind_assoc.
 Admitted. (* TODO *)
 
 Instance MonadStateNondet_WriterT

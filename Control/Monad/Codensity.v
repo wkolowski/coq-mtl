@@ -174,8 +174,6 @@ Arguments improve {M inst A } _.
 
 Require Import Control.Monad.Class.MonadFree.
 
-Print MonadFree.
-
 Definition wrap_Codensity
   {F M : Type -> Type} {instF : Functor F} {instM : Monad M}
   {instMF : MonadFree F M instF instM} {A : Type}
@@ -194,5 +192,5 @@ Instance MonadFree_Codensity
     wrap := @wrap_Codensity F M instF instM instMF
 }.
 Proof.
-  monad. rewrite <- !fmap_comp'. unfold compose. reflexivity.
+  hs. ext2 R g. rewrite <- !fmap_comp'. unfold compose. reflexivity.
 Defined.

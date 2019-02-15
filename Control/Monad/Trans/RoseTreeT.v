@@ -16,9 +16,7 @@ Instance Functor_RoseTreeT : Functor (RoseTreeT M) :=
 {
     fmap := @fmap_RoseTreeT
 }.
-Proof.
-  all: reflexivity.
-Defined.
+Proof. all: reflexivity. Defined.
 
 Definition pure_RoseTreeT
   {A : Type} (x : A) : RoseTreeT M A :=
@@ -34,9 +32,7 @@ Instance Applicative_RoseTreeT : Applicative (RoseTreeT M) :=
     pure := @pure_RoseTreeT;
     ap := @ap_RoseTreeT;
 }.
-Proof.
-  all: reflexivity.
-Defined.
+Proof. all: reflexivity. Defined.
 
 Definition bind_RoseTreeT
   {A B : Type} (ta : RoseTreeT M A) (tf : A -> RoseTreeT M B)
@@ -47,19 +43,17 @@ Instance Monad_RoseTreeT : Monad (RoseTreeT M) :=
 {
     bind := @bind_RoseTreeT
 }.
-Proof.
-  all: reflexivity.
-Defined.
+Proof. all: reflexivity. Defined.
 
 End RoseTreeT_Instances.
+
+Require Import HSLib.Control.Monad.All.
 
 Theorem RoseTreeT_not_Alternative :
   (forall (M : Type -> Type) (inst : Monad M), Alternative (RoseTreeT M)) ->
     False.
 Proof.
   unfold RoseTreeT; intros.
-  Require Import HSLib.Control.Monad.All.
-  
   specialize (X Identity (MonadIdentity)).
   unfold Identity in *. destruct X.
   apply (aempty False False); trivial.
@@ -83,7 +77,7 @@ Instance MonadAlt_RoseTreeT
         fun X empty node => choose (x X empty node) (y X empty node)
 }.
 Proof.
-  intros A x y z. ext X. ext e. ext n. rewrite choose_assoc. reflexivity.
+  monad.
   reflexivity.
 Defined.
 

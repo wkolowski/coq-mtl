@@ -10,6 +10,8 @@ Class MonadReader
     ask_ask : ask >> ask = ask;
 }.
 
+Hint Rewrite @ask_ask : HSLib.
+
 Section MonadReader_funs.
 
 Variables

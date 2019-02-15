@@ -186,7 +186,7 @@ Proof.
   intros. cbn. unfold bind_SumT. rewrite choose_bind_l. reflexivity.
 Defined.
 
-Instance MonadNondet_ContT
+Instance MonadNondet_SumT
   (E : Type) (e : E) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (SumT E M) (Monad_SumT E M inst) :=
@@ -207,14 +207,8 @@ Instance MonadReader_SumT
     ask := ask >>= fun x => pure (inr x)
 }.
 Proof.
-  rewrite <- ask_ask at 3. monad.
+  rewrite <- ask_ask at 3. rewrite !constrA_spec. monad.
 Defined.
-
-Ltac wut :=
-match goal with
-    | |- context C [pure ?x >>= ?f] =>
-        replace (pure x >>= f) with (f x) by monad
-end.
 
 Instance MonadState_SumT
   (E S : Type) (M : Type -> Type)
@@ -226,12 +220,16 @@ Instance MonadState_SumT
 }.
 Proof.
   all: intros.
-    rewrite !constrA_spec. cbn. unfold bind_SumT. monad.
-      rewrite <- constrA_spec, constrA_bind_assoc, put_put. reflexivity.
-    Focus 2. cbn. unfold bind_SumT, pure_SumT.
+    monad.
+    rewrite !constrA_spec. cbn. unfold bind_SumT, pure_SumT.
+      rewrite !bind_assoc. wut. wut.
+      rewrite <- constrA_spec, constrA_bind_assoc, put_get.
+      rewrite <- constrA_bind_assoc, bind_pure_l, <- constrA_spec.
+      reflexivity.
+    cbn. unfold bind_SumT, pure_SumT.
       rewrite bind_assoc, <- fmap_pure at 1.
       rewrite <- get_put, fmap_bind. f_equal. monad.
-    Focus 2. cbn. unfold bind_SumT. rewrite !bind_assoc.
+    cbn. unfold bind_SumT. rewrite !bind_assoc.
       replace
         (fun x : S =>
  pure (inr x) >>=
@@ -243,25 +241,17 @@ Proof.
          with (fun s : S => k s s).
         rewrite <- get_get. f_equal. monad.
         ext s. rewrite bind_pure_l. reflexivity.
-    rewrite !constrA_spec. cbn. unfold bind_SumT, pure_SumT.
-    rewrite !bind_assoc. wut. wut.
-    rewrite <- constrA_spec, constrA_bind_assoc, put_get.
-    rewrite <- constrA_bind_assoc, bind_pure_l, <- constrA_spec.
-    reflexivity.
 Defined.
 
 Instance MonadStateNondet_SumT
-  (E S : Type) (M : Type -> Type)
+  (E S : Type) (e : E) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (SumT E M) (Monad_SumT E M inst) :=
 {
     instS := MonadState_SumT E S M inst inst';
-    instN := MonadNondet_SumT E S M inst inst';
+    instN := MonadNondet_SumT E e M inst inst';
 }.
 Proof.
-  intros. rewrite constrA_spec. Print MonadStateNondet.
-  cbn. unfold bind_ContT.
-  Focus 2. intros. cbn. unfold bind_ContT. ext k. 
 Abort.
 
 (*

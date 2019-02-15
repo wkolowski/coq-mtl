@@ -13,3 +13,5 @@ Class MonadAltBag (M : Type -> Type) (inst : Monad M) : Type :=
       forall {A : Type} (x y : M A),
         choose x y = choose y x
 }.
+
+Hint Rewrite @choose_assoc @choose_comm : HSLib.

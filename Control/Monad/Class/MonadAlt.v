@@ -11,3 +11,5 @@ Class MonadAlt (M : Type -> Type) (inst : Monad M) : Type :=
       forall (A B : Type) (x y : M A) (f : A -> M B),
         choose x y >>= f = choose (x >>= f) (y >>= f);
 }.
+
+Hint Rewrite @choose_assoc @choose_bind_l : HSLib.

@@ -83,6 +83,7 @@ You can then compile the project at any time using `make` and recompile (for exa
   * Which laws are there, which ones are needed and which ones are redundant.
   * Not only which types implement which classes, but also which classes they can't implement.
   * Develop pen and paper proofs so they can be put into the thesis.
+  * REMEMBER: describe precisely how the tactics hs and monad work. A case study in proof engineering!
 * Investigate concepts:
   * Commutative applicative functors.
   * Commutative monads.

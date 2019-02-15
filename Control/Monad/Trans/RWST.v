@@ -128,7 +128,7 @@ Instance MonadState_RWST
 }.
 Proof.
   1-3: monad.
-  intros. ext r. ext s. cbn. monad.
+  intros. cbn. ext r. ext s. monad.
 Defined.
 
 Require Import Control.Monad.Class.All.
@@ -141,10 +141,7 @@ Instance MonadAlt_RWST
     choose :=
       fun A x y => fun r s => choose (x r s) (y r s )
 }.
-Proof.
-  intros. ext r. ext s. rewrite choose_assoc. reflexivity.
-  intros. ext r. ext s. cbn. unfold bind_RWST. apply choose_bind_l.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadFail_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
@@ -153,10 +150,7 @@ Instance MonadFail_RWST
 {
     fail := fun A _ _ => @fail M inst inst' (A * S * W)
 }.
-Proof.
-  intros. ext r. ext s. cbn. unfold bind_RWST.
-  rewrite bind_fail_l. reflexivity.
-Defined.
+Proof. monad. Defined.
 
 Instance MonadNondet_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
@@ -166,10 +160,7 @@ Instance MonadNondet_RWST
     instF := @MonadFail_RWST W R S M inst (@instF _ _ inst');
     instA := @MonadAlt_RWST W R S M inst (@instA _ _ inst');
 }.
-Proof.
-  intros. cbn. ext r. ext s. rewrite choose_fail_l. reflexivity.
-  intros. cbn. ext r. ext s. rewrite choose_fail_r. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadExcept_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
@@ -180,13 +171,7 @@ Instance MonadExcept_RWST
     catch :=
       fun A x y => fun r s => catch (x r s) (y r s);
 }.
-Proof.
-  all: cbn; intros; ext r; ext s.
-    apply catch_fail_l.
-    apply catch_fail_r.
-    apply catch_assoc.
-    unfold pure_RWST. apply catch_pure.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadStateNondet_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
@@ -197,12 +182,9 @@ Instance MonadStateNondet_RWST
     instN := MonadNondet_RWST W R S M inst inst';
 }.
 Proof.
-  intros. rewrite constrA_spec. cbn.
-    unfold bind_RWST. ext r. ext s.
-    replace (fun _ => _)
-       with (fun _ : A * S * W => @fail M inst inst' (B * S * W)).
-      rewrite <- constrA_spec. apply seq_fail_r.
-      ext asw. destruct asw as [[_ _] w]. rewrite bind_fail_l. reflexivity.
+  intros. rewrite constrA_spec. cbn. hs. ext2 r s.
+    rewrite <- (seq_fail_r _ _ (x r s)) at 1.
+    rewrite constrA_spec. f_equal. monad2.
   intros. cbn. unfold bind_RWST. ext r. ext s.
     rewrite <- bind_choose_distr. f_equal.
     ext asw. destruct asw as [[a sa] wa]. apply choose_bind_l.

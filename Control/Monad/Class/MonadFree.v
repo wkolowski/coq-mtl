@@ -9,3 +9,5 @@ Class MonadFree
       forall (A B : Type) (f : A -> M B) (x : F A),
         wrap (fmap f x) = wrap (@fmap F instF _ _ pure x) >>= f
 }.
+
+Hint Rewrite @wrap_law : HSLib.

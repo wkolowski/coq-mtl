@@ -18,7 +18,7 @@ Instance FunctorContT : Functor (ContT R M) :=
 {
     fmap := fmap_ContT
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 Definition pure_ContT (A : Type) (x : A) : ContT R M A :=
   fun y : A -> M R => y x.
@@ -71,10 +71,7 @@ Instance MonadAlt_ContT
     choose :=
       fun A x y k => choose (x k) (y k)
 }.
-Proof.
-  intros. ext k. rewrite choose_assoc. reflexivity.
-  intros. ext k. cbn. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadFail_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
@@ -82,10 +79,7 @@ Instance MonadFail_ContT
 {
     fail := fun A k => fail
 }.
-Proof.
-(*  Hint Unfold fail : HSLib.*)
-  intros. cbn. monad. (* rewrite !bind_fail_l. reflexivity.*)
-Defined.
+Proof. reflexivity. Defined.
 
 Instance MonadNondet_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
@@ -94,10 +88,7 @@ Instance MonadNondet_ContT
     instF := @MonadFail_ContT R M inst (@instF _ _ inst');
     instA := @MonadAlt_ContT R M inst (@instA _ _ inst');
 }.
-Proof.
-  intros. cbn. ext k. rewrite (*bind_fail_l,*) choose_fail_l. reflexivity.
-  intros. cbn. ext k. rewrite (*bind_fail_l,*) choose_fail_r. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 (* TODO *) Instance MonadExcept_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
@@ -107,11 +98,7 @@ Defined.
     catch := fun A x y k => catch (x k) (y k);
 }.
 Proof.
-  all: intros; ext k; cbn.
-    rewrite (*bind_fail_l,*) catch_fail_l. reflexivity.
-    rewrite (*bind_fail_l,*) catch_fail_r. reflexivity.
-    rewrite catch_assoc. reflexivity.
-    unfold pure_ContT. Print MonadExcept.
+  1-3: monad.
 Abort.
 
 Instance MonadReader_ContT

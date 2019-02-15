@@ -48,6 +48,7 @@ Definition ap_StateT
 
 Hint Unfold pure_StateT ap_StateT : HSLib.
 
+(* TODO: what is this for? *)
 Lemma p1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type)
   (x : StateT S M A),
@@ -123,9 +124,7 @@ Instance Alternative_StateT
     aempty := @aempty_StateT S M instM instA;
     aplus := @aplus_StateT S M instM instA;
 }.
-Proof.
-  all: monad.
-Defined.
+Proof. all: monad. Defined.
 
 Definition bind_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -178,6 +177,8 @@ Proof.
   apply m2.
   apply m3.
   apply m5.
+Restart.
+  all: monad.
 Defined.
 
 Theorem StateT_not_MonadPlus :
@@ -221,7 +222,7 @@ Instance MonadState_StateT
 }.
 Proof.
   1-3: monad.
-  intros. ext s. cbn. unfold bind_StateT. rewrite !bind_pure_l. reflexivity.
+  intros. ext s. hs.
 Defined.
 
 Require Import Control.Monad.Class.All.
@@ -233,10 +234,7 @@ Instance MonadAlt_StateT
     choose :=
       fun A x y s => choose (x s) (y s)
 }.
-Proof.
-  intros. ext s. rewrite choose_assoc. reflexivity.
-  intros. ext s. cbn. monad. rewrite choose_bind_l. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadFail_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
@@ -244,9 +242,7 @@ Instance MonadFail_StateT
 {
     fail := fun A s => fail
 }.
-Proof.
-  intros. cbn. monad. rewrite bind_fail_l. reflexivity.
-Defined.
+Proof. monad. Defined.
 
 Instance MonadNondet_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
@@ -255,10 +251,7 @@ Instance MonadNondet_StateT
     instF := @MonadFail_StateT S M inst (@instF _ _ inst');
     instA := @MonadAlt_StateT S M inst (@instA _ _ inst');
 }.
-Proof.
-  intros. cbn. ext s. rewrite choose_fail_l. reflexivity.
-  intros. cbn. ext s. rewrite choose_fail_r. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadExcept_StateT
   (S : Type) (M : Type -> Type)
@@ -269,13 +262,7 @@ Instance MonadExcept_StateT
     catch :=
       fun A x y => fun s => catch (x s) (y s);
 }.
-Proof.
-  all: cbn; intros; ext s.
-    apply catch_fail_l.
-    apply catch_fail_r.
-    apply catch_assoc.
-    unfold pure_StateT. apply catch_pure.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadReader_StateT
   (E S : Type) (M : Type -> Type)
@@ -287,13 +274,8 @@ Instance MonadReader_StateT
 Proof.
   rewrite constrA_spec. cbn. unfold bind_StateT.
   ext s. rewrite bind_assoc.
-  replace
-    (fun x : E => pure (x, s) >>=
-      (fun '(_, s') => ask >>= (fun e : E => pure (e, s'))))
-  with
-    (fun _ : E => ask >>= fun e : E => pure (e, s)).
-    rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
-    ext e. rewrite bind_pure_l. reflexivity.
+  rewrite <- ask_ask at 2.
+  rewrite constrA_spec. monad.
 Defined.
 
 Instance MonadStateNondet_StateT

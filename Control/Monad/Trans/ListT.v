@@ -33,7 +33,7 @@ Instance Functor_ListT
 {
     fmap := @fmap_ListT M inst
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 Definition pure_ListT
   (M : Type -> Type) (inst : Monad M) (A : Type) (x : A) : ListT M A :=
@@ -52,7 +52,7 @@ Global Instance Applicative_ListT
     pure := @pure_ListT M inst;
     ap := @ap_ListT M inst;
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 Definition aempty_ListT
   (M : Type -> Type) (inst : Monad M) (A : Type) : ListT M A :=
@@ -69,7 +69,7 @@ Instance Alternative_ListT
     aempty := aempty_ListT M inst;
     aplus := aplus_ListT M inst;
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 Definition bind_ListT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -82,7 +82,7 @@ Instance Monad_ListT
     is_applicative := Applicative_ListT M inst;
     bind := @bind_ListT M inst
 }.
-Proof. all: hs. Defined.
+Proof. all: reflexivity. Defined.
 
 Instance MonadPlus_ListT
   (M : Type -> Type) (inst : Monad M) : MonadPlus (ListT M) :=
@@ -90,7 +90,7 @@ Instance MonadPlus_ListT
     is_monad := Monad_ListT _ inst;
     is_alternative := Alternative_ListT _ inst;
 }.
-Proof. hs. Defined.
+Proof. reflexivity. Defined.
 
 Definition lift_ListT
   {M : Type -> Type} {inst : Monad M} (A : Type) (ma : M A) : ListT M A :=
@@ -109,6 +109,8 @@ Require Import Control.Monad.Class.All.
 
 Definition fail_ListT
   {M : Type -> Type} {inst : Monad M} {A : Type} : ListT M A := [[]].
+
+Hint Unfold fail_ListT : HSLib.
 
 Instance MonadFail_ListT
   (M : Type -> Type) (inst : Monad M)

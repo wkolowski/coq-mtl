@@ -14,3 +14,5 @@ Class MonadAltR (M : Type -> Type) (inst : Monad M) : Type :=
         (m >>= fun x : A => choose (f x) (g x)) =
         choose (m >>= f) (m >>= g)
 }.
+
+Hint Rewrite @choose_assoc @choose_bind_r : HSLib.

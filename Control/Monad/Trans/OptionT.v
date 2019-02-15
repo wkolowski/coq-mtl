@@ -117,27 +117,17 @@ Definition fail_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type}
     : OptionT M A := pure None.
 
+Hint Unfold fail_OptionT : HSLib.
+
 Instance MonadFail_OptionT
   (M : Type -> Type) (inst : Monad M)
   : MonadFail (OptionT M) (Monad_OptionT M inst) :=
 {
     fail := @fail_OptionT M inst
 }.
-Proof.
-  intros. unfold fail_OptionT. cbn. unfold bind_OptionT.
-  rewrite bind_pure_l. reflexivity.
-Defined.
+Proof. monad. Defined.
 
 Require Import Control.Monad.Class.All.
-
-Goal
-  forall
-    (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
-    (A B : Type) (x : M A) (f g : A -> M B),
-      choose (x >>= f) (x >>= g) =
-      x >>= fun a : A => choose (f a) (g a).
-Proof.
-Abort.
 
 Instance MonadAlt_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -165,7 +155,6 @@ Proof.
         ext y. destruct y; monad.
       Focus 2. rewrite bind_pure_l, bind_assoc. f_equal.
         ext y. destruct y; monad.
-      monad. rewrite choose_bind_l. rewrite 2!bind_pure_l.
 Abort.
 
 (*
@@ -196,14 +185,12 @@ Instance MonadExcept_OptionT
         end)
 }.
 Proof.
+  1-2: monad.
   all: intros; cbn.
-    unfold fail_OptionT. rewrite bind_pure_l. reflexivity.
-    rewrite <- (@bind_pure_r M inst). f_equal.
-      ext oa. destruct oa; reflexivity.
     rewrite bind_assoc. f_equal. ext oa. destruct oa; cbn.
       rewrite bind_pure_l. reflexivity.
       reflexivity.
-    unfold pure_OptionT. rewrite bind_pure_l. reflexivity.
+    unfold pure_OptionT. hs.
 Defined.
 
 Instance MonadReader_OptionT
@@ -214,19 +201,7 @@ Instance MonadReader_OptionT
     ask := ask >>= fun e => pure (Some e)
 }.
 Proof.
-  rewrite constrA_spec. cbn. unfold bind_OptionT.
-  rewrite bind_assoc.
-  replace
-    (fun x : E => pure (Some x) >>=
-      fun oa : option E =>
-      match oa with
-          | Some _ => ask >>= (fun e : E => pure (Some e))
-          | None => pure None
-      end)
-  with
-    (fun _ : E => ask >>= fun e : E => pure (Some e)).
-    rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
-    ext e. rewrite bind_pure_l. reflexivity.
+  rewrite <- ask_ask at 3. rewrite <- constrA_bind_assoc. monad.
 Defined.
 
 Instance MonadState_OptionT
@@ -247,17 +222,12 @@ Proof.
     do 2 (rewrite <- constrA_bind_assoc; rewrite bind_pure_l).
     unfold fmap_Option, compose, pure_OptionT.
     rewrite bind_fmap, bind_pure_l. unfold compose.
-    rewrite constrA_bind_assoc, put_get.
-    rewrite <- constrA_bind_assoc, bind_pure_l. reflexivity.
-  cbn. unfold bind_OptionT, pure_OptionT. rewrite bind_fmap.
-    unfold compose.
-    replace (fun x : S => put x >> pure (Some tt))
-       with (fun s : S => put s >>= fun _ => pure (Some tt)).
-      rewrite <- bind_assoc, get_put, bind_pure_l. reflexivity.
-      ext s. monad.
-  intros. cbn. unfold bind_OptionT. rewrite !bind_fmap. unfold compose.
-    rewrite <- get_get. f_equal. ext s. rewrite bind_fmap. unfold compose.
-    reflexivity.
+    rewrite constrA_bind_assoc, put_get. monad.
+  cbn. unfold bind_OptionT, pure_OptionT. rewrite bind_fmap. monad.
+    rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
+  intros. cbn. unfold bind_OptionT.
+    rewrite !bind_fmap. unfold compose.
+    rewrite <- get_get. monad.
 Defined.
 
 (*

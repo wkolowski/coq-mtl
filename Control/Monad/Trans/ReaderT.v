@@ -134,10 +134,7 @@ Instance MonadAlt_ReaderT
     choose :=
       fun A x y r => choose (x r) (y r)
 }.
-Proof.
-  intros. ext r. rewrite choose_assoc. reflexivity.
-  intros. ext r. cbn. unfold bind_ReaderT. apply choose_bind_l.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadFail_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
@@ -145,9 +142,7 @@ Instance MonadFail_ReaderT
 {
     fail := fun A r => fail
 }.
-Proof.
-  intros. cbn. monad. rewrite !bind_fail_l. reflexivity.
-Defined.
+Proof. monad. Defined.
 
 Instance MonadNondet_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
@@ -156,10 +151,7 @@ Instance MonadNondet_ReaderT
     instF := @MonadFail_ReaderT R M inst (@instF _ _ inst');
     instA := @MonadAlt_ReaderT R M inst (@instA _ _ inst');
 }.
-Proof.
-  intros. cbn. ext r. rewrite choose_fail_l. reflexivity.
-  intros. cbn. ext r. rewrite choose_fail_r. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadExcept_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
@@ -169,13 +161,7 @@ Instance MonadExcept_ReaderT
     catch :=
       fun A x y => fun e => catch (x e) (y e);
 }.
-Proof.
-  all: cbn; intros; ext e.
-    apply catch_fail_l.
-    apply catch_fail_r.
-    apply catch_assoc.
-    unfold pure_ReaderT. apply catch_pure.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadState_ReaderT
   (S R : Type) (M : Type -> Type)
@@ -185,15 +171,11 @@ Instance MonadState_ReaderT
     get := fun r => get;
     put := fun s r => put s;
 }.
-Proof. Print MonadState.
+Proof.
   intros. ext r. cbn. unfold ap_ReaderT, fmap_ReaderT, const, id. monad.
-    rewrite <- constrA_spec, put_put. reflexivity.
-  intros. rewrite constrA_spec. cbn.
-    unfold bind_ReaderT, ap_ReaderT, fmap_ReaderT, pure_ReaderT, const, id.
-    ext r. rewrite <- constrA_spec. rewrite put_get. monad.
-  ext r. cbn. unfold bind_ReaderT, pure_ReaderT.
-    rewrite get_put. reflexivity.
-  intros. ext r. cbn. unfold bind_ReaderT. rewrite get_get. reflexivity.
+  intros. rewrite constrA_spec. cbn. monad.
+  monad.
+  intros. ext r. cbn. monad.
 Defined.
 
 Instance MonadStateNondet_ReaderT
@@ -207,8 +189,7 @@ Instance MonadStateNondet_ReaderT
 Proof.
   intros. rewrite constrA_spec. cbn. unfold bind_ReaderT.
     ext e. rewrite <- constrA_spec. rewrite seq_fail_r. reflexivity.
-  intros. cbn. unfold bind_ReaderT.
-    ext e. rewrite bind_choose_distr. reflexivity.
+  monad.
 Defined.
 
 (*

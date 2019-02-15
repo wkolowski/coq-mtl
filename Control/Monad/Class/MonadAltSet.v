@@ -15,3 +15,5 @@ Class MonadAltSet (M : Type -> Type) (inst : Monad M) : Type :=
     choose_idempotent :
       forall {A : Type} (x : M A), choose x x = x
 }.
+
+Hint Rewrite @choose_assoc @choose_comm @choose_idempotent : HSLib.

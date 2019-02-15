@@ -78,7 +78,7 @@ Export MonadNotations.
 Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : HSLib.
 
 (** The main workhorse tactic for most of the library. It proceeds like this:
-    - apply the [functional_extensionality] axiom whenever it's possible
+    - apply the [functional_extensionality] axiom whenever possible
     - destruct pairs, sums and [unit]s
     - try to deal with monadic equations containig [>>=] on either side
     - destruct possibly nested pattern matches using tha tactic [unmatch]
@@ -87,7 +87,7 @@ Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : HSLib.
       unfold definitios and perform rewriting
     - after the main loop is done, try [congruence] after some
       simplification *)
-Ltac monad := intros; repeat
+Ltac monad1 := intros; repeat
 match goal with
     | |- (fun _ => _) = _ => let x := fresh "x" in ext x
     | |- _ = (fun _ => _) => let x := fresh "x" in ext x
@@ -100,6 +100,23 @@ match goal with
     | |- context [match ?x with _ => _ end] => hs; unmatch x
     | _ => hs + functor_simpl
 end; try (unfold compose, id; cbn; congruence; fail).
+
+Ltac monad2 := repeat (
+  cbn; intros; hs;
+match goal with
+    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
+    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
+    | x : _ * _ |- _ => destruct x
+    | x : _ + _ |- _ => destruct x
+    | x : unit |- _ => destruct x
+(*    | |- ?x >>= _ = ?x => rewrite <- bind_pure_r; f_equal
+    | |- ?x = ?x >>= _ => rewrite <- bind_pure_r at 1; f_equal
+    | |- ?x >>= _ = ?x >>= _ => f_equal; try reflexivity*)
+    | |- context [match ?x with _ => _ end] => hs; unmatch x
+    | _ => hs + functor_simpl
+end; try (unfold compose, id; cbn; congruence; fail)).
+
+Ltac monad := monad1.
 
 (** All functions that in Haskell are doubled between [Applicative] and
     [Monad] in this library are moved to [Applicative] and named with an
@@ -283,3 +300,11 @@ Defined.
 End DerivedMonadLaws2.
 
 Hint Rewrite @constlA_spec @constrA_spec : HSLib.
+
+(* A tactic for rewriting the law bind_pure_l under lambdas.
+   TODO: rename *)
+Ltac wut :=
+match goal with
+    | |- context C [pure ?x >>= ?f] =>
+        replace (pure x >>= f) with (f x) by monad
+end.

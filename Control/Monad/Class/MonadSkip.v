@@ -12,4 +12,6 @@ Class MonadSkip (M : Type -> Type) (inst : Monad M) : Type :=
       forall (A : Type) (x : M A),
         x >> skip = x;
 }.
+
+Hint Rewrite @bind_skip_l @bind_skip_r : HSLib.
 *)
