@@ -246,20 +246,17 @@ Proof.
 Abort.
 *)
 
-(*
-
-TODO Instance MonadFree_OptionT
-  (R : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadFree S M inst)
-  : MonadFree S (OptionT M) (Monad_OptionT M) :=
+Instance MonadFree_OptionT
+  (F : Type -> Type) (instF : Functor F)
+  (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)
+  : MonadFree F (OptionT M) instF (Monad_OptionT M instM) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    wrap := fun A m => @wrap F M instF instM instMF _ m
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_OptionT, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_OptionT, pure_OptionT.
-    rewrite get_get. reflexivity.
-*)
+  intros. cbn. unfold bind_OptionT, pure_OptionT, OptionT in *.
+  rewrite
+    (wrap_law _ _ (fun x0 : A => @pure M instM (option A) (@Some A x0)) x).
+  rewrite wrap_law, bind_assoc.
+  f_equal. ext a. rewrite bind_pure_l. reflexivity.
+Defined.

@@ -236,20 +236,17 @@ Proof.
     ext aw. destruct aw as [a w]. apply choose_bind_l.
 Defined.
 
-(*
-
-TODO Instance MonadFree_WriterT
+Instance MonadFree_WriterT
+  (F : Type -> Type) (instF : Functor F)
   (W : Monoid) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadFree S M inst)
-  : MonadFree S (WriterT W M) (Monad_WriterT W M) :=
+  (instM : Monad M) (instMF : MonadFree F M instF instM)
+  : MonadFree F (WriterT W M) instF (Monad_WriterT W M instM) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    wrap := fun A m => @wrap F M instF instM instMF _ m
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_WriterT, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_WriterT, pure_WriterT.
-    rewrite get_get. reflexivity.
-*)
+  intros. cbn. unfold bind_WriterT, pure_WriterT, WriterT in *.
+  rewrite wrap_law.
+  rewrite (wrap_law _ _ (fun a : A => pure (a, neutr)) x).
+  monad.
+Defined.

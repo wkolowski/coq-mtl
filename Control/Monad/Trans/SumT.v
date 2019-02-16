@@ -254,19 +254,17 @@ Instance MonadStateNondet_SumT
 Proof.
 Abort.
 
-(*
-TODO Instance MonadFree_ContT
-  (R : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadFree S M inst)
-  : MonadFree S (ContT R M) (Monad_ContT R M) :=
+Instance MonadFree_SumT
+  (F : Type -> Type) (instF : Functor F)
+  (E : Type) (M : Type -> Type)
+  (instM : Monad M) (instMF : MonadFree F M instF instM)
+  : MonadFree F (SumT E M) instF (Monad_SumT E M instM) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    wrap := fun A m => @wrap F M instF instM instMF _ m
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_ContT, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_ContT, pure_ContT.
-    rewrite get_get. reflexivity.
-*)
+  intros. cbn. unfold bind_SumT, pure_SumT,SumT in *.
+  rewrite wrap_law.
+  rewrite (wrap_law _ _ (fun a : A => pure (inr a)) x).
+  monad.
+Defined.

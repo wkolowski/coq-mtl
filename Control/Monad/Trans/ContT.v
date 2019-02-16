@@ -149,19 +149,17 @@ Proof.
   Focus 2. intros. cbn. unfold bind_ContT. ext k. 
 Abort.
 
-(*
-TODO Instance MonadFree_ContT
+Instance MonadFree_ContT
+  (F : Type -> Type) (instF : Functor F)
   (R : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadFree S M inst)
-  : MonadFree S (ContT R M) (Monad_ContT R M) :=
+  (instM : Monad M) (instMF : MonadFree F M instF instM)
+  : MonadFree F (ContT R M) instF (Monad_ContT R M) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    wrap := fun A fma k => wrap (fmap (fun x => x k) fma)
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_ContT, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_ContT, pure_ContT.
-    rewrite get_get. reflexivity.
-*)
+  intros. ext k. cbn.
+  unfold bind_ContT, pure_ContT.
+  f_equal. rewrite <- !fmap_comp'.
+  unfold compose. reflexivity.
+Defined.

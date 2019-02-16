@@ -13,6 +13,8 @@ Definition fmap_StateT
 
 Hint Unfold StateT fmap_StateT compose : HSLib.
 
+(* These stupidly named lemmas are there so that the parsers work quickly.
+   I don't know why that matters, but it does... *)
 Lemma f1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type),
     fmap_StateT S (@id A) = id.
@@ -48,7 +50,6 @@ Definition ap_StateT
 
 Hint Unfold pure_StateT ap_StateT : HSLib.
 
-(* TODO: what is this for? *)
 Lemma p1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type)
   (x : StateT S M A),
@@ -293,19 +294,21 @@ Proof.
     ext s.
 Abort.
 
-(*
-TODO Instance MonadFree_StateT
-  (R : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadFree S M inst)
-  : MonadFree S (StateT R M) (Monad_StateT R M) :=
+Instance MonadFree_StateT
+  (F : Type -> Type) (instF : Functor F)
+  (S : Type) (M : Type -> Type)
+  (instM : Monad M) (instMF : MonadFree F M instF instM)
+  : MonadFree F (StateT S M) instF (Monad_StateT S M instM) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    wrap :=
+      fun A m s => wrap (fmap (fun x => x s) m)
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_StateT, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_StateT, pure_StateT.
-    rewrite get_get. reflexivity.
-*)
+  intros. ext s. cbn.
+  unfold bind_StateT, pure_StateT, StateT in *.
+  rewrite <- !fmap_comp'. unfold compose.
+  rewrite wrap_law.
+  rewrite (wrap_law _ _ (fun a : A => pure (a, s)) x).
+  rewrite bind_assoc. f_equal. ext a.
+  rewrite bind_pure_l. reflexivity.
+Defined.

@@ -62,3 +62,9 @@ Require Import Arith.
 Definition callCC
   {R A B : Type} (f : (A -> Cont R B) -> Cont R A) : Cont R A :=
     fun ar : A -> R => f (fun (a : A) (_ : B -> R) => ar a) ar.
+
+(* This one is taken from Purescript's Pursuit library. *)
+Definition callCC'
+  {R A : Type} (f : (forall B : Type, A -> Cont R B) -> Cont R A)
+  : Cont R A :=
+    fun k : A -> R => f (fun (B : Type) (a : A) (_ : B -> R) => k a) k.

@@ -164,21 +164,18 @@ Proof.
     unfold bind_RoseTreeT. ext X. ext empty. ext node.
 Abort.
 
-
-(*
 Instance MonadFree_RoseTreeT
-  (R : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadFree S M inst)
-  : MonadFree S (RoseTreeT R M) (Monad_RoseTreeT R M) :=
+  (F : Type -> Type) (instF : Functor F)
+  (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)
+  : MonadFree F (RoseTreeT M) instF (Monad_RoseTreeT M) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    wrap :=
+      fun A fma X empty node =>
+        wrap (fmap (fun l => l X empty node) fma)
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_RoseTreeT, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_RoseTreeT, pure_RoseTreeT.
-    rewrite get_get. reflexivity.
-Abort.
-*)
+  intros A B f x. ext3 X empty node.
+  cbn. unfold bind_RoseTreeT, pure_RoseTreeT.
+  rewrite <- !fmap_comp'. unfold compose.
+  reflexivity.
+Defined.

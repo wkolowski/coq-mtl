@@ -119,6 +119,12 @@ Restart.
 Abort.
 *)
 
+(* This one comes from Purescript's Pursuit library. *)
+Definition callCC'_Type : Type :=
+  forall (F : Type -> Type) (A : Type),
+    ((forall B : Type, A -> Codensity F B) ->
+        Codensity F A) -> Codensity F A.
+
 Section CodensityFuns.
 
 Variable M : Type -> Type.

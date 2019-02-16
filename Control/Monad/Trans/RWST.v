@@ -190,20 +190,20 @@ Proof.
     ext asw. destruct asw as [[a sa] wa]. apply choose_bind_l.
 Defined.
 
-(*
 Instance MonadFree_RWST
-  (R : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadFree S M inst)
-  : MonadFree S (RWST R M) (Monad_RWST R M) :=
+  (F : Type -> Type) (instF : Functor F)
+  (W : Monoid) (R S : Type) (M : Type -> Type)
+  (instM : Monad M) (instMF : MonadFree F M instF instM)
+  : MonadFree F (RWST W R S M) instF (Monad_RWST W R S M instM) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    wrap :=
+      fun A m r s => wrap (fmap (fun x => x r s) m)
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_RWST, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_RWST, pure_RWST.
-    rewrite get_get. reflexivity.
-Abort.
-*)
+  intros. ext2 r s. cbn.
+  unfold bind_RWST, pure_RWST, RWST in *.
+  rewrite <- !fmap_comp'. unfold compose.
+  rewrite wrap_law.
+  rewrite (wrap_law _ _ (fun a : A => pure (a, s, neutr)) x).
+  monad.
+Defined.

@@ -203,20 +203,18 @@ Proof.
   intros. cbn. compute. ext X. ext nil. ext cons.
 Abort.
 
-(*
-
-TODO Instance MonadFree_ListT
-  (R : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadFree S M inst)
-  : MonadFree S (ListT M) (Monad_ListT M) :=
+Instance MonadFree_ListT
+  (F : Type -> Type) (instF : Functor F)
+  (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)
+  : MonadFree F (ListT M) instF (Monad_ListT M instM) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    wrap :=
+      fun A fma X nil cons =>
+        wrap (fmap (fun l => l X nil cons) fma)
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_ListT, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_ListT, pure_ListT.
-    rewrite get_get. reflexivity.
-*)
+  intros A B f x. ext3 X nil cons.
+  cbn. unfold bind_ListT, pure_ListT.
+  rewrite <- !fmap_comp'. unfold compose.
+  reflexivity.
+Defined.

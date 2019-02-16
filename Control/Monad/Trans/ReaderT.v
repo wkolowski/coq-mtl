@@ -192,20 +192,18 @@ Proof.
   monad.
 Defined.
 
-(*
-
-TODO Instance MonadFree_ReaderT
-  (R : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadFree S M inst)
-  : MonadFree S (ReaderT R M) (Monad_ReaderT R M) :=
+Instance MonadFree_ReaderT
+  (F : Type -> Type) (instF : Functor F)
+  (E : Type) (M : Type -> Type)
+  (instM : Monad M) (instMF : MonadFree F M instF instM)
+  : MonadFree F (ReaderT E M) instF (Monad_ReaderT E M instM) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+    wrap :=
+      fun A m e => wrap (fmap (fun x => x e) m)
 }.
 Proof.
-  intros. ext k. cbn. unfold fmap_ReaderT, const, id.
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  Focus 3.
-  intros A f. ext k. cbn. unfold bind_ReaderT, pure_ReaderT.
-    rewrite get_get. reflexivity.
-*)
+  intros. ext e. cbn.
+  unfold bind_ReaderT, pure_ReaderT, ReaderT in *.
+  rewrite <- !fmap_comp'. unfold compose.
+  apply wrap_law.
+Defined.
