@@ -186,6 +186,27 @@ Proof.
   intros. cbn. unfold bind_SumT. rewrite choose_bind_l. reflexivity.
 Defined.
 
+Instance MonadAlt_SumT'
+  (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (SumT E M) (Monad_SumT E M inst).
+esplit. Unshelve.
+  Focus 3. unfold SumT. intros A x y.
+  apply (@bind M inst _ _ x).
+  destruct 1.
+    exact y.
+    apply (@bind M inst _ _ y).
+      destruct 1.
+        exact (pure (inr a)).
+        exact (choose (pure (inr a)) (pure (inr a0))).
+Proof.
+  intros. cbn. rewrite !bind_assoc. f_equal. ext ex. destruct ex; cbn.
+    reflexivity.
+    rewrite !bind_assoc. f_equal. ext ex. destruct ex; cbn.
+      rewrite bind_pure_l. reflexivity.
+      rewrite choose_bind_l. rewrite !bind_pure_l.
+        rewrite bind_assoc.
+Abort.
+
 Instance MonadNondet_SumT
   (E : Type) (e : E) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadNondet M inst)
@@ -195,8 +216,8 @@ Instance MonadNondet_SumT
     instA := @MonadAlt_SumT E M inst (@instA _ _ inst');
 }.
 Proof.
-  intros. cbn. unfold fail_SumT. Print MonadAlt. admit.
-  intros. cbn. unfold fail_SumT. Print MonadNondet. admit.
+  intros. cbn. unfold fail_SumT. admit.
+  intros. cbn. unfold fail_SumT. admit.
 Admitted.
 
 Instance MonadReader_SumT

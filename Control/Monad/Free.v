@@ -57,7 +57,7 @@ Theorem Free_not_MonadPlus :
   (forall F : Type -> Type, MonadPlus (Free F)) -> False.
 Proof.
   intro. apply Free_not_Alternative, X.
-Defined.
+Qed.
 
 Definition lift_Free
   {M : Type -> Type} {inst : Monad M} {A : Type}
@@ -81,16 +81,9 @@ Instance MonadTrans_Free : MonadTrans Free :=
     lift := @lift_Free;
 }.
 Proof.
-  intros. unfold lift_Free.
-    ext X. ext pure. ext wrap. cbn. unfold pure_Free.
-  intros.
-  cbn. monad. unfold lift_Free, pure_Free.
-
- Focus 2. intros. unfold lift_Free.
-  ext X. ext pure. ext wrap. cbn. unfold bind_Free, compose.
-  f_equal. rewrite !fmap_bind. Search fmap bind.
-  rewrite fmap_bind_pure. f_equal. ext a.
-  rewrite <- fmap_pure. rewrite fmap_pure.
+  Focus 2.
+    intros. cbn. unfold lift_Free, bind_Free, compose.
+      ext3 X pure wrap. f_equal. Check fmap_bind.
 Abort.
 
 Require Import Control.Monad.Class.MonadFree.

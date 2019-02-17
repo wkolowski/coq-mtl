@@ -145,7 +145,7 @@ Instance MonadStateNondet_ContT
 }.
 Proof.
   intros. rewrite constrA_spec. Print MonadStateNondet.
-  cbn. unfold bind_ContT.
+  cbn. unfold bind_ContT. ext k. unfold ContT in x.
   Focus 2. intros. cbn. unfold bind_ContT. ext k. 
 Abort.
 
