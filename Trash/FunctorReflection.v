@@ -1,3 +1,4 @@
+From Equations Require Import Equations.
 
 Require Export Control.Functor.
 
@@ -6,8 +7,8 @@ Variables
   (F_inst : Functor F)
   (pure : forall A : Type, A -> F A).
 
-Inductive type : Type :=
-    | TVar : Type -> type
+Polymorphic Cumulative Inductive type : Type :=
+    | TVar : Set -> type
     | TArr : type -> type -> type
     | TF : type -> type.
 
@@ -19,7 +20,7 @@ match t with
 end.
 
 Inductive Exp : type -> Type :=
-    | Var : forall A : Type, A -> Exp (TVar A)
+    | Var : forall A : Set, A -> Exp (TVar A)
     | Id : forall A : type, Exp (TArr A A)
     | Comp :
         forall A B C : type,
@@ -42,77 +43,35 @@ match t with
     | Fmap f => fmap (denote f)
 end.
 
-(*
-Eval cbn in denote (App (Fmap (Var (plus 2))) (Var (pure _ 42))).
-*)
+Check @NoConfusion.
+Print NoConfusionPackage.
 
-Require Import Coq.Logic.JMeq.
-Require Import Coq.Program.Equality.
+Derive NoConfusion for type.
+Derive Signature NoConfusion NoConfusionHom for Exp.
 
-Definition simplify {A : type} (e : Exp A) : Exp A.
-Proof.
-  dependent induction e.
-    exact (Var a).
-    exact Id.
-    dependent destruction IHe1.
-      exact IHe2.
-      exact (Comp (Comp IHe1_1 IHe1_2) IHe2).
-      exact (Comp (App IHe1_1 IHe1_2) IHe2).
-      exact (Comp (Fmap IHe1) IHe2).
-(*      1-3: exact (Comp IHe1 IHe2).*)
-    inversion IHe1; subst.
-      exact e2.
-      1-3: exact (App IHe1 IHe2).
-    exact (Fmap IHe).
-Defined.
+Equations simplify {t : type} (e : Exp t) : Exp t :=
+simplify (Var x) := Var x ;
+simplify Id := Id;
+simplify (Comp e1 e2) with simplify e1 => {
+  simplify (Comp e1 e2) Id := simplify e2;
+  simplify (Comp e1 e2) e1' := Comp e1' (simplify e2) };
+simplify (App e1 e2) with simplify e1 => {
+  simplify (App e1 e2) Id := simplify e2;
+  simplify (App e1 e2) e1' := App e1' (simplify e2) };
+simplify (Fmap e') with simplify e' => {
+  simplify (Fmap e') Id := Id;
+  simplify (Fmap e') e'' := Fmap e''}.
 
 Lemma denote_simplify :
   forall (t : type) (e : Exp t),
     denote (simplify e) = denote e.
 Proof.
-  dependent induction e.
-    cbn. reflexivity.
-    cbn. reflexivity. cbn. compute.
-    (*cbn.*)
-Abort.
-Print Exp.
-Definition simplify' {A : type} : Exp A -> Exp A.
-revert A.
-(*
-refine (
-  fix simplify {A : type} (e : Exp A) : Exp A :=
-match e as e' in Exp t return (JMeq e e' -> Exp t) with
-    | Var x => fun _ => Var x
-    | Id => fun _ => Id
-    | Comp e1 e2 => fun _ => (* TODO *)
-        match simplify e1 as e1' in Exp t
-        return (JMeq (simplify e1) e1' -> Exp t) with
-            
-            | _ => fun _ => _
-        end JMeq_refl
-    | App e1 e2 => fun _ => App (simplify e1) (simplify e2)
-    | Fmap e => fun _ => Fmap (simplify e)
-end (JMeq_refl)
-).
-*)
-Abort.
-(*
-match e as e' return (e = e' -> Exp A) with
-    | @Comp t1 t2 t3 e1 e2 => fun _ => Comp e1 e2 (*
-      let
-        rt {A : type} (e : Exp A) :=
-        match e with
-            | @Id t => Exp (TArr t t3)
-            | _ => Exp (TArr t1 t3)
-        end
-      in
-        match e1 return rt e1 with
-            | Id => e2
-            | _ => _
-        end*)
-    | _ => fun _ => e
-end (eq_refl e)).
-*)
+  intros.
+  funelim (simplify e); cbn;
+  rewrite ?H, <- ?Hind, ?Heq; cbn; try reflexivity.
+  rewrite fmap_id. reflexivity.
+Qed.
+
 (*
 Class Reify {A : Type} (x : A) : Type :=
 {
@@ -156,8 +115,6 @@ Variables
   (f : A -> A)
   (x y : A).
 
-Print Exp.
-
 Ltac reify e :=
 match e with
     | id => constr:(Id)
@@ -176,12 +133,14 @@ match e with
 (*    | _ => idtac e*)
 end.
 
+(*
 Goal 5 = 5.
 Proof.
 (*
   match constr:(fmap (plu
 *)
   let x := reify constr:(f x) in pose x.
+  let f := constr:(Comp (Var f) (Var f)) in pose f.
   let x := reify constr:(f .> f) in pose x.
 Abort.
-
+*)

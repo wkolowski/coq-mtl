@@ -104,6 +104,7 @@ You can then compile the project at any time using `make` and recompile (for exa
   * Take a look at other Haskell proposals relating to the standard library design.
   * Browse Idris standard library and steal good stuff from there.
   * Interesting Idris classes: Cast, Uninhabited, Sized, Read
+* Update this README to mention the Equations package.
 
 ### Particular
 
