@@ -53,7 +53,7 @@ Notation "f <*> x" := (ap f x)
 Notation "x <**> f" := (ap f x)
   (left associativity, at level 40, only parsing).
 
-(*
+(* TODO: this probably was an attempt at banana brackets
 Notation "[/  f  /]" := (pure f) (only parsing).
 Notation "[/ f x .. y /]" := (ap .. (ap (pure f) x) .. y)
   (format
@@ -195,7 +195,7 @@ Definition unless (cond : bool) (a : F unit) : F unit :=
 End ApplicativeFuns1.
 
 Arguments liftA2 {F inst A B C} _ _ _.
-Arguments liftA3 {F inst A B C D } _ _ _ _.
+Arguments liftA3 {F inst A B C D} _ _ _ _.
 Arguments liftA4 {F inst A B C D E} _ _ _ _ _.
 
 Arguments filterA {F inst A} _ _.

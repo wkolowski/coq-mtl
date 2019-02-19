@@ -15,9 +15,7 @@ Instance FunctorOption : Functor option :=
 {
     fmap := @fmap_Option
 }.
-Proof.
-  all: monad.
-Defined.
+Proof. all: monad. Defined.
 
 Definition pure_Option := @Some.
 

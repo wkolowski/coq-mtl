@@ -4,13 +4,14 @@ Require Export Control.Functor.
 
 Variables
   (F : Type -> Type)
-  (F_inst : Functor F)
-  (pure : forall A : Type, A -> F A).
+  (inst : Functor F).
 
-Polymorphic Cumulative Inductive type : Type :=
+Inductive type : Type :=
     | TVar : Set -> type
     | TArr : type -> type -> type
     | TF : type -> type.
+
+Derive NoConfusion for type.
 
 Fixpoint typeDenote (t : type) : Type :=
 match t with
@@ -20,7 +21,7 @@ match t with
 end.
 
 Inductive Exp : type -> Type :=
-    | Var : forall A : Set, A -> Exp (TVar A)
+    | Fun : forall A B : Set, (A -> B) -> Exp (TArr (TVar A) (TVar B))
     | Id : forall A : type, Exp (TArr A A)
     | Comp :
         forall A B C : type,
@@ -28,96 +29,111 @@ Inductive Exp : type -> Type :=
     | App : forall A B : type, Exp (TArr A B) -> Exp A -> Exp B
     | Fmap : forall A B : type, Exp (TArr A B) -> Exp (TArr (TF A) (TF B)).
 
-Arguments Var {A}.
+Arguments Fun {A B}.
 Arguments Id {A}.
 Arguments Comp {A B C}.
 Arguments App {A B}.
 Arguments Fmap {A B}.
 
+Derive Signature NoConfusion NoConfusionHom for Exp.
+
 Fixpoint denote {A : type} (t : Exp A) : typeDenote A :=
 match t with
-    | Var x => x
+    | Fun f => f
     | Id => id
     | Comp f g => denote f .> denote g
     | App f x => denote f (denote x)
     | Fmap f => fmap (denote f)
 end.
 
-Check @NoConfusion.
-Print NoConfusionPackage.
+Inductive flist : type -> type -> Type :=
+    | fnil : forall A : type, flist A A
+    | fcons :
+        forall A B C : type,
+          Exp (TArr A B) -> flist B C -> flist A C.
 
-Derive NoConfusion for type.
-Derive Signature NoConfusion NoConfusionHom for Exp.
+Arguments fnil {A}.
+Arguments fcons {A B C}.
 
-Equations simplify {t : type} (e : Exp t) : Exp t :=
-simplify (Var x) := Var x ;
-simplify Id := Id;
-simplify (Comp e1 e2) with simplify e1 => {
-  simplify (Comp e1 e2) Id := simplify e2;
-  simplify (Comp e1 e2) e1' := Comp e1' (simplify e2) };
-simplify (App e1 e2) with simplify e1 => {
-  simplify (App e1 e2) Id := simplify e2;
-  simplify (App e1 e2) e1' := App e1' (simplify e2) };
-simplify (Fmap e') with simplify e' => {
-  simplify (Fmap e') Id := Id;
-  simplify (Fmap e') e'' := Fmap e''}.
+Equations fapp
+  {A B C : type} (l1 : flist A B) (l2 : flist B C) : flist A C :=
+fapp fnil l2 := l2;
+fapp (fcons f l1') l2 := fcons f (fapp l1' l2).
+Next Obligation. Admitted.
+Next Obligation. apply UIP_refl. Defined.
 
-Lemma denote_simplify :
-  forall (t : type) (e : Exp t),
-    denote (simplify e) = denote e.
+Equations efmap
+  (f : forall A B : type,
+    Exp (TArr A B) -> Exp (TArr (TF A) (TF B)))
+  {A B : type} (l : flist A B) : flist (TF A) (TF B) :=
+efmap f fnil := fnil;
+efmap f (fcons g l') := fcons (f _ _ g) (efmap f l').
+
+Equations flatten
+  {A B : type} (e : Exp (TArr A B))
+  : flist A B :=
+flatten (Fun f) := fcons (Fun f) fnil;
+flatten Id := fnil;
+flatten (Comp e1 e2) := fapp (flatten e1) (flatten e2);
+flatten (App e1 e2) := fcons (App e1 e2) fnil;
+flatten (Fmap e') := efmap (@Fmap) (flatten e').
+
+Equations flistDenote
+  {A B : type} (l : flist A B) : typeDenote A -> typeDenote B :=
+flistDenote fnil := id;
+flistDenote (fcons f l') := denote f .> flistDenote l'.
+
+Lemma flistDenote_fapp :
+  forall (A B C : type) (l1 : flist A B) (l2 : flist B C),
+    flistDenote (fapp l1 l2) = flistDenote l1 .> flistDenote l2.
 Proof.
-  intros.
-  funelim (simplify e); cbn;
-  rewrite ?H, <- ?Hind, ?Heq; cbn; try reflexivity.
-  rewrite fmap_id. reflexivity.
+  intros. funelim (fapp l1 l2).
+    simp fapp.
+    simp flistDenote. rewrite H. reflexivity.
 Qed.
 
-(*
-Class Reify {A : Type} (x : A) : Type :=
-{
-    reify : Exp A;
-    denote_reify : denote reify = x
-}.
-Arguments reify {A} _ {Reify}.
-Instance ReifyApp
-  {A B C : Type} {f : A -> B} {x : A}
-  (Rf : Reify f) (Rx : Reify x) : Reify (f x) | 0 :=
-{
-    reify := App (reify f) (reify x)
-}.
+Lemma flistDenote_efmap :
+  forall
+    (A B : type) (l : flist A B),
+      flistDenote (efmap (@Fmap) l) = fmap (flistDenote l).
 Proof.
-  cbn. rewrite 2!denote_reify. reflexivity.
-Defined.
-Instance ReifyFmap
-  {A B : Type} (f : A -> B) (Rf : Reify f) : Reify (fmap f) | 0 :=
-{
-    reify := Fmap (reify f)
-}.
-Proof.
-  cbn. rewrite denote_reify. reflexivity.
-Defined.
-Instance ReifyVar {A : Type} (x : A) : Reify x | 100 :=
-{
-    reify := Var x
-}.
-Proof.
-  cbn. reflexivity.
-Defined.
-Eval cbn in reify f.
-Eval cbn in reify x.
-Eval cbn in reify (fmap f).
-Eval cbn in reify (f x).
-Check reify (f x).
-*)
+  intros. funelim (efmap (@Fmap) l); simp flistDenote.
+    rewrite fmap_id. reflexivity.
+    rewrite fmap_comp, H. reflexivity.
+Qed.
 
-Variables
-  (A B C : Type)
-  (f : A -> A)
-  (x y : A).
+Lemma flistDenote_flatten :
+  forall (A B : type) (e : Exp (TArr A B)),
+    flistDenote (flatten e) = denote e.
+Proof.
+  intros. funelim (flatten e); simp flistDenote.
+    rewrite flistDenote_fapp, H, H0. reflexivity.
+    rewrite flistDenote_efmap, H. reflexivity.
+Qed.
+
+Lemma reflect_functor :
+  forall (A B : type) (e1 e2 : Exp (TArr A B)),
+    flistDenote (flatten e1) = flistDenote (flatten e2) ->
+    denote e1 = denote e2.
+Proof.
+  intros.
+  rewrite <- flistDenote_flatten, H, flistDenote_flatten.
+  reflexivity.
+Qed.
+
+(*End Stuff.*)
+
+Ltac reifyType T :=
+match T with
+    | ?F ?A =>
+        let t := reifyType A in constr:(TF t)
+    | ?A => constr:(TVar A)
+end.
 
 Ltac reify e :=
 match e with
-    | id => constr:(Id)
+    | @id ?A =>
+        let t := reifyType A in constr:(@Id t)
     | ?f .> ?g =>
         let f' := reify f in
         let g' := reify g in constr:(Comp f' g')
@@ -127,20 +143,47 @@ match e with
     | ?f ?x =>
         let f' := reify f in
         let x' := reify x in constr:(App f' x')
-    | fmap ?f => idtac f;
+    | fmap ?f =>
         let f' := reify f in constr:(Fmap f')
-    | ?x => constr:(Var x)
-(*    | _ => idtac e*)
+(*    | @fmap _ _ ?A ?B ?f => idtac f;
+        let A' := reifyType A in
+        let B' := reifyType B in
+        let f' := reify f in constr:(@Fmap A' B' f')*)
+    | ?f => constr:(Fun f)
+end.
+
+Ltac reflect_functor :=
+match goal with
+    | |- ?e1 = ?e2 =>
+        let e1' := reify e1 in
+        let e2' := reify e2 in
+          change (denote e1' = denote e2');
+          apply reflect_functor; simp flistDenote
 end.
 
 (*
-Goal 5 = 5.
+Variables
+  (F : Type -> Type)
+  (F_inst : Functor F).
+*)
+
+Variables
+  (A B C : Type)
+  (f : A -> A)
+  (x y : A).
+
+Goal id .> fmap (f .> (f .> f)) = fmap (f .> f) .> id .> fmap f.
 Proof.
-(*
-  match constr:(fmap (plu
-*)
-  let x := reify constr:(f x) in pose x.
-  let f := constr:(Comp (Var f) (Var f)) in pose f.
-  let x := reify constr:(f .> f) in pose x.
+  reflect_functor.
 Abort.
-*)
+
+Goal fmap f .> fmap f = fmap (f .> f).
+Proof. reflect_functor. Qed.
+
+Goal fmap id .> fmap f = fmap f.
+Proof. reflect_functor. Qed.
+
+Goal f (f x) = f (f x).
+Proof.
+  Fail reflect_functor.
+Abort.
