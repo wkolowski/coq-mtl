@@ -46,6 +46,14 @@ Proof.
   rewrite <- ap_pure_fmap, fmap_id. reflexivity.
 Qed.
 
+Lemma fmap_id' :
+  ap_pure_fmap -> identity -> fmap_id.
+Proof.
+  compute. intros ap_pure_fmap identity A.
+  ext a. rewrite ap_pure_fmap, identity.
+  reflexivity.
+Qed.
+
 Lemma fmap_pure' :
   ap_pure_fmap -> homomorphism -> fmap_pure.
 Proof.
@@ -54,14 +62,8 @@ Proof.
 Qed.
 
 Lemma homomorphism' :
-  fmap_pure -> ap_pure_fmap -> homomorphism.
+  ap_pure_fmap -> fmap_pure -> homomorphism.
 Proof.
-  compute. intros fmap_pure ap_pure_fmap A B f x.
+  compute. intros ap_pure_fmap fmap_pure A B f x.
   rewrite <- ap_pure_fmap, fmap_pure. reflexivity.
 Qed.
-
-Lemma ap_pure_fmap' :
-  fmap_pure -> identity -> ap_pure_fmap.
-Proof.
-  compute. intros fmap_pure identity A B f x.
-Abort.

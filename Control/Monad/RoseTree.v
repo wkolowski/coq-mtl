@@ -112,11 +112,67 @@ Defined.
 
 Require Import Control.Monad.Class.All.
 
+Inductive nel (A : Type) : Type :=
+    | singl : A -> nel A
+    | cons : A -> nel A -> nel A.
+
+Arguments singl {A}.
+Arguments cons {A}.
+
+(*
+Fixpoint leftmost {A : Type} (t : RT A) : A * option (RT A) :=
+match t with
+    | Leaf a => (a, None)
+    | Node l r =>
+        match leftmost l with
+            | (a, None) => (a, Some r)
+            | (a, Some l') => (a, Some (Node l' r))
+        end
+end.
+*)
+
+Fixpoint napp {A : Type} (l1 l2 : nel A) : nel A :=
+match l1 with
+    | singl a => cons a l2
+    | cons h t => cons h (napp t l2)
+end.
+
+Fixpoint toNel {A : Type} (t : RT A) : nel A :=
+match t with
+    | Leaf a => singl a
+    | Node l r => napp (toNel l) (toNel r)
+end.
+
+Fixpoint fromNel {A : Type} (l : nel A) : RT A :=
+match l with
+    | singl a => Leaf a
+    | cons h t => Node (Leaf h) (fromNel t)
+end.
+
+Definition flatten {A : Type} (t : RT A) : RT A :=
+  fromNel (toNel t).
+
+Lemma toNel_fromNel :
+  forall (A : Type) (l : nel A),
+    toNel (fromNel l) = l.
+Proof.
+  induction l; cbn; rewrite ?IHl; reflexivity.
+Qed.
+
+Lemma napp_assoc :
+  forall (A : Type) (l1 l2 l3 : nel A),
+    napp (napp l1 l2) l3 = napp l1 (napp l2 l3).
+Proof.
+  induction l1; cbn; intros; rewrite ?IHl1; reflexivity.
+Qed.
+
 Instance MonadAlt_RT : MonadAlt RT Monad_RT :=
 {
-    choose := @Node
+    choose := fun A x y => flatten (Node x y)
 }.
 Proof.
-  
-  Focus 2. reflexivity.
+  induction a; cbn; intros;
+    rewrite !toNel_fromNel, ?napp_assoc; reflexivity.
+  induction x; cbn; intros.
+    induction y; cbn.
 Abort.

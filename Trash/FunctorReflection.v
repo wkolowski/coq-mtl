@@ -175,7 +175,7 @@ Variables
 Goal id .> fmap (f .> (f .> f)) = fmap (f .> f) .> id .> fmap f.
 Proof.
   reflect_functor.
-Abort.
+Qed.
 
 Goal fmap f .> fmap f = fmap (f .> f).
 Proof. reflect_functor. Qed.
@@ -186,4 +186,5 @@ Proof. reflect_functor. Qed.
 Goal f (f x) = f (f x).
 Proof.
   Fail reflect_functor.
-Abort.
+  reflexivity.
+Qed.

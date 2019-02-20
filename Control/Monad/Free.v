@@ -59,33 +59,6 @@ Proof.
   intro. apply Free_not_Alternative, X.
 Qed.
 
-Definition lift_Free
-  {M : Type -> Type} {inst : Monad M} {A : Type}
-  (x : M A) : Free M A :=
-    fun X pure wrap => wrap (fmap pure x).
-
-Hint Unfold fmap_Free pure_Free ap_Free bind_Free lift_Free : HSLib.
-
-Lemma Free_not_MonadTrans :
-  MonadTrans Free -> False.
-Proof.
-  destruct 1.
-  unfold Free in *.
-  clear -lift_pure.
-  
-Abort.
-
-Instance MonadTrans_Free : MonadTrans Free :=
-{
-    is_monad := fun F _ => @Monad_Free F;
-    lift := @lift_Free;
-}.
-Proof.
-  Focus 2.
-    intros. cbn. unfold lift_Free, bind_Free, compose.
-      ext3 X pure wrap. f_equal. Check fmap_bind.
-Abort.
-
 Require Import Control.Monad.Class.MonadFree.
 
 Definition wrap_Free

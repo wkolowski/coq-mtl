@@ -28,9 +28,11 @@ Instance Comp_to_Bind
   (M : Type -> Type) (inst : Monad M) : MonadBind.Monad M :=
 {
     bind := @bindM M inst;
+    pure := @pure M inst
 }.
 Proof.
   all: MonadBind.monad.
+    Focus 3. compute. destruct inst. cbn. cbn.
     apply pure. assumption.
     Focus 2.
 Abort.

@@ -75,10 +75,11 @@ Proof.
 Qed.
 
 Lemma ap_list_exchange3 :
-  forall (A B C : Type) (f : A -> B) (fs : list (A -> B)) (gs : list (B -> C))
-  (xs : list A),
-    ap_list (ap_list (map compose gs) (f :: fs)) xs =
-    ap_list gs (map f xs ++ ap_list fs xs).
+  forall
+    (A B C : Type) (f : A -> B) (fs : list (A -> B)) (gs : list (B -> C))
+    (xs : list A),
+      ap_list (ap_list (map compose gs) (f :: fs)) xs =
+      ap_list gs (map f xs ++ ap_list fs xs).
 Proof.
   induction gs as [| g gs]; simpl.
     trivial.
