@@ -1,5 +1,5 @@
 Require Export HSLib.Base.
-Require Export HSLib.Misc.Monoid.
+Require Import HSLib.Misc.Monoid.
 
 (** Haskell-style [Foldable]. I have no idea about the intended categorical
     semantics. The definition is based on [foldMap] while [foldr] and [foldl]

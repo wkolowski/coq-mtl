@@ -1,4 +1,5 @@
 Require Import Control.
+Require Import Misc.Monoid.
 
 Definition Sum (E A : Type) : Type := sum E A.
 

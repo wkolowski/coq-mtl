@@ -62,25 +62,25 @@ Proof.
 Qed.
 
 Definition aempty_SumT
-  (E : Type) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
+  (E : Type) {M : Type -> Type} {instA : Alternative M}
   {A : Type} : SumT E M A := fmap inr aempty.
 
 Definition aplus_SumT
-  {E : Type} {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
+  {E : Type} {M : Type -> Type} {instA : Alternative M}
   {A : Type} (x y : SumT E M A) : SumT E M A :=
     @aplus _ instA _ x y.
 
 Hint Unfold aempty_SumT aplus_SumT : HSLib.
 
 Instance Alternative_SumT
-  (E : Type) (M : Type -> Type) (inst : MonadPlus M)
+  (E : Type) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
   : Alternative (SumT E M) :=
 {
-    is_applicative := Applicative_SumT E M inst;
-    aempty := @aempty_SumT E M inst inst;
-    aplus := @aplus_SumT E M inst inst;
+    is_applicative := Applicative_SumT E M instM;
+    aempty := @aempty_SumT E M instA;
+    aplus := @aplus_SumT E M instA;
 }.
-Proof. all: hs. Defined.
+Proof. all: monad. Abort.
 
 Definition bind_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
@@ -101,6 +101,7 @@ Instance Monad_SumT
 }.
 Proof. all: hs; monad. Defined.
 
+(*
 Theorem SumT_not_MonadPlus :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
     MonadPlus (SumT E M)) -> False.
@@ -117,6 +118,7 @@ Instance MonadPlus_SumT
     is_alternative := @Alternative_SumT E M inst;
 }.
 Proof. hs. Defined.
+*)
 
 Definition lift_SumT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)

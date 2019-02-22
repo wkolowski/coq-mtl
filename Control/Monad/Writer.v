@@ -1,4 +1,5 @@
 Require Import Control.
+Require Import Misc.Monoid.
 
 Definition Writer (W : Monoid) (A : Type) : Type := (A * W)%type.
 

@@ -1,4 +1,5 @@
 Require Import Control.
+Require Import Misc.Monoid.
 
 Definition Option (A : Type) : Type := option A.
 
@@ -76,12 +77,14 @@ Instance MonadOption : Monad option :=
 }.
 Proof. all: monad. Defined.
 
+(*
 Instance MonadPlus_Option : MonadPlus option :=
 {
     is_monad := MonadOption;
     is_alternative := AlternativeOption;
 }.
 Proof. all: hs. Defined.
+*)
 
 Definition foldMap_Option
   {A : Type} {M : Monoid} (f : A -> M) (oa : option A) : M :=

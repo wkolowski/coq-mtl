@@ -1,6 +1,5 @@
 Require Export HSLib.Control.Alternative.
 Require Export HSLib.Control.Monad.
-Require Export HSLib.Control.Monad.MonadPlus.
 
 Require Export HSLib.Control.Monad.All.
 

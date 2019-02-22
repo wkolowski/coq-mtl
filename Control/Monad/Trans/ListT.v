@@ -84,6 +84,7 @@ Instance Monad_ListT
 }.
 Proof. all: reflexivity. Defined.
 
+(*
 Instance MonadPlus_ListT
   (M : Type -> Type) (inst : Monad M) : MonadPlus (ListT M) :=
 {
@@ -91,6 +92,7 @@ Instance MonadPlus_ListT
     is_alternative := Alternative_ListT _ inst;
 }.
 Proof. reflexivity. Defined.
+*)
 
 Definition lift_ListT
   {M : Type -> Type} {inst : Monad M} (A : Type) (ma : M A) : ListT M A :=
@@ -148,6 +150,7 @@ Instance MonadExcept_ListT
 }.
 Proof.
   all: intros; ext X; ext nil; ext cons; cbn.
+    unfold fail_ListT.
 Abort.
 
 Instance MonadReader_ListT
@@ -199,7 +202,7 @@ Instance MonadStateNondet_ListT
 }.
 Proof.
   intros. rewrite constrA_spec. cbn. compute.
-    ext X. ext nil. ext cons. admit.
+    ext X. ext nil. ext cons. admit. (* Induction would do *)
   intros. cbn. compute. ext X. ext nil. ext cons.
 Abort.
 

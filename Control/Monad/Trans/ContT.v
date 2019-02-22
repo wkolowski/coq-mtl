@@ -90,7 +90,7 @@ Instance MonadNondet_ContT
 }.
 Proof. all: monad. Defined.
 
-(* TODO *) Instance MonadExcept_ContT
+Instance MonadExcept_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ContT R M) (Monad_ContT R M) :=
 {
@@ -99,6 +99,7 @@ Proof. all: monad. Defined.
 }.
 Proof.
   1-3: monad.
+  intros. ext k. cbn. unfold pure_ContT.
 Abort.
 
 Instance MonadReader_ContT

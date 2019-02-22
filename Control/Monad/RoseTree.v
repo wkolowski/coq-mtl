@@ -1,4 +1,5 @@
 Require Import Control.
+Require Import Misc.Monoid.
 
 (* Rose Trees *)
 Inductive RT (A : Type) : Type :=
@@ -86,11 +87,13 @@ Proof.
       rewrite IHfl, IHfr. reflexivity.
 Defined.
 
+(*
 Theorem RT_not_MonadPlus :
   MonadPlus RT -> False.
 Proof.
   destruct 1. apply RT_not_Alternative. assumption.
 Qed.
+*)
 
 (*Hint Unfold fmap_RT pure_RT ap_RT bind_RT : HSLib.*)
 
@@ -112,12 +115,14 @@ Defined.
 
 Require Import Control.Monad.Class.All.
 
+Module nel.
+
 Inductive nel (A : Type) : Type :=
     | singl : A -> nel A
-    | cons : A -> nel A -> nel A.
+    | ncons : A -> nel A -> nel A.
 
 Arguments singl {A}.
-Arguments cons {A}.
+Arguments ncons {A}.
 
 (*
 Fixpoint leftmost {A : Type} (t : RT A) : A * option (RT A) :=
@@ -133,8 +138,8 @@ end.
 
 Fixpoint napp {A : Type} (l1 l2 : nel A) : nel A :=
 match l1 with
-    | singl a => cons a l2
-    | cons h t => cons h (napp t l2)
+    | singl a => ncons a l2
+    | ncons h t => ncons h (napp t l2)
 end.
 
 Fixpoint toNel {A : Type} (t : RT A) : nel A :=
@@ -146,7 +151,7 @@ end.
 Fixpoint fromNel {A : Type} (l : nel A) : RT A :=
 match l with
     | singl a => Leaf a
-    | cons h t => Node (Leaf h) (fromNel t)
+    | ncons h t => Node (Leaf h) (fromNel t)
 end.
 
 Definition flatten {A : Type} (t : RT A) : RT A :=
@@ -176,3 +181,5 @@ Proof.
   induction x; cbn; intros.
     induction y; cbn.
 Abort.
+
+End nel.

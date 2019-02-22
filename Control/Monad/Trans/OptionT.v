@@ -92,12 +92,14 @@ Instance Monad_OptionT
 }.
 Proof. all: monad. Defined.
 
+(*
 Instance MonadPlus_OptionT
   (M : Type -> Type) (inst : Monad M) : MonadPlus (OptionT M) :=
 {
     is_monad := Monad_OptionT M inst;
     is_alternative := Alternative_OptionT M inst;
 }.
+*)
 
 Definition lift_OptionT {M : Type -> Type} {_inst : Monad M} {A : Type}
   (ma : M A) : OptionT M A := fmap Some ma.
@@ -157,19 +159,30 @@ Proof.
         ext y. destruct y; monad.
 Abort.
 
-(*
+Instance MonadAlt_OptionT
+  (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (OptionT M) (Monad_OptionT M inst) :=
+{
+    choose :=
+      fun A x y => @choose M inst inst' _ x y
+}.
+Proof.
+  intros. rewrite choose_assoc. reflexivity.
+  intros. cbn. unfold bind_OptionT.
+    rewrite choose_bind_l. reflexivity.
+Defined.
+
 Instance MonadNondet_OptionT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (OptionT M) (Monad_OptionT M inst) :=
 {
-    instF := @MonadFail_OptionT M inst (@instF _ _ inst');
+    instF := @MonadFail_OptionT M inst; (* (@instF _ _ inst');*)
     instA := @MonadAlt_OptionT M inst (@instA _ _ inst');
 }.
 Proof.
-  intros. cbn. ext k. rewrite bind_fail_l, choose_fail_l. reflexivity.
-  intros. cbn. ext k. rewrite bind_fail_l, choose_fail_r. reflexivity.
-Defined.
-*)
+  Focus 2. cbn. unfold fail_OptionT.
+  intros. cbn. unfold fail_OptionT. Search choose.
+Admitted.
 
 Instance MonadExcept_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
@@ -233,11 +246,11 @@ Defined.
 (*
 Instance MonadStateNondet_OptionT
   (S : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadState S M inst)
+  (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (OptionT M) (Monad_OptionT M inst) :=
 {
     instS := MonadState_OptionT S M inst inst';
-    instN := MonadNondet_OptionT M inst inst';
+    instN := MonadNondet_OptionT S M inst inst';
 }.
 Proof.
   intros. rewrite constrA_spec. cbn. compute.

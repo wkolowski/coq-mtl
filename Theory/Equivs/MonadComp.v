@@ -32,7 +32,5 @@ Instance Comp_to_Bind
 }.
 Proof.
   all: MonadBind.monad.
-    Focus 3. compute. destruct inst. cbn. cbn.
-    apply pure. assumption.
-    Focus 2.
+    Focus 3. compute. destruct inst. cbn.
 Abort.

@@ -85,6 +85,7 @@ Instance Monad_ReaderT
 }.
 Proof. all: monad. Defined.
 
+(*
 Theorem ReaderT_not_MonadPlus :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
     MonadPlus (ReaderT E M)) -> False.
@@ -101,6 +102,7 @@ Instance MonadPlus_ReaderT
     is_alternative := @Alternative_ReaderT E M inst inst;
 }.
 Proof. all: monad. Defined.
+*)
 
 Definition lift_ReaderT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)

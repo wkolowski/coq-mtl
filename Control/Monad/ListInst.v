@@ -1,4 +1,5 @@
 Require Import Control.
+Require Import Misc.Monoid.
 
 Definition List (A : Type) : Type := list A.
 
@@ -167,12 +168,14 @@ Proof.
       rewrite IHt. reflexivity.
 Defined.
 
+(*
 Instance MonadPlus_List : MonadPlus list :=
 {
     is_monad := Monad_List;
     is_alternative := Alternative_List;
 }.
 Proof. monad. Defined.
+*)
 
 Fixpoint foldMap_List
   {A : Type} {M : Monoid} (f : A -> M) (l : list A) : M :=

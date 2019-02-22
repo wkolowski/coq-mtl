@@ -1,5 +1,6 @@
-Require Import Control.
-Require Import Control.Monad.All.
+Require Import Control.Applicative.
+Require Import Control.Monad.ListInst.
+Require Import Control.Monad.
 
 (* Just for teh lulz. *)
 Class Enumerable (A : Type) : Type :=
@@ -47,11 +48,12 @@ Instance Enumerable_nat : Enumerable nat :=
 Instance Enumerable_list
   (A : Type) (inst : Enumerable A) : Enumerable (list A) :=
 {
-    enum := fix f (n : nat) : list (list A) :=
-    match n with
-        | 0 => [[]]
-        | S n' => liftA2 cons (enum A n) (f n')
-    end
+    enum :=
+      fix f (n : nat) : list (list A) :=
+      match n with
+          | 0 => [[]]
+          | S n' => liftA2 cons (enum A n) (f n')
+      end
 }.
 
 Instance Enumerable_sigma

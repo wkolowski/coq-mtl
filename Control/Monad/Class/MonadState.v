@@ -1,5 +1,6 @@
 Require Import HSLib.Base.
 Require Import Control.Monad.
+Require Import Control.Monad.Trans.
 
 Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
@@ -11,11 +12,6 @@ Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
       forall s : S, put s >> get = put s >> pure s;
     get_put :
       get >>= put = pure tt;
-(*
-    get_put' :
-      forall s : S,
-        get >> put s = put s;
-*)
     get_get :
       forall (A : Type) (k : S -> S -> M A),
         get >>= (fun s : S => get >>= k s) = get >>= fun s : S => k s s
@@ -97,33 +93,16 @@ Lemma put_gets :
   forall (A : Type) (s : S) (f : S -> A),
     put s >> gets f = put s >> pure (f s).
 Proof.
-  intros. assert (H := put_get). unfold gets. specialize (H s).
-  rewrite ?constrA_spec, <- bind_assoc, H, bind_assoc, bind_pure_l in *.
+  intros. unfold gets.
+  rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
   reflexivity.
 Qed.
 
-Lemma modify_put :
-  forall (f : S -> S) (s : S),
-    modify f >> put s = put s.
-Proof.
-  intros. unfold modify.
-(*  rewrite (bind_constrA_assoc M instM S unit unit
-    (@get S M instM instMS)
-    (fun s0 : S => @put S M instM instMS (f s0))
-    (@put S M instM instMS s)).
-*)
-  replace
-    (get >>= (fun s0 : S => put (f s0)) >> put s)
-  with
-    (get >>= (fun s : S => put (f s) >> put s)).
-  Check get_put.
-  assert (fmap f get >>= put = pure tt).
-    rewrite bind_fmap.
-Abort.
-
 End MonadState_funs.
 
-Require Import Control.Monad.Trans.
+Arguments state {S M instM instMS A}.
+Arguments modify {S M instM instMS}.
+Arguments gets {S M instM instMS A}.
 
 Variables
   (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
@@ -143,8 +122,23 @@ Proof.
     rewrite lift_constrA, put_get, <- lift_constrA, lift_pure. reflexivity.
   rewrite <- lift_pure, <- get_put, lift_bind. reflexivity.
   intros.
-    Check bind_assoc.
-    Check get_get.
   Print MonadTrans.
-  Compute lift_bind _ _ get (fun s => get >>= k s).
+Abort.
+
+Lemma modify_put :
+  forall (f : S -> S) (s : S),
+    modify f >> put s = put s.
+Proof.
+  intros.
+
+ unfold modify.
+  rewrite constrA_spec.
+  rewrite bind_assoc.
+  Check put_put''.
+  
+  Check put_put'.
+  replace (fun x : S => put (f x) >>= fun _ => put s)
+     with (fun _ : S => put s).
+    Focus 2. ext x. rewrite put_put'. reflexivity.
+    Search put.
 Abort.

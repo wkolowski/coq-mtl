@@ -1,4 +1,5 @@
 Require Import Control.
+Require Import Misc.Monoid.
 
 Require Import HSLib.Control.Monad.Identity.
 
@@ -11,10 +12,7 @@ Definition fmap_RWST
   (f : A -> B) (x : RWST W R S M A) : RWST W R S M B :=
     fun r s =>
       x r s >>= fun '(x', sx, wx) => pure $ (f x', sx, wx).
-(*    fun r s => do
-      (x', sx, wx) <<-- x r s;;;
-      pure $ (f x', sx, wx).
-*)
+
 Hint Unfold RWST fmap_RWST : HSLib.
 
 Instance Functor_RWST

@@ -1,7 +1,9 @@
 Require Import HSLib.Base.
-Require Import Control.Monad.
-Require Import Control.Alternative.
+
 Require Import Control.Foldable.
+Require Import Control.Alternative.
+Require Import Control.Monad.
+Require Import Control.Monad.Trans.
 
 Class MonadFail (M : Type -> Type) (inst : Monad M) : Type :=
 {
@@ -36,8 +38,6 @@ end.
 Definition mcatOptions {A : Type} (x : M (option A)) : M A :=
   x >>= fromOption.
 
-(** TODO: threw away mscatter and mconcatMap *)
-
 Definition sum_left {A B : Type} (x : A + B) : option A :=
 match x with
     | inl a => Some a
@@ -68,20 +68,18 @@ Arguments mfilter {M instM instMF A} _ _.
 Arguments mpartition {M instM instMF A} _ _.
 Arguments mcatOptions {M instM instMF A} _.
 
-Require Import Control.Monad.Trans.
-
 Variables
   (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
   (M : Type -> Type) (instM : Monad M)
   (instMF : MonadFail M instM).
 
-Instance MonadFail_MonadTrans : MonadFail (T M) (is_monad M instM).
-Proof.
-  esplit. Unshelve.
-    Focus 2. intro. exact (lift fail).
-    monad.
-    replace fail with (@constrA M instM A A fail fail).
-      rewrite <- lift_constrA. rewrite constrA_spec.
-      rewrite bind_assoc.
+Check @lift T instT M instM _ fail.
 
+Instance MonadFail_MonadTrans
+  : MonadFail (T M) (is_monad M instM) :=
+{
+    fail := fun A => @lift T instT M instM A fail
+}.
+Proof.
+  intros. Check lift_bind. Print MonadTrans.
 Abort.

@@ -1,5 +1,5 @@
 Require Import Control.
-
+Require Import Misc.Monoid.
 Require Import HSLib.Control.Monad.All.
 
 Definition WriterT (W : Monoid) (M : Type -> Type) (A : Type)
@@ -61,21 +61,21 @@ Definition aempty_WriterT
   {A : Type} : WriterT W M A := fmap (fun a => (a, neutr)) aempty.
 
 Definition aplus_WriterT
-  {W : Monoid} {M : Type -> Type} {inst : MonadPlus M} {A : Type}
+  {W : Monoid} {M : Type -> Type} {inst : Alternative M} {A : Type}
   (wx wy : WriterT W M A) : WriterT W M A :=
     @aplus M inst _ wx wy.
 
 Hint Unfold aempty_WriterT aplus_WriterT : HSLib.
 
 Instance Alternative_WriterT
-  (W : Monoid) (M : Type -> Type) (inst : MonadPlus M)
+  (W : Monoid) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
   : Alternative (WriterT W M) :=
 {
-    is_applicative := Applicative_WriterT W M inst;
-    aempty := @aempty_WriterT W M inst inst;
-    aplus := @aplus_WriterT W M inst;
+    is_applicative := Applicative_WriterT W M instM;
+    aempty := @aempty_WriterT W M instM instA;
+    aplus := @aplus_WriterT W M instA;
 }.
-Proof. all: monad. Defined.
+Proof. all: monad. Abort.
 
 Definition bind_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -94,6 +94,7 @@ Instance Monad_WriterT
 }.
 Proof. all: monad. Defined.
 
+(*
 Theorem WriterT_not_MonadPlus :
   (forall (W : Monoid) (M : Type -> Type) (inst : Monad M),
     MonadPlus (WriterT W M)) -> False.
@@ -110,6 +111,7 @@ Instance MonadPlus_WriterT
     is_alternative := @Alternative_WriterT W M inst;
 }.
 Proof. monad. Defined.
+*)
 
 Definition lift_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)

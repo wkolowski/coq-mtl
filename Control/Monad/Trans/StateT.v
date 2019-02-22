@@ -182,6 +182,7 @@ Restart.
   all: monad.
 Defined.
 
+(*
 Theorem StateT_not_MonadPlus :
   (forall (S : Type) (M : Type -> Type) (inst : Monad M),
     MonadPlus (StateT S M)) -> False.
@@ -198,6 +199,7 @@ Instance MonadPlus_StateT
     is_alternative := @Alternative_StateT S M inst inst;
 }.
 Proof. monad. Defined.
+*)
 
 Definition lift_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
@@ -281,7 +283,7 @@ Defined.
 
 Instance MonadStateNondet_StateT
   (S : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadNondet M inst)
+  (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (StateT S M) (Monad_StateT S M inst) :=
 {
     instS := MonadState_StateT S M inst;
@@ -289,10 +291,12 @@ Instance MonadStateNondet_StateT
 }.
 Proof.
   intros. rewrite constrA_spec. cbn. unfold bind_StateT.
-    ext s.
-  Focus 2. intros. cbn. unfold bind_StateT.
-    ext s.
-Abort.
+    ext s. rewrite <- (seq_fail_r _ _ (x s)) at 1.
+    rewrite constrA_spec. f_equal. ext y. destruct y. reflexivity.
+  intros. cbn. unfold bind_StateT.
+    ext s. rewrite <- bind_choose_distr. f_equal. ext x. destruct x.
+    reflexivity.
+Defined.
 
 Instance MonadFree_StateT
   (F : Type -> Type) (instF : Functor F)

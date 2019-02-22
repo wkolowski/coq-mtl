@@ -1,4 +1,4 @@
-Require Export HSLib.Control.Functor.
+Require Export Control.Functor.
 
 (** Haskell-style applicative functors. The intended categorical semantics
     is a (strong) monoidal functor in the category of Coq's types and
@@ -104,19 +104,6 @@ Proof.
   reflexivity.
 Qed.
 
-(*
-Lemma constrA_pure_r :
-  forall (A B : Type) (fa : F A) (b : B),
-    fa >> pure b = pure b.
-Proof.
-  intros. unfold constrA, compose.
-  rewrite interchange.
-  Print Applicative. rewrite identity.
-  rewrite fmap_pure_ap, homomorphism, identity.
-  reflexivity.
-Qed.
-*)
-
 End DerivedApplicativeLaws.
 
 (** Utility functions for applicative functors. In Haskell, most of these
@@ -143,18 +130,6 @@ Definition liftA4
   (f : A -> B -> C -> D -> E)
   (fa : F A) (fb : F B) (fc : F C) (fd : F D) : F E :=
     pure f <*> fa <*> fb <*> fc <*> fd.
-
-(*
-Definition liftA4'
-  (f : A -> B -> C -> D -> E)
-  (fa : F A) (fb : F B) (fc : F C) (fd : F D) : F E :=
-    [| f | fa | fb | fc | fd |].
-
-Definition liftA5 (G : Type)
-  (f : A -> B -> C -> D -> E -> G)
-  (fa : F A) (fb : F B) (fc : F C) (fd : F D) (fe : F E) : F G :=
-    [| f | fa | fb | fc | fd | fe |].
-*)
 
 Fixpoint filterA (p : A -> F bool) (la : list A) : F (list A) :=
 match la with

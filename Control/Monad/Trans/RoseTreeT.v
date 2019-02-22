@@ -59,12 +59,14 @@ Proof.
   apply (aempty False False); trivial.
 Qed.
 
+(*
 Theorem RoseTreeT_not_MonadPlus :
   (forall (M : Type -> Type) (inst : Monad M), MonadPlus (RoseTreeT M)) ->
   False.
 Proof.
   intros. apply RoseTreeT_not_Alternative, X.
 Qed.
+*)
 
 Require Import Control.Monad.Class.All.
 
