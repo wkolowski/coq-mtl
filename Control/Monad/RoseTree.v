@@ -87,14 +87,6 @@ Proof.
       rewrite IHfl, IHfr. reflexivity.
 Defined.
 
-(*
-Theorem RT_not_MonadPlus :
-  MonadPlus RT -> False.
-Proof.
-  destruct 1. apply RT_not_Alternative. assumption.
-Qed.
-*)
-
 (*Hint Unfold fmap_RT pure_RT ap_RT bind_RT : HSLib.*)
 
 Fixpoint foldMap_RT

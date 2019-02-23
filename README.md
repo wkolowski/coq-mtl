@@ -88,10 +88,8 @@ You can then compile the project at any time using `make` and recompile (for exa
   * Commutative applicative functors.
   * Commutative monads.
   * Free Monads (prove it is not a transformer).
-  * Codensity (prove there's no callCC).
 * Classes:
-  * Pin down the precise categorical semantics.
-  * See how classes for monad transformers/monads are implemented in transformers/mtl/Just Do It paper.
+  * See how classes for monad transformers/monads are implemented in transformers/mtl.
   * Define Traversable and all its instances.
   * Define all instances for Foldable.
   * Learn how to prove general laws for Foldable.
@@ -105,25 +103,22 @@ You can then compile the project at any time using `make` and recompile (for exa
   * Browse Idris standard library and steal good stuff from there.
   * Interesting Idris classes: Cast, Uninhabited, Sized, Read
 * Update this README to mention the Equations package.
+* Remember about mscatter and mconcatMap from MonadPlus.
 
 ### Particular
 
-* Investigate universe consistency issues for Vec.
 * Parsers:
   * Develop parsers for lists.
   * Check if using `aplus_det` would make parsers more efficient.
-* Check if the law `fmap_pure_ap` is necessary for Applicative.
 * Something practical: maybe use the monadic stuff for Enumerable/Finite classes.
 * Check what is the precise relation between bind and ap (and if it's possible to define monads in two nonequivalent ways due to this).
 * Check if the Lazy monad makes sense.
-* Partition MonadPlus and its function into more sane classes.
 * Implement the Set monad.
 
 ### Technical
 
 * Revise the compilation steps from this README file.
-* Update this README.
 
 ### Potential
 * Try a different design in which laws come bundled in separate classes of Sort Prop (dubious).
-* Implement a reflective tactic for reasoning with functors, applicatives, monads and so on.
+* Implement a reflective tactic for reasoning with applicatives, monads and so on.

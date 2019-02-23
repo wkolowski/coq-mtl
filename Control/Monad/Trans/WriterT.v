@@ -94,25 +94,6 @@ Instance Monad_WriterT
 }.
 Proof. all: monad. Defined.
 
-(*
-Theorem WriterT_not_MonadPlus :
-  (forall (W : Monoid) (M : Type -> Type) (inst : Monad M),
-    MonadPlus (WriterT W M)) -> False.
-Proof.
-  intros. apply WriterT_not_Alternative.
-  intros. destruct (X W M inst). assumption.
-Qed.
-
-Instance MonadPlus_WriterT
-  (W : Monoid) {M : Type -> Type} {inst : MonadPlus M}
-  : MonadPlus (WriterT W M) :=
-{
-    is_monad := @Monad_WriterT W M inst;
-    is_alternative := @Alternative_WriterT W M inst;
-}.
-Proof. monad. Defined.
-*)
-
 Definition lift_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : WriterT W M A := fmap (fun x : A => (x, neutr)) ma.

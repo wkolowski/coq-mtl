@@ -92,15 +92,6 @@ Instance Monad_OptionT
 }.
 Proof. all: monad. Defined.
 
-(*
-Instance MonadPlus_OptionT
-  (M : Type -> Type) (inst : Monad M) : MonadPlus (OptionT M) :=
-{
-    is_monad := Monad_OptionT M inst;
-    is_alternative := Alternative_OptionT M inst;
-}.
-*)
-
 Definition lift_OptionT {M : Type -> Type} {_inst : Monad M} {A : Type}
   (ma : M A) : OptionT M A := fmap Some ma.
 

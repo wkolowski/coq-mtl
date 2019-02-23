@@ -66,11 +66,6 @@ Notation "e1 ;; e2" := (constrA e1 e2)
 
 Notation "'do' e" := e (at level 50, only parsing).
 
-(* TODO
-Notation "x '<<--' e1 ;;; e2" := (bind e1 (fun y => let x := y in e2))
-  (right associativity, at level 42, only parsing).
-*)
-
 End MonadNotations.
 
 Export MonadNotations.
@@ -101,7 +96,7 @@ match goal with
     | _ => hs + functor_simpl
 end; try (unfold compose, id; cbn; congruence; fail).
 
-Ltac monad2 := repeat (
+(* TODO *) Ltac monad2 := repeat (
   cbn; intros; hs;
 match goal with
     | |- (fun _ => _) = _ => let x := fresh "x" in ext x
@@ -300,11 +295,3 @@ Defined.
 End DerivedMonadLaws2.
 
 Hint Rewrite @constlA_spec @constrA_spec : HSLib.
-
-(* A tactic for rewriting the law bind_pure_l under lambdas.
-   TODO: rename *)
-Ltac wut :=
-match goal with
-    | |- context C [pure ?x >>= ?f] =>
-        replace (pure x >>= f) with (f x) by monad
-end.

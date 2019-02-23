@@ -101,25 +101,6 @@ Instance Monad_SumT
 }.
 Proof. all: hs; monad. Defined.
 
-(*
-Theorem SumT_not_MonadPlus :
-  (forall (E : Type) (M : Type -> Type) (inst : Monad M),
-    MonadPlus (SumT E M)) -> False.
-Proof.
-  intros. apply SumT_not_Alternative.
-  intros. destruct (X E M inst). assumption.
-Qed.
-
-Instance MonadPlus_SumT
-  (E : Type) {M : Type -> Type} {inst : MonadPlus M}
-  : MonadPlus (SumT E M) :=
-{
-    is_monad := @Monad_SumT E M inst;
-    is_alternative := @Alternative_SumT E M inst;
-}.
-Proof. hs. Defined.
-*)
-
 Definition lift_SumT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
   : SumT E M A := fmap inr ma.
@@ -245,7 +226,7 @@ Proof.
   all: intros.
     monad.
     rewrite !constrA_spec. cbn. unfold bind_SumT, pure_SumT.
-      rewrite !bind_assoc. wut. wut.
+      rewrite !bind_assoc. rewrite !bind_pure_l.
       rewrite <- constrA_spec, constrA_bind_assoc, put_get.
       rewrite <- constrA_bind_assoc, bind_pure_l, <- constrA_spec.
       reflexivity.
@@ -255,15 +236,16 @@ Proof.
     cbn. unfold bind_SumT. rewrite !bind_assoc.
       replace
         (fun x : S =>
- pure (inr x) >>=
- (fun sa : E + S =>
-  match sa with
-  | inl e => pure (inl e)
-  | inr a => k a a
-  end))
-         with (fun s : S => k s s).
-        rewrite <- get_get. f_equal. monad.
-        ext s. rewrite bind_pure_l. reflexivity.
+          pure (inr x) >>=
+            fun sa : E + S =>
+            match sa with
+                | inl e => pure (inl e)
+                | inr a => k a a
+            end)
+      with
+        (fun s : S => k s s).
+      rewrite <- get_get. f_equal. monad.
+      ext s. rewrite bind_pure_l. reflexivity.
 Defined.
 
 Instance MonadStateNondet_SumT

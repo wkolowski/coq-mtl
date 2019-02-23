@@ -84,46 +84,33 @@ Definition callCC_Type : Type :=
   forall (F : Type -> Type) (A B : Type),
     ((A -> Codensity F B) -> Codensity F A) -> Codensity F A.
 
-(*
-Require Import Control.Monad.Identity.
-
-Theorem no_callCC :
-  callCC_Type -> False.
+Lemma calCC_classic :
+  (forall A : Type, A + (A -> False)) -> callCC_Type.
 Proof.
-  unfold callCC_Type, Codensity. intro.
-  specialize (X Identity). unfold Identity in X.
-  apply (X unit unit).
-    firstorder.
-    intros.
-Restart.
-  unfold callCC_Type, Codensity. intro.
-  specialize (X option False False ltac:(firstorder)).
-Restart.
-  unfold callCC_Type, Codensity. intro.
-  specialize (X (Writer Monoid_unit) unit False ltac:(firstorder)).
-  specialize (X False). unfold Writer in X.
-Restart.
-  unfold callCC_Type, Codensity. intro.
-  specialize (X list False False).
-Restart.
-  unfold callCC_Type, Codensity. intro.
-  specialize (X Identity). unfold Identity in X.
-  eapply (X False False).
-    2: auto.
-    intros _ R _. eapply (X (R + (R -> False))%type True).
-      firstorder. admit.
-      destruct 1.
-        assumption.
-        eapply (X (R + ((R -> False) -> False))%type True).
-
-Abort.
-*)
+  unfold callCC_Type. intros LEM F A B H.
+  destruct (LEM (Codensity F A)).
+    assumption.
+    apply H. intro. cut False.
+      inversion 1.
+      apply f. red. intros. apply X0. assumption.
+Qed.
 
 (* This one comes from Purescript's Pursuit library. *)
 Definition callCC'_Type : Type :=
   forall (F : Type -> Type) (A : Type),
     ((forall B : Type, A -> Codensity F B) ->
         Codensity F A) -> Codensity F A.
+
+Lemma calCC'_classic :
+  (forall A : Type, A + (A -> False)) -> callCC'_Type.
+Proof.
+  unfold callCC'_Type. intros LEM F A H.
+  destruct (LEM (Codensity F A)).
+    assumption.
+    apply H. intros B a. cut False.
+      inversion 1.
+      apply f. red. intros. apply X. assumption.
+Qed.
 
 Section CodensityFuns.
 
@@ -155,6 +142,7 @@ Lemma extract_pure' :
     extract (fun _ c => x >>= c) = x.
 Proof. monad. Qed.
 
+(** Does inject (extract x) = x hold? *)
 Lemma extract_inject :
   forall (A : Type) (x : M A),
     extract (inject x) = x.
@@ -164,15 +152,6 @@ Lemma improve_spec :
   forall (A : Type) (x : M A),
     improve x = x.
 Proof. apply extract_inject. Qed.
-
-Lemma inject_extract :
-  forall (A : Type) (x : Codensity M A),
-    inject (extract x) = x.
-Proof.
-  intros. unfold inject, extract. ext2 R c.
-  unfold Codensity in *.
-  
-Abort.
 
 End CodensityFuns.
 

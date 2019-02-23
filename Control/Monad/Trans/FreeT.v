@@ -58,15 +58,6 @@ Proof.
   apply (aempty False False); trivial.
 Qed.
 
-(*
-Theorem FreeT_not_MonadPlus :
-  (forall (F : Type -> Type) (M : Type -> Type) (inst : Monad M),
-    MonadPlus (FreeT F M)) -> False.
-Proof.
-  intro. apply FreeT_not_Alternative, X.
-Qed.
-*)
-
 Definition lift_FreeT
   {F M : Type -> Type} {inst : Monad M} {A : Type}
   (x : M A) : FreeT F M A :=

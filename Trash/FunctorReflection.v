@@ -158,14 +158,11 @@ match goal with
         let e1' := reify e1 in
         let e2' := reify e2 in
           change (denote e1' = denote e2');
-          apply reflect_functor; simp flistDenote
+          apply reflect_functor;
+          repeat (simp flatten || simp efmap || simp fapp ||
+                  simp flistDenote);
+          cbn; rewrite !id_right
 end.
-
-(*
-Variables
-  (F : Type -> Type)
-  (F_inst : Functor F).
-*)
 
 Variables
   (A B C : Type)
@@ -176,6 +173,11 @@ Goal id .> fmap (f .> (f .> f)) = fmap (f .> f) .> id .> fmap f.
 Proof.
   reflect_functor.
 Qed.
+
+Goal id .> fmap (f .> (f .> f)) = fmap (f .> f) .> id .> fmap f .> fmap f.
+Proof.
+  reflect_functor.
+Abort.
 
 Goal fmap f .> fmap f = fmap (f .> f).
 Proof. reflect_functor. Qed.

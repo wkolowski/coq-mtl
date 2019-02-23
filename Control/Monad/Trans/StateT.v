@@ -182,25 +182,6 @@ Restart.
   all: monad.
 Defined.
 
-(*
-Theorem StateT_not_MonadPlus :
-  (forall (S : Type) (M : Type -> Type) (inst : Monad M),
-    MonadPlus (StateT S M)) -> False.
-Proof.
-  intros. apply StateT_not_Alternative.
-  intros. destruct (X S M inst). assumption.
-Qed.
-
-Instance MonadPlus_StateT
-  (S : Type) {M : Type -> Type} {inst : MonadPlus M}
-  : MonadPlus (StateT S M) :=
-{
-    is_monad := @Monad_StateT S M inst;
-    is_alternative := @Alternative_StateT S M inst inst;
-}.
-Proof. monad. Defined.
-*)
-
 Definition lift_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : StateT S M A := fun s : S => ma >>= fun a : A => pure (a, s).

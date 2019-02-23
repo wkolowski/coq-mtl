@@ -84,16 +84,6 @@ Instance Monad_ListT
 }.
 Proof. all: reflexivity. Defined.
 
-(*
-Instance MonadPlus_ListT
-  (M : Type -> Type) (inst : Monad M) : MonadPlus (ListT M) :=
-{
-    is_monad := Monad_ListT _ inst;
-    is_alternative := Alternative_ListT _ inst;
-}.
-Proof. reflexivity. Defined.
-*)
-
 Definition lift_ListT
   {M : Type -> Type} {inst : Monad M} (A : Type) (ma : M A) : ListT M A :=
     fun X nil cons => ma >>= fun a : A => cons a nil.

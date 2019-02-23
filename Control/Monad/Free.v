@@ -53,14 +53,6 @@ Proof.
   apply (aempty False False); trivial.
 Qed.
 
-(*
-Theorem Free_not_MonadPlus :
-  (forall F : Type -> Type, MonadPlus (Free F)) -> False.
-Proof.
-  intro. apply Free_not_Alternative, X.
-Qed.
-*)
-
 Require Import Control.Monad.Class.MonadFree.
 
 Definition wrap_Free

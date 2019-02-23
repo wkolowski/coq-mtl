@@ -18,11 +18,6 @@ Definition Applicative_Parser := Applicative_ListT _ MonadIdentity.
 Definition Alternative_Parser := Alternative_ListT _ MonadIdentity.
 Definition Monad_Parser := Monad_ListT _ MonadIdentity.
 
-(*
-Definition MonadPlus_Parser :=
-  MonadPlus_ListT _ MonadIdentity.
-*)
-
 Existing Instance Applicative_Parser.
 Existing Instance Alternative_Parser.
 Existing Instance Monad_Parser.
