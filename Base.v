@@ -97,17 +97,17 @@ Ltac msimpl' :=
 
 (** [hs] is a tactic for dealing with simple goals. First we try
     [reflexivity] to make proofterms short, then we simplify and
-    at last we try [congrunce] to solve trivial equational goals.
+    at last we try [congruence] to solve trivial equational goals.
 
     [hs'] is a variant that uses the [msimpl'] simplification tactic
     instead of [msimpl]. *)
 Ltac hs :=
-  try split; try reflexivity; cbn; intros; msimpl; try congruence.
+  cbn; intros; msimpl; try congruence; try reflexivity.
 
 Ltac hs' :=
-  try split; try reflexivity; cbn; intros; msimpl'; try congruence.
+  cbn; intros; msimpl'; try congruence; try reflexivity.
 
-(* [umatch] and [unmatch_all] are tactics for conveniently [destruct]ing
+(** [umatch] and [unmatch_all] are tactics for conveniently [destruct]ing
     nested pattern matches. *)
 Ltac unmatch x :=
 match x with
@@ -120,6 +120,6 @@ match goal with
     | |- context [match ?x with _ => _ end] => unmatch x
 end.
 
-(* A nice name for the identity function stolen from Idris. Probably not
-   very useful. *)
+(** A nice name for the identity function stolen from Idris. Probably not
+    very useful. *)
 Definition the (A : Type) (x : A) : A := x.

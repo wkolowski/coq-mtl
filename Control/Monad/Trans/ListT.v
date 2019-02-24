@@ -4,7 +4,7 @@ Definition ListT
   (M : Type -> Type) (A : Type) : Type :=
     forall X : Type, M X -> (A -> M X -> M X) -> M X.
 
-(* Modified version of list notations from standard library. *)
+(** Modified version of list notations from standard library. *)
 Module ListT_Notations.
 
 Notation "[[ ]]" :=
@@ -13,10 +13,6 @@ Notation "[[ x ]]" :=
   (fun X nil cons => cons x nil).
 Notation "[[ x ; y ; .. ; z ]]" :=
   (fun X nil cons => cons x (cons y .. (cons z nil) ..)).
-(* BEWARE: Compatibility with 8.4 not supported in 8.8.1
-Notation "[[ x ; .. ; y ]]" :=
-  (fun X nil cons => cons x .. (cons y nil) ..) (compat "8.4").
-*)
 
 End ListT_Notations.
 

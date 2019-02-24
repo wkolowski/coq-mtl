@@ -52,7 +52,6 @@ Definition compM
       mad
     - pattern matches (even irrefutable ones) are not allowed
     - you can insert a meanigless 'do' anywhere *)
-
 Module MonadNotations.
 
 Notation "mx >>= f" := (bind mx f) (at level 40).
@@ -72,46 +71,52 @@ Export MonadNotations.
 
 Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : HSLib.
 
-(** The main workhorse tactic for most of the library. It proceeds like this:
-    - apply the [functional_extensionality] axiom whenever possible
-    - destruct pairs, sums and [unit]s
-    - try to deal with monadic equations containig [>>=] on either side
-    - destruct possibly nested pattern matches using tha tactic [unmatch]
-      from Base.v
-    - if all else fails, use the tactic [hs] from Base.v to automatically
-      unfold definitios and perform rewriting
-    - after the main loop is done, try [congruence] after some
-      simplification *)
-Ltac monad1 := intros; repeat
+(** Basic simplification: destruct products and get rid of units,
+    reason by cases on sums and any (possibly nested) matches *)
+Ltac destr := repeat
 match goal with
-    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
-    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
     | x : _ * _ |- _ => destruct x
     | x : _ + _ |- _ => destruct x
     | x : unit |- _ => destruct x
-    | |- ?x >>= _ = ?x => rewrite <- bind_pure_r; f_equal
-    | |- ?x = ?x >>= _ => rewrite <- bind_pure_r at 1; f_equal
-    | |- ?x >>= _ = ?x >>= _ => f_equal; try reflexivity
-    | |- context [match ?x with _ => _ end] => hs; unmatch x
-    | _ => hs + functor_simpl
-end; try (unfold compose, id; cbn; congruence; fail).
+    | |- context [match ?x with _ => _ end] => unmatch x
+end.
 
-(* TODO *) Ltac monad2 := repeat (
-  cbn; intros; hs;
+(** A basic simplification tactic for monads that goes like this:
+    - do some computations and introduce hypotheses into the context
+    - if the goal is of the form [f = g] for some functions [f] and [g],
+      reason by functional extensionality
+    - destruct whatever possible
+    - do some basic simplifications for functor goals
+*)
+Ltac monad_simpl :=
+  cbn; intros; exts; destr; functor_simpl.
+
+(** A tactic that solves simple monadic equational goals:
+    - simplify the goal
+    - unfold definitions and rewrite lemmas using [hs]
+    - unfoldi some things which are otherwise not unfolded, because they are
+      messy, and try [congruence]
+    - if the goal isn't solved, [fail] - we don't want badly simplified,
+      broken goals
+*)
+Ltac finish := monad_simpl; hs; unfold compose, id; cbn; congruence; fail.
+
+(** The main workhorse tactic for monadic equational goals:
+    - simplify the goal
+    - try to solve the goal if it's easy
+    - if it's not, perform some aggresive backwards rewriting for [bind]
+      and try to prove that the right hand side arguments of [bind] are
+      equal
+*)
+Ltac monad := repeat (monad_simpl; try finish;
 match goal with
-    | |- (fun _ => _) = _ => let x := fresh "x" in ext x
-    | |- _ = (fun _ => _) => let x := fresh "x" in ext x
-    | x : _ * _ |- _ => destruct x
-    | x : _ + _ |- _ => destruct x
-    | x : unit |- _ => destruct x
-(*    | |- ?x >>= _ = ?x => rewrite <- bind_pure_r; f_equal
-    | |- ?x = ?x >>= _ => rewrite <- bind_pure_r at 1; f_equal
-    | |- ?x >>= _ = ?x >>= _ => f_equal; try reflexivity*)
-    | |- context [match ?x with _ => _ end] => hs; unmatch x
-    | _ => hs + functor_simpl
-end; try (unfold compose, id; cbn; congruence; fail)).
-
-Ltac monad := monad1.
+    | |- ?x >>= _ = ?x =>
+        rewrite <- bind_pure_r; f_equal
+    | |- ?x = ?x >>= _ =>
+        rewrite <- bind_pure_r at 1; f_equal
+    | |- ?x >>= _ = ?x >>= _ => f_equal
+    | _ => hs
+end).
 
 (** All functions that in Haskell are doubled between [Applicative] and
     [Monad] in this library are moved to [Applicative] and named with an
@@ -144,9 +149,7 @@ Variables
 Lemma fmap_bind :
   forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
     fmap g (x >>= f) = x >>= (fun a : A => fmap g (f a)).
-Proof.
-  intros. hs. f_equal. exts. hs.
-Qed.
+Proof. monad. Qed.
 
 Lemma bind_fmap :
   forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),

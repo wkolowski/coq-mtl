@@ -47,6 +47,9 @@ Proof. all: reflexivity. Defined.
 
 End RoseTreeT_Instances.
 
+Hint Unfold
+  fmap_RoseTreeT pure_RoseTreeT ap_RoseTreeT bind_RoseTreeT : HSLib.
+
 Require Import HSLib.Control.Monad.All.
 
 Theorem RoseTreeT_not_Alternative :
@@ -69,10 +72,7 @@ Instance MonadAlt_RoseTreeT
       fun A x y =>
         fun X empty node => choose (x X empty node) (y X empty node)
 }.
-Proof.
-  monad.
-  reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadFail_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
@@ -89,10 +89,7 @@ Instance MonadNondet_RoseTreeT
     instF := @MonadFail_RoseTreeT M inst (@instF _ _ inst');
     instA := @MonadAlt_RoseTreeT M inst (@instA _ _ inst');
 }.
-Proof.
-  intros. cbn. ext X. ext e. ext n. rewrite choose_fail_l. reflexivity.
-  intros. cbn. ext X. ext e. ext n. rewrite choose_fail_r. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadExcept_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
@@ -104,10 +101,7 @@ Instance MonadExcept_RoseTreeT
         fun X empty node => catch (x X empty node) (y X empty node)
 }.
 Proof.
-  all: cbn; intros; ext X; ext empty; ext node.
-    apply catch_fail_l.
-    apply catch_fail_r.
-    apply catch_assoc.
+  1-3: monad.
     unfold pure_RoseTreeT.
 Abort.
 
@@ -119,8 +113,10 @@ Instance MonadReader_RoseTreeT
     ask := fun X empty node => ask >>= empty
 }.
 Proof.
-  ext X. ext empty. ext node. cbn. unfold fmap_RoseTreeT, const, id, compose.
-  rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
+  hs. ext3 X empty node.
+  rewrite <- ask_ask at 2.
+  rewrite <- constrA_bind_assoc.
+  monad.
 Defined.
 
 Instance MonadState_RoseTreeT
@@ -132,16 +128,15 @@ Instance MonadState_RoseTreeT
     put := fun s X empty node => put s >> empty tt;
 }.
 Proof.
-  intros. ext X. ext empty. ext node. cbn.
-    unfold fmap_RoseTreeT, const, id, compose.
-    rewrite <- constrA_assoc, put_put. reflexivity.
-  intros. ext X. ext empty. ext node. cbn.
+  monad.
+  intros. ext3 X empty node. cbn.
     unfold fmap_RoseTreeT, const, id, compose, pure_RoseTreeT.
     rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
     reflexivity.
-  intros. ext X. ext empty. ext node. cbn.
+  intros. ext3 X empty node. cbn. hs.
     unfold bind_RoseTreeT, pure_RoseTreeT.
     rewrite bind_constrA_comm, get_put, constrA_pure_l.
+      (* BEWARE: strange bug *)
 Admitted.
 
 Instance MonadStateNondet_RoseTreeT

@@ -307,7 +307,7 @@ Compute parseNat_chainr "211".
 
 Fixpoint exprn'' (n : nat) : Parser Z :=
 match n with
-    | 0 => fail (* 0%Z *)
+    | 0 => fail
     | S n' =>
         let
           op := char "+" >> pure Z.add <|>
@@ -337,7 +337,7 @@ end.
 
 Fixpoint exprn3 (n : nat) : Parser Z :=
 match n with
-    | 0 => fail (* pure [[]] *) (* 0%Z *)
+    | 0 => fail
     | S n' =>
         let
           op := ops (char "+", Z.add) [(char "-", Z.sub)]

@@ -73,13 +73,11 @@ Variables
   (M : Type -> Type) (instM : Monad M)
   (instMF : MonadFail M instM).
 
-Check @lift T instT M instM _ fail.
-
 Instance MonadFail_MonadTrans
   : MonadFail (T M) (is_monad M instM) :=
 {
     fail := fun A => @lift T instT M instM A fail
 }.
 Proof.
-  intros. Check lift_bind. Print MonadTrans.
+  intros.
 Abort.

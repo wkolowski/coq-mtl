@@ -13,8 +13,8 @@ Definition fmap_StateT
 
 Hint Unfold StateT fmap_StateT compose : HSLib.
 
-(* These stupidly named lemmas are there so that the parsers work quickly.
-   I don't know why that matters, but it does... *)
+(** These stupidly lemmas are there so that the parsers work quickly.
+    I don't know why that matters, but it does... *)
 Lemma f1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type),
     fmap_StateT S (@id A) = id.

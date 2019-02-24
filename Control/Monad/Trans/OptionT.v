@@ -157,22 +157,18 @@ Instance MonadAlt_OptionT
     choose :=
       fun A x y => @choose M inst inst' _ x y
 }.
-Proof.
-  intros. rewrite choose_assoc. reflexivity.
-  intros. cbn. unfold bind_OptionT.
-    rewrite choose_bind_l. reflexivity.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadNondet_OptionT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (OptionT M) (Monad_OptionT M inst) :=
 {
-    instF := @MonadFail_OptionT M inst; (* (@instF _ _ inst');*)
+    instF := @MonadFail_OptionT M inst;
     instA := @MonadAlt_OptionT M inst (@instA _ _ inst');
 }.
 Proof.
   Focus 2. cbn. unfold fail_OptionT.
-  intros. cbn. unfold fail_OptionT. Search choose.
+  intros. cbn. unfold fail_OptionT.
 Admitted.
 
 Instance MonadExcept_OptionT
@@ -188,14 +184,7 @@ Instance MonadExcept_OptionT
             | Some a => pure (Some a)
         end)
 }.
-Proof.
-  1-2: monad.
-  all: intros; cbn.
-    rewrite bind_assoc. f_equal. ext oa. destruct oa; cbn.
-      rewrite bind_pure_l. reflexivity.
-      reflexivity.
-    unfold pure_OptionT. hs.
-Defined.
+Proof. all: monad. Defined.
 
 Instance MonadReader_OptionT
   (E R : Type) (M : Type -> Type)
@@ -217,16 +206,8 @@ Instance MonadState_OptionT
     put s := put s >> pure (Some tt);
 }.
 Proof.
-  intros. cbn. unfold ap_OptionT, fmap_OptionT, const, id, compose.
-    rewrite !bind_fmap. unfold fmap_Option, compose.
-    do 2 (rewrite <- constrA_bind_assoc, bind_pure_l).
-    rewrite <- constrA_assoc. rewrite put_put. reflexivity.
-  intros. cbn. unfold ap_OptionT, fmap_OptionT, const, compose, id.
-    rewrite !bind_fmap.
-    do 2 (rewrite <- constrA_bind_assoc; rewrite bind_pure_l).
-    unfold fmap_Option, compose, pure_OptionT.
-    rewrite bind_fmap, bind_pure_l. unfold compose.
-    rewrite constrA_bind_assoc, put_get. monad.
+  monad.
+  hs. rewrite <- !bind_assoc. monad.
   cbn. unfold bind_OptionT, pure_OptionT. rewrite bind_fmap. monad.
     rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
   intros. cbn. unfold bind_OptionT.
@@ -258,9 +239,8 @@ Instance MonadFree_OptionT
     wrap := fun A m => @wrap F M instF instM instMF _ m
 }.
 Proof.
-  intros. cbn. unfold bind_OptionT, pure_OptionT, OptionT in *.
+  hs.
   rewrite
     (wrap_law _ _ (fun x0 : A => @pure M instM (option A) (@Some A x0)) x).
-  rewrite wrap_law, bind_assoc.
-  f_equal. ext a. rewrite bind_pure_l. reflexivity.
+  rewrite wrap_law, bind_assoc. monad.
 Defined.

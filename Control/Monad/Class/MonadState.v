@@ -122,7 +122,6 @@ Proof.
     rewrite lift_constrA, put_get, <- lift_constrA, lift_pure. reflexivity.
   rewrite <- lift_pure, <- get_put, lift_bind. reflexivity.
   intros.
-  Print MonadTrans.
 Abort.
 
 Lemma modify_put :
@@ -134,9 +133,6 @@ Proof.
  unfold modify.
   rewrite constrA_spec.
   rewrite bind_assoc.
-  Check put_put''.
-  
-  Check put_put'.
   replace (fun x : S => put (f x) >>= fun _ => put s)
      with (fun _ : S => put s).
     Focus 2. ext x. rewrite put_put'. reflexivity.

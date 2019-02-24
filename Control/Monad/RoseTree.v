@@ -1,7 +1,7 @@
 Require Import Control.
 Require Import Misc.Monoid.
 
-(* Rose Trees *)
+(** Rose Trees - trees which hold values in their leaves. *)
 Inductive RT (A : Type) : Type :=
     | Leaf : A -> RT A
     | Node : RT A -> RT A -> RT A.

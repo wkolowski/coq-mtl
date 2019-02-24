@@ -11,9 +11,9 @@ Definition par
 
 Notation "f *** g" := (par f g) (at level 40).
 
-(* An alternative characterization of applicative functors as lax monoidal
-   functors (or rather, strong monoidal functors, because in the category
-   of Coq's types and functions all monoidal functors are strong. *)
+(** An alternative characterization of applicative functors as lax monoidal
+    functors (or rather, strong monoidal functors, because in the category
+    of Coq's types and functions all monoidal functors are strong. *)
 Class isMonoidal (F : Type -> Type) : Type :=
 {
     isMonoidal_functor :> Functor F;

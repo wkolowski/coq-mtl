@@ -145,10 +145,6 @@ match e with
         let x' := reify x in constr:(App f' x')
     | fmap ?f =>
         let f' := reify f in constr:(Fmap f')
-(*    | @fmap _ _ ?A ?B ?f => idtac f;
-        let A' := reifyType A in
-        let B' := reifyType B in
-        let f' := reify f in constr:(@Fmap A' B' f')*)
     | ?f => constr:(Fun f)
 end.
 

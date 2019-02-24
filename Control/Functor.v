@@ -48,6 +48,7 @@ Ltac functor_simpl :=
   autorewrite with Functor.
 
 Hint Rewrite id_left : HSLib.
+
 Ltac functor_simpl' :=
   autorewrite with Functor'.
 

@@ -53,16 +53,6 @@ Notation "f <*> x" := (ap f x)
 Notation "x <**> f" := (ap f x)
   (left associativity, at level 40, only parsing).
 
-(* TODO: this probably was an attempt at banana brackets
-Notation "[/  f  /]" := (pure f) (only parsing).
-Notation "[/ f x .. y /]" := (ap .. (ap (pure f) x) .. y)
-  (format
-    "'[v' [/ f '/' x '/' .. '/' y '/' /] ']'", only parsing).
-
-Check [/ plus /].
-Check [| plus (Some 2) (Some 3) |].
-*)
-
 Definition constlA
   {F : Type -> Type} {inst : Applicative F} {A B : Type} (a : F A) (b : F B)
     : F A := const <$> a <*> b.

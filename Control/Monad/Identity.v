@@ -36,7 +36,7 @@ Qed.
 
 Instance CommutativeApplicative_Identity :
   CommutativeApplicative _ Applicative_Identity.
-Proof. hs. Qed.
+Proof. split. hs. Qed.
 
 Instance MonadIdentity : Monad Identity :=
 {

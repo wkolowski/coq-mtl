@@ -85,8 +85,6 @@ Require Import Control.Monad.Class.All.
 
 Require Import Misc.Monoid.
 
-Print MonadReader.
-
 Definition ask_RWS (W : Monoid) (R S : Type) : RWS W R S R :=
   fun (r : R) (s : S) => (r, s, neutr).
 

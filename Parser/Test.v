@@ -22,7 +22,6 @@ Compute do
   pure (a, b, c).
 
 (*
-Check mfilter (fun _ => true) (I 1 10).
 Eval compute in mfilter (fun _ => false) (Some 42).
 *)
 

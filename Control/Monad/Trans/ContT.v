@@ -145,7 +145,7 @@ Instance MonadStateNondet_ContT
     instN := MonadNondet_ContT R M inst inst';
 }.
 Proof.
-  intros. rewrite constrA_spec. Print MonadStateNondet.
+  intros. rewrite constrA_spec.
   cbn. unfold bind_ContT. ext k. unfold ContT in x.
   Focus 2. intros. cbn. unfold bind_ContT. ext k. 
 Abort.

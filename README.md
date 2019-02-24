@@ -104,6 +104,7 @@ You can then compile the project at any time using `make` and recompile (for exa
   * Interesting Idris classes: Cast, Uninhabited, Sized, Read
 * Update this README to mention the Equations package.
 * Remember about mscatter and mconcatMap from MonadPlus.
+* Describe the axioms used for this development.
 
 ### Particular
 

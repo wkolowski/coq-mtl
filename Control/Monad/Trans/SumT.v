@@ -142,7 +142,7 @@ Instance MonadExcept_SumT
           | inr a => pure (inr a)
       end)
 }.
-Proof. Print MonadExcept.
+Proof.
   all: cbn; intros.
     unfold fail_SumT. rewrite bind_pure_l. reflexivity.
     Focus 2. rewrite bind_assoc. f_equal. ext ea. destruct ea.
@@ -154,8 +154,6 @@ Proof. Print MonadExcept.
     rewrite <- bind_pure_r. cbn. unfold bind_SumT.
       f_equal.
 Abort.
-
-(* BIG TODO *)
 
 Instance MonadAlt_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)

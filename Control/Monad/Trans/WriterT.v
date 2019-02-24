@@ -10,7 +10,7 @@ Definition fmap_WriterT
   (x : WriterT W M A) : WriterT W M B :=
     fmap (fun '(a, w) => (f a, w)) x.
 
-Hint Unfold WriterT fmap_WriterT compose (* BEWARE *): HSLib.
+Hint Unfold WriterT fmap_WriterT : HSLib.
 
 Instance Functor_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} : Functor (WriterT W M) :=
@@ -193,7 +193,14 @@ Proof.
 
     rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
   intros. cbn. unfold bind_WriterT. rewrite !bind_assoc.
-Admitted. (* TODO *)
+    do 2 match goal with
+        | |- context [fun s : S => pure (s, ?x) >>= ?f] =>
+            replace (fun s : S => pure (s, x) >>= f)
+               with (fun s : S => f (s, x)) by monad
+    end.
+    rewrite <- !bind_assoc, <- get_get, !bind_assoc.
+    f_equal. ext s. monad.
+Defined.
 
 Instance MonadStateNondet_WriterT
   (W : Monoid) (S : Type) (M : Type -> Type)
