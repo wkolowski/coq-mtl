@@ -280,8 +280,6 @@ Proof.
     rewrite catch_pure. reflexivity.
 Qed.
 
-(** TODO *)
-
 Definition next
   {inst' : MonadFail inst} (n : nat) (ml : M nat) : M nat :=
     if beq_nat 0 n then fail else fmap (mult n) ml.

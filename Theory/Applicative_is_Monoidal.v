@@ -18,6 +18,8 @@ Proof.
   intros. unfold compose, par. ext x. destruct x. cbn. reflexivity.
 Qed.
 
+Check fmap_id.
+
 Ltac monoidal := repeat (
 multimatch goal with
     | |- ?x =?x => reflexivity
@@ -31,10 +33,10 @@ multimatch goal with
     | |- context [fmap (snd .> _)] => rewrite !fmap_comp'
     | _ => rewrite ?aux
     | |- context [pairF (fmap ?f ?a) ?x] =>
-          replace x with (fmap id x) by functor;
+          replace x with (fmap id x) by hs;
           rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
     | |- context [pairF ?x (fmap ?f ?a)] =>
-            replace x with (fmap id x) by functor;
+            replace x with (fmap id x) by hs;
             rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
 end).
 
@@ -68,11 +70,6 @@ Definition pairF_Applicative
 
 Hint Unfold default_Applicative pairF_Applicative : HSLib.
 
-Hint Rewrite @identity @interchange @homomorphism @fmap_pure_ap
-  : HSLib'.
-Hint Rewrite <- @composition
-  : HSLib'.
-
 Instance Applicative_isMonoidal
   (F : Type -> Type) (inst : Applicative F) : isMonoidal F :=
 {
@@ -81,6 +78,11 @@ Instance Applicative_isMonoidal
     pairF := @pairF_Applicative F inst;
 }.
 Proof.
-  all: hs; repeat (rewrite <- composition, homomorphism);
-  autorewrite with HSLib'; reflexivity.
+  all: hs;
+  repeat (
+    rewrite identity || rewrite homomorphism ||
+    rewrite fmap_pure_ap || rewrite <- composition ||
+    rewrite interchange
+  );
+  reflexivity.
 Defined.

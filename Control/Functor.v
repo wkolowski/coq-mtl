@@ -31,7 +31,7 @@ Proof.
   intros. rewrite fmap_comp. unfold compose. reflexivity.
 Qed.
 
-Hint Rewrite @fmap_comp' : HSLib Functor.
+Hint Rewrite @fmap_comp' : HSLib.
 
 (** All [Functor]s are strong. *)
 Lemma strength :
@@ -42,19 +42,7 @@ Qed.
 
 End DerivedFunctorLaws.
 
-Hint Rewrite @fmap_id @fmap_comp : HSLib Functor.
-
-Ltac functor_simpl :=
-  autorewrite with Functor.
-
-Hint Rewrite id_left : HSLib.
-
-Ltac functor_simpl' :=
-  autorewrite with Functor'.
-
-Ltac functor :=
-  intros; (functor_simpl + functor_simpl');
-  (congruence + reflexivity).
+Hint Rewrite @fmap_id @fmap_comp : HSLib.
 
 (** An implementation of functions that can be found in Haskell's
     Data.Functor. *)

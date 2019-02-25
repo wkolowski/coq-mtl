@@ -58,9 +58,7 @@ Instance MonadBind_to_Applicative
     pure := @pure M inst;
     ap := @ap_MonadBind M inst;
 }.
-Proof.
-  all: cbn; unfold ap_MonadBind; monad.
-Defined.
+Proof. all: monad. Defined.
 
 Section DerivedLaws.
 

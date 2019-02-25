@@ -126,7 +126,7 @@ Lemma fmap_bind_pure :
   forall (A B : Type) (f : A -> B) (x : M A),
     fmap f x = bind x (fun a : A => pure (f a)).
 Proof.
-  intros. replace (fun _ => _) with (f .> pure) by functor.
+  intros. replace (fun _ => _) with (f .> pure) by hs.
   unfold bind. rewrite fmap_comp. unfold compose.
   rewrite join_fmap_pure. reflexivity.
 Qed.

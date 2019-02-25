@@ -1,11 +1,12 @@
 (** This file is at the root of the whole library. All other files depend
     on it. *)
 
+(** We will use lists in quite a few places, so it's good to have the
+    notations in place. *)
 Require Export List.
 Export ListNotations.
 
-(** All definitions are universe polymorphic. Things are not that fine
-    however: I encountered universe inconsistencies a few times. *)
+(** All definitions are universe polymorphic and cumulative. *)
 Global Set Universe Polymorphism.
 Set Polymorphic Inductive Cumulativity.
 
@@ -16,6 +17,7 @@ Ltac inv H := inversion H; subst; clear H.
 (** We will reason by functional extensionality quite a lot. For this, we
     have three tactics:
     - [ext x] is a shorthand for [extensionality x]
+    - [ext2], [ext3] and [ext4] are analogous, but for more arguments
     - [ext] is [ext x], where x is a freshly generated name
     - [exts] is repeated [ext] *)
 Require Export Coq.Logic.FunctionalExtensionality.
@@ -48,18 +50,14 @@ Proof. reflexivity. Qed.
 Lemma id_left :
   forall (A B : Type) (f : A -> B),
     id .> f = f.
-Proof.
-  intros. unfold compose, id. ext x. reflexivity.
-Qed.
+Proof. reflexivity. Qed.
 
 Lemma id_right :
   forall (A B : Type) (f : A -> B),
     f .> id = f.
-Proof.
-  intros. unfold compose, id. ext x. reflexivity.
-Qed.
+Proof. reflexivity. Qed.
 
-(** Our main tactics, [hs] and [monad] are based on [autorewrite] and
+(** Our automation tactics are based based on [autorewrite] and
     [autounfold]. These two repeatedly rewrite/unfold all things they
     find in their hint databases. Throughout the library, we will need
     to mark which lemmas and definitions we want rewritten/unfolded.
@@ -67,45 +65,33 @@ Qed.
     We need to make sure the rewriting doesn't loop and that unfolding
     doesn't prevent rewriting. In practice, this is very straightforward.
     We will only add as hints those lemmas that "simplify", in some
-    subjective sense, the theorem's statement. Since rewriting is
-    performed before unfolding, we don't need to worry about it breaking
-    anything.
+    sense, the theorem's statement. Since rewriting is performed before
+    unfolding, we don't need to worry about it breaking anything.
 
     Both our rewriting and unfolding main hint databses are named
-    [HSLib], but there are some minor ones, like [HSLib'], [Functor]
-    and [Functor']. *)
-Hint Rewrite @id_eq @id_left @id_right : HSLib HSLib'.
+    [HSLib], but there are some minor ones, like [Functor] and
+    [Functor']. *)
+Hint Rewrite @id_eq @id_left @id_right : HSLib.
 
 (** Note that rewriting and unfolding databases are separate, so we have
-    to define a dummy value and add it to the unfolding database in order
-    to initialize it. *)
+    to define a dummy value and add it to the unfolding databases in order
+    to initialize them. *)
 Definition the_ultimate_answer := 42.
 
-Hint Unfold the_ultimate_answer : HSLib HSLib'.
+Hint Unfold the_ultimate_answer : HSLib.
 
-(** [msimpl] is the main simplification tactic we will use. We first rewrite
-    and then unfold using the rewrite/hint databases both named [HSLib].
-
-    [msimpl'] is a variant that tries to perform some simplications from
-    the hint database [HSLib'] that could result in nontermination if they
-    were added to [HSLib]. *)
-Ltac msimpl :=
-  repeat (autorewrite with HSLib + autounfold with HSLib).
-
-Ltac msimpl' :=
-  repeat (autorewrite with HSLib' + autounfold with HSLib).
-
-(** [hs] is a tactic for dealing with simple goals. First we try
-    [reflexivity] to make proofterms short, then we simplify and
-    at last we try [congruence] to solve trivial equational goals.
-
-    [hs'] is a variant that uses the [msimpl'] simplification tactic
-    instead of [msimpl]. *)
+(** [hs] is a tactic for dealing with simple goals:
+    - first try to simplify the goal by computation
+    - introduce quantified variables/hypotheses into context
+    - rewrite using the rewrite hint database [HSLib]
+    - unfold definitions using the unfold hint database [HSLib]
+    - try to finish the goal with reasoning by [congruence] and
+      [reflexivity] (interestingly, [congruence] can't solve some
+      goals that [reflexivity] can) *)
 Ltac hs :=
-  cbn; intros; msimpl; try congruence; try reflexivity.
-
-Ltac hs' :=
-  cbn; intros; msimpl'; try congruence; try reflexivity.
+  cbn; intros;
+  repeat (autorewrite with HSLib + autounfold with HSLib);
+  try congruence; try reflexivity.
 
 (** [umatch] and [unmatch_all] are tactics for conveniently [destruct]ing
     nested pattern matches. *)
@@ -117,6 +103,16 @@ end.
 
 Ltac unmatch_all :=
 match goal with
+    | |- context [match ?x with _ => _ end] => unmatch x
+end.
+
+(** Basic simplification: destruct products and get rid of [unit]s,
+    reason by cases on sums and any (possibly nested) matches *)
+Ltac destr := repeat
+match goal with
+    | x : _ * _ |- _ => destruct x
+    | x : _ + _ |- _ => destruct x
+    | x : unit |- _ => destruct x
     | |- context [match ?x with _ => _ end] => unmatch x
 end.
 

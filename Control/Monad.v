@@ -71,16 +71,6 @@ Export MonadNotations.
 
 Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : HSLib.
 
-(** Basic simplification: destruct products and get rid of units,
-    reason by cases on sums and any (possibly nested) matches *)
-Ltac destr := repeat
-match goal with
-    | x : _ * _ |- _ => destruct x
-    | x : _ + _ |- _ => destruct x
-    | x : unit |- _ => destruct x
-    | |- context [match ?x with _ => _ end] => unmatch x
-end.
-
 (** A basic simplification tactic for monads that goes like this:
     - do some computations and introduce hypotheses into the context
     - if the goal is of the form [f = g] for some functions [f] and [g],
@@ -89,7 +79,7 @@ end.
     - do some basic simplifications for functor goals
 *)
 Ltac monad_simpl :=
-  cbn; intros; exts; destr; functor_simpl.
+  cbn; intros; exts; destr.
 
 (** A tactic that solves simple monadic equational goals:
     - simplify the goal

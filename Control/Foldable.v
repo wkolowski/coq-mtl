@@ -110,14 +110,3 @@ Arguments andF {T inst} _.
 Arguments orF {T inst} _.
 Arguments allF {A T inst} _ _.
 Arguments anyF {A T inst} _ _.
-
-(** Some laws. *)
-
-Lemma isEmpty_size :
-  forall (F : Type -> Type) (inst : Foldable F) (A : Type) (x : F A),
-    isEmpty x = true <-> size x = 0.
-Proof.
-  split.
-    unfold isEmpty, size, foldr. intro.
-    Focus 2. unfold size, isEmpty, foldr.
-Admitted.

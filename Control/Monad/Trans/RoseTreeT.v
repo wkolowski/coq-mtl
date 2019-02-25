@@ -136,8 +136,7 @@ Proof.
   intros. ext3 X empty node. cbn. hs.
     unfold bind_RoseTreeT, pure_RoseTreeT.
     rewrite bind_constrA_comm, get_put, constrA_pure_l.
-      (* BEWARE: strange bug *)
-Admitted.
+Admitted. (* BEWARE: strange bug when trying to finish the proof *)
 
 Instance MonadStateNondet_RoseTreeT
   (S : Type) (M : Type -> Type)

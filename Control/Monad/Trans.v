@@ -25,11 +25,11 @@ match goal with
     | |- fmap (fun x : ?A => ?e) = _ =>
           let x := fresh "x" in
           replace (fun x : A => e) with (@id A);
-          [rewrite fmap_id | ext x; induction x]; try reflexivity
+          [rewrite fmap_id | ext x; destruct x]; try reflexivity
     | |- context [fmap ?f = fmap ?g .> fmap ?h] =>
           let x := fresh "x" in
           replace f with (g .> h);
-          [rewrite fmap_comp | ext x; induction x]; try reflexivity
+          [rewrite fmap_comp | ext x; destruct x]; try reflexivity
     | |- context [fmap ?f = fun _ => fmap ?g (fmap ?h _)] =>
           let x := fresh "x" in ext x;
           rewrite <- fmap_comp'; f_equal
