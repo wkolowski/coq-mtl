@@ -71,26 +71,6 @@ Export MonadNotations.
 
 Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : HSLib.
 
-(** A basic simplification tactic for monads that goes like this:
-    - do some computations and introduce hypotheses into the context
-    - if the goal is of the form [f = g] for some functions [f] and [g],
-      reason by functional extensionality
-    - destruct whatever possible
-    - do some basic simplifications for functor goals
-*)
-Ltac monad_simpl :=
-  cbn; intros; exts; destr.
-
-(** A tactic that solves simple monadic equational goals:
-    - simplify the goal
-    - unfold definitions and rewrite lemmas using [hs]
-    - unfoldi some things which are otherwise not unfolded, because they are
-      messy, and try [congruence]
-    - if the goal isn't solved, [fail] - we don't want badly simplified,
-      broken goals
-*)
-Ltac finish := monad_simpl; hs; unfold compose, id; cbn; congruence; fail.
-
 (** The main workhorse tactic for monadic equational goals:
     - simplify the goal
     - try to solve the goal if it's easy
@@ -98,7 +78,7 @@ Ltac finish := monad_simpl; hs; unfold compose, id; cbn; congruence; fail.
       and try to prove that the right hand side arguments of [bind] are
       equal
 *)
-Ltac monad := repeat (monad_simpl; try finish;
+Ltac monad := repeat (simplify; try (hs; fail);
 match goal with
     | |- ?x >>= _ = ?x =>
         rewrite <- bind_pure_r; f_equal

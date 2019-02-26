@@ -6,6 +6,10 @@
 Require Export List.
 Export ListNotations.
 
+(** A nice name for the identity function stolen from Idris. Probably not
+    very useful. *)
+Definition the (A : Type) (x : A) : A := x.
+
 (** All definitions are universe polymorphic and cumulative. *)
 Global Set Universe Polymorphism.
 Set Polymorphic Inductive Cumulativity.
@@ -80,30 +84,12 @@ Definition the_ultimate_answer := 42.
 
 Hint Unfold the_ultimate_answer : HSLib.
 
-(** [hs] is a tactic for dealing with simple goals:
-    - first try to simplify the goal by computation
-    - introduce quantified variables/hypotheses into context
-    - rewrite using the rewrite hint database [HSLib]
-    - unfold definitions using the unfold hint database [HSLib]
-    - try to finish the goal with reasoning by [congruence] and
-      [reflexivity] (interestingly, [congruence] can't solve some
-      goals that [reflexivity] can) *)
-Ltac hs :=
-  cbn; intros;
-  repeat (autorewrite with HSLib + autounfold with HSLib);
-  try congruence; try reflexivity.
-
 (** [umatch] and [unmatch_all] are tactics for conveniently [destruct]ing
     nested pattern matches. *)
 Ltac unmatch x :=
 match x with
     | context [match ?y with _ => _ end] => unmatch y
     | _ => destruct x
-end.
-
-Ltac unmatch_all :=
-match goal with
-    | |- context [match ?x with _ => _ end] => unmatch x
 end.
 
 (** Basic simplification: destruct products and get rid of [unit]s,
@@ -116,6 +102,35 @@ match goal with
     | |- context [match ?x with _ => _ end] => unmatch x
 end.
 
-(** A nice name for the identity function stolen from Idris. Probably not
-    very useful. *)
-Definition the (A : Type) (x : A) : A := x.
+(** A basic simplification tactic for monads that goes like this:
+    - do some computations and introduce hypotheses into the context
+    - if the goal is of the form [f = g] for some functions [f] and [g],
+      reason by functional extensionality
+    - destruct whatever possible
+    - do some basic simplifications for functor goals
+*)
+Ltac simplify :=
+  cbn; intros; exts; destr.
+
+(** [hs] is a tactic for dealing with simple goals:
+    - first try to simplify the goal by computation
+    - introduce quantified variables/hypotheses into context
+    - rewrite using the rewrite hint database [HSLib]
+    - unfold definitions using the unfold hint database [HSLib]
+    - try to finish the goal with reasoning by [congruence] and
+      [reflexivity] (interestingly, [congruence] can't solve some
+      goals that [reflexivity] can) *)
+Ltac hs :=
+  cbn; intros;
+  repeat (autounfold with HSLib; autorewrite with HSLib);
+  try (unfold compose, id, const;
+        try congruence; reflexivity).
+
+(** A tactic that solves simple monadic equational goals:
+    - simplify the goal
+    - unfold definitions and rewrite lemmas using [hs]
+    - unfoldi some things which are otherwise not unfolded, because they are
+      messy, and try [congruence]
+    - if the goal isn't solved, [fail] - we don't want badly simplified,
+      broken goals
+*)

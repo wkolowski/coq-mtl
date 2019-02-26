@@ -57,3 +57,31 @@ Lemma par_comp :
 Proof.
   intros. unfold compose, par. ext p. destruct p. cbn. reflexivity.
 Qed.
+
+Lemma aux :
+  forall {W A B C : Type} (f : B -> C) (g : A -> B),
+    ((fun _ : W => f) *** g) .>
+    (fun p : (B -> C) * B => apply (fst p) (snd p)) = snd .> g .> f.
+Proof.
+  intros. unfold compose, par. ext x. destruct x. cbn. reflexivity.
+Qed.
+
+Ltac monoidal := repeat (
+multimatch goal with
+    | |- ?x =?x => reflexivity
+    | |- context [fmap snd (pairF _ _)] => rewrite pairF_default_l
+    | |- context [fmap fst (pairF _ _)] => rewrite pairF_default_r
+    | |- context [fmap id _] => rewrite !fmap_id
+    | |- context [id _] => rewrite !id_eq
+    | |- context [id .> _] => rewrite !id_left
+    | |- context [_ .> id] => rewrite !id_right
+    | |- context [fmap (fst .> _)] => rewrite !fmap_comp'
+    | |- context [fmap (snd .> _)] => rewrite !fmap_comp'
+    | _ => rewrite ?aux
+    | |- context [pairF (fmap ?f ?a) ?x] =>
+          replace x with (fmap id x) by hs;
+          rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
+    | |- context [pairF ?x (fmap ?f ?a)] =>
+            replace x with (fmap id x) by hs;
+            rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
+end).

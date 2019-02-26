@@ -113,7 +113,7 @@ Instance MonadReader_RoseTreeT
     ask := fun X empty node => ask >>= empty
 }.
 Proof.
-  hs. ext3 X empty node.
+  ext3 X empty node. hs.
   rewrite <- ask_ask at 2.
   rewrite <- constrA_bind_assoc.
   monad.
