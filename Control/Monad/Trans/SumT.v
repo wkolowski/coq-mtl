@@ -50,7 +50,7 @@ Instance Applicative_SumT
     pure := @pure_SumT M inst E;
     ap := @ap_SumT M inst E;
 }.
-Proof. all: hs; monad. Defined.
+Proof. Time all: monad. Defined.
 
 Theorem SumT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
@@ -112,7 +112,7 @@ Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
     is_monad := @Monad_SumT E;
     lift := @lift_SumT E;
 }.
-Proof. all: hs; monad. Defined.
+Proof. all: monad. Defined.
 
 Require Import Control.Monad.Class.All.
 
@@ -164,7 +164,7 @@ Instance MonadAlt_SumT
 }.
 Proof.
   intros. rewrite choose_assoc. reflexivity.
-  intros. cbn. unfold bind_SumT. rewrite choose_bind_l. reflexivity.
+  intros. cbn. unfold bind_SumT. rewrite bind_choose_l. reflexivity.
 Defined.
 
 Instance MonadAlt_SumT'
@@ -184,8 +184,7 @@ Proof.
     reflexivity.
     rewrite !bind_assoc. f_equal. ext ex. destruct ex; cbn.
       rewrite bind_pure_l. reflexivity.
-      rewrite choose_bind_l. rewrite !bind_pure_l.
-        rewrite bind_assoc.
+      rewrite bind_choose_l, !bind_pure_l, bind_assoc.
 Abort.
 
 Instance MonadNondet_SumT

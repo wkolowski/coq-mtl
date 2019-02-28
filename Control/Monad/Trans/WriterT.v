@@ -17,9 +17,7 @@ Instance Functor_WriterT
 {
     fmap := @fmap_WriterT W M inst
 }.
-Proof.
-  all: monad.
-Defined.
+Proof. all: monad. Defined.
 
 Definition pure_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A : Type} (x : A)
@@ -222,8 +220,8 @@ Proof.
       rewrite <- constrA_spec. rewrite seq_fail_r. reflexivity.
       ext aw. destruct aw as [a w]. rewrite bind_fail_l. reflexivity.
   intros. cbn. unfold bind_WriterT.
-    rewrite <- bind_choose_distr. f_equal.
-    ext aw. destruct aw as [a w]. apply choose_bind_l.
+    rewrite <- bind_choose_r. f_equal.
+    ext aw. destruct aw as [a w]. apply bind_choose_l.
 Defined.
 
 Instance MonadFree_WriterT

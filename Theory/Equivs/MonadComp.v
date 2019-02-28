@@ -1,8 +1,12 @@
 Require Import HSLib.Base.
 
+Require Import Applicative.
+
+Print Applicative.
+
 Class Monad (M : Type -> Type) : Type :=
 {
-    pure : forall {A : Type}, A -> M A;
+    is_applicative :> Applicative M;
     compM : forall {A B C : Type}, (A -> M B) -> (B -> M C) -> (A -> M C);
     compM_pure_l :
       forall (A B : Type) (f : A -> M B), compM pure f = f;
@@ -12,6 +16,8 @@ Class Monad (M : Type -> Type) : Type :=
       forall (A B C D : Type) (f : A -> M B) (g : B -> M C) (h : C -> M D),
         compM f (compM g h) = compM (compM f g) h;
 }.
+
+Coercion is_applicative : Monad >-> Applicative.
 
 Notation "f >=> g" := (compM f g) (at level 40).
 
@@ -31,6 +37,6 @@ Instance Comp_to_Bind
     pure := @pure M inst
 }.
 Proof.
-  all: MonadBind.monad.
-    Focus 3. compute. destruct inst. cbn.
+  Focus 2. unfold bindM. intros. rewrite compM_pure_r. reflexivity.
+  Focus 2. unfold bindM. intros.
 Abort.

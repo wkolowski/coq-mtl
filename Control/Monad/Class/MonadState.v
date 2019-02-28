@@ -1,7 +1,16 @@
-Require Import HSLib.Base.
-Require Import Control.Monad.
-Require Import Control.Monad.Trans.
+Require Export Control.Monad.
 
+(** A monad which has access to some kind of state. It supports two
+    operations: [put] and [get], which satisfy the following laws:
+    - [put_put] - putting twice in a row doesn't make sense, because
+      it's the same as only the second [put]
+    - [put_get] - if we [put] and then [get], we know that we will
+      get back the state that we put in
+    - [get_put] - if we [get] and then [put], the state doesn't change
+    - [get_get] - if we [get] twice in a row and feed the states to
+      some computation, it's just like we used [get] only once and
+      copied the state
+*)
 Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
     get : M S;
@@ -27,6 +36,8 @@ Variables
   (instM : Monad M)
   (instMS : MonadState S M instM).
 
+(** The primed versions of laws are a bit expanded to ease rewriting in
+    some places. *)
 Lemma put_put' :
   forall s1 s2 : S, put s1 >>= (fun _ => put s2) = put s2.
 Proof.
@@ -52,15 +63,10 @@ End MonadStateLaws_bind.
 
 Hint Rewrite put_put' put_put'' put_get' : HSLib.
 
-Polymorphic Lemma bind_constrA_assoc :
-  forall
-    (M : Type -> Type) (inst : Monad M) 
-    (A B C : Type) (x : M A) (f : A -> M B) (y : M C),
-       x >>= f >> y = x >>= (fun a : A => f a >> y).
-Proof.
-  intros. monad.
-Qed.
+Set Implicit Arguments.
 
+(** Some functions which can be found in the Haskell standard library:
+    [state], [modify] and [gets]. *)
 Section MonadState_funs.
 
 Variables
@@ -98,43 +104,21 @@ Proof.
   reflexivity.
 Qed.
 
+Lemma modify_put :
+  forall (f : S -> S) (s : S),
+    modify f >> put s = put s.
+Proof.
+  intros. unfold modify. hs.
+  replace (put s) with (pure tt >>= fun _ => put s) by hs.
+  rewrite <- get_put, bind_assoc. f_equal.
+  ext s'. rewrite <- !bind_assoc, (put_get' _ _ _ _ (f s')).
+  hs.
+Qed.
+
 End MonadState_funs.
 
 Arguments state {S M instM instMS A}.
 Arguments modify {S M instM instMS}.
 Arguments gets {S M instM instMS A}.
-
-Variables
-  (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
-  (M : Type -> Type) (instM : Monad M)
-  (S : Type)
-  (instMF : MonadState S M instM).
-
-Instance MonadState_MonadTrans
-  : MonadState S (T M) (is_monad M instM) :=
-{
-    get := lift get;
-    put := put .> lift;
-}.
-Proof.
-  intros. unfold compose. rewrite lift_constrA, put_put. reflexivity.
-  intros. unfold compose.
-    rewrite lift_constrA, put_get, <- lift_constrA, lift_pure. reflexivity.
-  rewrite <- lift_pure, <- get_put, lift_bind. reflexivity.
-  intros.
-Abort.
-
-Lemma modify_put :
-  forall (f : S -> S) (s : S),
-    modify f >> put s = put s.
-Proof.
-  intros.
-
- unfold modify.
-  rewrite constrA_spec.
-  rewrite bind_assoc.
-  replace (fun x : S => put (f x) >>= fun _ => put s)
-     with (fun _ : S => put s).
-    Focus 2. ext x. rewrite put_put'. reflexivity.
-    Search put.
-Abort.
+Arguments put_gets {S M instM instMS A}.
+Arguments modify_put {S M instM instMS}.

@@ -1,25 +1,18 @@
 Require Import Control.
 
-(*
-Module Join.
-Require Import MonadJoin.
-Require Import HSLib.Theory.Equivs.MonadJoin.
-Include HSLib.Theory.Equivs.MonadJoin.
-End Join.
-*)
+Require MonadJoin.
+Require MonadBind.
+Require MonadComp.
 
 Module Join.
-Require MonadJoin.
 Include MonadJoin.
 End Join.
 
 Module Bind.
-Require MonadBind.
 Include MonadBind.
 End Bind.
 
 Module Comp.
-Require MonadComp.
 Include MonadComp.
 End Comp.
 
@@ -76,7 +69,7 @@ Proof. all: monad. Defined.
 Instance Monad_to_MonadComp
   (M : Type -> Type) (inst : Monad M) : MonadComp.Monad M :=
 {
-    pure := @pure M inst;
+    is_applicative := is_applicative;
     compM := @compM M inst;
 }.
 Proof. all: unfold compM; monad. Defined.

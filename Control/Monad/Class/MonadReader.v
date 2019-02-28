@@ -1,12 +1,12 @@
-Require Import HSLib.Base.
-Require Import Control.Monad.
-Require Import Control.Monad.Trans.
+Require Export Control.Monad.
 
+(** Reader monad that provides access to some kind of environment.
+    We can ask for the contents of the environment and if we ask
+    twice then it's as if we had asked only once. *)
 Class MonadReader
   (R : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
     ask : M R;
-(*    local : (R -> R) -> M R -> M R;*)
     ask_ask : ask >> ask = ask;
 }.
 
@@ -27,6 +27,12 @@ Definition asks {A : Type} (f : R -> A) : M A :=
     pure $ f r.
 
 End MonadReader_funs.
+
+(** Interestingly, we can prove that if a base monad [M] has an instance
+    of [MonadReader], then a monad transformer fed with [M] also has an
+    instance of [MonadReader]. This is quite impossible with the other
+    classes. *)
+Require Import Control.Monad.Trans.
 
 Instance MonadReader_MonadTrans
   (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)

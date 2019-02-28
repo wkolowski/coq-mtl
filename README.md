@@ -19,7 +19,6 @@ At last, this project ended up being my BSc thesis. This development is based on
 * Parser/ — monadic parser combinators.
 * Theory/ — various theoretical results, relating applicative functors to monoidal functors, monads with bind to monads with join, kleisli triples to monads with bind and so on. A formalization of the 'Just Do It' paper also lives here.
 * Thesis/ - directory containing my thesis.
-* Trash/ - this should be self-explanatory.
 
 ## Done
 

@@ -1,8 +1,16 @@
-Require Import HSLib.Base.
-Require Import Control.Monad.
+Require Export Control.Monad.
+Require Export Control.Monad.Class.MonadFail.
 
-Require Import Control.Monad.Class.MonadFail.
-
+(** An exception monad. [catch] is an associative operation that models
+    catching exceptions. The first argument is the computation to be
+    performed and the second argument is the handler. Laws can be
+    interpreted like this:
+    - [catch_fail_l]: catching a [fail] results in running the handler
+    - [catch_fail_r]: if the handler is a failure, the computation is
+      equivalent to one without [catch]
+    - [catch_pure]: if a computation doesn't throw an exception, then
+      the handler won't be run
+*)
 Class MonadExcept
   (M : Type -> Type) (inst : Monad M)  : Type :=
 {

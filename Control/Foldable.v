@@ -1,6 +1,8 @@
 Require Export HSLib.Base.
 Require Import HSLib.Misc.Monoid.
 
+Require Import Arith.
+
 (** Haskell-style [Foldable]. I have no idea about the intended categorical
     semantics. The definition is based on [foldMap] while [foldr] and [foldl]
     are moved outside and are implemented in terms of [foldMap].
@@ -58,8 +60,6 @@ Definition toListF (ta : T A) : list A :=
 
 Definition elem (cmp : A -> A -> bool) (a : A) (ta : T A) : bool :=
   foldr (fun x y => if cmp a x then true else y) false ta.
-
-Require Import Arith.
 
 Definition maxF (tn : T nat) : nat :=
   foldr (fun n m => if leb n m then m else n) 0 tn.

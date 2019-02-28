@@ -63,8 +63,6 @@ Definition lift_FreeT
   (x : M A) : FreeT F M A :=
     fun X pure wrap => x >>= pure.
 
-Compute @lift_FreeT _ Identity _.
-
 Hint Unfold lift_FreeT : HSLib.
 
 Instance MonadTrans_FreeT

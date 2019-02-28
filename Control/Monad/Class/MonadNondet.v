@@ -1,9 +1,9 @@
-Require Import HSLib.Base.
-Require Import Control.Monad.
-
 Require Export Control.Monad.Class.MonadFail.
 Require Export Control.Monad.Class.MonadAlt.
 
+(** Nondeterminism monad. We have failure and nondeterministic choice.
+    The laws can be summarized by saying that if we can choose, we
+    don't choose failure. *)
 Class MonadNondet (M : Type -> Type) (inst : Monad M) : Type :=
 {
     instF :> MonadFail M inst;

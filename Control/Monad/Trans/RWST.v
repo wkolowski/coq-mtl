@@ -1,6 +1,5 @@
 Require Import Control.
 Require Import Misc.Monoid.
-
 Require Import HSLib.Control.Monad.Identity.
 
 Definition RWST
@@ -185,8 +184,8 @@ Proof.
     rewrite constrA_spec. f_equal. ext y.
     destruct y as [[a s'] w]. apply bind_fail_l.
   intros. cbn. unfold bind_RWST. ext r. ext s.
-    rewrite <- bind_choose_distr. f_equal.
-    ext asw. destruct asw as [[a sa] wa]. apply choose_bind_l.
+    rewrite <- bind_choose_r. f_equal.
+    ext asw. destruct asw as [[a sa] wa]. apply bind_choose_l.
 Defined.
 
 Instance MonadFree_RWST

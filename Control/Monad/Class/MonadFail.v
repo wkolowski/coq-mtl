@@ -1,10 +1,8 @@
-Require Import HSLib.Base.
+Require Export Control.Monad.
 
-Require Import Control.Foldable.
-Require Import Control.Alternative.
-Require Import Control.Monad.
-Require Import Control.Monad.Trans.
-
+(** A monad which models a computation that can fail. If a computation
+    fails, any later computations that depend on it also fail, as
+    exhibited by teh law [bind_fail_l]. *)
 Class MonadFail (M : Type -> Type) (inst : Monad M) : Type :=
 {
     fail : forall {A :  Type}, M A;
@@ -67,17 +65,3 @@ End MonadFailFuns.
 Arguments mfilter {M instM instMF A} _ _.
 Arguments mpartition {M instM instMF A} _ _.
 Arguments mcatOptions {M instM instMF A} _.
-
-Variables
-  (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
-  (M : Type -> Type) (instM : Monad M)
-  (instMF : MonadFail M instM).
-
-Instance MonadFail_MonadTrans
-  : MonadFail (T M) (is_monad M instM) :=
-{
-    fail := fun A => @lift T instT M instM A fail
-}.
-Proof.
-  intros.
-Abort.

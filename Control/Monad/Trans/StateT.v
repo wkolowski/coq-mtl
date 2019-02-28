@@ -13,8 +13,8 @@ Definition fmap_StateT
 
 Hint Unfold StateT fmap_StateT compose : HSLib.
 
-(** These stupidly lemmas are there so that the parsers work quickly.
-    I don't know why that matters, but it does... *)
+(** These lemmas are there so that the parsers are fast. I don't know why
+    they matter, but they do... *)
 Lemma f1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type),
     fmap_StateT S (@id A) = id.
@@ -275,7 +275,7 @@ Proof.
     ext s. rewrite <- (seq_fail_r _ _ (x s)) at 1.
     rewrite constrA_spec. f_equal. ext y. destruct y. reflexivity.
   intros. cbn. unfold bind_StateT.
-    ext s. rewrite <- bind_choose_distr. f_equal. ext x. destruct x.
+    ext s. rewrite <- bind_choose_r. f_equal. ext x. destruct x.
     reflexivity.
 Defined.
 

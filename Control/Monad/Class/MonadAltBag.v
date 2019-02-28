@@ -1,8 +1,8 @@
-Require Import HSLib.Base.
-Require Import Control.Monad.
+Require Export Control.Monad.
 
-(** The initial model are finite bags
-    (which probably means finite multisets). *)
+(** A nondeterminism monad whose initial model are finite bags
+    (which probably means finite multisets). This is guaranteed
+    by the law [choose_comm]. *)
 Class MonadAltBag (M : Type -> Type) (inst : Monad M) : Type :=
 {
     choose : forall {A : Type}, M A -> M A -> M A;

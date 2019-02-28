@@ -256,6 +256,16 @@ Proof.
   rewrite bind_pure_l, bind_pure_r. reflexivity.
 Qed.
 
+Lemma bind_constrA_assoc :
+  forall
+    (M : Type -> Type) (inst : Monad M) 
+    (A B C : Type) (x : M A) (f : A -> M B) (y : M C),
+       x >>= f >> y = x >>= (fun a : A => f a >> y).
+Proof.
+  intros. unfold constrA, const, compose, id. monad.
+  unfold compose. rewrite bind_pure_r. reflexivity.
+Qed.
+
 Lemma bind_constrA_comm :
   forall (A B C : Type) (x : M A) (f : A -> M B) (y : M C),
     x >>= (fun x : A => f x >> y) =

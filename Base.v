@@ -19,10 +19,10 @@ Ltac gen x := generalize dependent x.
 Ltac inv H := inversion H; subst; clear H.
 
 (** We will reason by functional extensionality quite a lot. For this, we
-    have three tactics:
+    have quite a few tactics:
     - [ext x] is a shorthand for [extensionality x]
     - [ext2], [ext3] and [ext4] are analogous, but for more arguments
-    - [ext] is [ext x], where x is a freshly generated name
+    - [ext] is [ext x], where [x] is a freshly generated name
     - [exts] is repeated [ext] *)
 Require Export Coq.Logic.FunctionalExtensionality.
 
@@ -37,7 +37,7 @@ Tactic Notation "ext4" ident(x) ident(y) ident(z) ident(w) :=
 Tactic Notation "ext" := let x := fresh "x" in ext x.
 Ltac exts := repeat ext.
 
-(** Program.Basics has the rest of the things we need, namely [id] and
+(** [Program.Basics] has the rest of the things we need, namely [id] and
     [compose]. For composition, there's a forward-style notation f .> g
     and for function application without too many parentheses there's
     Haskell's $. *)
@@ -72,20 +72,20 @@ Proof. reflexivity. Qed.
     sense, the theorem's statement. Since rewriting is performed before
     unfolding, we don't need to worry about it breaking anything.
 
-    Both our rewriting and unfolding main hint databses are named
+    Both our main rewriting and unfolding hint databases are named
     [HSLib], but there are some minor ones, like [Functor] and
     [Functor']. *)
 Hint Rewrite @id_eq @id_left @id_right : HSLib.
 
 (** Note that rewriting and unfolding databases are separate, so we have
-    to define a dummy value and add it to the unfolding databases in order
-    to initialize them. *)
+    to define a dummy value and add it to the unfolding database in order
+    to initialize it. *)
 Definition the_ultimate_answer := 42.
 
 Hint Unfold the_ultimate_answer : HSLib.
 
-(** [umatch] and [unmatch_all] are tactics for conveniently [destruct]ing
-    nested pattern matches. *)
+(** [umatch] is a tactic for conveniently [destruct]ing nested pattern
+    matches. *)
 Ltac unmatch x :=
 match x with
     | context [match ?y with _ => _ end] => unmatch y
@@ -102,35 +102,25 @@ match goal with
     | |- context [match ?x with _ => _ end] => unmatch x
 end.
 
-(** A basic simplification tactic for monads that goes like this:
+(** A basic simplification tactic that goes like this:
     - do some computations and introduce hypotheses into the context
     - if the goal is of the form [f = g] for some functions [f] and [g],
       reason by functional extensionality
     - destruct whatever possible
-    - do some basic simplifications for functor goals
 *)
 Ltac simplify :=
   cbn; intros; exts; destr.
 
-(** [hs] is a tactic for dealing with simple goals:
+(** [hs] is a tactic for solving simple goals:
     - first try to simplify the goal by computation
     - introduce quantified variables/hypotheses into context
-    - rewrite using the rewrite hint database [HSLib]
     - unfold definitions using the unfold hint database [HSLib]
-    - try to finish the goal with reasoning by [congruence] and
-      [reflexivity] (interestingly, [congruence] can't solve some
-      goals that [reflexivity] can) *)
+    - rewrite using the rewrite hint database [HSLib]
+    - try to finish the goal by unfolding some sensitive definitions
+      and reason by [congruence] and [reflexivity] (interestingly,
+      [congruence] can't solve some goals that [reflexivity] can)
+*)
 Ltac hs :=
   cbn; intros;
-  repeat (autounfold with HSLib; autorewrite with HSLib);
-  try (unfold compose, id, const;
-        try congruence; reflexivity).
-
-(** A tactic that solves simple monadic equational goals:
-    - simplify the goal
-    - unfold definitions and rewrite lemmas using [hs]
-    - unfoldi some things which are otherwise not unfolded, because they are
-      messy, and try [congruence]
-    - if the goal isn't solved, [fail] - we don't want badly simplified,
-      broken goals
-*)
+  repeat (autorewrite with HSLib + autounfold with HSLib);
+  try (unfold compose, id, const; congruence + reflexivity).
