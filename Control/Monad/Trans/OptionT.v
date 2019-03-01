@@ -1,6 +1,7 @@
-Require Import Control.
-
-Require Import HSLib.Control.Monad.All.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
+Require Import Control.Monad.Option.
 
 Definition OptionT (M : Type -> Type) (A : Type) : Type := M (option A).
 
@@ -104,8 +105,6 @@ Instance MonadTrans_OptionT : MonadTrans OptionT :=
 }.
 Proof. all: monad. Defined.
 
-Require Import Control.Monad.Class.All.
-
 Definition fail_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type}
     : OptionT M A := pure None.
@@ -119,8 +118,6 @@ Instance MonadFail_OptionT
     fail := @fail_OptionT M inst
 }.
 Proof. monad. Defined.
-
-Require Import Control.Monad.Class.All.
 
 Instance MonadAlt_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -208,8 +205,9 @@ Instance MonadState_OptionT
 Proof.
   monad.
   hs. rewrite <- !bind_assoc. monad.
-  cbn. unfold bind_OptionT, pure_OptionT. rewrite bind_fmap. monad.
-    rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
+  cbn. unfold bind_OptionT, pure_OptionT. rewrite bind_fmap.
+    unfold compose. rewrite bind_constrA_comm, get_put, constrA_pure_l.
+    reflexivity.
   intros. cbn. unfold bind_OptionT.
     rewrite !bind_fmap. unfold compose.
     rewrite <- get_get. monad.

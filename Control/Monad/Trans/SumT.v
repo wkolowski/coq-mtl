@@ -1,6 +1,7 @@
-Require Import Control.
-
-Require Import HSLib.Control.Monad.All.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
+Require Import Control.Monad.Identity.
 
 Definition SumT (E : Type) (M : Type -> Type) (A : Type)
   : Type := M (sum E A).
@@ -113,8 +114,6 @@ Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
     lift := @lift_SumT E;
 }.
 Proof. all: monad. Defined.
-
-Require Import Control.Monad.Class.All.
 
 Definition fail_SumT
   {E : Type} {M : Type -> Type} {inst : Monad M} (e : E) {A : Type}

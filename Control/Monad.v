@@ -1,9 +1,9 @@
 Require Export HSLib.Control.Applicative.
 
 (** A [bind]-based definition of monads — the basic one in the library (see
-    MonadJoin/Monad.v and Theory/KleisliTriple.v for alternate definitions).
-    The intended categorical semantics is a monoidal monad in the category of
-    Coq's types and functions.
+    Theory/Equivs/MonadJoin.v and Theory/Equivs/KleisliTriple.v for
+    alternativee definitions). The intended categorical semantics is a
+    strong monoidal monad in the category of Coq's types and functions.
 
     The design here is as follows:
     - [Applicative] is a superclass of [Monad]
@@ -14,8 +14,10 @@ Require Export HSLib.Control.Applicative.
 
     There are 4 laws:
     - [bind_pure_l], [bind_pure_r] and [bind_assoc] are standard
-    - [bind_ap] ensures that [bind] is compatible with [ap] (and thus
-      also with [fmap]) *)
+    - [bind_ap] ensures that [bind] is compatible with [ap] (and
+      thus also with [fmap])
+    - note that the law [bind_pure_r] is redundant: it follows
+      from the other laws combined with [Applicative] laws *)
 Class Monad (M : Type -> Type) : Type :=
 {
     is_applicative :> Applicative M;
@@ -36,6 +38,9 @@ Class Monad (M : Type -> Type) : Type :=
 
 Coercion is_applicative : Monad >-> Applicative.
 
+Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : HSLib.
+
+(** The other basic monadic operations: [join] and monadic composition. *)
 Definition join
   {M : Type -> Type} {inst : Monad M} {A : Type} (mma : M (M A))
     : M A := bind mma id.
@@ -69,14 +74,12 @@ End MonadNotations.
 
 Export MonadNotations.
 
-Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : HSLib.
-
-(** The main workhorse tactic for monadic equational goals:
+(** [monad] is the main workhorse tactic for monadic equational goals:
     - simplify the goal
-    - try to solve the goal if it's easy
-    - if it's not, perform some aggresive backwards rewriting for [bind]
-      and try to prove that the right hand side arguments of [bind] are
-      equal
+    - try to solve the goal if it's easy using the tactic [hs]
+    - if this fails, perform some aggresive backwards rewriting for
+      [bind] and try to prove that the right hand side arguments of
+      [bind] are equal
 *)
 Ltac monad := repeat (simplify; try (hs; fail);
 match goal with
@@ -108,8 +111,7 @@ End MonadicFuns.
 
 Arguments foldM {M inst A B} _ _ _.
 
-(** Some of the laws I thought were fundamental, but turned out to be
-    redundant. *)
+(** Some derived laws that relate a [Monad] with its underlying [Functor]. *)
 Section DerivedMonadLaws.
 
 Variables
@@ -262,7 +264,7 @@ Lemma bind_constrA_assoc :
     (A B C : Type) (x : M A) (f : A -> M B) (y : M C),
        x >>= f >> y = x >>= (fun a : A => f a >> y).
 Proof.
-  intros. unfold constrA, const, compose, id. monad.
+  unfold constrA, const, compose, id. monad.
   unfold compose. rewrite bind_pure_r. reflexivity.
 Qed.
 

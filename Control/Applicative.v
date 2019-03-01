@@ -2,7 +2,7 @@ Require Export Control.Functor.
 
 (** Haskell-style applicative functors. The intended categorical semantics
     is a (strong) monoidal functor in the category of Coq's types and
-    functions (see Theory/Monoidal.v for more).
+    functions (see Control.Monoidal for more).
 
     Currently there are 5 laws, four of which ([identity], [composition],
     [homomorphism] and [interchange]) are standard and the fifth one,
@@ -32,10 +32,8 @@ Class Applicative (F : Type -> Type) : Type :=
 
 Coercion is_functor : Applicative >-> Functor.
 
-Hint Rewrite @composition @homomorphism @fmap_pure_ap
-  : HSLib.
-Hint Rewrite <- @interchange
-  : HSLib.
+Hint Rewrite @composition @homomorphism @fmap_pure_ap : HSLib.
+Hint Rewrite <- @interchange : HSLib.
 
 Module ApplicativeNotations.
 
@@ -64,7 +62,8 @@ Definition constrA
 (** In Haskell [constlA] and [constrA] are called <* and *> respectively and
     << and >> are their monadic counterparts. Here we get rid of the doubled
     [Applicative]/[Monad] versions and of the ugly *> and <* notations and
-    use << and >> in all contexts. *)
+    use << and >> in all contexts. This has some technical consequences
+    (we will need a few lemmas for dealing with [>>] in monadic contexts. *)
 Infix "<<" := constlA (right associativity, at level 42).
 Infix ">>" := constrA (right associativity, at level 42).
 
@@ -83,8 +82,6 @@ Lemma fmap_pure :
     fmap f (pure x) = pure (f x).
 Proof. hs. Qed.
 
-Hint Rewrite @fmap_pure : HSLib.
-
 Lemma constrA_pure_l :
   forall (A B : Type) (a : A) (fb : F B),
     pure a >> fb = fb.
@@ -94,10 +91,12 @@ Proof.
   reflexivity.
 Qed.
 
+Hint Rewrite @fmap_pure constrA_pure_l : HSLib.
+
 End DerivedApplicativeLaws.
 
 (** Utility functions for applicative functors. In Haskell, most of these
-    require the [F] to be a monad, but in this library they requiere only
+    require the [F] to be a monad, but in this library they require only
     an [Applicative]. They are consistently named with "A" at the end and
     the ones with "M" at the end you can find in Haskell don't exist here. *)
 Section ApplicativeFuns1.

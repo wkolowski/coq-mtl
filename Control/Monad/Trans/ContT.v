@@ -1,4 +1,6 @@
-Require Import Control.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
 
 Definition ContT (R : Type) (M : Type -> Type) (A : Type)
   : Type := (A -> M R) -> M R.
@@ -61,8 +63,6 @@ Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
     lift := @lift_ContT R;
 }.
 Proof. all: monad. Defined.
-
-Require Import Control.Monad.Class.All.
 
 Instance MonadAlt_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)

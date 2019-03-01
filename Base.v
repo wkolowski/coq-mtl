@@ -92,8 +92,8 @@ match x with
     | _ => destruct x
 end.
 
-(** Basic simplification: destruct products and get rid of [unit]s,
-    reason by cases on sums and any (possibly nested) matches *)
+(** Destruct products and get rid of [unit]s, reason by cases on sums and
+    any (possibly nested) pattern matches *)
 Ltac destr := repeat
 match goal with
     | x : _ * _ |- _ => destruct x

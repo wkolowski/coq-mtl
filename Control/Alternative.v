@@ -3,9 +3,15 @@ Require Export HSLib.Control.Foldable.
 
 (** A Haskell-style alternative functor. The intended categorical semantics
     is not yet entirely clear to me. Intuitively it looks like a strong
-    monoidal functor with an additional monoid structure on top of it.
+    monoidal functor with an additional monoid structure on top of it. The
+    laws are standard monoid laws.
 
-    The laws are standard monoid laws. *)
+    Note that there's a design clash between [Alternative] and [MonadAlt],
+    as each of them may be thought of as modeling a computation which
+    can perform nondeterministic choice. The laws however make it clear
+    that [Alternative] is different from [MonadNondet]: [aempty] is a
+    neutral element of [aplus], whereas [fail] from [MonadNondet] is an
+    annihilating element. *)
 Class Alternative (F : Type -> Type) : Type :=
 {
     is_applicative :> Applicative F;
@@ -30,8 +36,8 @@ Notation "x <|> y" := (aplus x y)
   (left associativity, at level 50).
 
 (** Utility functions for [Alternative]s from Haskell's
-    Control.Applicative.Alternative, Control.Applicative and Control.Monad
-    all in one place! *)
+    Control.Applicative.Alternative, Control.Applicative
+    and Control.Monad all in one place! *)
 Section AlternativeFuns.
 
 Variable F : Type -> Type.
@@ -42,7 +48,7 @@ Variable instT : Foldable T.
 
 Variables A B C : Type.
 
-(** [asum] is corresponds to Haskell's [asum], [msum] and [msum']. *)
+(** [asum] corresponds to Haskell's [asum], [msum] and [msum']. *)
 Definition asum : T (F A) -> F A := foldr aplus aempty.
 
 Fixpoint aFromList (la : list A) : F A :=

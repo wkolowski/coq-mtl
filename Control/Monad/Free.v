@@ -1,6 +1,6 @@
-Require Import Control.
+Require Import Control.All.
 
-Require Import HSLib.Control.Monad.Identity.
+Require Import Control.Monad.Identity.
 
 Definition Free (F : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> X) -> (F X -> X) -> X.

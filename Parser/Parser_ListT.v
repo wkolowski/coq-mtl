@@ -1,7 +1,7 @@
-Require Import Control.
+Require Import Control.All.
 
-Require Import HSLib.Control.Monad.All.
-Require Import HSLib.Control.Monad.Trans.All.
+Require Import Control.Monad.All.
+Require Import Control.Monad.Trans.All.
 
 Require Import Ascii.
 Require Import String.

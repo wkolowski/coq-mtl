@@ -1,4 +1,4 @@
-Require Import Control.
+Require Import Control.All.
 
 Definition Cont (R A : Type) : Type := (A -> R) -> R.
 

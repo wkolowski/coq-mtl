@@ -1,4 +1,6 @@
-Require Import Control.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
 
 Definition ListT
   (M : Type -> Type) (A : Type) : Type :=
@@ -92,8 +94,6 @@ Instance MonadTrans_ListT : MonadTrans ListT :=
     lift := @lift_ListT;
 }.
 Proof. all: monad. Defined.
-
-Require Import Control.Monad.Class.All.
 
 Definition fail_ListT
   {M : Type -> Type} {inst : Monad M} {A : Type} : ListT M A := [[]].

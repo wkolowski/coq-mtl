@@ -1,8 +1,9 @@
 Require Export HSLib.Control.Applicative.
 
 (** An applicative functor is commutative if its [ap]'s arguments can be
-    evaluated in any order. The intended categorical semantics is therefore
-    strong commutative monoidal functor. *)
+    evaluated in any order. The categorical semantics is therefore along
+    the lines of strong symmetric monoidal functor/strong braided
+    monoidal functor. *)
 Class CommutativeApplicative
   (F : Type -> Type) (inst : Applicative F) : Prop :=
 {

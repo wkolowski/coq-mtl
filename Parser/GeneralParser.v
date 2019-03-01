@@ -4,10 +4,10 @@ Require Export Arith.
 Require Export Ascii.
 Require Export String.
 
-Require Import Control.
+Require Import Control.All.
 
-Require Export HSLib.Control.Monad.ListInst.
-Require Export HSLib.Control.Monad.Trans.StateT.
+Require Export Control.Monad.ListInst.
+Require Export Control.Monad.Trans.StateT.
 
 (** A parser is just a nondeterministic monad with state. *)
 Definition Parser (A : Type) : Type :=

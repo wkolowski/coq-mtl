@@ -1,4 +1,7 @@
-Require Import Control.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
+Require Import Control.Monad.Identity.
 
 Definition RoseTreeT (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (M X -> M X -> M X) -> M X.
@@ -50,8 +53,6 @@ End RoseTreeT_Instances.
 Hint Unfold
   fmap_RoseTreeT pure_RoseTreeT ap_RoseTreeT bind_RoseTreeT : HSLib.
 
-Require Import HSLib.Control.Monad.All.
-
 Theorem RoseTreeT_not_Alternative :
   (forall (M : Type -> Type) (inst : Monad M), Alternative (RoseTreeT M)) ->
     False.
@@ -61,8 +62,6 @@ Proof.
   unfold Identity in *. destruct X.
   apply (aempty False False); trivial.
 Qed.
-
-Require Import Control.Monad.Class.All.
 
 Instance MonadAlt_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)

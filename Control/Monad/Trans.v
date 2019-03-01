@@ -1,4 +1,4 @@
-Require Export HSLib.Control.Monad.
+Require Export Control.Monad.
 
 (** Haskell-style monad transformers. The categorical semantics is not yet
     clear to me (a monad morphism?, a natural transformation preserving the

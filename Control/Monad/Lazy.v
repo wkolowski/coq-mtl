@@ -1,4 +1,4 @@
-Require Import Control.
+Require Import Control.All.
 
 Definition Lazy (A : Type) : Type := unit -> A.
 

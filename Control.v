@@ -1,9 +1,8 @@
-Require Export HSLib.Base.
+(** This file gathers everything that lives inside Control/ and its
+    subdirectories. *)
 
-Require Export Control.Alternative.
-Require Export Control.Applicative.
-Require Export Control.CommutativeApplicative.
-Require Export Control.Foldable.
-Require Export Control.Functor.
-Require Export Control.Monad.
+Require Export Control.All.
+Require Export Control.Monad.All.
 Require Export Control.Monad.Trans.
+Require Export Control.Monad.Trans.All.
+Require Export Control.Monad.Class.All.

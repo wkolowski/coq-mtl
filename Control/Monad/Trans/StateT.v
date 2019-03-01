@@ -1,6 +1,7 @@
-Require Import Control.
-
-Require Import HSLib.Control.Monad.Identity.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
+Require Import Control.Monad.Identity.
 
 Definition StateT (S : Type) (M : Type -> Type) (A : Type)
   : Type := S -> M (A * S)%type.
@@ -178,8 +179,9 @@ Proof.
   apply m2.
   apply m3.
   apply m5.
+(*
 Restart.
-  all: monad.
+  all: monad.*)
 Defined.
 
 Definition lift_StateT
@@ -195,8 +197,6 @@ Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
 }.
 Proof. all: monad. Defined.
 
-Require Import Control.Monad.Class.All.
-
 Instance MonadState_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (StateT S M) (Monad_StateT S M inst) :=
@@ -208,8 +208,6 @@ Proof.
   1-3: monad.
   intros. ext s. hs.
 Defined.
-
-Require Import Control.Monad.Class.All.
 
 Instance MonadAlt_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)

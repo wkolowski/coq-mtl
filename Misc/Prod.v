@@ -1,4 +1,4 @@
-Require Import Control.
+Require Import Control.All.
 
 Definition fmap_Prod
   {A B C : Type} (f : B -> C) (x : A * B) : A * C :=

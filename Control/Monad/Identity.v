@@ -1,4 +1,4 @@
-Require Import Control.
+Require Import Control.All.
 
 Definition Identity (A : Type) : Type := A.
 

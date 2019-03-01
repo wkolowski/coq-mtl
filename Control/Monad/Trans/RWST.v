@@ -1,6 +1,9 @@
-Require Import Control.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
+Require Import Control.Monad.Identity.
+
 Require Import Misc.Monoid.
-Require Import HSLib.Control.Monad.Identity.
 
 Definition RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (A : Type) : Type :=
@@ -32,9 +35,7 @@ Definition ap_RWST
   (f : RWST W R S M (A -> B)) (x : RWST W R S M A) : RWST W R S M B :=
     fun r s =>
       f r s >>= fun '(f', sf, wf) =>
-      x r sf >>= fun '(x', sx, wx) => pure (f' x', sx, op wf wx). (*
-      let '(x', sx, wx) := x r s in
-      let '(f', sf, wf) := f r sx in (f' x', sf, op wx wf). *)
+      x r sf >>= fun '(x', sx, wx) => pure (f' x', sx, op wf wx).
 
 Hint Unfold pure_RWST ap_RWST : HSLib.
 
@@ -104,10 +105,6 @@ Instance MonadTrans_RWST
 }.
 Proof. all: unfold compose; monad. Defined.
 
-Require Import Control.Monad.Class.All.
-
-Require Import Misc.Monoid.
-
 Instance MonadReader_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadReader R (RWST W R S M) (Monad_RWST W R S M inst) :=
@@ -127,8 +124,6 @@ Proof.
   1-3: monad.
   intros. cbn. ext r. ext s. monad.
 Defined.
-
-Require Import Control.Monad.Class.All.
 
 Instance MonadAlt_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)

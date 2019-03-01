@@ -1,6 +1,9 @@
-Require Import Control.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
+Require Import Control.Monad.Identity.
+
 Require Import Misc.Monoid.
-Require Import HSLib.Control.Monad.All.
 
 Definition WriterT (W : Monoid) (M : Type -> Type) (A : Type)
   : Type := M (A * W)%type.
@@ -17,7 +20,7 @@ Instance Functor_WriterT
 {
     fmap := @fmap_WriterT W M inst
 }.
-Proof. all: monad. Defined.
+Proof. all: unfold compose; monad. Defined.
 
 Definition pure_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A : Type} (x : A)
@@ -103,9 +106,7 @@ Instance MonadTrans_WriterT (W : Monoid) : MonadTrans (WriterT W) :=
     is_monad := @Monad_WriterT W;
     lift := @lift_WriterT W;
 }.
-Proof. all: monad. Defined.
-
-Require Import Control.Monad.Class.All.
+Proof. all: unfold compose; monad. Defined.
 
 Instance MonadAlt_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -174,22 +175,10 @@ Proof.
     reflexivity.
   cbn. unfold bind_WriterT, pure_WriterT.
     rewrite bind_assoc.
-    replace
-
-      (fun x : S =>
- @pure M inst (S * W) (x, @neutr W) >>=
- (fun '(a, w) =>
-  (@put S M inst inst' a >> @pure M inst (unit * W) (tt, @neutr W)) >>=
-  (fun '(b, w') => @pure M inst (unit * W) (b, @op W w w'))))
-
-    with
-
-      (fun s : S =>
-        put s >> @pure M inst _ (tt, neutr))
-
-    by monad.
-
-    rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
+    replace (pure (tt, @neutr W))
+       with (fmap (fun u => (u, @neutr W)) (@pure M inst _ tt))
+    by hs.
+    rewrite <- get_put at 1. rewrite fmap_bind. f_equal. monad.
   intros. cbn. unfold bind_WriterT. rewrite !bind_assoc.
     do 2 match goal with
         | |- context [fun s : S => pure (s, ?x) >>= ?f] =>
@@ -211,14 +200,8 @@ Instance MonadStateNondet_WriterT
 Proof.
   intros. rewrite constrA_spec. cbn.
     unfold bind_WriterT.
-    replace
-      (fun '(_, w) =>
-        @fail M inst inst' (B * W) >>=
-        (fun '(b, w') => @pure M inst (B * W) (b, @op W w w'))
-      )
-    with (fun _ : A * W => @fail M inst inst' (B * W)).
-      rewrite <- constrA_spec. rewrite seq_fail_r. reflexivity.
-      ext aw. destruct aw as [a w]. rewrite bind_fail_l. reflexivity.
+    rewrite <- (@seq_fail_r S M inst inst' _ _ x) at 1.
+    rewrite constrA_spec. f_equal. monad.
   intros. cbn. unfold bind_WriterT.
     rewrite <- bind_choose_r. f_equal.
     ext aw. destruct aw as [a w]. apply bind_choose_l.

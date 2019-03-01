@@ -1,4 +1,4 @@
-Require Import Control.
+Require Import Control.All.
 Require Import Misc.Monoid.
 
 (** Rose Trees - trees which hold values in their leaves. *)

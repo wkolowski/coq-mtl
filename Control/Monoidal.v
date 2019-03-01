@@ -1,6 +1,6 @@
 Require Export HSLib.Control.Functor.
 
-(* Auxiliary functions needed to define Monoidal. *)
+(** Auxiliary functions needed to define [Monoidal]. *)
 Definition reassoc
   {A B C : Type} : (A * B) * C -> A * (B * C) :=
     fun '((a, b), c) => (a, (b, c)).
@@ -27,16 +27,17 @@ Class isMonoidal (F : Type -> Type) : Type :=
         fmap fst (pairF v default) = v;
     pairF_assoc :
       forall (A B C : Type) (a : F A) (b : F B) (c : F C),
-        fmap reassoc (pairF (pairF a b) c) =
-        pairF a (pairF b c);
+        fmap reassoc (pairF (pairF a b) c) = pairF a (pairF b c);
     natural :
-      forall (A A' B B' : Type) (f : A -> A') (g : B -> B')
-      (a : F A) (b : F B),
-        fmap (f *** g) (pairF a b) = pairF (fmap f a) (fmap g b)
+      forall
+        (A A' B B' : Type) (f : A -> A') (g : B -> B') (a : F A) (b : F B),
+          fmap (f *** g) (pairF a b) = pairF (fmap f a) (fmap g b)
 }.
 
 Hint Rewrite @pairF_default_l @pairF_default_r @pairF_assoc : monoidal.
 
+(** Basic lemmas about monoidal functors. Some of them are needed in
+    the tactic [monoidal] - see below. *)
 Lemma par_id :
   forall (A B : Type), @id A *** @id B = id.
 Proof.
@@ -66,9 +67,13 @@ Proof.
   intros. unfold compose, par. ext x. destruct x. cbn. reflexivity.
 Qed.
 
+(** A tactic for solving goals about [Monoidal]. It works by repeatedly
+    performing precise rewrites. The order of these was found experimentally
+    and is best suited in the proofs to come in
+    Theory/Applicative_is_Monoidal.v *)
 Ltac monoidal := repeat (
 multimatch goal with
-    | |- ?x =?x => reflexivity
+    | |- ?x = ?x => reflexivity
     | |- context [fmap snd (pairF _ _)] => rewrite pairF_default_l
     | |- context [fmap fst (pairF _ _)] => rewrite pairF_default_r
     | |- context [fmap id _] => rewrite !fmap_id

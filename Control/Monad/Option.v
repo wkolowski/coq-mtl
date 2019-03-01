@@ -1,4 +1,4 @@
-Require Import Control.
+Require Import Control.All.
 Require Import Misc.Monoid.
 
 Definition Option (A : Type) : Type := option A.

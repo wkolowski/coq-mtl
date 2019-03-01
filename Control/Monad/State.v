@@ -1,4 +1,4 @@
-Require Import Control.
+Require Import Control.All.
 
 Definition State (S A : Type) := S -> A * S.
 
@@ -6,13 +6,13 @@ Definition fmap_State
   (S A B : Type) (f : A -> B) (st : State S A) : State S B :=
     fun s : S => let (a, s') := st s in (f a, s').
 
-Hint Unfold State fmap_State compose : HSLib.
+Hint Unfold State fmap_State : HSLib.
 
 Instance FunctorState (S : Type) : Functor (State S) :=
 {
     fmap := @fmap_State S
 }.
-Proof. all: monad. Defined.
+Proof. all: unfold compose; monad. Defined.
 
 Definition pure_State
   (S A : Type) : A -> State S A :=
@@ -32,7 +32,7 @@ Instance ApplicativeState (S : Type) : Applicative (State S) :=
     pure := @pure_State S;
     ap := @ap_State S
 }.
-Proof. all: monad. Defined.
+Proof. all: unfold compose; monad. Defined.
 
 Theorem State_not_CommutativeApplicative :
   ~ (forall S : Type, CommutativeApplicative _ (ApplicativeState S)).
@@ -48,7 +48,8 @@ Qed.
 Theorem State_not_Alternative :
   (forall S : Type, Alternative (State S)) -> False.
 Proof.
-  unfold State. intro. destruct (X unit). destruct (aempty False tt).
+  unfold State. intro.
+  destruct (X unit). destruct (aempty False tt).
   assumption.
 Qed.
 

@@ -1,8 +1,10 @@
-Require Import Control.
+Require Import Control.All.
+Require Import Control.Monad.Identity.
+Require Import Control.Monad.Class.MonadFree.
 
 Definition Codensity
   (F : Type -> Type) (A : Type) : Type :=
-    forall {R : Type}, (A -> F R) -> F R.
+    forall (R : Type), (A -> F R) -> F R.
 
 Definition fmap_Codensity
   (F : Type -> Type) {A B : Type} (f : A -> B) (x : Codensity F A)
@@ -36,7 +38,8 @@ Instance Applicative_Codensity
 Proof. all: reflexivity. Defined.
 
 Definition bind_Codensity
-  (F : Type -> Type) {A B : Type} (ca : Codensity F A) (f : A -> Codensity F B)
+  (F : Type -> Type) {A B : Type}
+  (ca : Codensity F A) (f : A -> Codensity F B)
     : Codensity F B := fun (R : Type) (g : B -> F R) =>
       ca R (fun x : A => f x R g).
 
@@ -55,15 +58,6 @@ Instance MonadCodensity
 }.
 Proof. all: reflexivity. Defined.
 
-Lemma id_to_homotopy :
-  forall (A : Type) (P : forall x : A, Type) (f g : forall x : A, P x),
-    f = g -> forall x : A, f x = g x.
-Proof.
-  intros. rewrite H. reflexivity.
-Qed.
-
-Require Import Control.Monad.Identity.
-
 Theorem Codensity_not_CommutativeApplicative :
   (forall F : Type -> Type,
     CommutativeApplicative _ (Applicative_Codensity F)) -> False.
@@ -78,38 +72,6 @@ Proof.
   apply (f_equal (fun f => f bool)) in ap_comm.
   apply (f_equal (fun f => f (fun b => [b]))) in ap_comm.
   cbn in ap_comm. inv ap_comm.
-Qed.
-
-Definition callCC_Type : Type :=
-  forall (F : Type -> Type) (A B : Type),
-    ((A -> Codensity F B) -> Codensity F A) -> Codensity F A.
-
-Lemma calCC_classic :
-  (forall A : Type, A + (A -> False)) -> callCC_Type.
-Proof.
-  unfold callCC_Type. intros LEM F A B H.
-  destruct (LEM (Codensity F A)).
-    assumption.
-    apply H. intro. cut False.
-      inversion 1.
-      apply f. red. intros. apply X0. assumption.
-Qed.
-
-(* This one comes from Purescript's Pursuit library. *)
-Definition callCC'_Type : Type :=
-  forall (F : Type -> Type) (A : Type),
-    ((forall B : Type, A -> Codensity F B) ->
-        Codensity F A) -> Codensity F A.
-
-Lemma calCC'_classic :
-  (forall A : Type, A + (A -> False)) -> callCC'_Type.
-Proof.
-  unfold callCC'_Type. intros LEM F A H.
-  destruct (LEM (Codensity F A)).
-    assumption.
-    apply H. intros B a. cut False.
-      inversion 1.
-      apply f. red. intros. apply X. assumption.
 Qed.
 
 Section CodensityFuns.
@@ -157,8 +119,6 @@ End CodensityFuns.
 
 Arguments improve {M inst A } _.
 
-Require Import Control.Monad.Class.MonadFree.
-
 Definition wrap_Codensity
   {F M : Type -> Type} {instF : Functor F} {instM : Monad M}
   {instMF : MonadFree F M instF instM} {A : Type}
@@ -166,7 +126,7 @@ Definition wrap_Codensity
     fun R g => wrap (fmap (fun f => f R g) x).
 
 Hint Unfold
-  Codensity fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
+  fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
   wrap_Codensity : HSLib.
 
 Instance MonadFree_Codensity
@@ -179,3 +139,43 @@ Instance MonadFree_Codensity
 Proof.
   hs. ext2 R g. rewrite <- !fmap_comp'. unfold compose. reflexivity.
 Defined.
+
+(** I was wondering whether Codensity could in theory support callCC, so
+    I went on to check this. The first type is of the usual callCC (with
+    [Cont] replaced by [Codensity]) and the second one is taken from
+    Purescript's Pursuit library. *)
+Definition callCC_Type : Type :=
+  forall (F : Type -> Type) (A B : Type),
+    ((A -> Codensity F B) -> Codensity F A) -> Codensity F A.
+
+Definition callCC'_Type : Type :=
+  forall (F : Type -> Type) (A : Type),
+    ((forall B : Type, A -> Codensity F B) ->
+        Codensity F A) -> Codensity F A.
+
+(** It turns out that when we use excluded middle for [Type], we can
+    define both versions of callCC. This proves that [Codensity] does
+    not forbid callCC. However, I think that there's no way to define
+    it constructively. *)
+
+Lemma calCC_classic :
+  (forall A : Type, A + (A -> False)) -> callCC_Type.
+Proof.
+  unfold callCC_Type. intros LEM F A B H.
+  destruct (LEM (Codensity F A)).
+    assumption.
+    apply H. intro. cut False.
+      inversion 1.
+      apply f. red. intros. apply X0. assumption.
+Qed.
+
+Lemma calCC'_classic :
+  (forall A : Type, A + (A -> False)) -> callCC'_Type.
+Proof.
+  unfold callCC'_Type. intros LEM F A H.
+  destruct (LEM (Codensity F A)).
+    assumption.
+    apply H. intros B a. cut False.
+      inversion 1.
+      apply f. red. intros. apply X. assumption.
+Qed.

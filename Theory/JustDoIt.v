@@ -1,4 +1,3 @@
-Require Import HSLib.Base.
 Require Import Control.Monad.
 
 (** * Just do It: Simple Monadic Equational Reasoning *)
@@ -386,7 +385,7 @@ Lemma guard_seq_bind :
     guard b >> ma = ma >>= fun a : A => guard b >> pure a.
 Proof.
   intros. unfold guard. destruct b.
-    unfold skip, constrA. monad.
+    unfold skip, constrA. unfold compose. monad.
     rewrite constrA_fail_l. rewrite <- (seq_fail_r _ _ ma).
       rewrite constrA_spec. f_equal. ext a. rewrite constrA_fail_l.
         reflexivity.

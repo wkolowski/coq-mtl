@@ -1,6 +1,7 @@
-Require Import Control.
-
-Require Import HSLib.Control.Monad.Identity.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
+Require Import Control.Monad.Identity.
 
 Definition FreeT (F : Type -> Type) (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (F (M X) -> M X) -> M X.

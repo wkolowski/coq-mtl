@@ -1,6 +1,7 @@
-Require Import Control.
-
-Require Import HSLib.Control.Monad.All.
+Require Import Control.All.
+Require Import Control.Monad.Trans.
+Require Import Control.Monad.Class.All.
+Require Export Control.Monad.Identity.
 
 Definition ReaderT (E : Type) (M : Type -> Type) (A : Type)
   : Type := E -> M A.
@@ -17,7 +18,7 @@ Instance Functor_ReaderT
 {
     fmap := @fmap_ReaderT M inst E
 }.
-Proof. all: monad. Defined.
+Proof. all: unfold compose; monad. Defined.
 
 Definition pure_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A)
@@ -98,8 +99,6 @@ Instance MonadTrans_ReaderT (E : Type) : MonadTrans (ReaderT E) :=
 }.
 Proof. all: reflexivity. Defined.
 
-Require Import Control.Monad.Class.All.
-
 Instance MonadReader_Reader
   (M : Type -> Type) (inst : Monad M) (R : Type)
   : MonadReader R (ReaderT R M) (Monad_ReaderT R M inst) :=
@@ -107,8 +106,6 @@ Instance MonadReader_Reader
     ask := pure
 }.
 Proof. monad. Defined.
-
-Require Import Control.Monad.Class.All.
 
 Instance MonadAlt_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)

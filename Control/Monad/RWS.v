@@ -1,4 +1,4 @@
-Require Import Control.
+Require Import Control.All.
 Require Import Misc.Monoid.
 
 Definition RWS (W : Monoid) (R S A : Type) : Type :=

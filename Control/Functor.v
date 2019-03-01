@@ -22,8 +22,8 @@ Variables
   (inst : Functor F).
 
 (** The basic law [fmap_comp] is problematic for practical use because
-    of the right-hand side use of [.>]. A more practically useful law is
-    provided here, but the old one is retained for compatibility. *)
+    of the right-hand side use of [.>]. A more practically useful law
+    is provided here, but the old one is retained for compatibility. *)
 Lemma fmap_comp' :
   forall (A B C : Type) (f : A -> B) (g : B -> C) (x : F A),
     fmap (f .> g) x = fmap g (fmap f x).
@@ -38,7 +38,7 @@ Lemma strength :
   forall A B : Type, A -> F B -> F (A * B)%type.
 Proof.
   intros A B a fb. exact (fmap (pair a) fb).
-Qed.
+Defined.
 
 End DerivedFunctorLaws.
 
