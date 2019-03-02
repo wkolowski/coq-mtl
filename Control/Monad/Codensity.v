@@ -2,6 +2,10 @@ Require Import Control.All.
 Require Import Control.Monad.Identity.
 Require Import Control.Monad.Class.MonadFree.
 
+(** The codensity monad. Not very developed, as I don't know too much
+    about it. In particular, I didn't check if it really improves
+    asymptotic complexity or even performance, as this is quite hard
+    in Coq, where everything is rather slow. *)
 Definition Codensity
   (F : Type -> Type) (A : Type) : Type :=
     forall (R : Type), (A -> F R) -> F R.
@@ -58,7 +62,9 @@ Instance MonadCodensity
 }.
 Proof. all: reflexivity. Defined.
 
-Theorem Codensity_not_CommutativeApplicative :
+(** Since [Codensity] is somewhat akin to [Free], we shouldn't expect
+    it to be commutative. *)
+Lemma Codensity_not_CommutativeApplicative :
   (forall F : Type -> Type,
     CommutativeApplicative _ (Applicative_Codensity F)) -> False.
 Proof.
@@ -91,8 +97,8 @@ Definition improve
     extract (inject x).
 
 Hint Unfold
-  Codensity fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
-  inject extract : HSLib.
+  fmap_Codensity pure_Codensity ap_Codensity bind_Codensity inject extract
+  : HSLib.
 
 Lemma extract_pure :
   forall (A : Type) (x : A),
@@ -104,7 +110,7 @@ Lemma extract_pure' :
     extract (fun _ c => x >>= c) = x.
 Proof. monad. Qed.
 
-(** Does inject (extract x) = x hold? *)
+(** Does inject (extract x) = x hold? Probably not, but not sure. *)
 Lemma extract_inject :
   forall (A : Type) (x : M A),
     extract (inject x) = x.
@@ -140,10 +146,13 @@ Proof.
   hs. ext2 R g. rewrite <- !fmap_comp'. unfold compose. reflexivity.
 Defined.
 
-(** I was wondering whether Codensity could in theory support callCC, so
-    I went on to check this. The first type is of the usual callCC (with
-    [Cont] replaced by [Codensity]) and the second one is taken from
-    Purescript's Pursuit library. *)
+(** I was wondering whether [Codensity] could in theory support callCC,
+    because in http://comonad.com/reader/2011/free-monads-for-less/
+    Edawrd Kmett states that it doesn't, so I went on to check this.
+    The first type is of the usual callCC (with [Cont] replaced by
+    [Codensity]) and the second one is taken from Purescript's
+    Pursuit library. *)
+
 Definition callCC_Type : Type :=
   forall (F : Type -> Type) (A B : Type),
     ((A -> Codensity F B) -> Codensity F A) -> Codensity F A.

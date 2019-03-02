@@ -1,7 +1,10 @@
 Require Import Control.All.
-
 Require Import Control.Monad.Identity.
+Require Import Control.Monad.Class.MonadFree.
 
+(** The free monad of a functor F. Contrary to Haskell, it is implemented
+    using Church encoding, because the corresponding inductive type is not
+    strictly positive. *)
 Definition Free (F : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> X) -> (F X -> X) -> X.
 
@@ -46,14 +49,14 @@ Proof. all: reflexivity. Defined.
 
 End Free.
 
-Theorem Free_not_Alternative :
+(** We shouldn't expect free monads to support any structure besides that
+    of a monad, so in particular no [Alternative]. *)
+Lemma Free_not_Alternative :
   (forall F : Type -> Type, Alternative (Free F)) -> False.
 Proof.
   unfold Free; intro. destruct (X Identity); unfold Identity in *.
   apply (aempty False False); trivial.
 Qed.
-
-Require Import Control.Monad.Class.MonadFree.
 
 Definition wrap_Free
   {F : Type -> Type} {instF : Functor F} {A : Type}
@@ -62,7 +65,7 @@ Definition wrap_Free
       wrap (fmap (fun f : forall X : Type, (A -> X) -> (F X -> X) -> X =>
                f X pure wrap) x).
 
-Hint Unfold Free fmap_Free pure_Free ap_Free bind_Free wrap_Free : HSLib.
+Hint Unfold fmap_Free pure_Free ap_Free bind_Free wrap_Free : HSLib.
 
 Instance MonadFree_Free
   (F : Type -> Type) (instF : Functor F)
