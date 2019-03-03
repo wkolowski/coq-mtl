@@ -3,9 +3,11 @@ Require Import Control.Monad.Class.All.
 
 Require Import Misc.Monoid.
 
-(** The optionality monad, known as Maybe in Haskell. *)
+(** The partiality monad, known as Maybe in Haskell. TODO: manage names. *)
 Definition Option (A : Type) : Type := option A.
 
+(** We map over a partial computation by applying the function only if
+    there's a result and doing nothing otherwise. *)
 Definition fmap_Option
   {A B : Type} (f : A -> B) (oa : option A) : option B :=
 match oa with
@@ -15,14 +17,22 @@ end.
 
 Hint Unfold fmap_Option : HSLib.
 
+(** [Functor] laws can be proven by an easy case analysis, which can be
+    handled automatically. *)
 Instance Functor_Option : Functor option :=
 {
     fmap := @fmap_Option
 }.
 Proof. all: monad. Defined.
 
+(** The constructor [Some] represents a total computation that has a
+    result. *)
 Definition pure_Option := @Some.
 
+(** We can apply a partial function to a partial value by running the
+    computations and checking if the results are presents. If both are
+    there, just apply the function to the argument. Otherwise there's
+    no result. *)
 Definition ap_Option
   {A B : Type} (of : option (A -> B)) (oa : option A) : option B :=
 match of, oa with
@@ -40,12 +50,15 @@ Instance Applicative_Option : Applicative option :=
 }.
 Proof. all: monad. Defined.
 
+(** [None] represents a computation whose value is missing. *)
 Definition aempty_Option {A : Type} : option A := None.
 
+(** We can "sum" partial computations by running the first one. If it has
+    a result, return it. Otherwise return the second computation. *)
 Definition aplus_Option {A : Type} (x y : option A) : option A :=
 match x, y with
     | None, y => y
-    | _, _ => x
+    | Some a, _ => Some a
 end.
 
 Hint Unfold aempty_Option aplus_Option : HSLib.

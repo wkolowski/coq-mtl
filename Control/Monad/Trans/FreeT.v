@@ -50,7 +50,7 @@ Proof. all: reflexivity. Defined.
 
 End FreeT.
 
-Theorem FreeT_not_Alternative :
+Lemma FreeT_not_Alternative :
   (forall (F : Type -> Type) (M : Type -> Type) (inst : Monad M),
     Alternative (FreeT F M)) -> False.
 Proof.

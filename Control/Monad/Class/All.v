@@ -6,6 +6,7 @@ Require Export Control.Monad.Class.MonadNondet.
 Require Export Control.Monad.Class.MonadReader.
 Require Export Control.Monad.Class.MonadState.
 Require Export Control.Monad.Class.MonadStateNondet.
+Require Export Control.Monad.Class.MonadWriter.
 
 (*
 Require Export Control.Monad.Class.MonadAlt2.

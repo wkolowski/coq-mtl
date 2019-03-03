@@ -221,3 +221,14 @@ Proof.
   rewrite (wrap_law _ _ (fun a : A => pure (a, neutr)) x).
   monad.
 Defined.
+
+Instance MonadWriter_WriterT
+  (W : Monoid) (M : Type -> Type) (inst : Monad M)
+  : MonadWriter W (WriterT W M) (Monad_WriterT W M inst) :=
+{
+    tell := fun w => pure (tt, w);
+    listen :=
+      fun A (ma : M (A * W)%type) =>
+        ma >>= fun '(a, w) => pure ((a, w), neutr);
+}.
+Proof. all: monad. Defined.

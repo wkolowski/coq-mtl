@@ -2,6 +2,8 @@ Require Import Control.All.
 Require Import Control.Monad.Trans.
 Require Import Control.Monad.Class.All.
 
+Require Import Misc.Monoid.
+
 Definition ContT (R : Type) (M : Type -> Type) (A : Type)
   : Type := (A -> M R) -> M R.
 
@@ -110,7 +112,7 @@ Instance MonadReader_ContT
     ask := fun k => ask >>= k
 }.
 Proof.
-  rewrite constrA_spec. cbn. unfold bind_ContT. ext e.
+  hs. ext k. unfold const, id.
   rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
 Defined.
 
@@ -123,17 +125,11 @@ Instance MonadState_ContT
     put := fun s k => put s >> k tt;
 }.
 Proof.
-  all: intros.
-    rewrite constrA_spec. cbn. unfold bind_ContT. ext u.
-      rewrite <- constrA_assoc, put_put. reflexivity.
-    rewrite constrA_spec. cbn.
-      unfold bind_ContT, pure_ContT, ap_ContT, fmap_ContT, const, id, compose.
-      ext k. rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc.
-      rewrite bind_pure_l. reflexivity.
-    cbn. unfold bind_ContT, pure_ContT.
-      ext k. rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
-    cbn. unfold bind_ContT.
-      ext k'. rewrite get_get. reflexivity.
+  all: hs.
+    ext k. hs.
+    ext k. rewrite constrA_spec, <- bind_assoc, put_get'. hs.
+    ext k. rewrite <- bind_constrA_assoc. hs.
+    ext k'. rewrite get_get. reflexivity.
 Defined.
 
 Instance MonadStateNondet_ContT
@@ -144,11 +140,7 @@ Instance MonadStateNondet_ContT
     instS := MonadState_ContT S R M inst inst';
     instN := MonadNondet_ContT R M inst inst';
 }.
-Proof.
-  intros. rewrite constrA_spec.
-  cbn. unfold bind_ContT. ext k. unfold ContT in x.
-  Focus 2. intros. cbn. unfold bind_ContT. ext k. 
-Abort.
+Proof. Abort.
 
 Instance MonadFree_ContT
   (F : Type -> Type) (instF : Functor F)
@@ -164,3 +156,18 @@ Proof.
   f_equal. rewrite <- !fmap_comp'.
   unfold compose. reflexivity.
 Defined.
+
+Instance MonadWriter_ContT
+  (R : Type) (W : Monoid) (M : Type -> Type)
+  (instM : Monad M) (instMW : MonadWriter W M instM)
+  : MonadWriter W (ContT R M) (Monad_ContT R M) :=
+{
+    tell w := fun k => tell w >>= k
+}.
+Proof.
+  unfold ContT. intros A ma k.
+  exact (ma (fun a => listen (pure a) >>= k)).
+  monad.
+  Focus 2. monad. f_equal. monad.
+  monad. 
+Abort.
