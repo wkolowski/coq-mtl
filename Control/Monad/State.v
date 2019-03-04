@@ -1,23 +1,34 @@
 Require Import Control.All.
+Require Import Control.Monad.Class.All.
 
+(** [State S] models a computation which has read and write access to a
+    single cell of state of type [S]. *)
 Definition State (S A : Type) := S -> A * S.
 
+(** We can map over such a computation by applying a function to its
+    result without touching the state. *)
 Definition fmap_State
   (S A B : Type) (f : A -> B) (st : State S A) : State S B :=
     fun s : S => let (a, s') := st s in (f a, s').
 
-Hint Unfold State fmap_State : HSLib.
+Hint Unfold fmap_State : HSLib.
 
-Instance FunctorState (S : Type) : Functor (State S) :=
+Instance Functor_State (S : Type) : Functor (State S) :=
 {
     fmap := @fmap_State S
 }.
 Proof. all: unfold compose; monad. Defined.
 
+(** We can inject a value into the monad by returning it without changing
+    the state. *)
 Definition pure_State
   (S A : Type) : A -> State S A :=
     fun (a : A) (s : S) => (a, s).
 
+(** We can apply a stateful function to a stateful argument by running
+    the computations in this order and then applying the function to
+    the argument. The resulting state is that obtained from computing
+    the argument. *)
 Definition ap_State
   (S A B : Type) (sf : State S (A -> B)) (sa : State S A) : State S B :=
     fun st : S =>
@@ -26,16 +37,19 @@ Definition ap_State
 
 Hint Unfold pure_State ap_State : HSLib.
 
-Instance ApplicativeState (S : Type) : Applicative (State S) :=
+Instance Applicative_State (S : Type) : Applicative (State S) :=
 {
-    is_functor := FunctorState S;
+    is_functor := Functor_State S;
     pure := @pure_State S;
     ap := @ap_State S
 }.
 Proof. all: unfold compose; monad. Defined.
 
-Theorem State_not_CommutativeApplicative :
-  ~ (forall S : Type, CommutativeApplicative _ (ApplicativeState S)).
+(** [State S] is not a commutative applicative because the result of
+    the computation depends on the state and changing the argument
+    order changes the state in which things are evaluated. *)
+Lemma State_not_CommutativeApplicative :
+  ~ (forall S : Type, CommutativeApplicative _ (Applicative_State S)).
 Proof.
   intro. destruct (H bool). compute in ap_comm.
   specialize (ap_comm nat nat nat (fun _ => id)
@@ -45,7 +59,9 @@ Proof.
   cbn in ap_comm. congruence.
 Qed.
 
-Theorem State_not_Alternative :
+(** [State S] is also not [Alternative], because there are no computations
+    returning values of the empty type if the state type is nonempty. *)
+Lemma State_not_Alternative :
   (forall S : Type, Alternative (State S)) -> False.
 Proof.
   unfold State. intro.
@@ -53,6 +69,8 @@ Proof.
   assumption.
 Qed.
 
+(** We can can sequence two stateful computation by running the first and
+    feeding its result and state into the second. *)
 Definition bind_State
   {S A B : Type} (sa : State S A) (f : A -> State S B)
     : State S B := fun s : S => let (a, s') := sa s in f a s'.
@@ -61,13 +79,12 @@ Hint Unfold bind_State : HSLib.
 
 Instance Monad_State (S : Type) : Monad (State S) :=
 {
-    is_applicative := ApplicativeState S;
+    is_applicative := Applicative_State S;
     bind := @bind_State S
 }.
 Proof. all: monad. Defined.
 
-Require Import Control.Monad.Class.All.
-
+(** [State S] is the primordial state monad. *)
 Instance MonadState_State
   (S : Type) : MonadState S (State S) (Monad_State S) :=
 {
