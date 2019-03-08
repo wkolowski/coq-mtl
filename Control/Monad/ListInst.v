@@ -3,14 +3,15 @@ Require Import Control.Monad.Class.All.
 
 Require Import Misc.Monoid.
 
-(** The list monad, without any surprises. *)
+(** A monad that models nondeterministic computations. *)
 Definition List (A : Type) : Type := list A.
 
+(** [fmap] is taken directly from the standard library. *)
 Definition fmap_List := map.
 
 Hint Rewrite app_nil_l app_nil_r : HSLib.
 
-Instance FunctorList : Functor list :=
+Instance Functor_List : Functor list :=
 {
     fmap := fmap_List
 }.
@@ -20,6 +21,8 @@ Proof.
     rewrite <- map_map. reflexivity.
 Defined.
 
+(** We can inject a value into the monad, because determinism is a
+    degenerate case of nondeterminism. *)
 Definition pure_List {A : Type} (x : A) : list A := [x].
 
 Hint Unfold List pure_List : HSLib.
@@ -93,7 +96,7 @@ Qed.
 
 Instance Applicative_List : Applicative list :=
 {
-    is_functor := FunctorList;
+    is_functor := Functor_List;
     pure := @pure_List; 
     ap := @ap_list
 }.
@@ -127,6 +130,8 @@ Proof.
   apply app_assoc.
 Defined.
 
+(** We can sequence nondeterministic computations by feeding all possible
+    arguments to [f] and then flattening the resulting list. *)
 Fixpoint bind_List {A B : Type} (la : list A) (f : A -> list B) : list B :=
 match la with
     | [] => []
@@ -169,6 +174,41 @@ Proof.
       rewrite IHt. reflexivity.
 Defined.
 
+(*
+Definition fail_List {A : Type} : list A := [].
+*)
+
+(** [list] is the primordial example of a nondeterministic monad. A
+    computation can fail by returning an empty list. *)
+
+Instance MonadFail_List : MonadFail list Monad_List :=
+{
+    fail := fun A => []
+}.
+Proof. intros. cbn. reflexivity. Defined.
+
+(*
+Definition choose_List {A : Type} : list A -> list A -> list A := @app A.
+*)
+
+Instance MonadAlt_List : MonadAlt list Monad_List :=
+{
+    choose := @app; (*@choose_List*)
+}.
+Proof.
+  intros. rewrite app_assoc. reflexivity.
+  induction x as [| h t]; cbn in *; intros.
+    reflexivity.
+    rewrite IHt, app_assoc. reflexivity.
+Defined.
+
+Instance MonadNondet_List : MonadNondet list Monad_List :=
+{
+    instF := MonadFail_List;
+    instA := MonadAlt_List;
+}.
+Proof. all: hs. Defined.
+
 Fixpoint foldMap_List
   {A : Type} {M : Monoid} (f : A -> M) (l : list A) : M :=
 match l with
@@ -184,32 +224,3 @@ Proof.
   intros. ext l.
   induction l as [| h t]; unfold compose in *; cbn; congruence.
 Defined.
-
-Definition fail_List {A : Type} : list A := [].
-
-Instance MonadFail_List : MonadFail list Monad_List :=
-{
-    fail := @fail_List
-}.
-Proof. intros. compute. reflexivity. Defined.
-
-Definition choose_List {A : Type} : list A -> list A -> list A := @app A.
-
-Instance MonadAlt_List : MonadAlt list Monad_List :=
-{
-    choose := @choose_List
-}.
-Proof.
-  all: unfold choose_List.
-    intros. rewrite app_assoc. reflexivity.
-    induction x as [| h t]; cbn in *; intros.
-      reflexivity.
-      rewrite IHt, app_assoc. reflexivity.
-Defined.
-
-Instance MonadNondet_List : MonadNondet list Monad_List :=
-{
-    instF := MonadFail_List;
-    instA := MonadAlt_List;
-}.
-Proof. all: hs. Defined.
