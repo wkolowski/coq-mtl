@@ -3,11 +3,11 @@ Require Import Control.Monad.Class.All.
 
 Require Import Misc.Monoid.
 
-(** A monad which represents a computation that can result in an error. *)
+(** A monad which models a computation that can result in an error. *)
 Definition Sum (E A : Type) : Type := sum E A.
 
-(** We can map over a computation by applying a function to a successful
-    result and leaving an erroneous result intact. *)
+(** We can map over a computation by applying the function if running
+    the computation succeeds and leaving an erroneous result intact. *)
 Definition fmap_Sum
   {E A B : Type} (f : A -> B) (x : sum E A) : sum E B :=
 match x with
@@ -50,7 +50,8 @@ Instance Applicative_Sum (E : Type) : Applicative (sum E) :=
 Proof. all: monad. Defined.
 
 (** Computations that can fail are neither a [CommutativeApplicative] nor
-    an [Alternative]. *)
+    an [Alternative], because the order of errors matter - for example,
+    different error messages mean different errors. *)
 
 Lemma Sum_not_CommutativeApplicative :
   ~ (forall E : Type, CommutativeApplicative _ (Applicative_Sum E)).
@@ -85,6 +86,44 @@ Instance Monad_Sum (A : Type) : Monad (sum A) :=
 }.
 Proof. all: monad. Defined.
 
+(** [sum] supports failure only if the error type is inhabited. *)
+
+Definition fail_Sum {E : Type} (e : E) {A : Type} : Sum E A := inl e.
+
+Instance MonadFail_Sum
+  (E : Type) (e : E)
+  : MonadFail (Sum E) (Monad_Sum E) :=
+{
+    fail := @fail_Sum E e
+}.
+Proof. reflexivity. Defined.
+
+(* TODO *) Instance MonadExcept_Sum
+  (E : Type) (e : E) : MonadExcept (sum E) (Monad_Sum E) :=
+{
+    instF := MonadFail_Sum E e;
+}.
+Proof.
+  destruct 1.
+    exact id.
+    intro. exact (inr a).
+Abort.
+
+Require Export Control.Monad.Class.MonadError.
+
+(* TODO *) Instance MonadError_Sum
+  (E : Type) : MonadError E (sum E) (Monad_Sum E) :=
+{
+    throw := @inl E;
+    catch :=
+      fun A x y =>
+        match x with
+            | inl e => y
+            | inr a => inr a
+        end
+}.
+Proof. all: monad. Abort.
+
 Definition foldMap_Sum
   {E A : Type} {M : Monoid} (f : A -> M) (x : sum E A) : M :=
 match x with
@@ -99,16 +138,3 @@ Instance FoldableSum (E : Type) : Foldable (sum E) :=
     foldMap := @foldMap_Sum E
 }.
 Proof. monad. Defined.
-
-(** [sum] is the primordial example of a monad which supports failure.
-    A computation can fail if it's error type is inhabited. *)
-
-Definition fail_Sum {E : Type} (e : E) {A : Type} : Sum E A := inl e.
-
-Instance MonadFail_Sum
-  (E : Type) (e : E)
-  : MonadFail (Sum E) (Monad_Sum E) :=
-{
-    fail := @fail_Sum E e
-}.
-Proof. reflexivity. Defined.

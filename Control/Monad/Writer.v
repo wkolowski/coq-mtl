@@ -3,10 +3,9 @@ Require Import Control.Monad.Class.MonadWriter.
 
 Require Import Misc.Monoid.
 
-(** The writer monad. [Writer W A] represents a computation that returns
-    a result of type [A] and has access to a log of messages of type [W].
-    [W] is a monoid whose operation represents the concatenation of
-    messages. *)
+(** [Writer W A] represents a computation that returns a result of type [A]
+    and has access to a log of messages of type [W]. [W] is a monoid whose
+    operation represents the concatenation of messages. *)
 Definition Writer (W : Monoid) (A : Type) : Type := (A * W)%type.
 
 (** We can map over [Writer W A] by applying the function to the result of
@@ -23,8 +22,8 @@ Instance Functor_Writer (W : Monoid) : Functor (Writer W) :=
 }.
 Proof. all: monad. Defined.
 
-(** A pure computation is a value together with an empty log, represented
-    by the neutral element of the monoid [W]. *)
+(** We can turn a value into a computation by placing it along an empty log,
+    which is represented by the neutral element of the monoid [W]. *)
 Definition pure_Writer
   {W : Monoid} {A : Type} (a : A) : Writer W A := (a, neutr).
 

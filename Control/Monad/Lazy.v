@@ -1,7 +1,8 @@
 Require Import Control.All.
 
-(** An attempt at a laziness monad. According to my experiments, it doesn't
-    really work. *)
+(** An attempt at monad that models a computation that has no side effects,
+    but is evaluated lazily. According to my experiments, it doesn't really
+    work. *)
 Definition Lazy (A : Type) : Type := unit -> A.
 
 Definition delay {A : Type} (a : A) : Lazy A :=
@@ -9,10 +10,13 @@ Definition delay {A : Type} (a : A) : Lazy A :=
 
 Definition force {A : Type} (la : Lazy A) : A := la tt.
 
-Definition fmap_Lazy {A B : Type} (f : A -> B) (la : Lazy A) : Lazy B :=
-  fun _ => f (la tt).
+(** All [Functor], [Applicative] and [Monad] operations are just like
+    these for [Identity], but wrapped in [delay] for laziness. *)
 
-Instance FunctorLazy : Functor Lazy :=
+Definition fmap_Lazy {A B : Type} (f : A -> B) (la : Lazy A) : Lazy B :=
+  delay $ f (la tt).
+
+Instance Functor_Lazy : Functor Lazy :=
 {
     fmap := @fmap_Lazy;
 }.
@@ -25,24 +29,24 @@ Definition ap_Lazy
   {A B : Type} (f : Lazy (A -> B)) (x : Lazy A) : Lazy B :=
     fun _ => f tt (x tt).
 
-Instance ApplicativeLazy : Applicative Lazy :=
+Instance Applicative_Lazy : Applicative Lazy :=
 {
-    is_functor := FunctorLazy;
+    is_functor := Functor_Lazy;
     pure := @pure_Lazy;
     ap := @ap_Lazy;
 }.
 Proof.
-  1-5: try reflexivity.
   monad.
+  all: reflexivity.
 Defined.
 
 Definition bind_Lazy
   {A B : Type} (la : Lazy A) (f : A -> Lazy B) : Lazy B :=
     fun _ => f (la tt) tt.
 
-Instance MonadLazy : Monad Lazy :=
+Instance Monad_Lazy : Monad Lazy :=
 {
-    is_applicative := ApplicativeLazy;
+    is_applicative := Applicative_Lazy;
     bind := @bind_Lazy
 }.
 Proof. all: monad. Defined.

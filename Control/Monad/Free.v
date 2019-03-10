@@ -2,11 +2,15 @@ Require Import Control.All.
 Require Import Control.Monad.Identity.
 Require Import Control.Monad.Class.MonadFree.
 
-(** The free monad of a functor F. Contrary to Haskell, it is implemented
+(** The free monad of a functor F. It models a computation whose effects
+    are described by the functor F. Contrary to Haskell, it is implemented
     using Church encoding, because the corresponding inductive type is not
     strictly positive. *)
 Definition Free (F : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> X) -> (F X -> X) -> X.
+
+(** The implementation is type-driven, so we shouldn't expect to get an
+    intuitive understanding of what the operations really do... *)
 
 Section Free.
 

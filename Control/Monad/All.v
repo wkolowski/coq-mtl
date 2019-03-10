@@ -1,3 +1,5 @@
+(** A file that can be used to import/export all monad instances. *)
+
 Require Export Control.Monad.Codensity.
 Require Export Control.Monad.Cont.
 Require Export Control.Monad.Free.

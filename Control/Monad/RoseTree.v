@@ -13,7 +13,8 @@ Inductive RT (A : Type) : Type :=
 Arguments Leaf {A} _.
 Arguments Node {A} _ _.
 
-(** We can map over such computations in the obvious way. *)
+(** We can map over such computations in the obvious way, by applying the
+    function to each leaf. *)
 Fixpoint fmap_RT {A B : Type} (f : A -> B) (t : RT A) : RT B :=
 match t with
     | Leaf x => Leaf (f x)

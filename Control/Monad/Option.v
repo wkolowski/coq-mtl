@@ -3,11 +3,11 @@ Require Import Control.Monad.Class.All.
 
 Require Import Misc.Monoid.
 
-(** The partiality monad, known as Maybe in Haskell. TODO: manage names. *)
+(** A monad that models computations that can fail. *)
 Definition Option (A : Type) : Type := option A.
 
-(** We map over a partial computation by applying the function only if
-    there's a result and doing nothing otherwise. *)
+(** We map over a computation by applying the function only if there's a
+    result and doing nothing otherwise. *)
 Definition fmap_Option
   {A B : Type} (f : A -> B) (oa : option A) : option B :=
 match oa with
@@ -30,7 +30,7 @@ Proof. all: monad. Defined.
 Definition pure_Option := @Some.
 
 (** We can apply a partial function to a partial value by running the
-    computations and checking if the results are presents. If both are
+    computations and checking if the results are present. If both are
     there, just apply the function to the argument. Otherwise there's
     no result. *)
 Definition ap_Option
@@ -71,6 +71,8 @@ Instance Alternative_Option : Alternative option :=
 }.
 Proof. all: monad. Defined.
 
+(** To sequence computations, we run both and return a result if both
+    succeeded or fail if either of them failed. *)
 Definition bind_Option 
   {A B : Type} (oa : option A) (f : A -> option B) : option B :=
 match oa with
@@ -80,6 +82,8 @@ end.
 
 Hint Unfold bind_Option : HSLib.
 
+(** Failing is commutative, because it doesn't matter what fails nor in
+    what order - only the presence of failure is important. *)
 Instance CommutativeApplicative_Option :
   CommutativeApplicative _ Applicative_Option.
 Proof.
@@ -92,6 +96,12 @@ Instance Monad_Option : Monad option :=
     bind := @bind_Option
 }.
 Proof. all: monad. Defined.
+
+Instance MonadFail_Option : MonadFail option Monad_Option :=
+{
+    fail := @None;
+}.
+Proof. intros. compute. reflexivity. Defined.
 
 Definition foldMap_Option
   {A : Type} {M : Monoid} (f : A -> M) (oa : option A) : M :=
@@ -107,11 +117,3 @@ Instance Foldable_Option : Foldable option :=
     foldMap := @foldMap_Option
 }.
 Proof. monad. Defined.
-
-Definition fail_Option {A : Type} : option A := None.
-
-Instance MonadFail_Option : MonadFail option Monad_Option :=
-{
-    fail := @fail_Option
-}.
-Proof. intros. compute. reflexivity. Defined.

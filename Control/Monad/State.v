@@ -1,8 +1,8 @@
 Require Import Control.All.
 Require Import Control.Monad.Class.All.
 
-(** [State S] models a computation which has read and write access to a
-    single cell of state of type [S]. *)
+(** [State S A] models a computation which returns a result of type [A]
+    and has read and write access to a single cell of state of type [S]. *)
 Definition State (S A : Type) := S -> A * S.
 
 (** We can map over such a computation by applying a function to its
@@ -84,7 +84,7 @@ Instance Monad_State (S : Type) : Monad (State S) :=
 }.
 Proof. all: monad. Defined.
 
-(** [State S] is the primordial state monad. *)
+(** [State S] is the primordial example of a state monad. *)
 Instance MonadState_State
   (S : Type) : MonadState S (State S) (Monad_State S) :=
 {

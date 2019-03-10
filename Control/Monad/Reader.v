@@ -2,12 +2,14 @@ Require Import Control.All.
 Require Import Control.Monad.Class.All.
 
 (** A monad which represents a computation that has access to an immutable,
-    read-only environment. *)
+    read-only environment (a single cell of memory of type [R]). *)
 Definition Reader (R A : Type) : Type := R -> A.
 
+(** We can map over a computation by providing it with an environment and
+    then applying the function. *)
 Definition fmap_Reader
-  {R A B : Type} (f : A -> B) (ra : Reader R A) : Reader R B :=
-    fun r : R => f (ra r).
+  {R A B : Type} (f : A -> B) (x : Reader R A) : Reader R B :=
+    fun r : R => f (x r).
 
 Instance Functor_Reader (R : Type) : Functor (Reader R) :=
 {
@@ -36,8 +38,8 @@ Instance ApplicativeReader (R : Type) : Applicative (Reader R) :=
 Proof. all: reflexivity. Defined.
 
 (** The order of reading the environments doesn't matter, so it can be
-    permuted without effect. Therefore [Reader R] is a commutative
-    applicative functor. *)
+    freely permuted. Therefore [Reader R] is a commutative applicative
+    functor. *)
 Instance CommutativeApplicative_Reader (R : Type) :
   CommutativeApplicative _ (ApplicativeReader R).
 Proof. split. reflexivity. Defined.

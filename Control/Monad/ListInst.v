@@ -147,7 +147,7 @@ Proof.
     rewrite IHt1, app_assoc. reflexivity.
 Qed.
 
-(** [app] isn't commutative, after all... *)
+(** [list]'s nondeterminism is not commutative, because [app] isn't. *)
 Lemma List_not_CommutativeApplicative :
   ~ CommutativeApplicative list Applicative_List.
 Proof.
@@ -174,12 +174,9 @@ Proof.
       rewrite IHt. reflexivity.
 Defined.
 
-(*
-Definition fail_List {A : Type} : list A := [].
-*)
-
-(** [list] is the primordial example of a nondeterministic monad. A
-    computation can fail by returning an empty list. *)
+(** [list] is the primordial example of a nondeterminism monad. A
+    computation can fail by returning an empty list and nondeterministic
+    choice is modeled by [app]. *)
 
 Instance MonadFail_List : MonadFail list Monad_List :=
 {
@@ -187,13 +184,9 @@ Instance MonadFail_List : MonadFail list Monad_List :=
 }.
 Proof. intros. cbn. reflexivity. Defined.
 
-(*
-Definition choose_List {A : Type} : list A -> list A -> list A := @app A.
-*)
-
 Instance MonadAlt_List : MonadAlt list Monad_List :=
 {
-    choose := @app; (*@choose_List*)
+    choose := @app;
 }.
 Proof.
   intros. rewrite app_assoc. reflexivity.
