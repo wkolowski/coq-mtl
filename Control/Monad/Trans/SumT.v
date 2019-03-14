@@ -57,7 +57,7 @@ Theorem SumT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (SumT E M)) -> False.
 Proof.
-  intros. destruct (X False Identity MonadIdentity).
+  intros. destruct (X False Identity Monad_Identity).
   clear -aempty. specialize (aempty False).
   compute in aempty. destruct aempty; assumption.
 Qed.

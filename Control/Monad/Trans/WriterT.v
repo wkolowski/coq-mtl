@@ -52,7 +52,7 @@ Proof.
   intros. assert (W : Monoid).
     refine {| carr := unit; neutr := tt; op := fun _ _ => tt |}.
       1-3: try destruct x; reflexivity.
-    destruct (X W Identity MonadIdentity).
+    destruct (X W Identity Monad_Identity).
     clear -aempty. specialize (aempty False).
     compute in aempty. destruct aempty. assumption.
 Qed.

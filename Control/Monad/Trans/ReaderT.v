@@ -3,8 +3,15 @@ Require Import Control.Monad.Trans.
 Require Import Control.Monad.Class.All.
 Require Export Control.Monad.Identity.
 
+(** A transformer which adds a layer of the reader monad on top of any
+    monad [M]. *)
 Definition ReaderT (E : Type) (M : Type -> Type) (A : Type)
   : Type := E -> M A.
+
+(** Definitions of [fmap], [pure], [ap], [aempty], [aplus] and [bind]
+    are easy - we need to use the corresponding functions from [M]
+    and feed their arguments with the environment [e]. For some,
+    like [pure] or [lift], we don't even need to check the environment. *)
 
 Definition fmap_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A B : Type} (f : A -> B)
@@ -41,33 +48,23 @@ Instance Applicative_ReaderT
 }.
 Proof. all: monad. Defined.
 
-Theorem ReaderT_not_Alternative :
+(** [ReaderT M E] is [Alternative] if [M] is. *)
+
+Lemma ReaderT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (ReaderT E M)) -> False.
 Proof.
-  intros. destruct (X unit Identity MonadIdentity).
+  intros. destruct (X unit Identity Monad_Identity).
   clear -aempty. specialize (aempty False).
   compute in aempty. apply aempty. exact tt.
 Qed.
 
-Definition aempty_ReaderT
-  (E : Type) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
-  {A : Type} : ReaderT E M A := fun _ => aempty.
-
-Definition aplus_ReaderT
-  (E : Type) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
-  {A : Type} (x y : ReaderT E M A) : ReaderT E M A :=
-    fun c => x c <|> y c.
-
-Hint Unfold aempty_ReaderT aplus_ReaderT : HSLib.
-
 Instance Alternative_ReaderT
-  (E : Type) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
+  (E : Type) (M : Type -> Type) {inst : Monad M} {instA : Alternative M}
   : Alternative (ReaderT E M) :=
 {
-    is_applicative := @Applicative_ReaderT E M instM;
-    aempty := @aempty_ReaderT E M instM instA;
-    aplus := @aplus_ReaderT E M instM instA;
+    aempty := fun A => fun _ => aempty;
+    aplus := fun A x y => fun e => aplus (x e) (y e);
 }.
 Proof. all: monad. Defined.
 
@@ -99,6 +96,7 @@ Instance MonadTrans_ReaderT (E : Type) : MonadTrans (ReaderT E) :=
 }.
 Proof. all: reflexivity. Defined.
 
+(** [ReaderT] adds a layer of [MonadReader] to any monad [M]. *)
 Instance MonadReader_Reader
   (M : Type -> Type) (inst : Monad M) (R : Type)
   : MonadReader R (ReaderT R M) (Monad_ReaderT R M inst) :=
@@ -106,6 +104,9 @@ Instance MonadReader_Reader
     ask := pure
 }.
 Proof. monad. Defined.
+
+(** Transforming any other kind of monad results in a monad of the same
+    kind. *)
 
 Instance MonadAlt_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -157,6 +158,16 @@ Proof.
   monad.
   intros. ext r. cbn. monad.
 Defined.
+
+Instance MonadWriter_ReaderT
+  (W : Monoid) (E : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadWriter W M inst)
+  : MonadWriter W (ReaderT E M) (Monad_ReaderT E M inst) :=
+{
+    tell := fun w e => tell w;
+    listen := fun A x e => listen (x e);
+}.
+Proof. all: monad. Defined.
 
 Instance MonadStateNondet_ReaderT
   (E S : Type) (M : Type -> Type)

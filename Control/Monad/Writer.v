@@ -104,6 +104,6 @@ Instance MonadWriter_Writer (W : Monoid)
 (*    pass := fun A '((a, f), w) => (a, f w);*)
 }.
 Proof.
-  1-2: reflexivity.
+  1-2: try reflexivity.
   intros A [a w]. cbn. reflexivity.
 Defined.

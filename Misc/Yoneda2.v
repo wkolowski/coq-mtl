@@ -28,10 +28,7 @@ Lemma abstract_concretize :
 Proof.
   destruct y as [y H].
   unfold Yoneda, abstract, concretize. f_equal.
-  intros. ext2 B f.
-  replace (fmap f (y A id)) with (y B (fmap_Reader f id)).
-    reflexivity.
-    admit.
+  intros.
 Admitted.
 
 Lemma concretize_abstract :

@@ -3,6 +3,8 @@ Require Import Control.Monad.Trans.
 Require Import Control.Monad.Class.All.
 Require Import Control.Monad.Identity.
 
+(** A transformer which adds a layer of the state monad on top of any
+    monad [M]. *)
 Definition StateT (S : Type) (M : Type -> Type) (A : Type)
   : Type := S -> M (A * S)%type.
 
@@ -15,7 +17,8 @@ Definition fmap_StateT
 Hint Unfold StateT fmap_StateT compose : HSLib.
 
 (** These lemmas are there so that the parsers are fast. I don't know why
-    they matter, but they do... *)
+    that matters, but it does... *)
+
 Lemma f1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type),
     fmap_StateT S (@id A) = id.
@@ -102,7 +105,7 @@ Theorem StateT_not_Alternative :
   (forall (S : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (StateT S M)) -> False.
 Proof.
-  intros. destruct (X unit Identity MonadIdentity).
+  intros. destruct (X unit Identity Monad_Identity).
   clear -aempty. specialize (aempty False).
   compute in aempty. apply aempty. exact tt.
 Qed.

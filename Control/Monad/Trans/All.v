@@ -1,4 +1,4 @@
-Require Export HSLib.Base.
+(** This module exports all monad transformer instances. *)
 
 Require Export HSLib.Control.Monad.Trans.ContT.
 Require Export HSLib.Control.Monad.Trans.FreeT.

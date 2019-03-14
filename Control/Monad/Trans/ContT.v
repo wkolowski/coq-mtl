@@ -4,8 +4,14 @@ Require Import Control.Monad.Class.All.
 
 Require Import Misc.Monoid.
 
+(** A monad transformer that adds a layer of the continuation monad on
+    top of the monad stack [M]. *)
 Definition ContT (R : Type) (M : Type -> Type) (A : Type)
   : Type := (A -> M R) -> M R.
+
+(** [fmap], [pure], [ap] and [bind] are defined just as for the basic
+    [Cont] monad. Note that they don't at all use the fact that [M] is
+    a monad. *)
 
 Section ContT_instances.
 
@@ -50,14 +56,16 @@ Instance Monad_ContT : Monad (ContT R M) :=
 }.
 Proof. all: reflexivity. Defined.
 
+(** We can lift a computation into the continuation monad by binding it
+    to the continuation. *)
 Definition lift_ContT
   (A : Type) (ma : M A) : ContT R M A :=
-    fun y : A -> M R => @bind M inst _ _ ma (fun a : A => y a).
+    fun k : A -> M R => ma >>= k.
 
 End ContT_instances.
 
 Hint Unfold
-  ContT fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT : HSLib.
+  fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT : HSLib.
 
 Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
 {
@@ -65,6 +73,9 @@ Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
     lift := @lift_ContT R;
 }.
 Proof. all: monad. Defined.
+
+(** If we transform a nondeterministic monad, we also get a
+    nondeterministic monad. *)
 
 Instance MonadAlt_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -92,6 +103,11 @@ Instance MonadNondet_ContT
 }.
 Proof. all: monad. Defined.
 
+(** However, if [M] is an exception monad, we have a problem with the law
+    [catch_pure]. Becaus [pure_ContT] didn't use [M]'s [pure] in its
+    definition, we can't just apply the law [catch_pure] coming from [M]
+    and everything breaks. I am not sure whether this is a real problem
+    or my fault, because I can't figure it out. *)
 Instance MonadExcept_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ContT R M) (Monad_ContT R M) :=
@@ -104,6 +120,9 @@ Proof.
   intros. ext k. cbn. unfold pure_ContT.
 Abort.
 
+(** Transforming a reader, writer or state monad also results in such a
+    monad. *)
+
 Instance MonadReader_ContT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -115,6 +134,16 @@ Proof.
   hs. ext k. unfold const, id.
   rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
 Defined.
+
+Instance MonadWriter_ContT
+  (R : Type) (W : Monoid) (M : Type -> Type)
+  (instM : Monad M) (instMW : MonadWriter W M instM)
+  : MonadWriter W (ContT R M) (Monad_ContT R M) :=
+{
+    tell w := fun k => tell w >>= k;
+    listen := fun A x k => x (fun a => k (a, neutr));
+}.
+Proof. all: monad. Defined.
 
 Instance MonadState_ContT
   (S R : Type) (M : Type -> Type)
@@ -132,6 +161,11 @@ Proof.
     ext k'. rewrite get_get. reflexivity.
 Defined.
 
+(** Even though [ContT] preserves [MonadNondet] and [MonadState], it
+    doesn't preserve [MonadStateNondet]. For example, we can't prove
+    [seq_fail_r], because the inner monad's [fail] only occurs inside
+    the continuation, which doesn't necessarily get called - it can
+    be thrown away. *)
 Instance MonadStateNondet_ContT
   (S R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -140,34 +174,23 @@ Instance MonadStateNondet_ContT
     instS := MonadState_ContT S R M inst inst';
     instN := MonadNondet_ContT R M inst inst';
 }.
-Proof. Abort.
+Proof.
+  intros. rewrite constrA_spec. cbn. unfold bind_ContT.
+    ext k.
+  all: monad.
+Abort.
 
+(** For some mysterious reason, [ContT R M] is a free monad for any
+    functor [F]. *)
 Instance MonadFree_ContT
   (F : Type -> Type) (instF : Functor F)
   (R : Type) (M : Type -> Type)
   (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (ContT R M) instF (Monad_ContT R M) :=
 {
-    wrap := fun A fma k => wrap (fmap (fun x => x k) fma)
+    wrap := fun A m k => wrap (fmap (fun x => x k) m)
 }.
 Proof.
-  intros. ext k. cbn.
-  unfold bind_ContT, pure_ContT.
-  f_equal. rewrite <- !fmap_comp'.
+  monad. rewrite <- !fmap_comp'.
   unfold compose. reflexivity.
 Defined.
-
-Instance MonadWriter_ContT
-  (R : Type) (W : Monoid) (M : Type -> Type)
-  (instM : Monad M) (instMW : MonadWriter W M instM)
-  : MonadWriter W (ContT R M) (Monad_ContT R M) :=
-{
-    tell w := fun k => tell w >>= k
-}.
-Proof.
-  unfold ContT. intros A ma k.
-  exact (ma (fun a => listen (pure a) >>= k)).
-  monad.
-  Focus 2. monad. f_equal. monad.
-  monad. 
-Abort.

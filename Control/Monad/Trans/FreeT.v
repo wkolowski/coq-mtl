@@ -3,6 +3,8 @@ Require Import Control.Monad.Trans.
 Require Import Control.Monad.Class.All.
 Require Import Control.Monad.Identity.
 
+(** A transformer which puts a layer of the free monad for the functor [F]
+    on top of the monad [M]. It is implemented using Church encoding. *)
 Definition FreeT (F : Type -> Type) (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (F (M X) -> M X) -> M X.
 

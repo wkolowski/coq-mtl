@@ -1,4 +1,4 @@
-(** A file that can be used to import/export all monad instances. *)
+(** This modules exports all monad instances. *)
 
 Require Export Control.Monad.Codensity.
 Require Export Control.Monad.Cont.

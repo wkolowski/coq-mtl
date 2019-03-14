@@ -58,7 +58,7 @@ Theorem RoseTreeT_not_Alternative :
     False.
 Proof.
   unfold RoseTreeT; intros.
-  specialize (X Identity (MonadIdentity)).
+  specialize (X Identity (Monad_Identity)).
   unfold Identity in *. destruct X.
   apply (aempty False False); trivial.
 Qed.

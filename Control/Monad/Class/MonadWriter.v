@@ -10,15 +10,15 @@ Class MonadWriter (W : Monoid) (M : Type -> Type) (inst : Monad M) : Type :=
 (*    pass : forall {A : Type}, M (A * (W -> W))%type -> M A;*)
     listen_pure :
       forall (A : Type) (a : A), listen (pure a) = pure (a, neutr);
-    listen_tell :
-      forall (w : W), listen (tell w) = pure (tt, w);
+(*    listen_tell :
+      forall (w : W), listen (tell w) = pure (tt, w);*)
     listen_listen :
       forall (A : Type) (ma : M A),
         listen (listen ma) =
         fmap (fun '(a, w) => ((a, w), neutr)) (listen ma);
 }.
 
-Hint Rewrite @listen_pure @listen_tell @listen_listen : HSLib.
+Hint Rewrite @listen_pure (*@listen_tell*) @listen_listen : HSLib.
 
 (*
 Check
