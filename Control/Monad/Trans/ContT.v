@@ -104,10 +104,10 @@ Instance MonadNondet_ContT
 Proof. all: monad. Defined.
 
 (** However, if [M] is an exception monad, we have a problem with the law
-    [catch_pure]. Becaus [pure_ContT] didn't use [M]'s [pure] in its
+    [catch_pure]. Because [pure_ContT] doesn't use [M]'s [pure] in its
     definition, we can't just apply the law [catch_pure] coming from [M]
     and everything breaks. I am not sure whether this is a real problem
-    or my fault, because I can't figure it out. *)
+    or me not being able to figure it out. *)
 Instance MonadExcept_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ContT R M) (Monad_ContT R M) :=

@@ -8,6 +8,9 @@ Require Import Control.Monad.Identity.
 Definition FreeT (F : Type -> Type) (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (F (M X) -> M X) -> M X.
 
+(** To understand a definition of a function, you just have to look at the
+    types. Intuition is harder, however. *)
+
 Section FreeT.
 
 Variables
@@ -52,6 +55,8 @@ Proof. all: reflexivity. Defined.
 
 End FreeT.
 
+(** Free monad isn't [Alternative], because it doesn't have anything more
+    than what is needed to be a monad. *)
 Lemma FreeT_not_Alternative :
   (forall (F : Type -> Type) (M : Type -> Type) (inst : Monad M),
     Alternative (FreeT F M)) -> False.
@@ -61,6 +66,8 @@ Proof.
   apply (aempty False False); trivial.
 Qed.
 
+(** We can lift a computation into the monad by binding it to the
+    "constructor" [pure]. *)
 Definition lift_FreeT
   {F M : Type -> Type} {inst : Monad M} {A : Type}
   (x : M A) : FreeT F M A :=
@@ -75,3 +82,106 @@ Instance MonadTrans_FreeT
     lift := @lift_FreeT F;
 }.
 Proof. all: monad. Defined.
+
+Instance MonadAlt_FreeT
+  (F : Type -> Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadAlt M inst)
+  : MonadAlt (FreeT F M) (Monad_FreeT F M) :=
+{
+    choose :=
+      fun A x y => fun X pure wrap => choose (x X pure wrap) (y X pure wrap)
+}.
+Proof. all: monad. Defined.
+
+Instance MonadFail_FreeT
+  (F : Type -> Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadFail M inst)
+  : MonadFail (FreeT F M) (Monad_FreeT F M) :=
+{
+    fail := fun A => fun X pure wrap => fail
+}.
+Proof. reflexivity. Defined.
+
+Instance MonadNondet_FreeT
+  (F : Type -> Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadNondet M inst)
+  : MonadNondet (FreeT F M) (Monad_FreeT F M) :=
+{
+    instF := @MonadFail_FreeT F M inst (@instF _ _ inst');
+    instA := @MonadAlt_FreeT F M inst (@instA _ _ inst');
+}.
+Proof. all: monad. Defined.
+
+Hint Unfold fmap_FreeT pure_FreeT ap_FreeT bind_FreeT : HSLib.
+
+Instance MonadExcept_FreeT
+  (F : Type -> Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (FreeT F M) (Monad_FreeT F M) :=
+{
+    instF := @MonadFail_FreeT F M inst inst';
+    catch :=
+      fun A x y =>
+        fun X pure wrap => catch (x X pure wrap) (y X pure wrap)
+}.
+Proof.
+  all: monad.
+Abort.
+
+Instance MonadReader_FreeT
+  (E : Type) (F : Type -> Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadReader E M inst)
+  : MonadReader E (FreeT F M) (Monad_FreeT F M) :=
+{
+    ask := fun X pure wrap => ask >>= pure
+}.
+Proof.
+  ext3 X pure wrap. cbn.
+  unfold fmap_FreeT, const, id, compose.
+  rewrite <- bind_assoc.
+  rewrite <- constrA_spec, ask_ask. reflexivity.
+Defined.
+
+Instance MonadWriter_FreeT
+  (W : Monoid) (F : Type -> Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadWriter W M inst)
+  : MonadWriter W (FreeT F M) (Monad_FreeT F M) :=
+{
+    tell w := fun X pure wrap => tell w >>= pure;
+    listen :=
+      fun A x =>
+        fun X pure wrap => x X (fun a => pure (a, neutr)) wrap
+}.
+Proof. all: reflexivity. Defined.
+
+Instance MonadState_FreeT
+  (S : Type) (F : Type -> Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadState S M inst)
+  : MonadState S (FreeT F M) (Monad_FreeT F M) :=
+{
+    get := fun X pure wrap => get >>= pure;
+    put := fun s => fun X pure wrap => put s >>= pure;
+}.
+Proof.
+  monad;
+    unfold const, id, compose; monad.
+  intros. ext3 X pure wrap. cbn.
+    hs. unfold const, id, compose. rewrite <- bind_assoc.
+    rewrite put_get'. monad.
+  intros. ext3 X pure wrap. cbn.
+    unfold bind_FreeT, pure_FreeT.
+    rewrite <- bind_assoc, get_put. hs.
+  monad.
+Defined.
+
+Instance MonadStateNondet_FreeT
+  (S : Type) (F : Type -> Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadStateNondet S M inst)
+  : MonadStateNondet S (FreeT F M) (Monad_FreeT F M) :=
+{
+    instS := MonadState_FreeT S F M inst inst';
+    instN := MonadNondet_FreeT F M inst inst';
+}.
+Proof.
+  all: monad.
+Abort.

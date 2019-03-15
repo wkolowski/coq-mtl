@@ -162,7 +162,7 @@ Instance MonadState_ListT
     put := fun s X nil cons => put s >> cons tt nil;
 }.
 Proof.
-  all: intros; ext X; ext nil; ext cons; cbn.
+  all: intros; ext3 X nil cons; cbn.
     unfold fmap_ListT, const, id.
       rewrite <- constrA_assoc, put_put. reflexivity.
     unfold fmap_ListT, pure_ListT.
