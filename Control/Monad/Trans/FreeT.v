@@ -73,7 +73,7 @@ Definition lift_FreeT
   (x : M A) : FreeT F M A :=
     fun X pure wrap => x >>= pure.
 
-Hint Unfold lift_FreeT : HSLib.
+Hint Unfold fmap_FreeT pure_FreeT ap_FreeT bind_FreeT lift_FreeT : HSLib.
 
 Instance MonadTrans_FreeT
   {F : Type -> Type} : MonadTrans (FreeT F) :=
@@ -82,6 +82,26 @@ Instance MonadTrans_FreeT
     lift := @lift_FreeT F;
 }.
 Proof. all: monad. Defined.
+
+(** [FreeT F M] adds a layer of the free monad for [F] on top of [M]. *)
+Instance MonadFree_FreeT
+  (F : Type -> Type) (instF : Functor F)
+  (M : Type -> Type) (instM : Monad M)
+  : MonadFree F (FreeT F M) instF (Monad_FreeT F M) :=
+{
+    wrap :=
+      fun A x =>
+        fun X pure wrap => wrap (fmap (fun x => x X pure wrap) x)
+}.
+Proof.
+  monad. rewrite <- !fmap_comp'. unfold compose. reflexivity.
+Defined.
+
+(** [FreeT] in respect to classes behaves quite similarly to [ContT] -
+    it preserves [MonadNondet], [MonadReader], [MonadWriter], [MonadState],
+    but doesn't preserve [MonadExcept] nor [MonadStateNondet]. The reasons
+    for this are also quite similar: definitions of some functions don't
+    at all refer to the underlying monad's [pure] or [bind]. *)
 
 Instance MonadAlt_FreeT
   (F : Type -> Type) (M : Type -> Type)
@@ -112,8 +132,6 @@ Instance MonadNondet_FreeT
 }.
 Proof. all: monad. Defined.
 
-Hint Unfold fmap_FreeT pure_FreeT ap_FreeT bind_FreeT : HSLib.
-
 Instance MonadExcept_FreeT
   (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
@@ -142,6 +160,8 @@ Proof.
   rewrite <- constrA_spec, ask_ask. reflexivity.
 Defined.
 
+(** This instance is dubious, because [listen] doesn't refer to [M]'s
+    [listen]. *)
 Instance MonadWriter_FreeT
   (W : Monoid) (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)

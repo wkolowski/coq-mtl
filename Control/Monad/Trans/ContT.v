@@ -135,6 +135,8 @@ Proof.
   rewrite <- constrA_spec, constrA_bind_assoc, ask_ask. reflexivity.
 Defined.
 
+(** This instance is dubious, because [listen] doesn't refer to [M]'s
+    [listen]. *)
 Instance MonadWriter_ContT
   (R : Type) (W : Monoid) (M : Type -> Type)
   (instM : Monad M) (instMW : MonadWriter W M instM)
@@ -180,8 +182,7 @@ Proof.
   all: monad.
 Abort.
 
-(** For some mysterious reason, [ContT R M] is a free monad for any
-    functor [F]. *)
+(** If [M] is the free monad of [F], so is [ContT R M]. *)
 Instance MonadFree_ContT
   (F : Type -> Type) (instF : Functor F)
   (R : Type) (M : Type -> Type)

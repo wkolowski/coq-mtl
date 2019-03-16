@@ -1,6 +1,5 @@
 Require Export Control.Monad.Class.MonadAlt.
 Require Export Control.Monad.Class.MonadExcept.
-(*Require Export Control.Monad.Class.MonadError.*)
 Require Export Control.Monad.Class.MonadFail.
 Require Export Control.Monad.Class.MonadFree.
 Require Export Control.Monad.Class.MonadNondet.

@@ -3,7 +3,7 @@ Require Import Control.Monad.Trans.
 Require Import Control.Monad.Class.All.
 Require Export Control.Monad.Identity.
 
-(** A transformer which adds a layer of the reader monad on top of any
+(** A transformer which adds a layer of the reader monad on top of a
     monad [M]. *)
 Definition ReaderT (E : Type) (M : Type -> Type) (A : Type)
   : Type := E -> M A.

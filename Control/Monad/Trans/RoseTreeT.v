@@ -118,6 +118,12 @@ Proof.
   monad.
 Defined.
 
+Instance MonadWriter_RoseTreeT
+  (W : Monoid) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadWriter W M inst)
+  : MonadWriter W (RoseTreeT M) (Monad_RoseTreeT M).
+Abort.
+
 Instance MonadState_RoseTreeT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)

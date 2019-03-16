@@ -98,31 +98,21 @@ Instance MonadFail_Sum
 }.
 Proof. reflexivity. Defined.
 
-(* TODO *) Instance MonadExcept_Sum
+Instance MonadExcept_Sum
   (E : Type) (e : E) : MonadExcept (sum E) (Monad_Sum E) :=
 {
     instF := MonadFail_Sum E e;
-}.
-Proof.
-  destruct 1.
-    exact id.
-    intro. exact (inr a).
-Abort.
-
-Require Export Control.Monad.Class.MonadError.
-
-(* TODO *) Instance MonadError_Sum
-  (E : Type) : MonadError E (sum E) (Monad_Sum E) :=
-{
-    throw := @inl E;
     catch :=
       fun A x y =>
         match x with
             | inl e => y
             | inr a => inr a
         end
+
 }.
-Proof. all: monad. Abort.
+Proof.
+  all: monad. unfold fail_Sum.
+Abort.
 
 Definition foldMap_Sum
   {E A : Type} {M : Monoid} (f : A -> M) (x : sum E A) : M :=
