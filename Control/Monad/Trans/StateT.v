@@ -263,6 +263,18 @@ Proof.
   rewrite constrA_spec. monad.
 Defined.
 
+Instance MonadWriter_StateT
+  (W : Monoid) (S : Type) (M : Type -> Type) (inst : Monad M)
+  : MonadWriter W (StateT S M) (Monad_StateT S M inst) :=
+{
+    tell := fun w => fun s => pure (tt, s);
+    listen :=
+      fun A (m : S -> M (A * S)%type) =>
+        fun s =>
+          m s >>= fun '(a, s) => pure (a, neutr, s);
+}.
+Proof. all: monad. Defined.
+
 Instance MonadStateNondet_StateT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)

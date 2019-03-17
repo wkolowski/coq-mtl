@@ -210,6 +210,50 @@ Proof.
   rewrite <- ask_ask at 3. rewrite !constrA_spec. monad.
 Defined.
 
+Instance MonadWriter_SumT
+  (W : Monoid) (E : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadWriter W M inst)
+  : MonadWriter W (SumT E M) (Monad_SumT E M inst) :=
+{
+    tell w := fmap inr (tell w);
+    listen :=
+      fun A (m : M (E + A)%type) =>
+      listen m >>=
+        fun '(ea, w) => pure
+        match ea with
+            | inl e => inl e
+            | inr a => inr (a, w)
+        end
+}.
+Proof.
+  intros. cbn. unfold pure_SumT.
+    rewrite listen_pure, bind_pure_l. reflexivity.
+  intros. cbn. unfold fmap_SumT.
+(*
+  replace (fun '(ea, w) => pure _)
+     with ((fun eaw : (E + A)%type * W =>
+            match fst eaw with
+                | inl e => inl e
+                | inr a => inr (a, snd eaw)
+            end) .> pure).
+
+ rewrite fmap_bind_pure.
+    rewrite bind_assoc.
+    rewrite (bind_fmap M inst (E + A * W) (E + A * W * W) _
+      (fun a : E + A * W =>
+        match a with
+        | inl e => inl e
+        | inr a0 => inr (let '(a1, w) := a0 in (a1, w, neutr))
+        end)
+        _ pure).
+
+ replace (fun a => pure _) with ((fun a => _) .> pure).
+
+ Search bind fmap.
+
+ rewrite <- fmap_bind_pure.*)
+Abort.
+
 Instance MonadState_SumT
   (E S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)

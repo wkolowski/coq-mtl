@@ -113,6 +113,18 @@ Instance MonadReader_RWST
 }.
 Proof. monad. Defined.
 
+Instance MonadWriter_RWST
+  (R S : Type) (W : Monoid) (M : Type -> Type) (inst : Monad M)
+  : MonadWriter W (RWST W R S M) (Monad_RWST W R S M inst) :=
+{
+    tell := fun w => fun _ s => pure (tt, s, w);
+    listen :=
+      fun A (m : R -> S -> M (A * S * W)%type) =>
+        fun r s =>
+          m r s >>= fun '(a, s, w) => pure (a, w, s, neutr);
+}.
+Proof. all: monad. Defined.
+
 Instance MonadState_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (RWST W R S M) (Monad_RWST W R S M inst) :=
@@ -200,15 +212,3 @@ Proof.
   rewrite (wrap_law _ _ (fun a : A => pure (a, s, neutr)) x).
   monad.
 Defined.
-
-Instance MonadWriter_RWST
-  (R S : Type) (W : Monoid) (M : Type -> Type) (inst : Monad M)
-  : MonadWriter W (RWST W R S M) (Monad_RWST W R S M inst) :=
-{
-    tell := fun w => fun _ s => pure (tt, s, w);
-    listen :=
-      fun A (m : R -> S -> M (A * S * W)%type) =>
-        fun r s =>
-          m r s >>= fun '(a, s, w) => pure (a, w, s, neutr);
-}.
-Proof. all: monad. Defined.

@@ -121,8 +121,12 @@ Defined.
 Instance MonadWriter_RoseTreeT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)
-  : MonadWriter W (RoseTreeT M) (Monad_RoseTreeT M).
-Abort.
+  : MonadWriter W (RoseTreeT M) (Monad_RoseTreeT M) :=
+{
+    tell w := fun X leaf node => tell w >>= leaf;
+    listen A x := fun X leaf node => x X (fun a => leaf (a, neutr)) node
+}.
+Proof. all: hs. Defined.
 
 Instance MonadState_RoseTreeT
   (S : Type) (M : Type -> Type)

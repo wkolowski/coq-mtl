@@ -3,7 +3,13 @@ Require Import Control.Monad.Trans.
 Require Import Control.Monad.Class.All.
 Require Import Control.Monad.Option.
 
+(** A transformer that adds a layer of the partiality monad on top of
+    any other monad. *)
 Definition OptionT (M : Type -> Type) (A : Type) : Type := M (option A).
+
+(** [fmap], [pure], [ap], [aempty], [aplus] and [bind] are defined just
+    like for [option], but with [bind]s of the base monad inserted where
+    necessary. *)
 
 Definition fmap_OptionT
   {M : Type -> Type} {inst : Functor M}
@@ -21,7 +27,7 @@ Proof. all: hs; mtrans; monad. Defined.
 
 Definition pure_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type} (x : A) : OptionT M A :=
-    pure $ Some x.
+    pure (Some x).
 
 Definition ap_OptionT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -93,8 +99,11 @@ Instance Monad_OptionT
 }.
 Proof. all: monad. Defined.
 
-Definition lift_OptionT {M : Type -> Type} {_inst : Monad M} {A : Type}
-  (ma : M A) : OptionT M A := fmap Some ma.
+(** We can lift a computation into the monad by wrapping it in the [Some]
+    constructor. *)
+Definition lift_OptionT
+  {M : Type -> Type} {_inst : Monad M} {A : Type} (ma : M A)
+    : OptionT M A := fmap Some ma.
 
 Hint Unfold lift_OptionT : HSLib.
 
@@ -104,6 +113,8 @@ Instance MonadTrans_OptionT : MonadTrans OptionT :=
     lift := @lift_OptionT;
 }.
 Proof. all: monad. Defined.
+
+(** [OptionT] adds the ability to [fail] to any monad [M]. *)
 
 Definition fail_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type}
@@ -119,33 +130,10 @@ Instance MonadFail_OptionT
 }.
 Proof. monad. Defined.
 
-Instance MonadAlt_OptionT
-  (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
-  : MonadAlt (OptionT M) (Monad_OptionT M inst) :=
-{
-    choose :=
-      fun (A : Type) (mx my : M (option A)) => do
-        x <- mx;
-        y <- my;
-        match x, y with
-                | Some a, Some b => fmap Some $ choose (pure a) (pure b)
-                | Some a, _ => pure (Some a)
-                | _, Some a => pure (Some a)
-                | _, _ => pure None
-        end
-}.
-Proof.
-  intros.
-    rewrite !bind_assoc. f_equal. ext ox.
-    rewrite !bind_assoc. f_equal. ext oy.
-    destruct ox, oy; cbn.
-      Focus 4. rewrite bind_pure_l. rewrite bind_assoc. f_equal.
-        ext y. destruct y; rewrite bind_pure_l; reflexivity.
-      Focus 3. rewrite bind_pure_l, bind_assoc. f_equal.
-        ext y. destruct y; monad.
-      Focus 2. rewrite bind_pure_l, bind_assoc. f_equal.
-        ext y. destruct y; monad.
-Abort.
+(** [OptionT] preserves [MonadAlt], giving us a monad with choice and
+    failure, but the choice is very retarded: we perform it first, so
+    that our chosen computation can later fail. This is also the reason
+    why [OptionT] doesn't have [MonadNondet]. *)
 
 Instance MonadAlt_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -164,10 +152,11 @@ Instance MonadNondet_OptionT
     instA := @MonadAlt_OptionT M inst (@instA _ _ inst');
 }.
 Proof.
-  Focus 2. cbn. unfold fail_OptionT.
-  intros. cbn. unfold fail_OptionT.
+  Focus 2. cbn. intros. unfold fail_OptionT.
 Admitted.
 
+(** Besides failing, [OptionT] adds to any monad the ability to catch the
+    failure. *)
 Instance MonadExcept_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (OptionT M) (Monad_OptionT M inst) :=
@@ -183,6 +172,8 @@ Instance MonadExcept_OptionT
 }.
 Proof. all: monad. Defined.
 
+(** [OptionT] preserves reading and state, but not writing. *)
+
 Instance MonadReader_OptionT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -193,6 +184,27 @@ Instance MonadReader_OptionT
 Proof.
   rewrite <- ask_ask at 3. rewrite <- constrA_bind_assoc. monad.
 Defined.
+
+Instance MonadWriter_OptionT
+  (W : Monoid) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadWriter W M inst)
+  : MonadWriter W (OptionT M) (Monad_OptionT M inst) :=
+{
+    tell w := fmap Some (tell w);
+    listen := fun A x =>
+      @listen W M inst inst' _ x >>= (fun '(oa, w) =>
+      match oa with
+          | None => pure None
+          | Some a => pure (Some (a, w))
+      end)
+}.
+Proof.
+  intros. cbn. unfold pure_OptionT. rewrite listen_pure.
+    rewrite bind_pure_l. reflexivity.
+  Check @listen.
+  
+  intros. cbn. unfold pure_OptionT, fmap_OptionT, fmap_Option.
+Abort.
 
 Instance MonadState_OptionT
   (S : Type) (M : Type -> Type)
