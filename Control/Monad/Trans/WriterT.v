@@ -5,8 +5,14 @@ Require Import Control.Monad.Identity.
 
 Require Import Misc.Monoid.
 
+(** A transformer which adds the ability to perform logging to the base
+    monad [M]. *)
 Definition WriterT (W : Monoid) (M : Type -> Type) (A : Type)
   : Type := M (A * W)%type.
+
+(** Definitions of [fmap], [pure], [ap], [bind], [aempty], [aplus] are
+    similar to these for [Writer], but we have to insert [M]'s [bind]s
+    and [pure]s in the right places. *)
 
 Definition fmap_WriterT
   {W : Monoid} {M : Type -> Type} {inst : Monad M} {A B : Type} (f : A -> B)
@@ -45,7 +51,9 @@ Instance Applicative_WriterT
 }.
 Proof. all: monad. Defined.
 
-Theorem WriterT_not_Alternative :
+(** [WriterT M] is [Alternative] only when [M] is. *)
+
+Lemma WriterT_not_Alternative :
   (forall (W : Monoid) (M : Type -> Type) (inst : Monad M),
     Alternative (WriterT W M)) -> False.
 Proof.
@@ -57,24 +65,13 @@ Proof.
     compute in aempty. destruct aempty. assumption.
 Qed.
 
-Definition aempty_WriterT
-  (W : Monoid) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
-  {A : Type} : WriterT W M A := fmap (fun a => (a, neutr)) aempty.
-
-Definition aplus_WriterT
-  {W : Monoid} {M : Type -> Type} {inst : Alternative M} {A : Type}
-  (wx wy : WriterT W M A) : WriterT W M A :=
-    @aplus M inst _ wx wy.
-
-Hint Unfold aempty_WriterT aplus_WriterT : HSLib.
-
 Instance Alternative_WriterT
-  (W : Monoid) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
+  (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : Alternative M)
   : Alternative (WriterT W M) :=
 {
-    is_applicative := Applicative_WriterT W M instM;
-    aempty := @aempty_WriterT W M instM instA;
-    aplus := @aplus_WriterT W M instA;
+    is_applicative := Applicative_WriterT W M inst;
+    aempty A := fmap (fun a => (a, neutr)) aempty;
+    aplus A x y := @aplus M inst' _ x y;
 }.
 Proof. all: monad. Abort.
 
@@ -95,6 +92,8 @@ Instance Monad_WriterT
 }.
 Proof. all: monad. Defined.
 
+(** We can lift a computation into the monad just by not doing any logging
+    at all. *)
 Definition lift_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : WriterT W M A := fmap (fun x : A => (x, neutr)) ma.
@@ -107,6 +106,20 @@ Instance MonadTrans_WriterT (W : Monoid) : MonadTrans (WriterT W) :=
     lift := @lift_WriterT W;
 }.
 Proof. all: unfold compose; monad. Defined.
+
+(** [WriterT] adds a layer of [MonadWriter] on top of the base monad [M]. *)
+Instance MonadWriter_WriterT
+  (W : Monoid) (M : Type -> Type) (inst : Monad M)
+  : MonadWriter W (WriterT W M) (Monad_WriterT W M inst) :=
+{
+    tell := fun w => pure (tt, w);
+    listen :=
+      fun A (ma : M (A * W)%type) =>
+        ma >>= fun '(a, w) => pure ((a, w), neutr);
+}.
+Proof. all: monad. Defined.
+
+(** [WriterT] preserves all other kinds of monads. *)
 
 Instance MonadAlt_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -221,14 +234,3 @@ Proof.
   rewrite (wrap_law _ _ (fun a : A => pure (a, neutr)) x).
   monad.
 Defined.
-
-Instance MonadWriter_WriterT
-  (W : Monoid) (M : Type -> Type) (inst : Monad M)
-  : MonadWriter W (WriterT W M) (Monad_WriterT W M inst) :=
-{
-    tell := fun w => pure (tt, w);
-    listen :=
-      fun A (ma : M (A * W)%type) =>
-        ma >>= fun '(a, w) => pure ((a, w), neutr);
-}.
-Proof. all: monad. Defined.

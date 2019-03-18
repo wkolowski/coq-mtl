@@ -160,8 +160,6 @@ Proof.
   rewrite <- constrA_spec, ask_ask. reflexivity.
 Defined.
 
-(** This instance is dubious, because [listen] doesn't refer to [M]'s
-    [listen]. *)
 Instance MonadWriter_FreeT
   (W : Monoid) (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)

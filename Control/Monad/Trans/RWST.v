@@ -5,9 +5,15 @@ Require Import Control.Monad.Identity.
 
 Require Import Misc.Monoid.
 
+(** A transformer which to any base monad [M] adds a layer that can read
+    the environment, perform logging and read a single cell of state. *)
 Definition RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (A : Type) : Type :=
     R -> S -> M (A * S * W)%type.
+
+(** Definitions of [fmap], [pure], [ap], [bind] and so on are made up of
+    three parts: to understand each of them, look it up in [ReaderT],
+    [WriterT], [StateT]. *)
 
 Definition fmap_RWST
   {W : Monoid} {R S : Type} {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -49,7 +55,7 @@ Instance Applicative_RWST
 }.
 Proof. all: monad. Defined.
 
-Theorem RWST_not_CommutativeApplicative :
+Lemma RWST_not_CommutativeApplicative :
   ~ (forall (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M),
       CommutativeApplicative _ (Applicative_RWST W R S M inst)).
 Proof.
@@ -62,7 +68,7 @@ Proof.
   inv ap_comm.
 Qed.
 
-Theorem RWST_not_Alternative :
+Lemma RWST_not_Alternative :
   (forall (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (RWST W R S M)) -> False.
 Proof.
@@ -90,6 +96,9 @@ Instance Monad_RWST
 }.
 Proof. all: monad. Defined.
 
+(** To lift a computation into the monad, we bind it to a function which
+    puts its value next to the current state. It doesn't read the
+    environment or write the to the log. *)
 Definition lift_RWST
   {W : Monoid} {R S : Type} {M : Type -> Type} {inst : Monad M} {A : Type}
   (x : M A) : RWST W R S M A :=
@@ -104,6 +113,9 @@ Instance MonadTrans_RWST
     lift := @lift_RWST W R S
 }.
 Proof. all: unfold compose; monad. Defined.
+
+(** [RWST] puts a layer of [MonadReader], [MonadWriter] and [MonadState]
+    on top of the base monad [M]. *)
 
 Instance MonadReader_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
@@ -137,6 +149,9 @@ Proof.
   intros. cbn. ext r. ext s. monad.
 Defined.
 
+(** Just like [ReaderT], [WriterT] and [StateT], [RWST] preserves all other
+    kinds of monads. *)
+
 Instance MonadAlt_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadAlt M inst)
@@ -166,17 +181,6 @@ Instance MonadNondet_RWST
 }.
 Proof. all: monad. Defined.
 
-Instance MonadExcept_RWST
-  (W : Monoid) (R S : Type) (M : Type -> Type)
-  (inst : Monad M) (inst' : MonadExcept M inst)
-  : MonadExcept (RWST W R S M) (Monad_RWST W R S M inst) :=
-{
-    instF := @MonadFail_RWST W R S M inst inst';
-    catch :=
-      fun A x y => fun r s => catch (x r s) (y r s);
-}.
-Proof. all: monad. Defined.
-
 Instance MonadStateNondet_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -194,6 +198,17 @@ Proof.
     rewrite <- bind_choose_r. f_equal.
     ext asw. destruct asw as [[a sa] wa]. apply bind_choose_l.
 Defined.
+
+Instance MonadExcept_RWST
+  (W : Monoid) (R S : Type) (M : Type -> Type)
+  (inst : Monad M) (inst' : MonadExcept M inst)
+  : MonadExcept (RWST W R S M) (Monad_RWST W R S M inst) :=
+{
+    instF := @MonadFail_RWST W R S M inst inst';
+    catch :=
+      fun A x y => fun r s => catch (x r s) (y r s);
+}.
+Proof. all: monad. Defined.
 
 Instance MonadFree_RWST
   (F : Type -> Type) (instF : Functor F)

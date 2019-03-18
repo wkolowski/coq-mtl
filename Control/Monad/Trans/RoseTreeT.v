@@ -3,8 +3,14 @@ Require Import Control.Monad.Trans.
 Require Import Control.Monad.Class.All.
 Require Import Control.Monad.Identity.
 
+(** A transformer which adds some effect to the base monad [M], but I
+    don't yet know what effect it is. It's completely analogous to
+    the monad [RT], besides the fact that we can't use induction. *)
 Definition RoseTreeT (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (M X -> M X -> M X) -> M X.
+
+(** There most often is only one valid definition for a function. You can
+    find it by following the types. *)
 
 Section RoseTreeT_Instances.
 
@@ -53,7 +59,9 @@ End RoseTreeT_Instances.
 Hint Unfold
   fmap_RoseTreeT pure_RoseTreeT ap_RoseTreeT bind_RoseTreeT : HSLib.
 
-Theorem RoseTreeT_not_Alternative :
+(** [RoseTreeT M] isn't an [Alternative] functor precisely because the
+    base monad [M] needs not be one. *)
+Lemma RoseTreeT_not_Alternative :
   (forall (M : Type -> Type) (inst : Monad M), Alternative (RoseTreeT M)) ->
     False.
 Proof.
@@ -62,6 +70,22 @@ Proof.
   unfold Identity in *. destruct X.
   apply (aempty False False); trivial.
 Qed.
+
+(** But even if [M] is an [Alternative] functor, there still are some
+    problems. *)
+Instance Alternative_RoseTreeT
+  (M : Type -> Type) (inst : Monad M) (inst' : Alternative M)
+  : Alternative (RoseTreeT M) :=
+{
+    is_applicative := @Monad_RoseTreeT M;
+    aempty A := fun X leaf node => aempty >>= leaf;
+    aplus A x y := fun X leaf node => aplus (x X leaf node) (y X leaf node)
+}.
+Proof.
+  all: monad.
+Abort.
+
+(** [RoseTreeT] preserves [MonadNondet]. *)
 
 Instance MonadAlt_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -90,6 +114,8 @@ Instance MonadNondet_RoseTreeT
 }.
 Proof. all: monad. Defined.
 
+(** [MonadExcept] poses the standard problem for Church-encoded
+    transformers. *)
 Instance MonadExcept_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (RoseTreeT M) (Monad_RoseTreeT M) :=
@@ -103,6 +129,8 @@ Proof.
   1-3: monad.
     unfold pure_RoseTreeT.
 Abort.
+
+(** [RoseTreeT] preserves reader, writer and state. *)
 
 Instance MonadReader_RoseTreeT
   (E : Type) (M : Type -> Type)
@@ -128,6 +156,9 @@ Instance MonadWriter_RoseTreeT
 }.
 Proof. all: hs. Defined.
 
+(** BEWARE: there is a strange bug when trying to prove the goals in order
+    or [Focus] on the fourth goal. This is why we have to solve it first
+    using the select 4: *)
 Instance MonadState_RoseTreeT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -137,6 +168,7 @@ Instance MonadState_RoseTreeT
     put := fun s X empty node => put s >> empty tt;
 }.
 Proof.
+  4: intros; cbn; unfold bind_RoseTreeT; ext3 X leaf node; monad.
   monad.
   intros. ext3 X empty node. cbn.
     unfold fmap_RoseTreeT, const, id, compose, pure_RoseTreeT.
@@ -144,9 +176,11 @@ Proof.
     reflexivity.
   intros. ext3 X empty node. cbn. hs.
     unfold bind_RoseTreeT, pure_RoseTreeT.
-    rewrite bind_constrA_comm, get_put, constrA_pure_l.
-Admitted. (* BEWARE: strange bug when trying to finish the proof *)
+    rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
+Defined.
 
+(** Even though [RoseTreeT] preserves both [MonadState] and [MonadNondet],
+    [MonadStateNondet] poses standard problems. *)
 Instance MonadStateNondet_RoseTreeT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -157,9 +191,10 @@ Instance MonadStateNondet_RoseTreeT
 }.
 Proof.
   intros. rewrite constrA_spec. cbn.
-    unfold bind_RoseTreeT. ext X. ext empty. ext node.
+    unfold bind_RoseTreeT. ext X. ext2 empty node.
 Abort.
 
+(** If [M] is the free monad of [F], so is [RoseTreeT M]. *)
 Instance MonadFree_RoseTreeT
   (F : Type -> Type) (instF : Functor F)
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)

@@ -8,6 +8,10 @@ Require Import Control.Monad.Identity.
 Definition StateT (S : Type) (M : Type -> Type) (A : Type)
   : Type := S -> M (A * S)%type.
 
+(** Definitions of [fmap], [pure], [ap], [bind], [aplus], [aempty] etc.
+    are quite similar to these for [State], but we have to insert [M]'s
+    [bind] and [pure] in appropriate places. *)
+
 Definition fmap_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A B : Type} (f : A -> B)
   : StateT S M A -> StateT S M B :=
@@ -17,7 +21,7 @@ Definition fmap_StateT
 Hint Unfold StateT fmap_StateT compose : HSLib.
 
 (** These lemmas are there so that the parsers are fast. I don't know why
-    that matters, but it does... *)
+    this helps with performance... *)
 
 Lemma f1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type),
@@ -101,7 +105,9 @@ Proof.
   apply p5.
 Defined.
 
-Theorem StateT_not_Alternative :
+(** [StateT M] is [Alternative] only when [M] is. *)
+
+Lemma StateT_not_Alternative :
   (forall (S : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (StateT S M)) -> False.
 Proof.
@@ -182,11 +188,10 @@ Proof.
   apply m2.
   apply m3.
   apply m5.
-(*
-Restart.
-  all: monad.*)
 Defined.
 
+(** We can lift a computation into the monad by binding it to a function
+    which returns its value along the current state. *)
 Definition lift_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : StateT S M A := fun s : S => ma >>= fun a : A => pure (a, s).
@@ -200,6 +205,7 @@ Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
 }.
 Proof. all: monad. Defined.
 
+(** [StateT] adds a layer of [MonadState] on top of the base monad [M]. *)
 Instance MonadState_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (StateT S M) (Monad_StateT S M inst) :=
@@ -211,6 +217,8 @@ Proof.
   1-3: monad.
   intros. ext s. hs.
 Defined.
+
+(** [StateT] preserves all other kinds of monads. *)
 
 Instance MonadAlt_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -292,6 +300,7 @@ Proof.
     reflexivity.
 Defined.
 
+(** If [M] is the free monad of [F], so is [StateT E M]. *)
 Instance MonadFree_StateT
   (F : Type -> Type) (instF : Functor F)
   (S : Type) (M : Type -> Type)

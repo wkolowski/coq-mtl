@@ -154,9 +154,7 @@ Proof.
     unfold fail_ListT.
 Abort.
 
-(** [ListT] preserves [MonadReader], [MonadWriter] and [MonadState].
-    However, the [MonadWriter] instance is quite dubious, because [listen]
-    doesn't refer to the base monad's [listen]. *)
+(** [ListT] preserves [MonadReader], [MonadWriter] and [MonadState]. *)
 
 Instance MonadReader_ListT
   (E : Type) (M : Type -> Type)
@@ -209,6 +207,8 @@ Proof.
       rewrite get_get. reflexivity.
 Defined.
 
+(** [ListT] doesn't implement [MonadStateNondet], because we lack the
+    ability to do induction. *)
 Instance MonadStateNondet_ListT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -223,6 +223,7 @@ Proof.
   intros. compute. ext3 X nil cons.
 Abort.
 
+(** If [M] is the free monad of [F], so is [ListT M]. *)
 Instance MonadFree_ListT
   (F : Type -> Type) (instF : Functor F)
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)

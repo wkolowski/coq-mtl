@@ -153,7 +153,7 @@ Instance MonadNondet_OptionT
 }.
 Proof.
   Focus 2. cbn. intros. unfold fail_OptionT.
-Admitted.
+Abort.
 
 (** Besides failing, [OptionT] adds to any monad the ability to catch the
     failure. *)
@@ -172,7 +172,7 @@ Instance MonadExcept_OptionT
 }.
 Proof. all: monad. Defined.
 
-(** [OptionT] preserves reading and state, but not writing. *)
+(** [OptionT] preserves reading and state, but not (yet) writing. *)
 
 Instance MonadReader_OptionT
   (E R : Type) (M : Type -> Type)
@@ -202,7 +202,6 @@ Proof.
   intros. cbn. unfold pure_OptionT. rewrite listen_pure.
     rewrite bind_pure_l. reflexivity.
   Check @listen.
-  
   intros. cbn. unfold pure_OptionT, fmap_OptionT, fmap_Option.
 Abort.
 
@@ -225,6 +224,9 @@ Proof.
     rewrite <- get_get. monad.
 Defined.
 
+(** [MonadStateNondet] is problematic, because [OptionT] has its own 
+    [MonadFail] instance, but can only inherit [MonadNondet], [MonadState]
+    and [MonadStateNondet]. *)
 (*
 Instance MonadStateNondet_OptionT
   (S : Type) (M : Type -> Type)
@@ -234,13 +236,9 @@ Instance MonadStateNondet_OptionT
     instS := MonadState_OptionT S M inst inst';
     instN := MonadNondet_OptionT S M inst inst';
 }.
-Proof.
-  intros. rewrite constrA_spec. cbn. compute.
-    ext X. ext nil. ext cons. admit.
-  intros. cbn. compute. ext X. ext nil. ext cons.
-Abort.
 *)
 
+(** If [M] is the free monad of [F], so is [OptionT M]. *)
 Instance MonadFree_OptionT
   (F : Type -> Type) (instF : Functor F)
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)

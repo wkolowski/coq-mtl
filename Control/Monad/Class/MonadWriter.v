@@ -16,10 +16,10 @@ Class MonadWriter (W : Monoid) (M : Type -> Type) (inst : Monad M) : Type :=
       forall (A : Type) (ma : M A),
         listen (listen ma) =
         fmap (fun '(a, w) => ((a, w), neutr)) (listen ma);
-    listen_bind :
+(*    listen_bind :
       forall (A B : Type) (ma : M A) (f : A -> M B),
         listen (ma >>= f) =
-        listen ma >>= fun '(a, w) => fmap (fun b => (b, w)) (f a)
+        listen ma >>= fun '(a, w) => fmap (fun b => (b, w)) (f a)*)
 }.
 
 Search fmap bind.

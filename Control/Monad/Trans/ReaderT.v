@@ -48,7 +48,7 @@ Instance Applicative_ReaderT
 }.
 Proof. all: monad. Defined.
 
-(** [ReaderT M E] is [Alternative] if [M] is. *)
+(** [ReaderT M] is [Alternative] only when [M] is. *)
 
 Lemma ReaderT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
@@ -183,6 +183,7 @@ Proof.
   monad.
 Defined.
 
+(** If [M] is the free monad of [F], so is [ReaderT E M]. *)
 Instance MonadFree_ReaderT
   (F : Type -> Type) (instF : Functor F)
   (E : Type) (M : Type -> Type)
