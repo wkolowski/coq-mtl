@@ -1,5 +1,10 @@
 Require Export HSLib.Base.
 
+(** This module aims to check whether [Applicative]'s laws are orthogonal,
+    i.e. independent from each other. We take an axiomatic approach.
+
+    First we postulate the existence of a thing [F] that has some functions
+    named [fmap], [pure] and [ap]. *)
 Axiom
   (F : Type -> Type)
   (fmap : forall {A B : Type}, (A -> B) -> F A -> F B)
@@ -9,6 +14,7 @@ Axiom
 Notation "f <*> x" := (ap f x)
   (left associativity, at level 40).
 
+(** Then we define various laws that this [F] can possibly satisfy. *)
 Definition fmap_id : Prop :=
   forall A : Type, fmap (@id A) = id.
 
@@ -31,39 +37,43 @@ Definition interchange : Prop :=
   forall (A B : Type) (f : F (A -> B)) (x : A),
     ap f (pure x) = ap (pure (fun f => f x)) f.
 
-Definition ap_pure_fmap : Prop :=
+Definition fmap_pure_ap : Prop :=
   forall (A B : Type) (f : A -> B) (x : F A),
     fmap f x = ap (pure f) x.
 
+(** This law is some kind of alternative for [fmap_pure_ap]. *)
 Definition fmap_pure : Prop :=
   forall (A B : Type) (f : A -> B) (x : A),
     fmap f (pure x) = pure (f x).
 
+(** Finally we try to derive some of these laws from others. It turns out
+    that [identity] follows from [fmap_pure_ap] and the functor laws. *)
+
 Lemma identity' :
-  ap_pure_fmap -> fmap_id -> identity.
+  fmap_pure_ap -> fmap_id -> identity.
 Proof.
-  compute. intros ap_pure_fmap fmap_id A x.
-  rewrite <- ap_pure_fmap, fmap_id. reflexivity.
+  compute. intros fmap_pure_ap fmap_id A x.
+  rewrite <- fmap_pure_ap, fmap_id. reflexivity.
 Qed.
 
 Lemma fmap_id' :
-  ap_pure_fmap -> identity -> fmap_id.
+  fmap_pure_ap -> identity -> fmap_id.
 Proof.
-  compute. intros ap_pure_fmap identity A.
-  ext a. rewrite ap_pure_fmap, identity.
+  compute. intros fmap_pure_ap identity A.
+  ext a. rewrite fmap_pure_ap, identity.
   reflexivity.
 Qed.
 
 Lemma fmap_pure' :
-  ap_pure_fmap -> homomorphism -> fmap_pure.
+  fmap_pure_ap -> homomorphism -> fmap_pure.
 Proof.
-  compute. intros ap_pure_fmap homomorphism A B f x.
-  rewrite ap_pure_fmap, homomorphism. reflexivity.
+  compute. intros fmap_pure_ap homomorphism A B f x.
+  rewrite fmap_pure_ap, homomorphism. reflexivity.
 Qed.
 
 Lemma homomorphism' :
-  ap_pure_fmap -> fmap_pure -> homomorphism.
+  fmap_pure_ap -> fmap_pure -> homomorphism.
 Proof.
-  compute. intros ap_pure_fmap fmap_pure A B f x.
-  rewrite <- ap_pure_fmap, fmap_pure. reflexivity.
+  compute. intros fmap_pure_ap fmap_pure A B f x.
+  rewrite <- fmap_pure_ap, fmap_pure. reflexivity.
 Qed.

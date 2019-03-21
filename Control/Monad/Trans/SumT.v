@@ -3,8 +3,14 @@ Require Import Control.Monad.Trans.
 Require Import Control.Monad.Class.All.
 Require Import Control.Monad.Identity.
 
+(** A transformer which adds a layer of error handling monad on top of the
+    base monad [M]. *)
 Definition SumT (E : Type) (M : Type -> Type) (A : Type)
   : Type := M (sum E A).
+
+(** Definitions of [fmap], [pure], [ap], [bind] and so on are similar to
+    these for the ordinary [sum] monad, but we need to insert [M]'s
+    [pure] and [bind] in appropriate places. *)
 
 Definition fmap_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type} (f : A -> B)
@@ -53,7 +59,9 @@ Instance Applicative_SumT
 }.
 Proof. Time all: monad. Defined.
 
-Theorem SumT_not_Alternative :
+(** [SumT] is not [Alternative], just as the ordinary [sum]. *)
+
+Lemma SumT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (SumT E M)) -> False.
 Proof.
@@ -61,6 +69,8 @@ Proof.
   clear -aempty. specialize (aempty False).
   compute in aempty. destruct aempty; assumption.
 Qed.
+
+(** If the base monad [M] is [Alternative], it doesn't help much. *)
 
 Definition aempty_SumT
   (E : Type) {M : Type -> Type} {instA : Alternative M}
@@ -102,6 +112,7 @@ Instance Monad_SumT
 }.
 Proof. all: hs; monad. Defined.
 
+(** We can lift a computation by wrapping it in the [inr] constructor. *)
 Definition lift_SumT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
   : SumT E M A := fmap inr ma.
@@ -115,18 +126,30 @@ Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
 }.
 Proof. all: monad. Defined.
 
+(** [SumT M] is supposed to enrich [M] with error handling capabilities,
+    but there is a lot of problems. *)
+
+(** The first problem is that [SumT M] can fail only if the error type
+    [E] is inhabited. We use this inhabitant to represent failure, but
+    this means there are as many instances of [MonadFail] as there are
+    inhabitants of [E]. *)
 Definition fail_SumT
-  {E : Type} {M : Type -> Type} {inst : Monad M} (e : E) {A : Type}
-    : SumT E M A := pure $ inl e.
+  {E : Type} (e : E) {M : Type -> Type} {inst : Monad M} {A : Type}
+    : SumT E M A := pure (inl e).
 
 Instance MonadFail_SumT
   (E : Type) (M : Type -> Type) {inst : Monad M} (e : E)
   : MonadFail (SumT E M) (Monad_SumT E M inst) :=
 {
-    fail := @fail_SumT E M inst e
+    fail := @fail_SumT E e M inst
 }.
-Proof. intros. unfold fail_SumT. monad. Defined.
+Proof. intros. unfold fail_SumT. hs. Defined.
 
+(** The problem with [MonadExcept] is lies in the law [catch_fail_r]. It
+    boils down to the fact that there are various ways of failing. One
+    of them is [fail], but there are others, like [inl e] for any [e : E].
+    Since [E] may have more than one inhabitant, there may be more than one
+    way to fail and the law [catch_fail_r] doesn't hold. *)
 Instance MonadExcept_SumT
   (E : Type) (e : E) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
@@ -137,7 +160,7 @@ Instance MonadExcept_SumT
       fun A x y =>
       @bind M inst _ _ x (fun ea =>
       match ea with
-          | inl e => y (*pure (inl e)*)
+          | inl e => y
           | inr a => pure (inr a)
       end)
 }.
@@ -149,10 +172,15 @@ Proof.
       rewrite bind_pure_l. reflexivity.
     Focus 2. unfold pure_SumT. rewrite bind_pure_l. reflexivity.
     rewrite <- (@bind_pure_r M inst _ x) at 2. f_equal.
-      ext ea. destruct ea. unfold fail_SumT.
-    rewrite <- bind_pure_r. cbn. unfold bind_SumT.
-      f_equal.
+      ext ea. destruct ea.
+        Focus 2. reflexivity.
+        unfold fail_SumT.
 Abort.
+
+(** [SumT] preserves [MonadAlt] but not [MonadNondet] (and thus not
+    [MonadStateNondet]). The problem is that [SumT] has its own [fail],
+    but only inherits [choose] from [M]'s [MonadAlt] and these two may
+    be incompatible. *)
 
 Instance MonadAlt_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
@@ -165,26 +193,6 @@ Proof.
   intros. rewrite choose_assoc. reflexivity.
   intros. cbn. unfold bind_SumT. rewrite bind_choose_l. reflexivity.
 Defined.
-
-Instance MonadAlt_SumT'
-  (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
-  : MonadAlt (SumT E M) (Monad_SumT E M inst).
-esplit. Unshelve.
-  Focus 3. unfold SumT. intros A x y.
-  apply (@bind M inst _ _ x).
-  destruct 1.
-    exact y.
-    apply (@bind M inst _ _ y).
-      destruct 1.
-        exact (pure (inr a)).
-        exact (choose (pure (inr a)) (pure (inr a0))).
-Proof.
-  intros. cbn. rewrite !bind_assoc. f_equal. ext ex. destruct ex; cbn.
-    reflexivity.
-    rewrite !bind_assoc. f_equal. ext ex. destruct ex; cbn.
-      rewrite bind_pure_l. reflexivity.
-      rewrite bind_choose_l, !bind_pure_l, bind_assoc.
-Abort.
 
 Instance MonadNondet_SumT
   (E : Type) (e : E) (M : Type -> Type)
@@ -199,6 +207,9 @@ Proof.
   intros. cbn. unfold fail_SumT. admit.
 Admitted.
 
+(** [SumT] preserves [MonadReader] and [MonadState], but not (yet)
+    [MonadWriter]. *)
+
 Instance MonadReader_SumT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader R M inst)
@@ -209,6 +220,10 @@ Instance MonadReader_SumT
 Proof.
   rewrite <- ask_ask at 3. rewrite !constrA_spec. monad.
 Defined.
+
+(** The problem with [MonadWriter] lies in the fact that we use [bind]
+    in the definition of [listen], which prevents us from proving the
+    law [listen_listen]. *)
 
 Instance MonadWriter_SumT
   (W : Monoid) (E : Type) (M : Type -> Type)
@@ -229,29 +244,6 @@ Proof.
   intros. cbn. unfold pure_SumT.
     rewrite listen_pure, bind_pure_l. reflexivity.
   intros. cbn. unfold fmap_SumT.
-(*
-  replace (fun '(ea, w) => pure _)
-     with ((fun eaw : (E + A)%type * W =>
-            match fst eaw with
-                | inl e => inl e
-                | inr a => inr (a, snd eaw)
-            end) .> pure).
-
- rewrite fmap_bind_pure.
-    rewrite bind_assoc.
-    rewrite (bind_fmap M inst (E + A * W) (E + A * W * W) _
-      (fun a : E + A * W =>
-        match a with
-        | inl e => inl e
-        | inr a0 => inr (let '(a1, w) := a0 in (a1, w, neutr))
-        end)
-        _ pure).
-
- replace (fun a => pure _) with ((fun a => _) .> pure).
-
- Search bind fmap.
-
- rewrite <- fmap_bind_pure.*)
 Abort.
 
 Instance MonadState_SumT
@@ -288,7 +280,7 @@ Proof.
       ext s. rewrite bind_pure_l. reflexivity.
 Defined.
 
-Instance MonadStateNondet_SumT
+(* TODO *)Instance MonadStateNondet_SumT
   (E S : Type) (e : E) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (SumT E M) (Monad_SumT E M inst) :=
@@ -299,6 +291,7 @@ Instance MonadStateNondet_SumT
 Proof.
 Abort.
 
+(** If [M] is the free monad of [F], so is [SumT E M]. *)
 Instance MonadFree_SumT
   (F : Type -> Type) (instF : Functor F)
   (E : Type) (M : Type -> Type)

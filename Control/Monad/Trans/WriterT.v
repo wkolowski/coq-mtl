@@ -220,6 +220,7 @@ Proof.
     ext aw. destruct aw as [a w]. apply bind_choose_l.
 Defined.
 
+(** If [M] is the free monad of [F], so is [WriterT W M]. *)
 Instance MonadFree_WriterT
   (F : Type -> Type) (instF : Functor F)
   (W : Monoid) (M : Type -> Type)

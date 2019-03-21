@@ -22,8 +22,6 @@ Class MonadWriter (W : Monoid) (M : Type -> Type) (inst : Monad M) : Type :=
         listen ma >>= fun '(a, w) => fmap (fun b => (b, w)) (f a)*)
 }.
 
-Search fmap bind.
-
 Hint Rewrite @listen_pure (*@listen_tell*) @listen_listen : HSLib.
 
 (*

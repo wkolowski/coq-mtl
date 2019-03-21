@@ -5,7 +5,7 @@ Definition M := F.
 Axiom
   (bind : forall {A B : Type}, M A -> (A -> M B) -> M B).
 
-(* This likely can't be derived from the other laws and in partcular
+(* This likely can't be derived from the other laws and in particular
    not from [bind_ap], [homomorphism] and [bind_pure_r]. *)
 Definition bind_pure_l : Prop :=
   forall (A B : Type) (f : A -> M B) (a : A),

@@ -210,6 +210,7 @@ Instance MonadExcept_RWST
 }.
 Proof. all: monad. Defined.
 
+(** If [M] is the free monad of [F], so is [RWST W R S M]. *)
 Instance MonadFree_RWST
   (F : Type -> Type) (instF : Functor F)
   (W : Monoid) (R S : Type) (M : Type -> Type)

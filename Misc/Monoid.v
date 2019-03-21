@@ -1,5 +1,8 @@
-Require Import Base.
+Require Import List.
+Import ListNotations.
 
+(** Monoids, represented as a class without any parameters. They are used
+    by [Writer] and [Writert]. *)
 Class Monoid : Type :=
 {
     carr :> Type;
@@ -17,6 +20,9 @@ Class Monoid : Type :=
 Coercion carr : Monoid >-> Sortclass.
 
 Hint Rewrite @id_left @id_right @op_assoc : HSLib.
+
+(** Some instances of monoids: the initial monoid, the monoid of boolean
+    values with boolean conjunction and the monoid of lists with append. *)
 
 Instance Monoid_unit : Monoid :=
 {
