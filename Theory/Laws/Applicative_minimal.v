@@ -5,16 +5,20 @@ Require Export HSLib.Base.
 
     First we postulate the existence of a thing [F] that has some functions
     named [fmap], [pure] and [ap]. *)
+
 Axiom
   (F : Type -> Type)
   (fmap : forall {A B : Type}, (A -> B) -> F A -> F B)
   (pure : forall {A : Type}, A -> F A)
   (ap : forall {A B : Type}, F (A -> B) -> F A -> F B).
 
+(** We introduce familiar notations. *)
+
 Notation "f <*> x" := (ap f x)
   (left associativity, at level 40).
 
 (** Then we define various laws that this [F] can possibly satisfy. *)
+
 Definition fmap_id : Prop :=
   forall A : Type, fmap (@id A) = id.
 

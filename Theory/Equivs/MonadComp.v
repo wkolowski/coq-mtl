@@ -1,8 +1,4 @@
-Require Import HSLib.Base.
-
 Require Import Applicative.
-
-Print Applicative.
 
 Class Monad (M : Type -> Type) : Type :=
 {
@@ -37,6 +33,7 @@ Instance Comp_to_Bind
     pure := @pure M inst
 }.
 Proof.
-  Focus 2. unfold bindM. intros. rewrite compM_pure_r. reflexivity.
-  Focus 2. unfold bindM. intros.
+  all: unfold bindM; cbn; intros.
+    admit.
+    rewrite compM_pure_r. reflexivity.
 Abort.

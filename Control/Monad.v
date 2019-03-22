@@ -1,8 +1,8 @@
 Require Export HSLib.Control.Applicative.
 
 (** A [bind]-based definition of monads — the basic one in the library (see
-    Theory/Equivs/MonadJoin.v and Theory/Equivs/KleisliTriple.v for
-    alternativee definitions). The intended categorical semantics is a
+    Theory.Equivs.MonadJoin and Theory.Equivs.KleisliTriple for
+    alternative definitions). The intended categorical semantics is a
     strong monoidal monad in the category of Coq's types and functions.
 
     The design here is as follows:

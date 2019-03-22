@@ -1,5 +1,3 @@
-Require Import HSLib.Base.
-Require Export Control.Functor.
 Require Export Control.Applicative.
 
 Class Monad (M : Type -> Type) : Type :=
@@ -29,8 +27,8 @@ Hint Rewrite @join_fmap_join @join_pure @join_fmap_pure @join_fmap_fmap
   @join_ap : join.
 
 Definition bind
-  {M : Type -> Type} {inst : Monad M} {A B : Type} (ma : M A) (f : A -> M B)
-    : M B := (fmap f .> join) ma.
+  {M : Type -> Type} {inst : Monad M} {A B : Type}
+  (ma : M A) (f : A -> M B) : M B := (fmap f .> join) ma.
 
 Definition compM
   {A B C : Type} {M : Type -> Type} {inst : Monad M}

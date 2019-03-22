@@ -1,8 +1,6 @@
-Require Import HSLib.Base.
-Require Export Control.Functor.
-Require Export Control.Applicative.
+Require Import Control.Monad.
 
-(* This looks identical to MonadBind. *)
+(** This looks identical to MonadBind. *)
 Class KleisliTriple (M : Type -> Type) : Type :=
 {
     eta : forall {A : Type}, A -> M A;
@@ -26,8 +24,6 @@ Ltac ktl := autorewrite with Kleisli.
 Ltac ktr := autorewrite with Kleisli'.
 
 Ltac kt := ktl + ktr; congruence + reflexivity.
-
-Require Import Control.Monad.
 
 Section KleisliTriple_to_MonadBind.
 

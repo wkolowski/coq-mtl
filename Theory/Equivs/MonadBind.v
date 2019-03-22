@@ -1,4 +1,3 @@
-Require Import HSLib.Base.
 Require Import Control.Applicative.
 
 Class Monad (M : Type -> Type) : Type :=
@@ -11,14 +10,14 @@ Class Monad (M : Type -> Type) : Type :=
     bind_pure_r :
       forall (A : Type) (ma : M A),
         bind ma pure = ma;
-    assoc :
+    bind_assoc :
       forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
         bind (bind ma f) g = bind ma (fun x => bind (f x) g);
 }.
 
 Notation "mx >>= f" := (bind mx f) (at level 40).
 
-Hint Rewrite @bind_pure_l @bind_pure_r @assoc : HSLib.
+Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc : HSLib.
 
 Ltac monad :=
 repeat (hs; repeat match goal with
@@ -38,12 +37,12 @@ Definition fmap_MonadBind
 
 Hint Unfold fmap_MonadBind compose : HSLib.
 
-Instance MonadBind_to_Functor
+Instance Functor_MonadBind
   (M : Type -> Type) (inst : Monad M) : Functor M :=
 {
     fmap := @fmap_MonadBind M inst;
 }.
-Proof. all: monad. Defined.
+Proof. unfold fmap_MonadBind, compose, id. compute. all: monad. Defined.
 
 Definition ap_MonadBind
   (M : Type -> Type) (inst : Monad M)
@@ -52,7 +51,7 @@ Definition ap_MonadBind
 
 Hint Unfold ap_MonadBind : HSLib.
 
-Instance MonadBind_to_Applicative
+Instance Applicative_MonadBind
   (M : Type -> Type) (inst : Monad M) : Applicative M :=
 {
     pure := @pure M inst;
