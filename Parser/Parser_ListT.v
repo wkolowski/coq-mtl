@@ -1,18 +1,21 @@
-Require Import Control.All.
+(** An implementation of monadic parsers combinators using [Monad]
+    and [Alternative], but not classes from Control.Monad.Class. Based
+    on the paper "Monadic Parser Combinators" by Graham Hutton and Erik
+    Meijer. *)
 
+Require Export Ascii.
+Require Export String.
+Require Export Bool.
+Require Export Arith.
+
+Require Import Control.All.
 Require Import Control.Monad.All.
 Require Import Control.Monad.Trans.All.
 
-Require Import Ascii.
-Require Import String.
-
+(** This module contains parsers based on the [StateT] and [ListT]
+    transformers applied to [Identity], which can parse only [string]s. *)
 Definition Parser (A : Type) : Type :=
   StateT string (ListT Identity) A.
-
-(** *** 2.2 Primitive parsers *)
-
-Definition fail {A : Type} : Parser A :=
-  fun _ => [[]].
 
 Definition Applicative_Parser := Applicative_ListT _ Monad_Identity.
 Definition Alternative_Parser := Alternative_ListT _ Monad_Identity.
@@ -22,8 +25,14 @@ Existing Instance Applicative_Parser.
 Existing Instance Alternative_Parser.
 Existing Instance Monad_Parser.
 
-(*Existing Instance MonadPlus_Parser.*)
+(** *** 2.2 Primitive parsers *)
 
+(** A parser that always fails. *)
+Definition fail {A : Type} : Parser A :=
+  fun _ => [[]].
+
+(** Parse a single character and return the rest of the input as the
+    current state. *)
 Definition item : Parser ascii :=
   fun input : string =>
   match input with
@@ -33,15 +42,11 @@ Definition item : Parser ascii :=
 
 (** *** 2.3 Parser combinators *)
 
-Definition seq
-  {A B : Type} (pa : Parser A) (pb : Parser B) : Parser (A * B) :=
-    pa >>= fun a => pb >>= fun b => pure (a, b).
-
+(** Parse a character that satisfies a boolean predicate. *)
 Definition sat (p : ascii -> bool) : Parser ascii :=
   item >>= fun c : ascii => if p c then pure c else fail.
 
-Require Import Bool.
-
+(** Decide equality of two characters. *)
 Definition ascii_eqb (x y : ascii) : bool :=
   if ascii_dec x y then true else false.
 
@@ -52,13 +57,12 @@ Proof.
   destruct (ascii_dec x y); firstorder.
 Qed.
 
+(** Parsers for single characters of the given kind: any character, digit,
+    nonzero digit, lowercase ascii, uppercase ascii, any lowercase or
+    uppercase letter, any letter or digit. *)
+
 Definition char (c : ascii) : Parser ascii :=
   sat (fun c' : ascii => ascii_eqb c c').
-
-Open Scope char_scope.
-Open Scope string_scope.
-
-Require Import Arith.
 
 Definition digit : Parser ascii :=
   sat (fun c : ascii =>
@@ -72,44 +76,38 @@ Definition upper : Parser ascii :=
   sat (fun c : ascii =>
     Nat.leb 65 (nat_of_ascii c) && Nat.leb (nat_of_ascii c) 90).
 
-Open Scope list_scope.
-
 Definition letter : Parser ascii :=
   lower <|> upper.
 
 Definition alnum : Parser ascii :=
   letter <|> digit.
 
-Arguments char _ _%string.
-Arguments digit _%string.
-Arguments lower _%string.
-Arguments upper _%string.
-Arguments letter _%string.
-Arguments upper _%string.
+(** We're done with parsing single characters so that we can now proceed to
+    work with strings in their scope. *)
+Open Scope string_scope.
 
-(** All words of length less than or equal to n. *)
+(** Parse a word of length less than or equal to [n]. *)
 Fixpoint words (n : nat) : Parser string :=
 match n with
     | 0 => pure ""
     | S n' => (String <$> letter <*> words n') <|> pure ""
 end.
 
-(** A word of any length. *)
+(** Parse a word of any length. Note that this may in theory not work,
+    because the recursion depth required to parse the input may be greater
+    than the input's length. *)
 Definition word : Parser string :=
   fun input : string => words (String.length input) input.
 
-Arguments word _%string.
-
-Compute word "dupa konia".
-
+(** Parse precisely the given string. *)
 Fixpoint str (s : string) : Parser string :=
 match s with
     | "" => pure ""
     | String c cs => String <$> char c <*> str cs
 end.
 
-Compute str "abc" "abcd".
-
+(** Run the parser [p] zero or more times. Fail if the input is longer than
+    [n] characters. *)
 Fixpoint many'
   {A : Type} (n : nat) (p : Parser A) : Parser (list A) :=
 match n with
@@ -117,18 +115,9 @@ match n with
     | S n' => (cons <$> p <*> many' n' p) <|> pure []
 end.
 
-Arguments many' {A} _ _ _%string.
-
-Open Scope char_scope.
-
-Compute many' 5 letter "asdsd".
-
+(** Run [p] zero or more times. The same remark as for [word] applies. *)
 Definition many {A : Type} (p : Parser A) : Parser (list A) :=
   fun input : string => many' (String.length input) p input.
-
-Arguments many {A} _ _%string.
-
-Compute many digit "123".
 
 Fixpoint toString (l : list ascii) : string :=
 match l with
@@ -136,30 +125,23 @@ match l with
     | c :: cs => String c (toString cs)
 end.
 
+(** An alternate definition of the parser for words. Note that it can still
+    fail if the recursion depth required to successfuly parse is greater
+    than the input's length. *)
 Definition word' : Parser string :=
   fmap toString (many letter).
 
-Arguments word' _%string.
-
-Compute word "abc".
-Compute word' "abc".
-
+(** Parse an identifier, which is defined as a lowercase letter followed
+    by any number of alphanumeric characters. *)
 Definition ident : Parser string := do
   c <- lower;
   cs <- fmap toString (many alnum);
   pure (String c cs).
 
-Arguments ident _%string.
-
-Compute ident "varname".
-
+(** Run a parser one or more times. *)
 Definition many1
   {A : Type} (p : Parser A) : Parser (list A) :=
     cons <$> p <*> (many p).
-
-Arguments many1 {A} _ _%string.
-
-Compute many1 (char "a") "aaab".
 
 Fixpoint eval (cs : list ascii) : nat :=
 match cs with
@@ -167,32 +149,31 @@ match cs with
     | c :: cs' => nat_of_ascii c - 48 + 10 * eval cs'
 end.
 
+(** Parse a natural number written in decimal. *)
 Definition parseNat : Parser nat :=
   fmap (fun l => eval (rev l)) (many1 digit).
 
-Arguments parseNat _%string.
+Require Export ZArith.
 
-Compute parseNat "123".
-
-Require Import ZArith.
-
+(** Parse a natural number preceded by the minus sign. *)
 Definition parseNeg : Parser nat := do
   char "-";;
   r <- many1 digit;
   pure $ eval (rev r).
 
+(** Parse an integer written in decimal with a potential minus sign at the
+    beginnig. *)
 Definition parseZ : Parser Z :=
   fmap Z_of_nat parseNat <|>
   fmap (fun n => Z.sub 0%Z (Z_of_nat n)) parseNeg.
 
-Arguments parseZ _%string.
-
-Compute parseZ "-12345".
-
+(** Try to parse a single character and return a function corresponding to
+    it: negation in case if the character is "-" or identity otherwise. *)
 Definition parseSign : Parser (Z -> Z) :=
   (char "-" >> pure (fun k => Z.sub 0%Z k)) <|>
   pure id.
 
+(** Parse a natural number written in decimal that is not zero. *)
 Definition parsePositive : Parser positive :=
   parseNat >>= fun n : nat =>
   match n with
@@ -200,20 +181,18 @@ Definition parsePositive : Parser positive :=
       | _ => pure $ Pos.of_nat n
   end.
 
+(** Another way of paring the sign. *)
 Definition parseSign' : Parser (Z -> Z) :=
   char "-" >> pure Z.opp <|> pure id.
 
-Arguments parseSign' _%string.
-
+(** An alternative way to parse an integer written in decimal. *)
 Definition parseZ' : Parser Z := do
   sgn <- parseSign;
   n <- parseNat;
   pure $ sgn (Z_of_nat n).
 
-Arguments parseZ' _%string.
-
-Compute parseZ' "-12345".
-
+(** Parse a sequence of [p]'s separated by the separator [sep] like this:
+    p sep p sep p ... sep p. There has to be at least one [p]. *)
 Definition sepby1
   {A B : Type} (p : Parser A) (sep : Parser B)
   : Parser (list A) := do
@@ -221,6 +200,8 @@ Definition sepby1
     t <- many (sep >> p);
     pure (h :: t).
 
+(** Parse [content] enclosed in a left and a right "bracket" (which can be
+    anything, not only "[" or "]"). *)
 Definition bracket {A B C : Type}
   (open : Parser A) (content : Parser B) (close : Parser C) : Parser B := do
     open;;
@@ -228,46 +209,18 @@ Definition bracket {A B C : Type}
     close;;
     pure res.
 
+(** Parse a list of integers (written in decimal) that is surrounded by
+    brackets ("[" and "]") and entries are separated with commas. *)
 Definition ints : Parser (list Z) :=
   bracket (char "[") (sepby1 parseZ (char ",")) (char "]").
 
-Arguments ints _%string.
-
-Compute ints "[1,2,3,4,5,6,7,8]".
-
+(** Like [sepby1], but possibly empty. *)
 Definition sepby {A B : Type}
   (item : Parser A) (sep : Parser B) : Parser (list A) :=
     sepby1 item sep <|> fail.
 
-(**
-    expr    ::= expr addop factor | factor
-    addop   ::= + | -
-    factor  ::= nat | ( expr )
-*)
-
-Fixpoint exprn (n : nat) : Parser Z :=
-match n with
-    | 0 => fail
-    | S n' =>
-        let
-          addop := char "+" >> pure Z.add <|>
-                   char "-" >> pure Z.sub
-        in let
-          factor := parseZ <|>
-                    bracket (char "(") (exprn n') (char ")")
-        in
-          liftA3 (fun x op y => op x y) (exprn n') addop factor <|>
-          factor
-end.
-
-Definition expr : Parser Z :=
-  fun input : string => exprn (String.length input) input.
-
-Arguments expr _%string.
-
-Compute expr "2+2".
-Compute expr "0-5)".
-
+(** Parse a sequence of things separated by meaningful separators that
+    are binary operators. *)
 Definition chainl1
   {A : Type} (obj : Parser A) (op : Parser (A -> A -> A)) : Parser A :=
   do
@@ -277,11 +230,8 @@ Definition chainl1
 
 Definition parseNat_chainl : Parser nat :=
   let op m n := 10 * m + n in
-    chainl1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (pure op).
-
-Arguments parseNat_chainl _%string.
-
-Compute parseNat_chainl "211".
+    chainl1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit)
+            (pure op).
 
 Fixpoint chainr1_aux
   {A : Type} (arg : Parser A) (op : Parser (A -> A -> A)) (n : nat)
@@ -291,40 +241,18 @@ match n with
     | S n' => op <*> arg <*> chainr1_aux arg op n' <|> arg
 end.
 
+(** Like [chainl1], but right-associative. *)
 Definition chainr1
   {A : Type} (arg : Parser A) (op : Parser (A -> A -> A)) : Parser A :=
     fun input : string => chainr1_aux arg op (String.length input) input.
 
-Arguments chainr1 {A} _ _ _%string.
-
 Definition parseNat_chainr : Parser nat :=
   let op m n := m + 10 * n in
-    chainr1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit) (pure op).
+    chainr1 (fmap (fun d => nat_of_ascii d - nat_of_ascii "0") digit)
+            (pure op).
 
-Arguments parseNat_chainr _%string.
-
-Compute parseNat_chainr "211".
-
-Fixpoint exprn'' (n : nat) : Parser Z :=
-match n with
-    | 0 => fail
-    | S n' =>
-        let
-          op := char "+" >> pure Z.add <|>
-                char "-" >> pure Z.sub
-        in let
-          factor := parseZ <|> bracket (char "(") (exprn'' n') (char ")")
-        in
-          chainl1 factor op
-end.
-
-Definition expr'' : Parser Z :=
-  fun input : string => exprn'' (String.length input) input.
-
-Arguments expr'' _%string.
-
-Compute expr'' "3-2"%string.
-
+(** Parse all matching things from a nonempty list and interpret them
+    accordingly. *)
 Definition ops
   {A B : Type} (start : Parser A * B) (l : list (Parser A * B)) : Parser B :=
 match l with
@@ -335,91 +263,62 @@ match l with
             (map (fun '(p, op) => p >> pure op) l)
 end.
 
-Fixpoint exprn3 (n : nat) : Parser Z :=
-match n with
-    | 0 => fail
-    | S n' =>
-        let
-          op := ops (char "+", Z.add) [(char "-", Z.sub)]
-        in let
-          factor := parseZ <|> bracket (char "(") (exprn3 n') (char ")")
-        in
-          chainl1 factor op
-end.
-
-Definition expr3 : Parser Z :=
-  fun input : string => exprn3 (String.length input) input.
-
-Compute expr'' "1-(2-(3-4)-5)"%string.
-
-Fixpoint exprn4 (n : nat) : Parser Z :=
-match n with
-    | 0 => fail
-    | S n' =>
-        let
-          addop := ops (char "+", Z.add) [(char "-", Z.sub)]
-        in let
-          expop := ops (char "^", Z.pow) []
-        in let
-          factor := parseZ <|> bracket (char "(") (exprn4 n') (char ")")
-        in let
-          term := chainr1 factor expop
-        in
-          chainl1 term addop
-end.
-
-Definition expr4 : Parser Z :=
-  fun input : string => exprn4 (String.length input) input.
-
-Arguments expr4 _%string.
-
-Compute expr4 "(1-2)^3".
-
+(** Like [chainl1], but with a default value. *)
 Definition chainl
   {A : Type} (p : Parser A) (op : Parser (A -> A -> A)) (default : A)
     : Parser A := chainl1 p op <|> pure default.
 
+(** Like [chainr1], but with a default value. *)
 Definition chainr
   {A : Type} (p : Parser A) (op : Parser (A -> A -> A)) (default : A)
     : Parser A := chainr1 p op <|> pure default.
 
+(** Throw away all matches besides the first one. *)
 Definition first
   {A : Type} (p : Parser A) : Parser A :=
     fun input : string => fun X nil cons =>
       p input X nil (fun h _ => cons h nil).
 
-Arguments first {A} _ _%string.
-
-Time Compute many digit "123".
-Time Compute first (many digit) "123".
-
-Definition plus_det
+(** A deterministic version of [aplus]. *)
+Definition aplus_det
   {A : Type} (p q : Parser A) : Parser A :=
     first (p <|> q).
 
-Notation "p +++ q" := (plus_det p q) (at level 42).
+Notation "p +++ q" := (aplus_det p q) (at level 42).
 
 Definition isSpace (c : ascii) : bool :=
   leb (nat_of_ascii c) 32.
 
+(** Throw away at least one space. Note that it is just space, not any
+    whitespace. *)
 Definition spaces : Parser unit :=
   many1 (sat isSpace) >> pure tt.
 
+(** Deterministically parse a Haskell-style comment starting with "--" and
+    ending with a newline character. *)
 Definition comment : Parser unit :=
   first
     (str "--" >> many (sat (fun c => negb (ascii_eqb c "013"))) >> pure tt).
 
+(** Throw away spaces and Haskell-style comments. *)
 Definition junk : Parser unit :=
   many (spaces +++ comment) >> pure tt.
 
+(** Throw away spaces and comments and then start parsing the meaningful
+    part of the input. *)
 Definition parse {A : Type} (p : Parser A) : Parser A :=
   junk >> p.
 
+(** Parse meaningful stuff at the beginning of the input and then throw
+    away spaces and comments. *)
 Definition token {A : Type} (p : Parser A) : Parser A :=
   do
     x <- p;
     junk;;
     pure x.
+
+(** Parse the desired thing and then remove spaces and comments from the
+    end. *)
 
 Definition natural : Parser nat :=
   token parseNat.
@@ -434,44 +333,42 @@ Definition in_decb {A : Type}
   (eq_dec : forall x y : A, {x = y} + {x <> y}) (x : A) (l : list A)
     : bool := if in_dec eq_dec x l then true else false.
 
+(** Parse an identifier. An identifier here is any string that doesn't
+    belong to the given list of forbidden keywords. *)
 Definition identifier (keywords : list string) : Parser string :=
   do
     id <- token ident;
     if in_decb string_dec id keywords then fail else pure id.
 
-Arguments spaces _%string.
-Arguments comment _%string.
-Arguments junk _%string.
-Arguments parse _ _%string.
-Arguments token _ _%string.
-Arguments symbol _%string.
-Arguments natural _%string.
-Arguments identifier _%string.
-
-Compute comment "-- haskellowy komentarz polityczny".
-Time Compute natural "123".
-Time Compute first natural "123".
-
-Module Q.
-
 Require Import QArith.
 
-Definition nonzeroDigit : Parser ascii :=
-  sat (fun c : ascii => leb 49 (nat_of_ascii c) && leb (nat_of_ascii c) 58).
-
+(** Parse a rational number. *)
 Definition parseQ : Parser Q := do
   a <- parseZ;
   char "/";;
   b <- parsePositive;
   pure (a # b).
 
-Arguments nonzeroDigit _%string.
-Arguments parseQ _%string.
-
+(** Some tests. *)
+Compute str "abc" "abcd".
+Compute word "dupa konia".
+Compute many' 5 letter "asdsd".
+Compute many digit "123".
+Compute word' "abc".
+Compute word "abc".
+Compute ident "varname".
+Compute many1 (char "a") "aaab".
+Compute parseNat "123".
+Compute parseZ "-12345".
+Compute parseZ' "-12345".
+Compute ints "[1,2,3,4,5,6,7,8]".
+Compute parseNat_chainl "211".
+Compute parseNat_chainr "211".
+Compute natural "123".
 Compute parseQ "1/5".
+Compute comment "-- haskellowy komentarz polityczny".
 
-End Q.
-
+(*
 Inductive Expr : Type :=
     | App : Expr -> Expr -> Expr
     | Lam : string -> Expr -> Expr
@@ -565,3 +462,4 @@ Arguments parseExpr' _%string.
 Time Compute parseExpr' "(x x)".
 Time Compute parseExpr' "\f -> \x -> (f x)".
 Time Compute parseExpr' "let x = (x x) in x".
+*)

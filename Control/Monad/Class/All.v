@@ -1,3 +1,6 @@
+(** A module that can be used to important all monadic classes except the
+    alternative ones for nondeterminism. *)
+
 Require Export Control.Monad.Class.MonadAlt.
 Require Export Control.Monad.Class.MonadExcept.
 Require Export Control.Monad.Class.MonadFail.

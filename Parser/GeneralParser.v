@@ -1,15 +1,19 @@
-Require Export Bool.
-Require Export Arith.
+(** An implementation of monadic parsers combinators using [Monad]
+    and [Alternative], but not classes from Control.Monad.Class. Based
+    on the paper "Monadic Parser Combinators" by Graham Hutton and Erik
+    Meijer. *)
 
 Require Export Ascii.
 Require Export String.
+Require Export Bool.
+Require Export Arith.
 
 Require Import Control.All.
-
 Require Export Control.Monad.ListInst.
 Require Export Control.Monad.Trans.StateT.
 
-(** A parser is just a nondeterministic monad with state. *)
+(** This module contains parsers based on the [StateT] transformer
+    applied to [list], which can parse only [string]s. *)
 Definition Parser (A : Type) : Type :=
   StateT string list A.
 
@@ -30,9 +34,17 @@ Definition sat (p : ascii -> bool) : Parser ascii :=
 Definition ascii_eqb (x y : ascii) : bool :=
   if ascii_dec x y then true else false.
 
+Lemma ascii_eqb_spec :
+  forall x y : ascii, reflect (x = y) (ascii_eqb x y).
+Proof.
+  intros. unfold ascii_eqb.
+  destruct (ascii_dec x y); firstorder.
+Qed.
+
 (** Parsers for single characters of the given kind: any character, digit,
     nonzero digit, lowercase ascii, uppercase ascii, any lowercase or
     uppercase letter, any letter or digit. *)
+
 Definition char (c : ascii) : Parser ascii :=
   sat (fun c' : ascii => ascii_eqb c c').
 
@@ -142,10 +154,11 @@ Definition parseZ : Parser Z :=
   fmap Z_of_nat parseNat <|>
   fmap (fun n => Z.sub 0%Z (Z_of_nat n)) parseNeg.
 
-(** Try to parse a single character and return a function corresponding to it:
-    negation in case if the character is "-" or identity otherwise. *)
+(** Try to parse a single character and return a function corresponding to
+    it: negation in case if the character is "-" or identity otherwise. *)
 Definition parseSign : Parser (Z -> Z) :=
-  char "-" >> pure Z.opp <|> pure id.
+  (char "-" >> pure (fun k => Z.sub 0%Z k)) <|>
+  pure id.
 
 (** Parse a natural number written in decimal that is not zero. *)
 Definition parsePositive : Parser positive :=
@@ -154,6 +167,10 @@ Definition parsePositive : Parser positive :=
       | 0 => aempty
       | _ => pure $ Pos.of_nat n
   end.
+
+(** Another way of paring the sign. *)
+Definition parseSign' : Parser (Z -> Z) :=
+  char "-" >> pure Z.opp <|> pure id.
 
 (** An alternative way to parse an integer written in decimal. *)
 Definition parseZ' : Parser Z := do
@@ -238,7 +255,7 @@ Definition chainl
   {A : Type} (p : Parser A) (op : Parser (A -> A -> A)) (default : A)
     : Parser A := chainl1 p op <|> pure default.
 
-(** Like [chain1], but with a default value. *)
+(** Like [chainr1], but with a default value. *)
 Definition chainr
   {A : Type} (p : Parser A) (op : Parser (A -> A -> A)) (default : A)
     : Parser A := chainr1 p op <|> pure default.
@@ -259,7 +276,7 @@ Definition aplus_det
 
 Notation "p +++ q" := (aplus_det p q) (at level 42).
 
-Theorem aplus_det_spec :
+Lemma aplus_det_spec :
   forall (A : Type) (p q : Parser A),
     p <|> q = (fun _ => []) \/
     (exists x : A * string, p <|> q = fun _ => [x]) ->
@@ -283,12 +300,12 @@ Definition comment : Parser unit :=
   first
     (str "--" >> many (sat (fun c => negb (ascii_eqb c "013"))) >> pure tt).
 
-(** Throw away spaes and Haskell-style comments. *)
+(** Throw away spaces and Haskell-style comments. *)
 Definition junk : Parser unit :=
   many (spaces +++ comment) >> pure tt.
 
-(** Throw away spaces and commes and then start parsing the meaningful part
-    of the input. *)
+(** Throw away spaces and comments and then start parsing the meaningful
+    part of the input. *)
 Definition parse {A : Type} (p : Parser A) : Parser A :=
   junk >> p.
 
@@ -302,6 +319,7 @@ Definition token {A : Type} (p : Parser A) : Parser A :=
 
 (** Parse the desired thing and then remove spaces and comments from the
     end. *)
+
 Definition natural : Parser nat :=
   token parseNat.
 
@@ -333,6 +351,7 @@ Definition parseQ : Parser Q := do
   b <- parsePositive;
   pure (a # b).
 
+(** Some tests. *)
 Compute str "abc" "abcd".
 Compute word "dupa konia".
 Compute many' 5 letter "asdsd".

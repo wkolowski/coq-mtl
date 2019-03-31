@@ -66,7 +66,8 @@ Hint Rewrite put_put' put_put'' put_get' : HSLib.
 Set Implicit Arguments.
 
 (** Some functions which can be found in the Haskell standard library:
-    [state], [modify] and [gets]. *)
+    [state], [modify] and [gets]. They satisfy laws similar to the ones
+    for [get] and [put]. *)
 Section MonadState_funs.
 
 Variables

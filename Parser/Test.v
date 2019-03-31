@@ -1,9 +1,7 @@
-Require Export HSLib.Control.Alternative.
-Require Export HSLib.Control.Monad.
+Require Export Control.Monad.
+Require Export Control.Monad.All.
 
-Require Export HSLib.Control.Monad.All.
-
-Require Import Arith.
+(** Helper functions which produce lists of natural numbers. *)
 
 Fixpoint aux (n k : nat) : list nat :=
 match n with
@@ -13,7 +11,17 @@ end.
 
 Definition I (a b : nat) : list nat := aux (b - a) a.
 
-(** Tests for [Alternative] and [MonadPlus]. *)
+(** Tests for [Applicative]. *)
+Require Export Control.Applicative.
+
+Compute zipWithA
+  (fun _ _ => [true; false]) [1; 2; 3] [4; 5; 6; 7].
+
+(** Tests for [Alternative]: compute some Pythagorean triples. *)
+Require Export Control.Alternative.
+
+Require Import Arith.
+
 Compute do
   a <- I 1 25;
   b <- I 1 25;
@@ -21,29 +29,23 @@ Compute do
   guard (beq_nat (a * a + b * b) (c * c));;
   pure (a, b, c).
 
-(*
-Eval compute in mfilter (fun _ => false) (Some 42).
-*)
-
-Compute zipWithA
-  (fun _ _ => [true; false]) [1; 2; 3] [4; 5; 6; 7].
-
 (** Tests for [Foldable]. *)
-Require Import HSLib.Control.Foldable.
+Require Import Control.Foldable.
 
-Eval compute in isEmpty (None).
-Eval compute in size (Some 42).
-Eval compute in toListF (Some 5).
-Eval compute in elem beq_nat 2 (Some 2).
-Eval compute in maxF (Some 42).
+Compute isEmpty (None).
+Compute size (Some 42).
+Compute toListF (Some 5).
+Compute elem beq_nat 2 (Some 2).
+Compute maxF (Some 42).
 
-Eval compute in size (inr 5).
-Eval compute in maxF [1; 2; 3].
-Eval compute in findFirst (beq_nat 42) [1; 3; 5; 7; 11; 42].
-Eval compute in count (leb 10) [1; 3; 5; 7; 11; 42].
+Compute size (inr 5).
+Compute maxF [1; 2; 3].
+Compute findFirst (beq_nat 42) [1; 3; 5; 7; 11; 42].
+Compute count (leb 10) [1; 3; 5; 7; 11; 42].
 
-(** Tests for [Parser]. *)
-Require Import HSLib.Parser.GeneralParser.
+(** Tests for parsers. *)
+Require Import Parser.GeneralParser.
+
 Require Import ZArith.
 Require Import String.
 
@@ -74,7 +76,6 @@ Definition expr : Parser Z :=
   fun input : string => exprn (String.length input) input.
 
 Compute expr "2+2".
-
 Compute expr "0-5)".
 
 (** The same grammar as above. *)
