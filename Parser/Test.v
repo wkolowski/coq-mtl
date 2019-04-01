@@ -43,13 +43,11 @@ Compute maxF [1; 2; 3].
 Compute findFirst (beq_nat 42) [1; 3; 5; 7; 11; 42].
 Compute count (leb 10) [1; 3; 5; 7; 11; 42].
 
-(** Tests for parsers. *)
-Require Import Parser.GeneralParser.
+(** Tests for parsers. Toggle between imports for Parser.Parser and
+    Parser.Parser_ListT to test one of these. *)
 
-Require Import ZArith.
-Require Import String.
-
-Open Scope string_scope.
+Require Import Parser.Parser.
+(*Require Import Parser.Parser_ListT.*)
 
 (**
     expr    ::= expr addop factor | factor
@@ -186,8 +184,7 @@ Time Compute parseExpr "(x x)".
 Time Compute parseExpr "fun f => fun x => (f x)".
 Time Compute parseExpr "let x := (x x) in x".
 
-(** Parser for lambda calculus with let using Haskell-like syntax. Taken
-    directly from the paper. *)
+(** Parser for lambda calculus with let using Haskell-like syntax. *)
 Time Fixpoint parseExprn' (n : nat) : Parser Expr :=
 match n with
     | 0 => aempty

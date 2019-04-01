@@ -25,7 +25,7 @@ Ltac ktr := autorewrite with Kleisli'.
 
 Ltac kt := ktl + ktr; congruence + reflexivity.
 
-Section KleisliTriple_to_MonadBind.
+Section KleisliTriple_Instances.
 
 Variable M : Type -> Type.
 Variable inst : KleisliTriple M.
@@ -67,33 +67,4 @@ Proof.
     ktl. f_equal. ext ab. kt.
 Defined.
 
-Instance Monad_KleisliTriple : Monad M :=
-{
-    bind := @bind_Kleisli;
-}.
-Proof.
-  all: unfold fmap_Kleisli, ap_Kleisli, bind_Kleisli, pure_Kleisli, flip;
-  cbn; intros; try kt.
-Defined.
-
-End KleisliTriple_to_MonadBind.
-
-Section MonadBind_to_KleisliTriple.
-
-Variable M : Type -> Type.
-Variable inst : Monad M.
-
-Definition eta_Monad := @pure M inst.
-
-Definition star_Monad {A B : Type} := flip (@bind M inst A B).
-
-Instance KleisliTriple_Monad : KleisliTriple M :=
-{
-    eta := @eta_Monad;
-    star := @star_Monad;
-}.
-Proof.
-  all: unfold eta_Monad, star_Monad, flip; monad.
-Defined.
-
-End MonadBind_to_KleisliTriple.
+End KleisliTriple_Instances.

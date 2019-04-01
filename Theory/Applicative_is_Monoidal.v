@@ -1,24 +1,38 @@
+(** A proof of the fact the [Applicative] functors are the same thing
+    as [Monoidal] functors. *)
+
 Require Export Control.Applicative.
 Require Export Control.Monoidal.
 
-Definition pure_isMonoidal
-  {F : Type -> Type} {inst : isMonoidal F} {A : Type} (x : A) : F A :=
+(** We cat define [pure] by mapping a constant function over the default
+    computation. *)
+Definition pure_Monoidal
+  {F : Type -> Type} {inst : Monoidal F} {A : Type} (x : A) : F A :=
     fmap (fun u : unit => x) default.
 
-Definition ap_isMonoidal
-  {F : Type -> Type} {inst : isMonoidal F} {A B : Type}
+(** We can define [ap] by pairing f with a and mapping over it with a
+    function which applies the first component of the pair to the
+    second component. *)
+Definition ap_Monoidal
+  {F : Type -> Type} {inst : Monoidal F} {A B : Type}
   (f : F (A -> B)) (a : F A) : F B :=
     fmap (fun p => apply (fst p) (snd p)) (pairF f a).
 
-Instance isMonoidal_Applicative (F : Type -> Type) (inst : isMonoidal F)
-  : Applicative F :=
+(** The direction [Monoidal] => [Applicative] was very hard for me to
+    prove. After unfolding definitions, the easy part is taken care of
+    by the tactic [monoidal]. The rest is mostly precisely tailored
+    rewrites in the reverse direction. If you gazed at the goals for
+    long enough, you could probably have proved this all by yourself,
+    but thanks to me you don't need to... *)
+Instance Monoidal_Applicative
+  (F : Type -> Type) (inst : Monoidal F) : Applicative F :=
 {
-    is_functor := @isMonoidal_functor F inst;
-    pure := @pure_isMonoidal F inst;
-    ap := @ap_isMonoidal F inst
+    is_functor := @is_functor F inst;
+    pure := @pure_Monoidal F inst;
+    ap := @ap_Monoidal F inst
 }.
 Proof.
-  all: unfold pure_isMonoidal, ap_isMonoidal; intros; monoidal.
+  all: unfold pure_Monoidal, ap_Monoidal; intros; monoidal.
     rewrite !par_comp. cbn. unfold apply.
       rewrite <- (pairF_default_l _ (pairF ag (pairF af ax))).
       rewrite <- ?pairF_assoc, <- ?fmap_comp'. repeat f_equal.
@@ -31,19 +45,22 @@ Proof.
         ext p. destruct p. cbn. reflexivity.
 Defined.
 
+(** We can define [default] by injecting [tt] into the functor. *)
 Definition default_Applicative
   {F : Type -> Type} {inst : Applicative F} : F unit := pure tt.
 
+(** We can define [pairF] by applying [pair] injected into the functor. *)
 Definition pairF_Applicative
   {F : Type -> Type} {inst : Applicative F} {A B : Type}
   (x : F A) (y : F B) : F (A * B)%type := pair <$> x <*> y.
 
 Hint Unfold default_Applicative pairF_Applicative : HSLib.
 
+(** The proof is quite easy, nothing to see here. *)
 Instance Applicative_isMonoidal
-  (F : Type -> Type) (inst : Applicative F) : isMonoidal F :=
+  (F : Type -> Type) (inst : Applicative F) : Monoidal F :=
 {
-    isMonoidal_functor := inst;
+    is_functor := inst;
     default := default_Applicative;
     pairF := @pairF_Applicative F inst;
 }.

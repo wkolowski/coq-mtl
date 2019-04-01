@@ -95,6 +95,30 @@ Instance Monad_to_MonadBind
 }.
 Proof. all: monad. Defined.
 
+(** * Kleisli triple *)
+Require Import KleisliTriple.
+
+Instance Monad_to_KleisliTriple
+  (M : Type -> Type) (inst : Monad M) : KleisliTriple M :=
+{
+    eta := @pure M inst;
+    star := fun A B => flip (@bind M inst A B);
+}.
+Proof.
+  all: unfold flip; monad.
+Defined.
+
+Instance KleisliTriple_to_Monad
+  (M : Type -> Type) (inst : KleisliTriple M) : Monad M :=
+{
+    is_applicative := Applicative_Kleisli M inst;
+    bind := @bind_Kleisli M inst;
+}.
+Proof.
+  all: unfold fmap_Kleisli, ap_Kleisli, bind_Kleisli, pure_Kleisli, flip;
+  cbn; intros; try kt.
+Defined.
+
 (** * compM-based definition *)
 
 Instance Monad_to_MonadComp
@@ -104,3 +128,5 @@ Instance Monad_to_MonadComp
     compM := @compM M inst;
 }.
 Proof. all: unfold compM; monad. Defined.
+
+(** TODO: MonadComp_to_Monad *)

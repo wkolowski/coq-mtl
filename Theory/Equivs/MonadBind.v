@@ -42,7 +42,7 @@ Instance Functor_MonadBind
 {
     fmap := @fmap_MonadBind M inst;
 }.
-Proof. unfold fmap_MonadBind, compose, id. compute. all: monad. Defined.
+Proof. unfold fmap_MonadBind, compose, id. all: monad. Defined.
 
 Definition ap_MonadBind
   (M : Type -> Type) (inst : Monad M)

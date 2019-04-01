@@ -14,9 +14,9 @@ Notation "f *** g" := (par f g) (at level 40).
 (** An alternative characterization of applicative functors as lax monoidal
     functors (or rather, strong monoidal functors, because in the category
     of Coq's types and functions all monoidal functors are strong. *)
-Class isMonoidal (F : Type -> Type) : Type :=
+Class Monoidal (F : Type -> Type) : Type :=
 {
-    isMonoidal_functor :> Functor F;
+    is_functor :> Functor F;
     default : F unit;
     pairF : forall {A B : Type}, F A -> F B -> F (A * B)%type;
     pairF_default_l :
@@ -70,7 +70,7 @@ Qed.
 (** A tactic for solving goals about [Monoidal]. It works by repeatedly
     performing precise rewrites. The order of these was found experimentally
     and is best suited in the proofs to come in
-    Theory/Applicative_is_Monoidal.v *)
+    Theory.Applicative_is_Monoidal.v *)
 Ltac monoidal := repeat (
 multimatch goal with
     | |- ?x = ?x => reflexivity
