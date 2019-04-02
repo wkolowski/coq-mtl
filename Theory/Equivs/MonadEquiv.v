@@ -8,9 +8,7 @@ Require Import Control.
       which says that a monad is an [Applicative] functor with [bind],
       satisfying the laws [bind_pure_l], [bind_pure_r], [bind_assoc] and
       [bind_ap], which relates the [Applicative] and [Monad] structure
-    - the minimal [bind]-based definition (from Theory.Equivs.MonadBind),
-      which says that a monad has [pure] and [bind] that satisfy the laws
-      [bind_pure_l], [bind_pure_r] and [bind_assoc]
+    
     - the join-based definition (from Theory.Equivs.MonadJoin), which says
       that a monad is an [Applicative] functor with [join] that satisfies
       the laws [join_fmap_join], [join_pure], [join_fmap_pure],
@@ -56,10 +54,8 @@ Instance Join_to_Monad
     bind := @Join.bind M inst
 }.
 Proof.
-  apply Join.bind_pure_l.
-  apply Join.bind_pure_r.
+  1, 2, 4: MonadJoin.mjoin.
   apply Join.assoc.
-  apply Join.bind_ap.
 Defined.
 
 Instance Monad_to_Join (M : Type -> Type) (inst : Monad M)
@@ -85,7 +81,7 @@ Instance MonadBind_to_Monad
     is_applicative := @MonadBind.Applicative_MonadBind M inst;
     bind := @MonadBind.bind M inst;
 }.
-Proof. all: monad. Defined.
+Proof. all: MonadBind.mbind. Defined.
 
 Instance Monad_to_MonadBind
   (M : Type -> Type) (inst : Monad M) : MonadBind.Monad M :=
@@ -96,6 +92,7 @@ Instance Monad_to_MonadBind
 Proof. all: monad. Defined.
 
 (** * Kleisli triple *)
+
 Require Import KleisliTriple.
 
 Instance Monad_to_KleisliTriple
@@ -114,10 +111,7 @@ Instance KleisliTriple_to_Monad
     is_applicative := Applicative_Kleisli M inst;
     bind := @bind_Kleisli M inst;
 }.
-Proof.
-  all: unfold fmap_Kleisli, ap_Kleisli, bind_Kleisli, pure_Kleisli, flip;
-  cbn; intros; try kt.
-Defined.
+Proof. all: kleisli. Defined.
 
 (** * compM-based definition *)
 

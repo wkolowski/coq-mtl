@@ -1,4 +1,5 @@
-(** This file gathers everything that lives in the directory Control/ *)
+(** This module can be used to import/export everything from the directory
+    Control/. *)
 
 Require Export Control.Alternative.
 Require Export Control.Applicative.

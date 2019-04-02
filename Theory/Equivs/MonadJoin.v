@@ -23,8 +23,10 @@ Class Monad (M : Type -> Type) : Type :=
 
 Coercion is_applicative : Monad >-> Applicative.
 
-Hint Rewrite @join_fmap_join @join_pure @join_fmap_pure @join_fmap_fmap
-  @join_ap : join.
+Hint Rewrite
+  @join_fmap_join @join_pure @join_fmap_pure @join_fmap_fmap : MonadJoin.
+
+Hint Rewrite <- @join_ap : MonadJoin.
 
 Definition bind
   {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -35,65 +37,27 @@ Definition compM
   (f : A -> M B) (g : B -> M C) : A -> M C :=
     f .> fmap g .> join.
 
+Hint Unfold bind compM compose : MonadJoin.
+
 Module MonadNotations.
 
 Notation "mx >>= f" := (bind mx f) (at level 40).
-Notation "f >=> g" := (compM f g) (at level 40).
-
-Notation "x '<-' e1 ; e2" := (bind e1 (fun x => e2))
-  (right associativity, at level 42, only parsing).
-
-Notation "e1 ;; e2" := (constrA e1 e2)
-  (right associativity, at level 42, only parsing).
-
-Notation "'do' e" := e (at level 50, only parsing).
 
 End MonadNotations.
 
 Export MonadNotations.
 
-Section MonadicFuns.
-
-Variable M : Type -> Type.
-Variable inst : Monad M.
-Variables A B C D E F : Type.
-
-Fixpoint foldM (f : A -> B -> M A) (dflt : A) (l : list B)
-    : M A :=
-match l with
-    | [] => pure dflt
-    | h :: t => f dflt h >>= fun a : A => foldM f a t
-end.
-
-End MonadicFuns.
-
-Arguments foldM {M inst A B} _ _ _.
-
-Section DerivedLaws.
-
-Variables
-  (M : Type -> Type)
-  (inst : Monad M).
-
-Lemma bind_pure_l :
-  forall (A B : Type) (f : A -> M B) (a : A),
-    bind (pure a) f = f a.
-Proof.
-  unfold bind, compose; intros.
-  rewrite fmap_pure, join_pure. reflexivity.
-Qed.
-
-Lemma bind_pure_r :
-  forall (A : Type) (ma : M A),
-    bind ma pure = ma.
-Proof.
-  unfold bind, compose; intros.
-  rewrite join_fmap_pure. reflexivity.
-Qed.
+Ltac mjoin :=
+  repeat (intros;
+    autounfold with MonadJoin HSLib;
+    autorewrite with MonadJoin HSLib;
+    f_equal; exts; try reflexivity).
 
 Lemma assoc :
-  forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
-    bind (bind ma f) g = bind ma (fun x => bind (f x) g).
+  forall
+    (M : Type -> Type) (inst : Monad M)
+    (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
+      bind (bind ma f) g = bind ma (fun x => bind (f x) g).
 Proof.
   unfold bind, compose; intros.
   rewrite <- !join_fmap_fmap.
@@ -101,41 +65,3 @@ Proof.
   rewrite !fmap_comp. unfold compose. rewrite join_fmap_join.
   reflexivity.
 Qed.
-
-Lemma bind_fmap :
-  forall (A B C : Type) (f : A -> B) (x : M A) (g : B -> M C),
-    bind (fmap f x) g = bind x (f .> g).
-Proof.
-  unfold bind, compose, id; intros. f_equal.
-  rewrite <- fmap_comp'. unfold compose.
-  reflexivity.
-Qed.
-
-Lemma fmap_bind :
-  forall (A B C : Type) (x : M A) (f : A -> M B) (g : B -> C),
-    fmap g (bind x f) = bind x (fun x0 : A => fmap g (f x0)).
-Proof.
-  intros. change (fun x0 : A => fmap g (f x0)) with (f .> fmap g).
-  rewrite <- bind_fmap. unfold bind, compose; intros.
-  rewrite join_fmap_fmap. reflexivity.
-Qed.
-
-Lemma fmap_bind_pure :
-  forall (A B : Type) (f : A -> B) (x : M A),
-    fmap f x = bind x (fun a : A => pure (f a)).
-Proof.
-  intros. replace (fun _ => _) with (f .> pure) by hs.
-  unfold bind. rewrite fmap_comp. unfold compose.
-  rewrite join_fmap_pure. reflexivity.
-Qed.
-
-Lemma bind_ap :
-  forall (A B : Type) (mf : M (A -> B)) (mx : M A),
-    mf <*> mx = bind mf (fun f => bind mx (fun x => pure (f x))).
-Proof.
-  intros. unfold bind, compose. rewrite join_ap.
-  autorewrite with HSLib.
-  unfold compose. reflexivity.
-Qed.
-
-End DerivedLaws.

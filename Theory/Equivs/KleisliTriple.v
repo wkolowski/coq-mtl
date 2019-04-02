@@ -16,14 +16,15 @@ Class KleisliTriple (M : Type -> Type) : Type :=
         star (f .> star g) x = star g (star f x)
 }.
 
-Hint Rewrite @eta_star @star_eta @star_comp : Kleisli.
-Hint Rewrite @eta_star @star_eta : Kleisli'.
-Hint Rewrite <- @star_comp : Kleisli'.
+Hint Rewrite @eta_star @star_eta : Kleisli.
+Hint Rewrite <- @star_comp : Kleisli.
 
-Ltac ktl := autorewrite with Kleisli.
-Ltac ktr := autorewrite with Kleisli'.
-
-Ltac kt := ktl + ktr; congruence + reflexivity.
+Ltac kleisli :=
+  repeat (
+    cbn; intros;
+    autounfold with Kleisli;
+    autorewrite with Kleisli;
+    f_equal; exts; try reflexivity).
 
 Section KleisliTriple_Instances.
 
@@ -33,16 +34,13 @@ Variable inst : KleisliTriple M.
 Definition fmap_Kleisli
   {A B : Type} (f : A -> B) : M A -> M B := star (f .> eta).
 
+Hint Unfold fmap_Kleisli compose : Kleisli.
+
 Instance Functor_Kleisli : Functor M :=
 {
     fmap := @fmap_Kleisli
 }.
-Proof.
-  all: unfold fmap_Kleisli; intros.
-    rewrite id_left. ext x. kt.
-    ext x. unfold compose. ktr. unfold compose.
-    f_equal. ext a. kt.
-Defined.
+Proof. all: kleisli. Defined.
 
 Definition pure_Kleisli {A : Type} : A -> M A := eta.
 
@@ -54,17 +52,16 @@ Definition ap_Kleisli {A B : Type} (mf : M (A -> B)) (ma : M A) : M B :=
   bind_Kleisli ma (fun a =>
     pure_Kleisli (f a))).
 
+Hint Unfold pure_Kleisli bind_Kleisli ap_Kleisli flip : Kleisli.
+
 Instance Applicative_Kleisli : Applicative M :=
 {
     pure := @pure_Kleisli;
     ap := @ap_Kleisli;
 }.
-Proof.
-  all: unfold fmap_Kleisli, ap_Kleisli, bind_Kleisli, pure_Kleisli, flip;
-  cbn; intros; try kt.
-    ktl. ktr. unfold compose. f_equal. ext bc. ktr. f_equal. ext ab.
-      unfold compose. ktr. f_equal. ext a. unfold compose. kt.
-    ktl. f_equal. ext ab. kt.
-Defined.
+Proof. all: kleisli. Defined.
 
 End KleisliTriple_Instances.
+
+Hint Unfold
+  fmap_Kleisli pure_Kleisli bind_Kleisli ap_Kleisli compose flip : Kleisli.
