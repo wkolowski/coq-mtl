@@ -1,34 +1,72 @@
-\documentclass[11pt]{article}
-\usepackage[margin=1in]{geometry}
-\usepackage{amsmath}
+% Opcje klasy 'iithesis' opisane sa w komentarzach w pliku klasy. Za ich pomoca
+% ustawia sie przede wszystkim jezyk i rodzaj (lic/inz/mgr) pracy, oraz czy na
+% drugiej stronie pracy ma byc skladany wzor oswiadczenia o autorskim wykonaniu.
+\documentclass[declaration,inz,english,shortabstract]{iithesis}
 
-%\usepackage{amssymb}
-%\usepackage[T1]{fontenc}
-%\usepackage[utf8]{inputenc}
-%\usepackage{lmodern}
+\usepackage[utf8]{inputenc}
+
+%%%%% DANE DO STRONY TYTULOWEJ
+% Niezaleznie od jezyka pracy wybranego w opcjach klasy, tytul i streszczenie
+% pracy nalezy podac zarowno w jezyku polskim, jak i angielskim.
+% Pamietaj o madrym (zgodnym z logicznym rozbiorem zdania oraz estetyka) recznym
+% zlamaniu wierszy w temacie pracy, zwlaszcza tego w jezyku pracy. Uzyj do tego
+% polecenia \fmlinebreak.
+\englishtitle   {Formally verified programming with monads in Coq}
+\polishtitle    {Formalnie zweryfikowane programowanie z monadami w Coqu}
+\polishabstract {\ldots}
+\englishabstract{We introduce \libname, a Coq library for formally verified general-purpose programming with Haskell-style abstractions: functors, applicatives, monads, monad transformers and class-based monads. We discuss the design choices made and illustrate the working of the library with examples from \cite{JustDoIt}.}
+% w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
+\author         {Zeimer}
+% w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
+% w ponizszym poleceniu mozna zlamac poleceniem \fmlinebreak
+\advisor        {dr Wpisuyashi TODO}
+\date           {czerwiec 2019}                     % Data zlozenia pracy
+% Dane do oswiadczenia o autorskim wykonaniu
+%\transcriptnum {}                     % Numer indeksu
+%\advisorgen    {dr. Jana Kowalskiego} % Nazwisko promotora w dopelniaczu
+%%%%%
+
+%%%%% WLASNE DODATKOWE PAKIETY
+%
+%\usepackage{graphicx,listings,amsmath,amssymb,amsthm,amsfonts,tikz}
+%
+%%%%% WLASNE DEFINICJE I POLECENIA
+%
+%\theoremstyle{definition} \newtheorem{definition}{Definition}[chapter]
+%\theoremstyle{remark} \newtheorem{remark}[definition]{Observation}
+%\theoremstyle{plain} \newtheorem{theorem}[definition]{Theorem}
+%\theoremstyle{plain} \newtheorem{lemma}[definition]{Lemma}
+%\renewcommand \qedsymbol {\ensuremath{\square}}
+
+\newcommand{\libname}{hsCoq}
+
+%%%%%
 
 \begin{document}
 
-\title{BSc thesis}
-\author{Zeimer}
-\date{March 2019}
+%%%%% POCZATEK ZASADNICZEGO TEKSTU PRACY
 
-\begin{titlepage}
+\chapter{Introduction}
+ 
+This is the first section.sss
 
-    \maketitle
+\chapter{About Coq}
 
-    \begin{abstract}
-    This is a simple paragraph at the beginning of the document. A brief introduction to the main subject.
-    \end{abstract}
+wuuut
 
-    \tableofcontents
+\chapter{Computational effects}
 
-\end{titlepage}
+\chapter{Design}
 
-\section{TODO} \label{TODO}
+\chapter{Examples}
+
+\chapter{A case study in proof engineering}
+
+\chapter{Conclusion}
+
+\chapter{TODO}
 
 \begin{enumerate}
-    \item Abstract.
     \item Introduction: functional programming, formally verified programming and proving.
     \item Approaches to computational effects: chaos, ML-style, monads, algebraic effects.
     \item A description of the inner workings of the library: design choices, file structure, implementation.
@@ -49,21 +87,19 @@
     \item Points to make: this is a library for general purpose programming, without some deep goal.
 \end{enumerate}
 
-\section{Introduction} \label{Introduction}
- 
-This is the first section.
+%%%%% BIBLIOGRAFIA
 
-\addcontentsline{toc}{section}{Unnumbered Section}
-\section*{Unnumbered Section}
- 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit.  
-Etiam lobortis facilisissem.  Nullam nec mi et neque pharetra 
-sollicitudin.  Praesent imperdiet mi necante...
- 
-\section{Second Section}
- 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit.  
-Etiam lobortis facilisissem.  Nullam nec mi et neque pharetra 
-sollicitudin.  Praesent imperdiet mi necante...
+\begin{thebibliography}{1}
+
+    \bibitem{JustDoIt}
+      Jeremy Gibbons and Ralf Hinze,
+      \textit{Just do It: Simple Monadic Equational Reasoning},
+      2011
+    
+\end{thebibliography}
+
+%\begin{thebibliography}{1}
+%\bibitem{example} \ldots
+%\end{thebibliography}
 
 \end{document}
