@@ -50,9 +50,31 @@
 
 In chapter 1 we motivate the need for formal verification of software and briefly describe the Coq proof assistant. In chapter 2 we discuss the problem of modeling computational effects in programming languages and compare existing approaches. In chapter 3 we present our library \libname and discuss its design. In chapter 4 we give some example programs and prove their properties. In chapter 5 we describe our approach to proof engineering - the formalized mathematic's equivalent of software engineering.
 
-\chapter{Formal verification of software and the Coq proof assistant}
+\chapter{A short introduction to Coq}
+
+This chapter briefly introduces the Coq proof assistant to those who are not familiar with it. First we present some motivation for formal verification of hardware, software and mathematics and then describe the underlying theory of Coq.
+
+\section{Formal verification of hardware and software}
+
+Since their invention in the 1940s, computers' significane rose at a very fast pace. They were getting applied to an ever expanding range of problems by more and more people, private companies and governments alike. It shouldn't be a considered a surprise then that we became very reliant on them for both small conveniences and large scale projects.
+
+But significane is not the only thing that rose - another one is complexity. Exponentially growing processing speed required the complexity of chip designs to grow at a similar rate. More complex products and services require more complex software architectures and with new business models, like cloud computing, comes even more complexity in the form of virtualization, containerization and so on.
+
+And with complexity comes, of course, the potential for bugs, which may cause a lot damage. A malfunction in software running the stock exchange can mean billions of dollars of losses; in software running a nuclear power plant - deadly radiation for thousands of people and energy shortage for millions more.
+
+Due to these dangers a lot of effort has been put into assuring that hardware and software are correct and with great success, but here and there bugs still have crept in. Some of the most spectecular were, recently:
+
+\begin{itemize}
+    \item Metldown, which ``exploits side effects of out-of-order execution on modern processors to read arbitrary kernel-memory locations including  personal  data  and  passwords.'' \cite{Meltdown}
+    \item Spectre, which uses speculative execution and branch prediction to ``leak the victim's confidential information via a side  channel to  the  adversary.'' \cite{Spectre}
+    \item Heartbleed \cite{Heartbleed}
+\end{itemize}
+
+\section{Formal verification of mathematics}
 
 
+
+\section{The Coq proof assistant}
 
 Coq \cite{Coq} is a piece of software implementing a formal system whose slight variants go under a plethora of names: Calculus of (Inductive) Constructions, (Intensional) Martin-L\"of Type Theory, Intuitionistic Type Theory, Constructive Type Theory, etc.
 
@@ -101,6 +123,16 @@ Thanks to the Curry-Howard correspondence \cite{CH} Coq can be seen as both a fu
         Jeremy Gibbons and Ralf Hinze,
         \textit{Just do It: Simple Monadic Equational Reasoning},
         2011
+
+    \bibitem{Meltdown}
+        Moritz Lipp, Michael Schwarz, Daniel Gruss, Thomas Prescher, Werner Haas, Anders Fogh, Jann Horn, Stefan Mangard, Paul Kocher, Daniel Genkin, Yuval Yarom and Mike Hamburg,
+        \textit{Meltdown: Reading Kernel Memory from User Space},
+        2018
+
+    \bibitem{Spectre}
+        Paul Kocher, Jann Horn, Anders Fogh, Daniel Genkin, Daniel Gruss, Werner Haas, Mike Hamburg, Moritz Lipp, Stefan Mangard, Thomas Prescher, Michael Schwarz and Yuval Yarom,
+        \textit{Spectre Attacks: Exploiting Speculative Execution},
+        2019
     
     \bibitem{Coq}
         Coq Development Team,
