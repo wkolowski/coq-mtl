@@ -67,10 +67,18 @@ Due to these dangers a lot of effort has been put into assuring that hardware an
 \begin{itemize}
     \item Metldown, which ``exploits side effects of out-of-order execution on modern processors to read arbitrary kernel-memory locations including  personal  data  and  passwords.'' \cite{Meltdown}
     \item Spectre, which uses speculative execution and branch prediction to ``leak the victim's confidential information via a side  channel to  the  adversary.'' \cite{Spectre}
-    \item Heartbleed \cite{Heartbleed}
+    \item Heartbleed, which ``allows stealing the information protected, under normal conditions, by the SSL/TLS encryption used to secure the Internet'' \cite{Heartbleed}
 \end{itemize}
 
 \section{Formal verification of mathematics}
+
+Hardware and software are not the only things in need of formal verification - mathematics is also one of them.
+
+The four colour theorem is a problem posed in 1852. It states that any planar map can be coloured with only four colours so that no two regions sharing a boundary are assigned the same colour. It became famous for resisting many proof attempts over more than a century.
+
+The theorem was finally proved by Appel and Haken in 1976. It's importance stems from the proof method - it was the first major theorem proven using a computer program, whose job was to make sure a very large case analysis was exhaustive.
+
+Thomas Tymoczko, a philosopher of mathematics, criticised this proof by labeling it with a term he invented just for this purpose - ``non-surveyable''. He considered a proof to be non-surveyable when its verification cannot be performed by human mathematicians competent in the relevant field.
 
 
 
@@ -134,6 +142,9 @@ Thanks to the Curry-Howard correspondence \cite{CH} Coq can be seen as both a fu
         \textit{Spectre Attacks: Exploiting Speculative Execution},
         2019
     
+    \bibitem{Heartbleed}
+        \url{http://heartbleed.com/}, 2019
+
     \bibitem{Coq}
         Coq Development Team,
         \textit{The Coq Proof Assistant Reference Manual},
