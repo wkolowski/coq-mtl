@@ -70,17 +70,23 @@ Due to these dangers a lot of effort has been put into assuring that hardware an
     \item Heartbleed, which ``allows stealing the information protected, under normal conditions, by the SSL/TLS encryption used to secure the Internet'' \cite{Heartbleed}
 \end{itemize}
 
+DeepSpec \cite{DeepSpec} is a Coq-based project that tries to eliminate both hardware and software bugs and security vulnerabilities by creating a web of formally verified hardware, operating systems, compilers, web servers, cryptography libraries etc.
+
 \section{Formal verification of mathematics}
 
 Hardware and software are not the only things in need of formal verification - mathematics is also one of them.
 
-The four colour theorem is a problem posed in 1852. It states that any planar map can be coloured with only four colours so that no two regions sharing a boundary are assigned the same colour. It became famous for resisting many proof attempts over more than a century.
+The four colour theorem is a problem posed in 1852. It states that any planar map can be coloured with only four colours so that no two regions sharing a boundary are assigned the same colour. It became famous for resisting many proof attempts by many famous mathematicians for more than a century until it was finally proved by Appel and Haken in 1976. Its importance stems from the proof method - it was the first major theorem proven using a computer program, whose job was to make sure a very large case analysis was exhaustive.
 
-The theorem was finally proved by Appel and Haken in 1976. It's importance stems from the proof method - it was the first major theorem proven using a computer program, whose job was to make sure a very large case analysis was exhaustive.
+Thomas Tymoczko, a philosopher of mathematics, criticised this proof by labeling it with a term he invented just for this purpose - ``non-surveyable''. He considered a proof to be non-surveyable when its verification cannot be performed by human mathematicians competent in the relevant field. Appel and Haken's proof certainly did fail the surveyability criterion - the program was written in IBM 370 assembly, a language graph theorists very likely didn't understand.
 
-Thomas Tymoczko, a philosopher of mathematics, criticised this proof by labeling it with a term he invented just for this purpose - ``non-surveyable''. He considered a proof to be non-surveyable when its verification cannot be performed by human mathematicians competent in the relevant field.
+This was the perfect theorem to let formal proofs and formally verified programs shine by dispeling Tymoczko's and other mathematician's doubts. This is what indeed happened in 2005, when Georges Gonthier presented a proof of the theorem formalized in Coq \cite{FourColour1} \cite{FourColour2}.
 
+But big theorems with difficult proofs are not the only call for formalized mathematics. Another one is the mere fallibility of humans, especially their limited memory and reasoning skills and the tendency to follow authority. As unmathematical as it sounds, these are the main reasons cited by Vladimir Voevodsky, a field medalist mathematician turned a fan of formal proofs, in one of his talks \cite{UnivalentFoundations}.
 
+The fields he refers to are homotopy theory, higher category theory and motivic cohomology - all of them containing many layers of abstraction, tons of concepts and definitions, and rather shaky foundations.
+
+As an example, noticing an error in one of his papers took 7 years and repairing the mistake another 6 years. In another, more extreme case, after publishing a paper in 1989, an alleged counterexample was found in 1998 by anoter expert in the field, but it was too difficult for them to agree on whether it really was a counterexample and Voevodsky only realized he was wrong in 2013. All of this put him in search of formalized foundations of mathematics, and he chose Coq to purse them. 
 
 \section{The Coq proof assistant}
 
@@ -128,22 +134,43 @@ Thanks to the Curry-Howard correspondence \cite{CH} Coq can be seen as both a fu
 \begin{thebibliography}{1}
 
     \bibitem{JustDoIt}
-        Jeremy Gibbons and Ralf Hinze,
-        \textit{Just do It: Simple Monadic Equational Reasoning},
-        2011
+        Jeremy Gibbons and Ralf Hinze, \\
+        \textit{Just do It: Simple Monadic Equational Reasoning}, 2011 \\
+        \url{http://www.cs.ox.ac.uk/jeremy.gibbons/publications/mr.pdf}
 
     \bibitem{Meltdown}
-        Moritz Lipp, Michael Schwarz, Daniel Gruss, Thomas Prescher, Werner Haas, Anders Fogh, Jann Horn, Stefan Mangard, Paul Kocher, Daniel Genkin, Yuval Yarom and Mike Hamburg,
-        \textit{Meltdown: Reading Kernel Memory from User Space},
-        2018
+        Moritz Lipp, Michael Schwarz, Daniel Gruss, Thomas Prescher, Werner Haas, Anders Fogh, Jann Horn, Stefan Mangard, Paul Kocher, Daniel Genkin, Yuval Yarom and Mike Hamburg, \\
+        \textit{Meltdown: Reading Kernel Memory from User Space}, 2018 \\
+        \url{https://meltdownattack.com/meltdown.pdf}
 
     \bibitem{Spectre}
-        Paul Kocher, Jann Horn, Anders Fogh, Daniel Genkin, Daniel Gruss, Werner Haas, Mike Hamburg, Moritz Lipp, Stefan Mangard, Thomas Prescher, Michael Schwarz and Yuval Yarom,
-        \textit{Spectre Attacks: Exploiting Speculative Execution},
-        2019
+        Paul Kocher, Jann Horn, Anders Fogh, Daniel Genkin, Daniel Gruss, Werner Haas, Mike Hamburg, Moritz Lipp, Stefan Mangard, Thomas Prescher, Michael Schwarz and Yuval Yarom, \\
+        \textit{Spectre Attacks: Exploiting Speculative Execution}, 2019 \\
+        \url{https://spectreattack.com/spectre.pdf}
     
     \bibitem{Heartbleed}
-        \url{http://heartbleed.com/}, 2019
+        \url{www.heartbleed.com},
+        2019
+
+    \bibitem{DeepSpec}
+        \url{www.deepspec.org},
+        2019
+
+    \bibitem{FourColour1}
+        Georges Gonthier,
+        \textit{A computer-checked proof of the Four Colour Theorem}, 2005 \\
+        \url{https://www.cl.cam.ac.uk/~lp15/Pages/4colproof.pdf}
+    
+    \bibitem{FourColour2}
+        Georges Gonthier,
+        \textit{Formal Proof - The Four-Color Theorem}, 2008, \\
+        \url{http://www.ams.org/notices/200811/tx081101382p.pdf}
+
+    \bibitem{UnivalentFoundations}
+        Vladimir Voevodsky,
+        \textit{UNIVALENT FOUNDATIONS},
+        slides for a talk given at IAS on 26 March 2014, \\
+        \url{http://www.math.ias.edu/~vladimir/Site3/Univalent_Foundations_files/2014_IAS.pdf}
 
     \bibitem{Coq}
         Coq Development Team,
