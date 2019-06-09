@@ -13,8 +13,8 @@
 % polecenia \fmlinebreak.
 \englishtitle   {Formally verified programming with monads in Coq}
 \polishtitle    {Formalnie zweryfikowane programowanie z monadami w Coqu}
-\polishabstract {\ldots}
-\englishabstract{We introduce \libname, a Coq library for formally verified general-purpose programming with Haskell-style abstractions: functors, applicative functors, monads, monad transformers and typeclass-based effects. We discuss the design choices we made and illustrate the working of the library with examples taken from \cite{JustDoIt}.}
+\polishabstract {Prezentujemy \libname, Coqową bibliotekę do formalnie zweryfikowanego programowania z abstrakcjami w stylu Haskella: funktorami, funktorami aplikatywnymi, monadami, transformatorami monad oraz efektami opartymi o klasy typów. Omawiamy nasze decyzje projektowe i przedstawiamy działanie biblioteki na przykładach z \cite{JustDoIt}.}
+\englishabstract{We introduce \libname, a Coq library for formally verified programming with Haskell-style abstractions: functors, applicative functors, monads, monad transformers and typeclass-based effects. We discuss the design choices we made and illustrate the working of the library by formalizing examples taken from \cite{JustDoIt}.}
 % w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
 \author         {Zeimer}
 % w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
@@ -38,7 +38,9 @@
 %\theoremstyle{plain} \newtheorem{lemma}[definition]{Lemma}
 %\renewcommand \qedsymbol {\ensuremath{\square}}
 
-\newcommand{\libname}{hsCoq}
+\newcommand{\libname}{\textit{hsCoq}}
+
+\newcommand{\m}[1]{\texttt{#1}}
 
 %%%%%
 
@@ -48,11 +50,17 @@
 
 \chapter{Introduction}
 
-In chapter 1 we motivate the need for formal verification of software and briefly describe the Coq proof assistant. In chapter 2 we discuss the problem of modeling computational effects in programming languages and compare existing approaches. In chapter 3 we present our library \libname and discuss its design. In chapter 4 we give some example programs and prove their properties. In chapter 5 we describe our approach to proof engineering - the formalized mathematic's equivalent of software engineering.
+This chapter gives some motivations for why formal verification of hardware, software and mathematics is useful and then briefly introduces the Coq proof assistant - a tool for such verification - to those who are not familiar with it.
 
-\chapter{A short introduction to Coq}
+The rest of the thesis is structured as follows:
 
-This chapter briefly introduces the Coq proof assistant to those who are not familiar with it. First we present some motivation for formal verification of hardware, software and mathematics and then describe the underlying theory of Coq.
+\begin{itemize}
+    \item In chapter 2 we discuss the problem of modeling computational effects in programming languages and compare existing approaches.
+    \item In chapter 3 we present our library \libname and discuss its design.
+    \item In chapter 4 we give some example effectful programs and prove their properties.
+    \item In chapter 5 we describe our approach to proof engineering (the formalized mathematic's equivalent of software engineering) in our library.
+    \item In chapter 6 we conclude and give some possible directions for further work.
+\end{itemize}
 
 \section{Formal verification of hardware and software}
 
@@ -90,10 +98,25 @@ As an example, noticing an error in one of his papers took 7 years and repairing
 
 \section{The Coq proof assistant}
 
-Coq \cite{Coq} is a piece of software implementing a formal system whose slight variants go under a plethora of names: Calculus of (Inductive) Constructions, (Intensional) Martin-L\"of Type Theory, Intuitionistic Type Theory, Constructive Type Theory, etc.
+Coq \cite{Coq} is a proof assistant that was started in the late 1980's in France and still under active development. It consists of three languages:
 
-Thanks to the Curry-Howard correspondence \cite{CH} Coq can be seen as both a functional programming language and a proof assistant.
+\begin{itemize}
+    \item Gallina, the term language, implements a formal system whose slight variants go under a plethora of names: Calculus of (Inductive) Constructions, (Intensional) Martin-L\"of Type Theory, Intuitionistic Type Theory, Constructive Type Theory, etc. We can use it to express specifications, programs, theorems and proofs.
+    \item Vernacular, the command language, is a language of commands, which allow things like looking up useful theorems in the environment or creating modules.
+    \item Ltac, the tactic language, is a language which facilitates writing proofs - these can in principle be written using the term language, but it's unwieldy even for simple proofs.
+\end{itemize}
 
+The basic objects of our interest in Coq (and in any kind of the aforementioned formal systems) are types. Their role is to classify terms - for example, $\m{21} + \m{21}$ is a term of type \m{nat}, written $\m{21} + \m{21} : \m{nat}$. Types are syntactical entities, which means that the judgement $\m{x} : \m{A}$ can always be checked algorithmically.
+
+Thanks to the the Curry-Howard correspondence \cite{CurryHoward}, types can seen both as specifications of programs and as statements of theorems. All programming and proving may be then conceptualized as manipulating a few kinds of rules:
+
+\begin{itemize}
+    \item Formation rules tell us what types are there.
+    \item Introduction rules tell us how to construct inhabitants of a given type.
+    \item Elimination rules tell us how to use an inhabitant of some type to construct inhabitants of other types.
+    \item Computation rules tell us how an elimination rule acts on an introduction rule - computation happen when we first build something and then take it apart.
+    \item Uniqueness rules tell us how an introduction rule acts on an elimination rule - if we first take something apart and then rebuild it, we should get the same thing we initially had.
+\end{itemize}
 
 
 \chapter{Computational effects}
@@ -105,29 +128,6 @@ Thanks to the Curry-Howard correspondence \cite{CH} Coq can be seen as both a fu
 \chapter{A case study in proof engineering}
 
 \chapter{Conclusion}
-
-\chapter{TODO}
-
-\begin{enumerate}
-    \item Introduction: functional programming, formally verified programming and proving.
-    \item Approaches to computational effects: chaos, ML-style, monads, algebraic effects.
-    \item A description of the inner workings of the library: design choices, file structure, implementation.
-    \item Examples: some from Just Do It, maybe some custom ones.
-    \item Safety: some theorems and proofs.
-    \item Theoretical comparison of the ease of use with Haskell and Idris.
-    \item Practical comparison with MERC.
-    \item Cite some literature: some Coq papers, Moggi, Just Do It, Experimenting with Monadic Equational Reasoning in Coq
-    \item Technical matters:
-    \begin{enumerate}
-        \item Mention where's the implementation and put it to Coq's repository of user libraries.
-        \item Installation guide.
-        \item Tools: why no ssreflect?
-        \item Documentation (it's in the source code).
-    \end{enumerate}
-    \item More: a case study in proof engineering - how do the tactics hs, monad and (maybe) the one for reflective functor simplifcation work?
-    \item Deficiencies, conclusion and further work.
-    \item Points to make: this is a library for general purpose programming, without some deep goal.
-\end{enumerate}
 
 %%%%% BIBLIOGRAFIA
 
@@ -149,11 +149,11 @@ Thanks to the Curry-Howard correspondence \cite{CH} Coq can be seen as both a fu
         \url{https://spectreattack.com/spectre.pdf}
     
     \bibitem{Heartbleed}
-        \url{www.heartbleed.com},
+        \url{https://heartbleed.com},
         2019
 
     \bibitem{DeepSpec}
-        \url{www.deepspec.org},
+        \url{https://deepspec.org},
         2019
 
     \bibitem{FourColour1}
@@ -173,9 +173,11 @@ Thanks to the Curry-Howard correspondence \cite{CH} Coq can be seen as both a fu
         \url{http://www.math.ias.edu/~vladimir/Site3/Univalent_Foundations_files/2014_IAS.pdf}
 
     \bibitem{Coq}
-        Coq Development Team,
-        \textit{The Coq Proof Assistant Reference Manual},
-        2019
+        \url{https://coq.inria.fr/}
+
+    \bibitem{CurryHoward}
+        Morten Heine Sørensen, Paweł Urzyczyn, \\
+        \textit{Lectures on the Curry-Howard Isomorphism}, 2006
 
 \end{thebibliography}
 
