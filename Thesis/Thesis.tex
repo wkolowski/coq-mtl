@@ -29,6 +29,8 @@
 %%%%% WLASNE DODATKOWE PAKIETY
 %
 %\usepackage{graphicx,listings,amsmath,amssymb,amsthm,amsfonts,tikz}
+%\usepackage{minted}
+\usepackage{listings, coq}
 %
 %%%%% WLASNE DEFINICJE I POLECENIA
 %
@@ -41,6 +43,9 @@
 \newcommand{\libname}{\textit{hsCoq}}
 
 \newcommand{\m}[1]{\texttt{#1}}
+\newcommand{\Prop}{\texttt{Prop}}
+\newcommand{\Type}{\texttt{Type}}
+\newcommand{\defn}{:\equiv}
 
 %%%%%
 
@@ -114,9 +119,20 @@ Thanks to the the Curry-Howard correspondence \cite{CurryHoward}, types can seen
     \item Formation rules tell us what types are there.
     \item Introduction rules tell us how to construct inhabitants of a given type.
     \item Elimination rules tell us how to use an inhabitant of some type to construct inhabitants of other types.
-    \item Computation rules tell us how an elimination rule acts on an introduction rule - computation happen when we first build something and then take it apart.
+    \item Computation rules tell us how an elimination rule acts on an introduction rule - computation happens when we first build something and then take it apart.
     \item Uniqueness rules tell us how an introduction rule acts on an elimination rule - if we first take something apart and then rebuild it, we should get the same thing we initially had.
 \end{itemize}
+
+\begin{lstlisting}[language=html]
+    <html>
+        <head>
+            <title>Hello</title>
+        </head>
+        <body>Hello</body>
+    </html>
+    \end{lstlisting}
+    
+
 
 
 \chapter{Computational effects}
