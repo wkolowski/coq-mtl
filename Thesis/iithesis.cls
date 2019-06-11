@@ -203,7 +203,9 @@
 
 \RequirePackage[pdftex,unicode=true]{hyperref}
 
-\AtBeginDocument{
+% Previously there was \AtBeingDocument{
+\RequirePackage{etoolbox}
+\AfterEndPreamble{
   \if@pol{\selectlanguage{polish}\old@title{\bfseries\@polishtitle\mdseries}}
          {\selectlanguage{english}\old@title{\bfseries\@englishtitle\mdseries}}
   \let\old@nd\and

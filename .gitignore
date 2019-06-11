@@ -16,3 +16,5 @@ makefile
 *.out
 *.toc
 
+.vscode
+_minted*

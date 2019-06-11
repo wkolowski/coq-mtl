@@ -30,7 +30,7 @@
 %
 %\usepackage{graphicx,listings,amsmath,amssymb,amsthm,amsfonts,tikz}
 %\usepackage{minted}
-\usepackage{listings, coq}
+\usepackage{minted}
 %
 %%%%% WLASNE DEFINICJE I POLECENIA
 %
@@ -42,11 +42,12 @@
 
 \newcommand{\libname}{\textit{hsCoq}}
 
+\newcommand{\defn}{:\equiv}
 \newcommand{\m}[1]{\texttt{#1}}
 \newcommand{\Prop}{\texttt{Prop}}
 \newcommand{\Type}{\texttt{Type}}
-\newcommand{\defn}{:\equiv}
-
+\newcommand{\nat}{\texttt{nat}}
+\newcommand{\Tree}{\texttt{Tree}}
 %%%%%
 
 \begin{document}
@@ -55,7 +56,7 @@
 
 \chapter{Introduction}
 
-This chapter gives some motivations for why formal verification of hardware, software and mathematics is useful and then briefly introduces the Coq proof assistant - a tool for such verification - to those who are not familiar with it.
+This chapter gives some motivations for why formal verification of hardware, software and mathematics is useful and then briefly introduces the Coq proof assistant -- a tool for such verification -- to those who are not familiar with it.
 
 The rest of the thesis is structured as follows:
 
@@ -71,9 +72,9 @@ The rest of the thesis is structured as follows:
 
 Since their invention in the 1940s, computers' significane rose at a very fast pace. They were getting applied to an ever expanding range of problems by more and more people, private companies and governments alike. It shouldn't be a considered a surprise then that we became very reliant on them for both small conveniences and large scale projects.
 
-But significane is not the only thing that rose - another one is complexity. Exponentially growing processing speed required the complexity of chip designs to grow at a similar rate. More complex products and services require more complex software architectures and with new business models, like cloud computing, comes even more complexity in the form of virtualization, containerization and so on.
+But significane is not the only thing that rose -- another one is complexity. Exponentially growing processing speed required the complexity of chip designs to grow at a similar rate. More complex products and services require more complex software architectures and with new business models, like cloud computing, comes even more complexity in the form of virtualization, containerization and so on.
 
-And with complexity comes, of course, the potential for bugs, which may cause a lot damage. A malfunction in software running the stock exchange can mean billions of dollars of losses; in software running a nuclear power plant - deadly radiation for thousands of people and energy shortage for millions more.
+And with complexity comes, of course, the potential for bugs, which may cause a lot damage. A malfunction in software running the stock exchange can mean billions of dollars of losses; in software running a nuclear power plant -- deadly radiation for thousands of people and energy shortage for millions more.
 
 Due to these dangers a lot of effort has been put into assuring that hardware and software are correct and with great success, but here and there bugs still have crept in. Some of the most spectecular were, recently:
 
@@ -87,17 +88,17 @@ DeepSpec \cite{DeepSpec} is a Coq-based project that tries to eliminate both har
 
 \section{Formal verification of mathematics}
 
-Hardware and software are not the only things in need of formal verification - mathematics is also one of them.
+Hardware and software are not the only things in need of formal verification -- mathematics is also one of them.
 
-The four colour theorem is a problem posed in 1852. It states that any planar map can be coloured with only four colours so that no two regions sharing a boundary are assigned the same colour. It became famous for resisting many proof attempts by many famous mathematicians for more than a century until it was finally proved by Appel and Haken in 1976. Its importance stems from the proof method - it was the first major theorem proven using a computer program, whose job was to make sure a very large case analysis was exhaustive.
+The four colour theorem is a problem posed in 1852. It states that any planar map can be coloured with only four colours so that no two regions sharing a boundary are assigned the same colour. It became famous for resisting many proof attempts by many famous mathematicians for more than a century until it was finally proved by Appel and Haken in 1976. Its importance stems from the proof method -- it was the first major theorem proven using a computer program, whose job was to make sure a very large case analysis was exhaustive.
 
-Thomas Tymoczko, a philosopher of mathematics, criticised this proof by labeling it with a term he invented just for this purpose - ``non-surveyable''. He considered a proof to be non-surveyable when its verification cannot be performed by human mathematicians competent in the relevant field. Appel and Haken's proof certainly did fail the surveyability criterion - the program was written in IBM 370 assembly, a language graph theorists very likely didn't understand.
+Thomas Tymoczko, a philosopher of mathematics, criticised this proof by labeling it with a term he invented just for this purpose -- ``non-surveyable''. He considered a proof to be non-surveyable when its verification cannot be performed by human mathematicians competent in the relevant field. Appel and Haken's proof certainly did fail the surveyability criterion -- the program was written in IBM 370 assembly, a language graph theorists very likely didn't understand.
 
 This was the perfect theorem to let formal proofs and formally verified programs shine by dispeling Tymoczko's and other mathematician's doubts. This is what indeed happened in 2005, when Georges Gonthier presented a proof of the theorem formalized in Coq \cite{FourColour1} \cite{FourColour2}.
 
 But big theorems with difficult proofs are not the only call for formalized mathematics. Another one is the mere fallibility of humans, especially their limited memory and reasoning skills and the tendency to follow authority. As unmathematical as it sounds, these are the main reasons cited by Vladimir Voevodsky, a field medalist mathematician turned a fan of formal proofs, in one of his talks \cite{UnivalentFoundations}.
 
-The fields he refers to are homotopy theory, higher category theory and motivic cohomology - all of them containing many layers of abstraction, tons of concepts and definitions, and rather shaky foundations.
+The fields he refers to are homotopy theory, higher category theory and motivic cohomology -- all of them containing many layers of abstraction, tons of concepts and definitions, and rather shaky foundations.
 
 As an example, noticing an error in one of his papers took 7 years and repairing the mistake another 6 years. In another, more extreme case, after publishing a paper in 1989, an alleged counterexample was found in 1998 by anoter expert in the field, but it was too difficult for them to agree on whether it really was a counterexample and Voevodsky only realized he was wrong in 2013. All of this put him in search of formalized foundations of mathematics, and he chose Coq to purse them. 
 
@@ -108,10 +109,10 @@ Coq \cite{Coq} is a proof assistant that was started in the late 1980's in Franc
 \begin{itemize}
     \item Gallina, the term language, implements a formal system whose slight variants go under a plethora of names: Calculus of (Inductive) Constructions, (Intensional) Martin-L\"of Type Theory, Intuitionistic Type Theory, Constructive Type Theory, etc. We can use it to express specifications, programs, theorems and proofs.
     \item Vernacular, the command language, is a language of commands, which allow things like looking up useful theorems in the environment or creating modules.
-    \item Ltac, the tactic language, is a language which facilitates writing proofs - these can in principle be written using the term language, but it's unwieldy even for simple proofs.
+    \item Ltac, the tactic language, is a language which facilitates writing proofs -- these can in principle be written using the term language, but it's unwieldy even for simple proofs.
 \end{itemize}
 
-The basic objects of our interest in Coq (and in any kind of the aforementioned formal systems) are types. Their role is to classify terms - for example, $\m{21} + \m{21}$ is a term of type \m{nat}, written $\m{21} + \m{21} : \m{nat}$. Types are syntactical entities, which means that the judgement $\m{x} : \m{A}$ can always be checked algorithmically.
+The basic objects of our interest in Coq (and in any kind of the aforementioned formal systems) are types. Their role is to classify terms -- for example, $\m{21} + \m{21}$ is a term of type \m{nat}, written $\m{21} + \m{21} : \m{nat}$. Types are syntactical entities, which means that the judgement $\m{x} : \m{A}$ can always be checked algorithmically.
 
 Thanks to the the Curry-Howard correspondence \cite{CurryHoward}, types can seen both as specifications of programs and as statements of theorems. All programming and proving may be then conceptualized as manipulating a few kinds of rules:
 
@@ -119,21 +120,34 @@ Thanks to the the Curry-Howard correspondence \cite{CurryHoward}, types can seen
     \item Formation rules tell us what types are there.
     \item Introduction rules tell us how to construct inhabitants of a given type.
     \item Elimination rules tell us how to use an inhabitant of some type to construct inhabitants of other types.
-    \item Computation rules tell us how an elimination rule acts on an introduction rule - computation happens when we first build something and then take it apart.
-    \item Uniqueness rules tell us how an introduction rule acts on an elimination rule - if we first take something apart and then rebuild it, we should get the same thing we initially had.
+    \item Computation rules tell us how an elimination rule acts on an introduction rule -- computation happens when we first build something and then take it apart.
+    \item Uniqueness rules tell us how an introduction rule acts on an elimination rule -- if we first take something apart and then rebuild it, we should get the same thing we initially had.
 \end{itemize}
 
-\begin{lstlisting}[language=html]
-    <html>
-        <head>
-            <title>Hello</title>
-        </head>
-        <body>Hello</body>
-    </html>
-    \end{lstlisting}
-    
+How does this play out in practice? Let's take a look at an example development, which illustrates the basic workings of Coq. At this point, we strongly encourage the unfamiliar reader to install CoqIDE (a dedicated IDE for Coq, available from \cite{Coq}) and run this snippet (which can be found in the thesis sources in the directory \m{snippets/}) in interactive mode -- this experience will be better than any explanation.
 
+\definecolor{CoqIDE}{RGB}{255,248,220}
 
+\begin{inputminted}
+[
+    frame=lines,
+    bgcolor=CoqIDE,
+    linenos
+]
+{Coq}{snippets/snippet1.v}
+\end{inputminted}
+
+A Coq file consists of a series of commands, which define types and terms, import and export modules, state or look up theorems etc. In this file we want to implement a function that labels the leaves of a tree with natural numbers starting from $0$.
+
+For this, we will need the type $\m{nat}$, which is provided by the standard library. We can print it's definition using the command $\m{Print}$. What we get is an inductive definition of a type with two constructors, $\m{O}$ and $\m{S}$. $\m{O}$ is supposed to represent $0$ and $\m{S}$ is supposed to represent the successor operation, so that $\m{S}\ \m{O}$ represents $1$, $\m{S}\ (\m{S}\ \m{O})$ represents $2$ and so on.
+
+We will also need a type $\m{Tree}$ that represents trees. The definition will be inductive, just as for natural numbers, but this time is has a parameter $A : \m{Type}$ that tells us the type of elements that can be stored in the trees. This can be seen as defining infinitely many types at once -- one for each choice of $A$. There are two constructors: $\m{Leaf}$, which represents a tree with one element, and $\m{Node}$, which represents a tree with two subtrees. Thus our trees are always nonempty and they contain elements only in their leaves.
+
+The next two commands, \m{Arguments}, control the use of implicit arguments. Normally, we would have to write $\m{Leaf}\ \nat\ 42$ for the tree containing only the value $42$, but this is redundant, since given a term like $\m{42}$, we acan infer its type to be $\nat$. We can thus write this as $\m{Leaf}\ \_\ \m{42}$, but this is still redundant. Thanks to the first of these two commands, we can write simply $\m{Leaf}\ \m{42}$.
+
+The function \m{label} is the clou of the whole development. It's type says that given a type \m{A} (which we don't need to give explicitly, since it's an implicit argument), a tree \m{t} and a number \m{n} which acts as the counter, it returns a pair consisting of a natural number (the new counter) and a tree contaning elements of type $\m{A} * \nat$.
+
+The definition is recursive (marked by the keyword \m{Fixpoint}).
 
 \chapter{Computational effects}
 
@@ -179,7 +193,7 @@ Thanks to the the Curry-Howard correspondence \cite{CurryHoward}, types can seen
     
     \bibitem{FourColour2}
         Georges Gonthier,
-        \textit{Formal Proof - The Four-Color Theorem}, 2008, \\
+        \textit{Formal Proof -- The Four-Color Theorem}, 2008, \\
         \url{http://www.ams.org/notices/200811/tx081101382p.pdf}
 
     \bibitem{UnivalentFoundations}
