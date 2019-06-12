@@ -145,9 +145,35 @@ We will also need a type $\m{Tree}$ that represents trees. The definition will b
 
 The next two commands, \m{Arguments}, control the use of implicit arguments. Normally, we would have to write $\m{Leaf}\ \nat\ 42$ for the tree containing only the value $42$, but this is redundant, since given a term like $\m{42}$, we acan infer its type to be $\nat$. We can thus write this as $\m{Leaf}\ \_\ \m{42}$, but this is still redundant. Thanks to the first of these two commands, we can write simply $\m{Leaf}\ \m{42}$.
 
-The function \m{label} is the clou of the whole development. It's type says that given a type \m{A} (which we don't need to give explicitly, since it's an implicit argument), a tree \m{t} and a number \m{n} which acts as the counter, it returns a pair consisting of a natural number (the new counter) and a tree contaning elements of type $\m{A} * \nat$.
+The function \m{label} is the clou of the whole development. It's type says that given a type \m{A} (which we won't need to give explicitly, since it's an implicit argument), a tree \m{t} and a number \m{n} which acts as the counter, it returns a pair consisting of a natural number (the new counter) and a tree contaning elements of type $\m{A} * \nat$.
 
-The definition is recursive (marked by the keyword \m{Fixpoint}).
+The definition is recursive (marked by the keyword \m{Fixpoint}). When we hit a \m{Leaf}, we return the current counter and label the leaf with the counter's value. When we encounter a \m{Node}, we label the left subtree using the current counter, then label the right subtree with the new counter incremented by one, and then return the new counter and the two labeled subtrees joined by the constructor \m{Node}.
+
+We can use this auxiliary function to define \m{lbl}, the function we wanted from the beginning. The command \m{Compute} normalizes a given term. In our case, we run \m{lbl} on an example tree to see that the result is as we expected -- the leaves are now labeled with natural numbers, starting at zero, from left to right. But how do we prove that what we have done really is correct?
+
+The basic approach is to invent some properties we would like our constructions to satisfy. If they do satisfy all of these desired properties, we say they are correct.
+
+In our case, one simple property is that after labeling a tree \m{t} the counter increases by the size of the tree minus one. To state this property formally, we first need to define a function that computes the size of a tree. We do this by recursion: a \m{Leaf} has size $1$ and the size of a \m{Node} is the sum of sizes of its subtrees.
+
+The command \m{Require Import} imports a module. To prove our theorem, we will need some theorems living in a module called \m{Arith}.
+
+Now we are ready to state our theorem. It reads: for any type \m{A}, any \m{t} which is a tree of elements of type \m{A}, any two natural numbers \m{n} and \m{n'} and any \m{t'} which is a tree of elements of type \m{A * nat}, if calling label on \m{t} and \m{n} results in the pair \m{(n', t')}, then the successor of \m{n'} is equal to \m{n + size\ t}.
+
+There are some points to be noticed. First, we quantify over types, which means that our logic is not first-order, but higher-order. Second, we need to quantify over \m{t'}, even though the tree resulting from the call to label is on no interest to us. Third, we avoid using subtraction or the predecessor function and instead express our theorem using successor. This is a technicality -- our theorem will be a bit easier to prove.
+
+We now enter the proof mode, in which we can use tactics to prove our theorem. The command \m{Proof} is useless, because it does nothing, but it looks nice at the beginning of a proof.
+
+We proceed by induction on \m{t}. The clause \m{as [| l IHl r IHr]} allows us to name variables and induction hypotheses. This may seem insignificant, but is actually an important aspect of proof engineering -- to make our proofs readable and resilient to change, it's a good practice to name our things manually (as opposed to using automatically generated names).
+
+To boost the unfamiliar reader's curiosity and encourage him to see the proof in CoqIDE, we will not go over it in detail. It suffices to say that the in first case the result holds almost by computation, but we need to use the commutativity of addition and in the second case we basically just use our two inductive hypotheses and the associativity of addition.
+
+This concludes our introduction to the Coq proof assistant. From now on we will assume that the reader is familiar with it. If that's not the case, recently a great many books have been written which make a great introduction:
+
+\begin{itemize}
+    \item Software Foundations \cite{SoftwareFoundations} is a four volume book by many authors. The first volume treats the basics of Coq and the third one is about formally proving correctness of algorithms in Coq. The second and fourth volumes are less relevant, as they are about formalizing programming languages and randomized testing, respectively.
+    \item Coq'Art \cite{CoqArt} is a comprehensive but a little dated (2004) book that covers way more material than Software Foundations, including coinduction, proof by reflection, case studies and so on.
+    \item Certified Programming with Dependent Types \cite{CPDT} is an advanced book that focuses on using dependent types and proof engineering, but also covers topics like axioms, reasoning about equality proofs and general recursion.
+\end{itemize}
 
 \chapter{Computational effects}
 
@@ -208,7 +234,21 @@ The definition is recursive (marked by the keyword \m{Fixpoint}).
     \bibitem{CurryHoward}
         Morten Heine Sørensen, Paweł Urzyczyn, \\
         \textit{Lectures on the Curry-Howard Isomorphism}, 2006
+    
+    \bibitem{SoftwareFoundations}
+        Benjamin C. Pierce, Andrew W. Appel and many others,
+        \textit{Software Foundations}, 2019, \\
+        \url{https://softwarefoundations.cis.upenn.edu/}
+    
+    \bibitem{CoqArt}
+        Yves Bertot and Pierre Castéran,
+        \textit{Interactive Theorem Proving and Program Development \\ Coq'Art: The Calculus of Inductive Constructions}, 2004,
+        \url{https://www.labri.fr/perso/casteran/CoqArt/}
 
+    \bibitem{CPDT}
+        Adam Chlipala,
+        \textit{Certified Programming with Dependent Types}, 2019,
+        \url{http://adam.chlipala.net/cpdt/}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}

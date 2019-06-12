@@ -37,16 +37,15 @@ end.
 
 Require Import Arith.
 
-Lemma label_size :
+Theorem label_size :
   forall (A : Type) (t : Tree A) (n n' : nat) (t' : Tree (A * nat)),
     label t n = (n', t') -> S n' = n + size t.
 Proof.
-  induction t as [| l IHl r IHr].
-    cbn. intros. inversion H. rewrite <- plus_comm. cbn. reflexivity.
+  induction t as [| l IHl r IHr]; intros.
+    rewrite <- plus_comm. cbn. inversion H. reflexivity.
     cbn. intros.
       case_eq (label l n); intros m1 t1 H1.
       case_eq (label r (S m1)); intros m2 t2 H2.
-      specialize (IHl _ _ _ H1). specialize (IHr _ _ _ H2).
       rewrite H1, H2 in H. inversion H; subst.
-      rewrite IHr, IHl. rewrite plus_assoc. reflexivity.
+      rewrite (IHr _ _ _ H2), (IHl _ _ _ H1), plus_assoc. reflexivity.
 Qed.
