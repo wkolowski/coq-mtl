@@ -19,7 +19,7 @@
 \author         {Zeimer}
 % w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
 % w ponizszym poleceniu mozna zlamac poleceniem \fmlinebreak
-\advisor        {dr Wpisuyashi TODO}
+\advisor        {prof dr rehabilitowany Wpisuyashi TODO}
 \date           {czerwiec 2019}                     % Data zlozenia pracy
 % Dane do oswiadczenia o autorskim wykonaniu
 %\transcriptnum {}                     % Numer indeksu
@@ -167,7 +167,7 @@ We proceed by induction on \m{t}. The clause \m{as [| l IHl r IHr]} allows us to
 
 To boost the unfamiliar reader's curiosity and encourage him to see the proof in CoqIDE, we will not go over it in detail. It suffices to say that the in first case the result holds almost by computation, but we need to use the commutativity of addition and in the second case we basically just use our two inductive hypotheses and the associativity of addition.
 
-This concludes our introduction to the Coq proof assistant. From now on we will assume that the reader is familiar with it. If that's not the case, recently a great many books have been written which make a great introduction:
+This concludes our introduction to the Coq proof assistant. From now on we will assume that the reader is familiar with it. If that's not the case, there are a great many of books which make a great introduction:
 
 \begin{itemize}
     \item Software Foundations \cite{SoftwareFoundations} is a four volume book by many authors. The first volume treats the basics of Coq and the third one is about formally proving correctness of algorithms in Coq. The second and fourth volumes are less relevant, as they are about formalizing programming languages and randomized testing, respectively.
@@ -176,6 +176,37 @@ This concludes our introduction to the Coq proof assistant. From now on we will 
 \end{itemize}
 
 \chapter{Computational effects}
+
+Although \libname\ is a rather general-purpose library, it also tackles the problem of how to best express (and program with) effects. Because it is a very hot topic recently, let's take a deeper look at it.
+
+A \textbf{side effect} is some kind of communication with the outside world, like:
+
+\begin{itemize}
+    \item Reading external configuration.
+    \item Logging to a file.
+    \item Randomness, because it requires a seed.
+    \item Any kind of IO, like connecting to the Internet or querying a database.
+    \item Memory management, like allocation and freeing.
+    \item Concurrency and threads, because they need some kind of synchronization, either through shared memory or message passing.
+\end{itemize}
+
+An \textbf{effect} (sometimes also called \textbf{computational effect}) is either a side effect or use of some control mechanism, like:
+
+\begin{itemize}
+    \item Generators and coroutines.
+    \item Nondeterminism: possibly return multiple results.
+    \item Partiality: possibly return \m{null} or some similar value representing the lack of result.
+    \item Exceptions: the computation failed and throws an exception, which may or may not be handled by some other computation.
+    \item Goto: pass control to some other computation.
+    \item Continuations: the most general control mechanism, which allows to express the aforementioned ones.
+    \item Sometimes nontermination and even termination are also considered to be effects, but that's a topic for philosophical debate, beyond the scope of this thesis.
+\end{itemize}
+
+It should be quite obvious that effects are useful. They are in fact the main reason for running most computer programs and without them running even the simplest number-crunching program would be pointless, since it couldn't tell us the result. We thus want to be able to express effects. But we also want to be able to reason about our effectful programs, which in most programming languages is notoriously difficult.
+
+To better understand the matter, we can classify all things in a programming language as being either values or computations. A \textbf{value} necessarily has no effects whereas a \textbf{computation} can have them. Philosophically, we say that a value is but a computation does. We can then say that a language is \textbf{pure} when it explicitly separates values from computations and \textbf{impure} when it does not. When interpreted as a yes-no property, most languages are impure, so it is better to see the concept of purity as a continuum, where some languages may be more pure than others.
+
+
 
 \chapter{Design}
 
