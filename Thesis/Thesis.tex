@@ -175,7 +175,9 @@ This concludes our introduction to the Coq proof assistant. From now on we will 
     \item Certified Programming with Dependent Types \cite{CPDT} is an advanced book that focuses on using dependent types and proof engineering, but also covers topics like axioms, reasoning about equality proofs and general recursion.
 \end{itemize}
 
-\chapter{Computational effects}
+\chapter{Effects}
+
+\section{Basic concepts}
 
 Although \libname\ is a rather general-purpose library, it also tackles the problem of how to best express (and program with) effects. Because it is a very hot topic recently, let's take a deeper look at it.
 
@@ -194,19 +196,37 @@ An \textbf{effect} (sometimes also called \textbf{computational effect}) is eith
 
 \begin{itemize}
     \item Generators and coroutines.
-    \item Nondeterminism: possibly return multiple results.
-    \item Partiality: possibly return \m{null} or some similar value representing the lack of result.
-    \item Exceptions: the computation failed and throws an exception, which may or may not be handled by some other computation.
-    \item Goto: pass control to some other computation.
-    \item Continuations: the most general control mechanism, which allows to express the aforementioned ones.
-    \item Sometimes nontermination and even termination are also considered to be effects, but that's a topic for philosophical debate, beyond the scope of this thesis.
+    \item Nondeterminism: the computation may return multiple results.
+    \item Partiality: the computation may return \m{null} or some similar value representing the lack of result.
+    \item Exceptions: the computation may fail by throwing an exception, which may or may not then be handled by some other computation.
+    \item Goto: the computation may pass control to some other computation.
+    \item Continuations: the most general control mechanism, which can express all of the above ones.
+    \item Sometimes nontermination and even termination are also considered effects, but that's a topic for philosophical debate, beyond the scope of this thesis.
 \end{itemize}
 
 It should be quite obvious that effects are useful. They are in fact the main reason for running most computer programs and without them running even the simplest number-crunching program would be pointless, since it couldn't tell us the result. We thus want to be able to express effects. But we also want to be able to reason about our effectful programs, which in most programming languages is notoriously difficult.
 
-To better understand the matter, we can classify all things in a programming language as being either values or computations. A \textbf{value} necessarily has no effects whereas a \textbf{computation} can have them. Philosophically, we say that a value is but a computation does. We can then say that a language is \textbf{pure} when it explicitly separates values from computations and \textbf{impure} when it does not. When interpreted as a yes-no property, most languages are impure, so it is better to see the concept of purity as a continuum, where some languages may be more pure than others.
+To better understand the matter, we can classify all expressions in a programming language as being either values or computations. A \textbf{value} necessarily has no effects whereas a \textbf{computation} may have effects. Philosophically, we say that a value is but a computation does. We can then say that a language is \textbf{pure} when it explicitly separates values from computations and \textbf{impure} when it does not.
 
+\section{A comparison}
 
+When interpreted as a yes-no property, most languages are impure, so it is better to see the concept of purity as a continuum, where some languages may be more pure than others. Let's examine a few real-world languages and see, where they can be placed on this continuum.
+
+C is a very impure language. There is global state in the form of global variables. Even though ``considered harmful'', we can use the \m{goto} statement anywhere, just as IO operations. It's fair to say that C certainly does not even try to separate values from computations.
+
+In Java, there's no global state, but objects still have state that the methods can change. There's no \m{goto} and some exceptions are checked, which makes them apparent in type signatures. But there are other exceptions that are not marked in any way in type signatures, and we may use IO operations anywhere we wish. Thus, we can say that Java tries to separate values from computations, but does this in a rather ad hoc and unprincipled way. It's still an impure language, though less than C.
+
+Haskell, on the other hand, is a reasonably pure language. There is no global state. The impure error mechanism is unused and usually replaced with something more pure. IO's purity can be broken by using functions like \m{unsafePerformIO}, but this can't be done accidentally -- therefore most IO is pure. All effects (besides the aforementioned unsafe IO and errors) are expressed using monads, which are clearly visible in type signatures. This makes values and computations very easy to tell apart.
+
+At long last, Coq is a completely pure language. This is not because of some ingenuity on the party of its creators -- it's just that Coq has no IO and, more generally, no way to communicate with the outside world. This shouldn't surprise us -- as a proof assistant it's main purpose is to prove theorems, not to write programs interacting with databases or the Internet.
+
+Because of this, it may seem that we don't need a way to express effects in Coq. After all, we can't make any use of them, right? Not at all. First, even though in Coq we can't interact with the outside world, we may want to model programs or programming languages that can. Second, remember that effects also encompass control mechanisms, and these are useful for our purposes. The function \m{label} we saw at the end of the previous chapter could look way better if expressed using the state effect.
+
+\section{Approaches to effect systems}
+
+We already saw two approaches to managing effects. One, represented by C and Java, simply ignores the matter. The other one, represented by Haskell and Coq, tracks effect information using types.
+
+The most recent and promising way, however, is the third approach, represented by languages such as Eff, Frank, Koka and Helium. It boils down to having a \textbf{type and effect system}, in which every expressions is associated with a type and a list or set of effects that it may cause. Values are then those expressions where this list/set is empty and computations are all the rest. 
 
 \chapter{Design}
 
