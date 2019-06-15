@@ -204,23 +204,67 @@ An \textbf{effect} (sometimes also called \textbf{computational effect}) is eith
     \item Sometimes nontermination and even termination are also considered effects, but that's a topic for philosophical debate, beyond the scope of this thesis.
 \end{itemize}
 
-It should be quite obvious that effects are useful. They are in fact the main reason for running most computer programs and without them running even the simplest number-crunching program would be pointless, since it couldn't tell us the result. We thus want to be able to express effects. But we also want to be able to reason about our effectful programs, which in most programming languages is notoriously difficult.
-
-To better understand the matter, we can classify all expressions in a programming language as being either values or computations. A \textbf{value} necessarily has no effects whereas a \textbf{computation} may have effects. Philosophically, we say that a value is but a computation does. We can then say that a language is \textbf{pure} when it explicitly separates values from computations and \textbf{impure} when it does not.
+It should be quite obvious that effects are useful. They are in fact the main reason for running most computer programs and without them running even the simplest number-crunching program would be pointless, since without IO operations it couldn't tell us the result. We thus want to be able to express effects. But we also want to be able to reason about our effectful programs, which in most programming languages is notoriously difficult, and moreover we want to verify our resaoning.
 
 \section{A comparison}
+
+To better understand the matter, we can classify all expressions in a programming language as being either values or computations. A \textbf{value} necessarily has no effects whereas a \textbf{computation} may have effects. Philosophically, we say that a value is but a computation does. We can then say that a language is \textbf{pure} when it explicitly separates values from computations and \textbf{impure} when it does not.
 
 When interpreted as a yes-no property, most languages are impure, so it is better to see the concept of purity as a continuum, where some languages may be more pure than others. Let's examine a few real-world languages and see, where they can be placed on this continuum.
 
 C is a very impure language. There is global state in the form of global variables. Even though ``considered harmful'', we can use the \m{goto} statement anywhere, just as IO operations. It's fair to say that C certainly does not even try to separate values from computations.
 
-In Java, there's no global state, but objects still have state that the methods can change. There's no \m{goto} and some exceptions are checked, which makes them apparent in type signatures. But there are other exceptions that are not marked in any way in type signatures, and we may use IO operations anywhere we wish. Thus, we can say that Java tries to separate values from computations, but does this in a rather ad hoc and unprincipled way. It's still an impure language, though less than C.
+In Java, there's no global state, but objects still have internal state that methods can change. There's no \m{goto} and some exceptions are checked, which makes them apparent in type signatures. But there also are unchecked exceptions that don't appear in type signatures and IO operations may be used anywhere. Thus, even though there are some ad hoc attempts at separating values from computations (checked exceptions), Java still can't do this in a principled way. It is still an impure language, though less than C.
 
-Haskell, on the other hand, is a reasonably pure language. There is no global state. The impure error mechanism is unused and usually replaced with something more pure. IO's purity can be broken by using functions like \m{unsafePerformIO}, but this can't be done accidentally -- therefore most IO is pure. All effects (besides the aforementioned unsafe IO and errors) are expressed using monads, which are clearly visible in type signatures. This makes values and computations very easy to tell apart.
+Haskell, on the other hand, is a reasonably pure language. There is no global state. The impure error mechanism is unused and usually replaced with something more pure. IO's purity can be broken by using functions like \m{unsafePerformIO}, but this can't be done accidentally and so most IO is pure. All effects (besides the aforementioned unsafe IO and errors) are expressed using monads, which are clearly visible in type signatures. This makes values and computations very easy to tell apart.
 
-At long last, Coq is a completely pure language. This is not because of some ingenuity on the party of its creators -- it's just that Coq has no IO and, more generally, no way to communicate with the outside world. This shouldn't surprise us -- as a proof assistant it's main purpose is to prove theorems, not to write programs interacting with databases or the Internet.
+At last, Koka \cite{Koka} is one of the purest languages in existence. It clearly separates values from computations -- each expression, besides its type, is also assigned the list of all effects that it may produce. Even nontermination is tracked this way.
 
-Because of this, it may seem that we don't need a way to express effects in Coq. After all, we can't make any use of them, right? Not at all. First, even though in Coq we can't interact with the outside world, we may want to model programs or programming languages that can. Second, remember that effects also encompass control mechanisms, and these are useful for our purposes. The function \m{label} we saw at the end of the previous chapter could look way better if expressed using the state effect.
+To better see these differences, let's look at a piece of code that loops before trying to print something to the screen in each of these languages.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+        void f()
+        {
+            f();
+            printf("Effectful\n");
+        }
+    \end{minted}
+    \caption{C}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{Java}
+        public void f()
+        {
+            f();
+            System.out.println("Effectful");
+        }
+    \end{minted}
+    \caption{Java}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{Haskell}
+        f :: IO ()
+        f = do
+            f
+            putStrLn "Effectful"
+    \end{minted}
+    \caption{Haskell}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{Koka}
+        function f() : <div, io> ()
+        {
+            f()
+            println("Effectful")
+        }
+    \end{minted}
+    \caption{Koka}
+\end{listing}
+
 
 \section{Approaches to effect systems}
 
@@ -228,6 +272,11 @@ We already saw two approaches to managing effects. One, represented by C and Jav
 
 The most recent and promising way, however, is the third approach, represented by languages such as Eff, Frank, Koka and Helium. It boils down to having a \textbf{type and effect system}, in which every expressions is associated with a type and a list or set of effects that it may cause. Values are then those expressions where this list/set is empty and computations are all the rest. 
 
+
+
+At long last, Coq is a completely pure language. This is not because of some ingenuity on the party of its creators -- it's just that Coq has no IO and, more generally, no way to communicate with the outside world. This shouldn't surprise us -- as a proof assistant it's main purpose is to prove theorems, not to write programs interacting with databases or the Internet.
+
+Because of this, it may seem that we don't need a way to express effects in Coq. After all, we can't make any use of them, right? Not at all. First, even though in Coq we can't interact with the outside world, we may want to model programs or programming languages that can. Second, remember that effects also encompass control mechanisms, and these are useful for our purposes. The function \m{label} we saw at the end of the previous chapter could look way better if expressed using the state effect.
 \chapter{Design}
 
 \chapter{Examples}
@@ -287,19 +336,24 @@ The most recent and promising way, however, is the third approach, represented b
         \textit{Lectures on the Curry-Howard Isomorphism}, 2006
     
     \bibitem{SoftwareFoundations}
-        Benjamin C. Pierce, Andrew W. Appel and many others,
+        Benjamin C. Pierce, Andrew W. Appel and many others, \\
         \textit{Software Foundations}, 2019, \\
         \url{https://softwarefoundations.cis.upenn.edu/}
     
     \bibitem{CoqArt}
-        Yves Bertot and Pierre Castéran,
-        \textit{Interactive Theorem Proving and Program Development \\ Coq'Art: The Calculus of Inductive Constructions}, 2004,
+        Yves Bertot and Pierre Castéran, \\
+        \textit{Interactive Theorem Proving and Program Development \\ Coq'Art: The Calculus of Inductive Constructions}, 2004, \\
         \url{https://www.labri.fr/perso/casteran/CoqArt/}
 
     \bibitem{CPDT}
         Adam Chlipala,
         \textit{Certified Programming with Dependent Types}, 2019,
         \url{http://adam.chlipala.net/cpdt/}
+
+    \bibitem{Koka}
+        Daan Leijen,
+        \textit{Koka: Programming with Row Polymorphic Effect Types}, 2014, \\
+        \url{https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/paper-20.pdf}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}
