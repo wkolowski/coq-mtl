@@ -20,7 +20,7 @@
 % w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
 % w ponizszym poleceniu mozna zlamac poleceniem \fmlinebreak
 \advisor        {prof dr rehabilitowany Wpisuyashi TODO}
-\date           {czerwiec 2019}                     % Data zlozenia pracy
+\date           {wrzesień 2019}                     % Data zlozenia pracy
 % Dane do oswiadczenia o autorskim wykonaniu
 %\transcriptnum {}                     % Numer indeksu
 %\advisorgen    {dr. Jana Kowalskiego} % Nazwisko promotora w dopelniaczu
@@ -62,7 +62,7 @@ The rest of the thesis is structured as follows:
 
 \begin{itemize}
     \item In chapter 2 we discuss the problem of modeling computational effects in programming languages and compare existing approaches.
-    \item In chapter 3 we present our library \libname and discuss its design.
+    \item In chapter 3 we present our library \libname\ and discuss its design.
     \item In chapter 4 we give some example effectful programs and prove their properties.
     \item In chapter 5 we describe our approach to proof engineering (the formalized mathematic's equivalent of software engineering) in our library.
     \item In chapter 6 we conclude and give some possible directions for further work.
@@ -74,7 +74,7 @@ Since their invention in the 1940s, computers' significane rose at a very fast p
 
 But significane is not the only thing that rose -- another one is complexity. Exponentially growing processing speed required the complexity of chip designs to grow at a similar rate. More complex products and services require more complex software architectures and with new business models, like cloud computing, comes even more complexity in the form of virtualization, containerization and so on.
 
-And with complexity comes, of course, the potential for bugs, which may cause a lot damage. A malfunction in software running the stock exchange can mean billions of dollars of losses; in software running a nuclear power plant -- deadly radiation for thousands of people and energy shortage for millions more.
+And with complexity comes, of course, the potential for bugs, which may cause a lot of damage. A malfunction in software running the stock exchange can mean billions of dollars of losses (if not an accidental global recession!); in software running a nuclear power plant -- deadly radiation for thousands of people and energy shortage for millions more.
 
 Due to these dangers a lot of effort has been put into assuring that hardware and software are correct and with great success, but here and there bugs still have crept in. Some of the most spectecular were, recently:
 
@@ -84,7 +84,7 @@ Due to these dangers a lot of effort has been put into assuring that hardware an
     \item Heartbleed, which ``allows stealing the information protected, under normal conditions, by the SSL/TLS encryption used to secure the Internet'' \cite{Heartbleed}
 \end{itemize}
 
-DeepSpec \cite{DeepSpec} is a Coq-based project that tries to eliminate both hardware and software bugs and security vulnerabilities by creating a web of formally verified hardware, operating systems, compilers, web servers, cryptography libraries etc.
+Academia and industry, however, are not passively waiting for more disasters to happen. DeepSpec \cite{DeepSpec} is a Coq-based project that tries to eliminate both hardware and software bugs and security vulnerabilities by creating a web of formally verified hardware, operating systems, compilers, web servers, cryptography libraries etc. Even though mildly successful already, a long time will pass until it will finally help verify mission-critical real-life systems, like the software running Boeing 737 MAX, which recently caused two such planes to crash \cite{Boeing}.
 
 \section{Formal verification of mathematics}
 
@@ -94,17 +94,17 @@ The four colour theorem is a problem posed in 1852. It states that any planar ma
 
 Thomas Tymoczko, a philosopher of mathematics, criticised this proof by labeling it with a term he invented just for this purpose -- ``non-surveyable''. He considered a proof to be non-surveyable when its verification cannot be performed by human mathematicians competent in the relevant field. Appel and Haken's proof certainly did fail the surveyability criterion -- the program was written in IBM 370 assembly, a language graph theorists very likely didn't understand.
 
-This was the perfect theorem to let formal proofs and formally verified programs shine by dispeling Tymoczko's and other mathematician's doubts. This is what indeed happened in 2005, when Georges Gonthier presented a proof of the theorem formalized in Coq \cite{FourColour1} \cite{FourColour2}.
+This was the perfect theorem to let formal proofs and formally verified programs shine by dispeling Tymoczko and other mathematician's doubts. This is what indeed happened in 2005, when Georges Gonthier presented a proof of the theorem formalized in Coq \cite{FourColour1} \cite{FourColour2}.
 
 But big theorems with difficult proofs are not the only call for formalized mathematics. Another one is the mere fallibility of humans, especially their limited memory and reasoning skills and the tendency to follow authority. As unmathematical as it sounds, these are the main reasons cited by Vladimir Voevodsky, a field medalist mathematician turned a fan of formal proofs, in one of his talks \cite{UnivalentFoundations}.
 
-The fields he refers to are homotopy theory, higher category theory and motivic cohomology -- all of them containing many layers of abstraction, tons of concepts and definitions, and rather shaky foundations.
+The fields he refers to are homotopy theory, higher category theory and motivic cohomology -- all of them containing many layers of abstraction, tons of concepts and definitions, and based on rather shaky foundations (in the sense of foundations of mathematics).
 
-As an example, noticing an error in one of his papers took 7 years and repairing the mistake another 6 years. In another, more extreme case, after publishing a paper in 1989, an alleged counterexample was found in 1998 by anoter expert in the field, but it was too difficult for them to agree on whether it really was a counterexample and Voevodsky only realized he was wrong in 2013. All of this put him in search of formalized foundations of mathematics, and he chose Coq to purse them. 
+As an example, noticing an error in one of his papers took 7 years and repairing the mistake another 6 years. In another, more extreme case, after publishing a paper in 1989, an alleged counterexample was found in 1998 by another expert in the field, but it was too difficult for them to agree on whether it really was a counterexample and Voevodsky only realized he was wrong in 2013. All of this put him in search of formalized foundations of mathematics, and he chose Coq to purse them. 
 
 \section{The Coq proof assistant}
 
-Coq \cite{Coq} is a proof assistant that was started in the late 1980's in France and still under active development. It consists of three languages:
+Coq \cite{Coq} is a proof assistant that was started in the late 1980's in France and is still under active development. It consists of three complementary languages:
 
 \begin{itemize}
     \item Gallina, the term language, implements a formal system whose slight variants go under a plethora of names: Calculus of (Inductive) Constructions, (Intensional) Martin-L\"of Type Theory, Intuitionistic Type Theory, Constructive Type Theory, etc. We can use it to express specifications, programs, theorems and proofs.
@@ -118,8 +118,8 @@ Thanks to the the Curry-Howard correspondence \cite{CurryHoward}, types can seen
 
 \begin{itemize}
     \item Formation rules tell us what types are there.
-    \item Introduction rules tell us how to construct inhabitants of a given type.
-    \item Elimination rules tell us how to use an inhabitant of some type to construct inhabitants of other types.
+    \item Introduction rules tell us how to construct elements (canonical terms) of a given type.
+    \item Elimination rules tell us how to use an element of some type to construct elements of other types.
     \item Computation rules tell us how an elimination rule acts on an introduction rule -- computation happens when we first build something and then take it apart.
     \item Uniqueness rules tell us how an introduction rule acts on an elimination rule -- if we first take something apart and then rebuild it, we should get the same thing we initially had.
 \end{itemize}
@@ -139,35 +139,35 @@ How does this play out in practice? Let's take a look at an example development,
 
 A Coq file consists of a series of commands, which define types and terms, import and export modules, state or look up theorems etc. In this file we want to implement a function that labels the leaves of a tree with natural numbers starting from $0$.
 
-For this, we will need the type $\m{nat}$, which is provided by the standard library. We can print it's definition using the command $\m{Print}$. What we get is an inductive definition of a type with two constructors, $\m{O}$ and $\m{S}$. $\m{O}$ is supposed to represent $0$ and $\m{S}$ is supposed to represent the successor operation, so that $\m{S}\ \m{O}$ represents $1$, $\m{S}\ (\m{S}\ \m{O})$ represents $2$ and so on.
+For this, we will need the type $\m{nat}$, which is provided by the standard library. We can print its definition using the command $\m{Print}$. What we get is an inductive definition of a type with two constructors, $\m{O}$ and $\m{S}$. $\m{O}$ is supposed to represent $0$ and $\m{S}$ is supposed to represent the successor operation, so that $\m{S}\ \m{O}$ represents $1$, $\m{S}\ (\m{S}\ \m{O})$ represents $2$ and so on.
 
-We will also need a type $\m{Tree}$ that represents trees. The definition will be inductive, just as for natural numbers, but this time is has a parameter $A : \m{Type}$ that tells us the type of elements that can be stored in the trees. This can be seen as defining infinitely many types at once -- one for each choice of $A$. There are two constructors: $\m{Leaf}$, which represents a tree with one element, and $\m{Node}$, which represents a tree with two subtrees. Thus our trees are always nonempty and they contain elements only in their leaves.
+We will also need a type $\m{Tree}$ that represents trees. The definition will be inductive, just as for natural numbers, but this time is has a parameter $A : \m{Type}$ that tells us the type of elements that can be stored in the tree. This can be seen as defining infinitely many types at once -- one for each choice of $A$. There are two constructors: $\m{Leaf}$, which represents a tree with one element, and $\m{Node}$, which represents a tree with two subtrees. Thus our trees are always nonempty and they contain elements only in their leaves.
 
-The next two commands, \m{Arguments}, control the use of implicit arguments. Normally, we would have to write $\m{Leaf}\ \nat\ 42$ for the tree containing only the value $42$, but this is redundant, since given a term like $\m{42}$, we acan infer its type to be $\nat$. We can thus write this as $\m{Leaf}\ \_\ \m{42}$, but this is still redundant. Thanks to the first of these two commands, we can write simply $\m{Leaf}\ \m{42}$.
+The next two commands, \m{Arguments}, control the use of implicit arguments. Normally, we would have to write $\m{Leaf}\ \nat\ 42$ for the tree containing only the value $42$, but this is redundant, since given a term like $\m{42}$, we can infer its type to be $\nat$. We can thus write this as $\m{Leaf}\ \_\ \m{42}$, but this is still redundant. Thanks to the first of these two commands, we can write simply $\m{Leaf}\ \m{42}$. The second command has a similar effect on the other constructor, \m{Node}.
 
-The function \m{label} is the clou of the whole development. It's type says that given a type \m{A} (which we won't need to give explicitly, since it's an implicit argument), a tree \m{t} and a number \m{n} which acts as the counter, it returns a pair consisting of a natural number (the new counter) and a tree contaning elements of type $\m{A} * \nat$.
+The function \m{label} is the clou of the whole development. It's type says that given a type \m{A} (which we won't need to give explicitly, since it's an implicit argument, thanks to the curly braces), a tree \m{t} that holds elements of type \m{A} and a natural number \m{n} which acts as the counter, it returns a pair consisting of a natural number (the new counter) and a tree containing elements of type $\m{A} * \nat$.
 
-The definition is recursive (marked by the keyword \m{Fixpoint}). When we hit a \m{Leaf}, we return the current counter and label the leaf with the counter's value. When we encounter a \m{Node}, we label the left subtree using the current counter, then label the right subtree with the new counter incremented by one, and then return the new counter and the two labeled subtrees joined by the constructor \m{Node}.
+The definition is recursive (marked by the keyword \m{Fixpoint}). When we hit a \m{Leaf}, we return the current counter and label the leaf with the counter's value. When we encounter a \m{Node}, we label the left subtree using the current counter, then label the right subtree with the new counter incremented by one, and then return the new counter and the two labeled subtrees joined by the constructor \m{Node}. We can use this auxiliary function to define \m{lbl}, the function we wanted from the very beginning.
 
-We can use this auxiliary function to define \m{lbl}, the function we wanted from the beginning. The command \m{Compute} normalizes a given term. In our case, we run \m{lbl} on an example tree to see that the result is as we expected -- the leaves are now labeled with natural numbers, starting at zero, from left to right. But how do we prove that what we have done really is correct?
+The command \m{Compute} normalizes a given term, which in type-theoretical parlance means just running a computation (which in Coq is guaranteed to finish). In our case, we run \m{lbl} on an example tree to see that the result is as we expected -- the leaves are now labeled with natural numbers, starting at zero, from left to right.
 
-The basic approach is to invent some properties we would like our constructions to satisfy. If they do satisfy all of these desired properties, we say they are correct.
+But how do we prove what we have done really is what we intended? The basic approach is to invent some properties we would like our program to satisfy. If it does satisfy all of these desired properties and they encapsulate everything we require from the program's behaviour, we may consider the program correct for our purposes.
 
 In our case, one simple property is that after labeling a tree \m{t} the counter increases by the size of the tree minus one. To state this property formally, we first need to define a function that computes the size of a tree. We do this by recursion: a \m{Leaf} has size $1$ and the size of a \m{Node} is the sum of sizes of its subtrees.
 
-The command \m{Require Import} imports a module. To prove our theorem, we will need some theorems living in a module called \m{Arith}.
+The command \m{Require Import} imports a module. To prove our theorem, we will need some simple theorems about addition and multiplication of natural numbers, which we can find in a module called \m{Arith}.
 
 Now we are ready to state our theorem. It reads: for any type \m{A}, any \m{t} which is a tree of elements of type \m{A}, any two natural numbers \m{n} and \m{n'} and any \m{t'} which is a tree of elements of type \m{A * nat}, if calling label on \m{t} and \m{n} results in the pair \m{(n', t')}, then the successor of \m{n'} is equal to \m{n + size\ t}.
 
-There are some points to be noticed. First, we quantify over types, which means that our logic is not first-order, but higher-order. Second, we need to quantify over \m{t'}, even though the tree resulting from the call to label is on no interest to us. Third, we avoid using subtraction or the predecessor function and instead express our theorem using successor. This is a technicality -- our theorem will be a bit easier to prove.
+There are some points to be noticed. First, we quantify over types, which means that our logic is not first-order, but higher-order. Second, we need to quantify over \m{t'}, even though the tree resulting from the call to label is of no interest to us. Third, we avoid using subtraction or the predecessor function and instead express our theorem using successor. This is a technicality -- our theorem will be a bit easier to prove this way.
 
 We now enter the proof mode, in which we can use tactics to prove our theorem. The command \m{Proof} is useless, because it does nothing, but it looks nice at the beginning of a proof.
 
-We proceed by induction on \m{t}. The clause \m{as [| l IHl r IHr]} allows us to name variables and induction hypotheses. This may seem insignificant, but is actually an important aspect of proof engineering -- to make our proofs readable and resilient to change, it's a good practice to name our things manually (as opposed to using automatically generated names).
+We proceed by induction on \m{t}. The clause \m{as [| l IHl r IHr]} allows us to name variables and induction hypotheses. This may seem weird to a classically-minded mathematician, but is actually an important aspect of proof engineering -- to make our proofs readable and resilient to change, it's a good practice to name variables and hypotheses manually (as opposed to using automatically generated names).
 
 To boost the unfamiliar reader's curiosity and encourage him to see the proof in CoqIDE, we will not go over it in detail. It suffices to say that the in first case the result holds almost by computation, but we need to use the commutativity of addition and in the second case we basically just use our two inductive hypotheses and the associativity of addition.
 
-This concludes our introduction to the Coq proof assistant. From now on we will assume that the reader is familiar with it. If that's not the case, there are a great many of books which make a great introduction:
+This concludes our introduction to the Coq proof assistant. From now on we will assume that the reader is familiar with it. If that's not the case, there are a great many of books which make a good introduction:
 
 \begin{itemize}
     \item Software Foundations \cite{SoftwareFoundations} is a four volume book by many authors. The first volume treats the basics of Coq and the third one is about formally proving correctness of algorithms in Coq. The second and fourth volumes are less relevant, as they are about formalizing programming languages and randomized testing, respectively.
@@ -179,20 +179,20 @@ This concludes our introduction to the Coq proof assistant. From now on we will 
 
 \section{Basic concepts}
 
-Although \libname\ is a rather general-purpose library, it also tackles the problem of how to best express (and program with) effects. Because it is a very hot topic recently, let's take a deeper look at it.
+Although \libname\ is a rather general-purpose library, it also tackles the problem of how to best express (and program with) effects. The research area of effects and effect systems is still young and active, so in this chapter we will take a look at the basic concepts to gain some familiarity with it. However, to keep the exposition accessible to ordinary programmers, our treatment will be rather loose and hands-on.
 
 A \textbf{side effect} is some kind of communication with the outside world, like:
 
 \begin{itemize}
     \item Reading external configuration.
     \item Logging to a file.
-    \item Randomness, because it requires a seed.
+    \item Pseudorandomness, because it requires a seed.
     \item Any kind of IO, like connecting to the Internet or querying a database.
     \item Memory management, like allocation and freeing.
     \item Concurrency and threads, because they need some kind of synchronization, either through shared memory or message passing.
 \end{itemize}
 
-An \textbf{effect} (sometimes also called \textbf{computational effect}) is either a side effect or use of some control mechanism, like:
+An \textbf{effect} (sometimes also called a \textbf{computational effect}) is either a side effect or use of some control mechanism, like:
 
 \begin{itemize}
     \item Generators and coroutines.
@@ -201,7 +201,7 @@ An \textbf{effect} (sometimes also called \textbf{computational effect}) is eith
     \item Exceptions: the computation may fail by throwing an exception, which may or may not then be handled by some other computation.
     \item Goto: the computation may pass control to some other computation.
     \item Continuations: the most general control mechanism, which can express all of the above ones.
-    \item Sometimes nontermination and even termination are also considered effects, but that's a topic for philosophical debate, beyond the scope of this thesis.
+    \item Sometimes nontermination and even termination are also considered effects, but that's a tougher topic, beyond the scope of this thesis.
 \end{itemize}
 
 It should be quite obvious that effects are useful. They are in fact the main reason for running most computer programs and without them running even the simplest number-crunching program would be pointless, since without IO operations it couldn't tell us the result. We thus want to be able to express effects. But we also want to be able to reason about our effectful programs, which in most programming languages is notoriously difficult, and moreover we want to verify our resaoning.
@@ -216,11 +216,11 @@ C is a very impure language. There is global state in the form of global variabl
 
 In Java, there's no global state, but objects still have internal state that methods can change. There's no \m{goto} and some exceptions are checked, which makes them apparent in type signatures. But there also are unchecked exceptions that don't appear in type signatures and IO operations may be used anywhere. Thus, even though there are some ad hoc attempts at separating values from computations (checked exceptions), Java still can't do this in a principled way. It is still an impure language, though less than C.
 
-Haskell, on the other hand, is a reasonably pure language. There is no global state. The impure error mechanism is unused and usually replaced with something more pure. IO's purity can be broken by using functions like \m{unsafePerformIO}, but this can't be done accidentally and so most IO is pure. All effects (besides the aforementioned unsafe IO and errors) are expressed using monads, which are clearly visible in type signatures. This makes values and computations very easy to tell apart.
+Haskell, on the other hand, is a reasonably pure language. There is no global state. There's an impure error mechanism, but it is barely used and usually replaced with explicit error handling. IO can be used anywhere by using functions like \m{unsafePerformIO}, but this can't be done accidentally and is generally avoided. Therefore, nearly all error handling and IO and all other effects are expressed using monads, which are clearly visible in type signatures and make values and computations very easy to tell apart. This is the reason that Haskell is generally perceived as a pure language.
 
-At last, Koka \cite{Koka} is one of the purest languages in existence. It clearly separates values from computations -- each expression, besides its type, is also assigned the list of all effects that it may produce. Even nontermination is tracked this way.
+At last, Koka \cite{Koka} is one of the purest languages in existence. It clearly separates values from computations -- each expression, besides its type, is also assigned the list of all effects that it may produce and even nontermination is tracked this way. The tracking is performed by the effect system and is an integral part of Koka's design. This may be contrasted with Haskell, where monads are a library-level concept and the languge was not designed with the value-computation distinction in mind.
 
-To better see these differences, let's look at a piece of code that loops before trying to print something to the screen in each of these languages.
+To better see these differences, let's look at a piece of code that loops before trying to print something to the screen in each of these four languages.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -265,14 +265,11 @@ To better see these differences, let's look at a piece of code that loops before
     \caption{Koka}
 \end{listing}
 
-
 \section{Approaches to effect systems}
 
-We already saw two approaches to managing effects. One, represented by C and Java, simply ignores the matter. The other one, represented by Haskell and Coq, tracks effect information using types.
+We already saw two approaches to managing effects. One, represented by C and Java, simply ignores the matter. The other one, represented by Haskell and ?, tracks effect information using types.
 
 The most recent and promising way, however, is the third approach, represented by languages such as Eff, Frank, Koka and Helium. It boils down to having a \textbf{type and effect system}, in which every expressions is associated with a type and a list or set of effects that it may cause. Values are then those expressions where this list/set is empty and computations are all the rest. 
-
-
 
 At long last, Coq is a completely pure language. This is not because of some ingenuity on the party of its creators -- it's just that Coq has no IO and, more generally, no way to communicate with the outside world. This shouldn't surprise us -- as a proof assistant it's main purpose is to prove theorems, not to write programs interacting with databases or the Internet.
 
@@ -312,6 +309,11 @@ Because of this, it may seem that we don't need a way to express effects in Coq.
         \url{https://deepspec.org},
         2019
 
+    \bibitem{Boeing}
+        Gregory Travis, \\
+        How the Boeing 737 Max Disaster Looks to a Software Developer, \\
+        \url{https://spectrum.ieee.org/aerospace/aviation/how-the-boeing-737-max-disaster-looks-to-a-software-developer}
+    
     \bibitem{FourColour1}
         Georges Gonthier,
         \textit{A computer-checked proof of the Four Colour Theorem}, 2005 \\
