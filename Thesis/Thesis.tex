@@ -275,34 +275,31 @@ We can see that, even though at their foundations those four languages are quite
 
 \section{Approaches to effect systems}
 
-An \textbf{effect system} is a means of carrying out the separation of values and computations. In the previous section we have already seen two approaches to effect systems, but before we delve deeper into analyzing them, we should first ask whether it is beneficial to have an effect system. This question is best answered by Tony Hoare, speaking about his invention of the null reference \cite{BillionDollarMistake}:
+An \textbf{effect system} is a means of carrying out the separation of values and computations. In the previous section we have already seen two approaches to effect systems, but before taking a closer look at them, we should first ask whether it is beneficial to have an effect system. This question is best answered by Tony Hoare, who invented quicksort, Hoare logic, Communicating Sequential Processes and also the worst nightmare of many programmers, the null reference \cite{BillionDollarMistake}:
 
 \begin{quote}
     I call it my billion-dollar mistake. It was the invention of the null reference in 1965. At that time, I was designing the first comprehensive type system for references in an object oriented language (ALGOL W). My goal was to ensure that all use of references should be absolutely safe, with checking performed automatically by the compiler. But I couldn't resist the temptation to put in a null reference, simply because it was so easy to implement. This has led to innumerable errors, vulnerabilities, and system crashes, which have probably caused a billion dollars of pain and damage in the last forty years
 \end{quote}
 
-The problem of null references is easily fixed by making all references non-null and using a special option type to represent missing values. Then we can differentiate between references, which are always non-null, and references wrapped in the option type, which either contain nothing at all or a non-null reference. The effect system then can automate propagating information in case a value is missing.
+This billion dollar mistake is only the tip of the iceberg of allowing effects without properly tracking them (references allowing nulls can be seen as a kind of ``missing value'' effect). It isn't too hard to imagine that other effects  can cause even more problems. For example, if a function throws an exception without this being indicated in the type signature, the client code may forget to handle it.
 
-This billion dollar mistake is only the tip of the iceberg of allowing effects without properly tracking them (because references allowing nulls can be seen as a kind of ``missing value'' effect). We can imagine that other effects  can cause even more problems. For example, if a function throws an exception without this being indicated in the type signature, the client code may forforget to handle it.
+The problem of null references is easily fixed with some kind of effect system. For example, we could require all references to be non-null and introduce a special option type to represent missing values. Then references which can be ``null'' can be statically differentiated from those that cannot by the type system.
 
+This piece of anecdotal evidence proves that having an effect system is a good idea. There are two paths to this goal:
 
+\begin{itemize}
+    \item Algebraic effects and handlers.
+    \item Monads, monad transformers etc.
+\end{itemize}
 
+The most recent and promising approach, represented by languages such as Koka \cite{Koka}, Eff \cite{Eff}, Frank \cite{Frank}, Multicore OCaml \cite{MulticoreOCaml} and Helium \cite{Helium}. It boils down to having a \textbf{type and effect system}, in which every expressions is associated with a type and a list or set of effects that it may cause. Values are then those expressions where this list/set is empty and computations are all the rest.
 
-
-
-
-
-
-
-
-
-to managing effects. One, represented by C and Java, simply ignores the matter. The other one, represented by Haskell and ?, tracks effect information using types.
-
-The most recent and promising way, however, is the third approach, represented by languages such as Eff, Frank, Koka and Helium. It boils down to having a \textbf{type and effect system}, in which every expressions is associated with a type and a list or set of effects that it may cause. Values are then those expressions where this list/set is empty and computations are all the rest. 
+\section{Effects in Coq?}
 
 At long last, Coq is a completely pure language. This is not because of some ingenuity on the party of its creators -- it's just that Coq has no IO and, more generally, no way to communicate with the outside world. This shouldn't surprise us -- as a proof assistant it's main purpose is to prove theorems, not to write programs interacting with databases or the Internet.
 
 Because of this, it may seem that we don't need a way to express effects in Coq. After all, we can't make any use of them, right? Not at all. First, even though in Coq we can't interact with the outside world, we may want to model programs or programming languages that can. Second, remember that effects also encompass control mechanisms, and these are useful for our purposes. The function \m{label} we saw at the end of the previous chapter could look way better if expressed using the state effect.
+
 \chapter{Design}
 
 \chapter{Examples}
@@ -381,15 +378,32 @@ Because of this, it may seem that we don't need a way to express effects in Coq.
         \textit{Certified Programming with Dependent Types}, 2019,
         \url{http://adam.chlipala.net/cpdt/}
 
+    \bibitem{BillionDollarMistake}
+        Tony Hoare, \\
+        \textit{Null References: The Billion Dollar Mistake}, \\
+        \url{https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/}
+    
     \bibitem{Koka}
         Daan Leijen,
         \textit{Koka: Programming with Row Polymorphic Effect Types}, 2014, \\
         \url{https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/paper-20.pdf}
 
-    \bibitem{BillionDollarMistake}
-        Tony Hoare, \\
-        \textit{Null References: The Billion Dollar Mistake}, \\
-        \url{https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/}
+    \bibitem{Eff}
+        \url{https://www.eff-lang.org/}
+%        Matija Prentar, \\
+%        \textit{An Introduction to Algebraic %Effects and Handlers}, \\
+%        \url{https://www.eff-lang.org/%handlers-tutorial.pdf}
+
+    \bibitem{Frank}
+        Sam Lindley, Connor McBride, \\
+        \textit{Do Be Do Be Do}, \\
+        \url{http://homepages.inf.ed.ac.uk/slindley/papers/frankly-draft-march2014.pdf}
+
+    \bibitem{MulticoreOCaml}
+        \url{https://github.com/ocaml-multicore/ocaml-multicore}
+        
+    \bibitem{Helium}
+        \url{https://bitbucket.org/pl-uwr/helium/src/master/}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}
