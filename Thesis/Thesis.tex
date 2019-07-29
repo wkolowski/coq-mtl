@@ -281,18 +281,33 @@ An \textbf{effect system} is a means of carrying out the separation of values an
     I call it my billion-dollar mistake. It was the invention of the null reference in 1965. At that time, I was designing the first comprehensive type system for references in an object oriented language (ALGOL W). My goal was to ensure that all use of references should be absolutely safe, with checking performed automatically by the compiler. But I couldn't resist the temptation to put in a null reference, simply because it was so easy to implement. This has led to innumerable errors, vulnerabilities, and system crashes, which have probably caused a billion dollars of pain and damage in the last forty years
 \end{quote}
 
-This billion dollar mistake is only the tip of the iceberg of allowing effects without properly tracking them (references allowing nulls can be seen as a kind of ``missing value'' effect). It isn't too hard to imagine that other effects  can cause even more problems. For example, if a function throws an exception without this being indicated in the type signature, the client code may forget to handle it.
+This ``billion dollar mistake'' is only the tip of the iceberg of allowing effects without properly tracking them (references allowing nulls can be seen as a kind of ``missing value'' effect). It isn't too hard to imagine that other effects  can cause even more problems. For example, if a function throws an exception without this being indicated in the type signature, the client code may forget to handle it.
 
 The problem of null references is easily fixed with some kind of effect system. For example, we could require all references to be non-null and introduce a special option type to represent missing values. Then references which can be ``null'' can be statically differentiated from those that cannot by the type system.
 
-This piece of anecdotal evidence proves that having an effect system is a good idea. There are two paths to this goal:
+After seeing some anecdotal evidence of superiority of having an effect system, we are ready to see the contenders. The first approach is more ad hoc. It amounts to implementing monads and various related structures at the library level and using them to track effects using the type system.
+
+Monads were initially invented by category theorists in the 1960s for the purpose of universal algebra and named after a concept coming from the philosophy of Leibniz. A running joke in the functional programming community, originally due to Mac Lane \cite{CWM}, is that
+
+\begin{quote}
+    a monad in $X$ is just a monoid in the category of endofunctors of $X$, with product $\times$ replaced by composition of endofunctors and unit set by the identity endofunctor. What's the problem?
+\end{quote}
+
+Despite their obscure provenance   a reputation of being hard to understand \cite{MonadTutorialFallacy}, Moggi realized in his famous 1991 paper \cite{Moggi} that they are in fact a quite simple abstractions that can be used to represent effects. Namely, a monad $M : \Type \to \Type$ is a function from types to types, and $M\ A$ may be interpreted as the type of computations that return a value of type $A$, but which may have an effect represented by $M$.
+
+Each monad has an operation $\m{pure} : A \to M\ A$ which turns a value into an effectless computation and an operation $\m{bind} : M\ A \to (A \to M\ B) \to M\ B$, which runs the first computation and feeds its result to the second one and these operations are related by laws that are monoid laws in disguise.
+
+
+
+The most recent and promising approach, represented by languages such as Koka \cite{Koka}, Eff \cite{Eff}, Frank \cite{Frank}, Multicore OCaml \cite{MulticoreOCaml} and Helium \cite{Helium}, is called algebraic effects
+
+. It boils down to having a \textbf{type and effect system}, in which every expressions is associated with a type and a list or set of effects that it may cause. Values are then those expressions where this list/set is empty and computations are all the rest.
+
 
 \begin{itemize}
     \item Algebraic effects and handlers.
     \item Monads, monad transformers etc.
 \end{itemize}
-
-The most recent and promising approach, represented by languages such as Koka \cite{Koka}, Eff \cite{Eff}, Frank \cite{Frank}, Multicore OCaml \cite{MulticoreOCaml} and Helium \cite{Helium}. It boils down to having a \textbf{type and effect system}, in which every expressions is associated with a type and a list or set of effects that it may cause. Values are then those expressions where this list/set is empty and computations are all the rest.
 
 \section{Effects in Coq?}
 
@@ -383,6 +398,20 @@ Because of this, it may seem that we don't need a way to express effects in Coq.
         \textit{Null References: The Billion Dollar Mistake}, \\
         \url{https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/}
     
+    \bibitem{CWM}
+        Saunders Mac Lane, \\
+        \textit{Categories for the Working Mathematician}
+
+    \bibitem{MonadTutorialFallacy}
+        Brent Yorgey, \\
+        \textit{Abstraction, intuition, and the ``monad tutorial fallacy''}, \\
+        \url{https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/}
+
+    \bibitem{Moggi}
+        Eugenio Moggi, \\
+        \textit{Notions of computation and monads}, \\
+        \url{https://person.dibris.unige.it/moggi-eugenio/ftp/ic91.pdf}
+
     \bibitem{Koka}
         Daan Leijen,
         \textit{Koka: Programming with Row Polymorphic Effect Types}, 2014, \\
@@ -390,9 +419,6 @@ Because of this, it may seem that we don't need a way to express effects in Coq.
 
     \bibitem{Eff}
         \url{https://www.eff-lang.org/}
-%        Matija Prentar, \\
-%        \textit{An Introduction to Algebraic %Effects and Handlers}, \\
-%        \url{https://www.eff-lang.org/%handlers-tutorial.pdf}
 
     \bibitem{Frank}
         Sam Lindley, Connor McBride, \\
