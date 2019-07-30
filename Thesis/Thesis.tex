@@ -285,7 +285,9 @@ This ``billion dollar mistake'' is only the tip of the iceberg of allowing effec
 
 The problem of null references is easily fixed with some kind of effect system. For example, we could require all references to be non-null and introduce a special option type to represent missing values. Then references which can be ``null'' can be statically differentiated from those that cannot by the type system.
 
-After seeing some anecdotal evidence of superiority of having an effect system, we are ready to see the contenders. The first approach is more ad hoc. It amounts to implementing monads and various related structures at the library level and using them to track effects using the type system.
+After seeing some anecdotal evidence supporting the superiority of having an effect system, we are ready to see the contending approaches.
+
+The older approach, which is more ad hoc, amounts to implementing monads and various related structures at the library level and using them to track effects using the type system.
 
 Monads were initially invented by category theorists in the 1960s for the purpose of universal algebra and named after a concept coming from the philosophy of Leibniz. A running joke in the functional programming community, originally due to Mac Lane \cite{CWM}, is that
 
@@ -293,9 +295,26 @@ Monads were initially invented by category theorists in the 1960s for the purpos
     a monad in $X$ is just a monoid in the category of endofunctors of $X$, with product $\times$ replaced by composition of endofunctors and unit set by the identity endofunctor. What's the problem?
 \end{quote}
 
-Despite their obscure provenance   a reputation of being hard to understand \cite{MonadTutorialFallacy}, Moggi realized in his famous 1991 paper \cite{Moggi} that they are in fact a quite simple abstractions that can be used to represent effects. Namely, a monad $M : \Type \to \Type$ is a function from types to types, and $M\ A$ may be interpreted as the type of computations that return a value of type $A$, but which may have an effect represented by $M$.
+Despite their obscure provenance and a reputation of being hard to understand \cite{MonadTutorialFallacy}, Moggi realized in his famous 1991 paper \cite{Moggi} that they are in fact quite a simple abstraction that can be used to represent effects. Namely, a monad $M : \Type \to \Type$ is a function from types to types, and $M\ A$ may be interpreted as the type of computations that return a value of type $A$, but which may have an effect represented by $M$.
 
-Each monad has an operation $\m{pure} : A \to M\ A$ which turns a value into an effectless computation and an operation $\m{bind} : M\ A \to (A \to M\ B) \to M\ B$, which runs the first computation and feeds its result to the second one and these operations are related by laws that are monoid laws in disguise.
+Each monad has an operation $\m{pure} : A \to M\ A$ which turns a value into an effectless computation and an operation $\m{bind} : M\ A \to (A \to M\ B) \to M\ B$, which runs the first computation and feeds its result to a function that uses it to produce another computation. These operations are related by laws that are monoid laws in disguise.
+
+Monads, however, are not the silver bullet of effectful programming and come bundled not only with operations, but also with problems. The most obvious problem is that a monad represents a single effect, but we of course want to have multiple effects at once. Implementing a new monad for each desirable combination of effects is not a sane option and this causes us to search for a way of composing monads.
+
+Such a way of composing monads are monad transformers. A monad transformer \m{T} is an object of type $\m{T} : (\Type \to \Type) \to (\Type \to \Type)$ that represents an effect and $\m{T}\ \m{M}\ \m{A}$ (\m{T} applied to a monad \m{M} and a type \m{A}), represents a type of computations that return a value of type \m{A} but may also perform effects represented by \m{T} and \m{M}. It comes bundled with an operation $\m{lift} : \m{M}\ \m{A} \to \m{T}\ \m{M}\ \m{A}$ that turns a computation that can have only one kind of effect into one that can have two.
+
+Transformers \m{T} and \m{S} and a monad \m{M} can then be composed to give a monad $\m{T}\ (\m{S}\ \m{M})$. Because each monad has its corresponding transformer, we can get rid of all the monads (except for one, the identity monad) and use just the transformers.
+
+Monad transformers, even though they solve the problem of composing monads, come with their own problems too. The simplest and most annoying
+is the fact that for complicated transformer stacks we need to use the \m{lift} operation a lot. For example, we would need two \m{lift}s to get from $\m{M}\ \m{A}$ to $\m{T}\ (\m{S}\ \m{M})\ \m{A}$. This is quite a big problem, because real-world code often requires more than just two effects.
+
+This deficiency can be remedied by introducing a more abstract design based on typeclasses. Here each effect \m{E} is split into a specification and an implementation. The specification is a typeclass expressing that a monad \m{M} supports an effect \m{E} and the various monad transformers can then implement this typeclass.
+
+This solves the problem with too many \m{lift}s, but still has its own problems. One is that the number of implementations required is quadratic, because usually each transformer needs to implement each typeclass. However, in practice this is not as big a problem as having to implement a separate monad for each combination of effects.
+
+Another problem, far bigger and more conceptual, is the order of effects: if a monad is both stateful and nondeterministic, how do these two effects interact? Is there a global state or does each branch of the computation have its own local state?
+
+The problems with effect ordering lead to the idea that maybe there shouldn't be an ordering, or rather that effects should be explicitly handled to determine the ordering or even discard or reinterpret some of them. But this requires the effects to become just pieces of syntax, a language that expresses a signature of what an effect can do. This leads us down the rabbit hole to the idea of free monads and recent development like Haskell's \m{extensible-effects} library.
 
 
 
@@ -403,13 +422,11 @@ Because of this, it may seem that we don't need a way to express effects in Coq.
         \textit{Categories for the Working Mathematician}
 
     \bibitem{MonadTutorialFallacy}
-        Brent Yorgey, \\
-        \textit{Abstraction, intuition, and the ``monad tutorial fallacy''}, \\
+        Brent Yorgey, \textit{Abstraction, intuition, and the ``monad tutorial fallacy''}, \\
         \url{https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/}
 
     \bibitem{Moggi}
-        Eugenio Moggi, \\
-        \textit{Notions of computation and monads}, \\
+        Eugenio Moggi, \textit{Notions of computation and monads}, \\
         \url{https://person.dibris.unige.it/moggi-eugenio/ftp/ic91.pdf}
 
     \bibitem{Koka}
