@@ -287,7 +287,9 @@ The problem of null references is easily fixed with some kind of effect system. 
 
 After seeing some anecdotal evidence supporting the superiority of having an effect system, we are ready to see the contending approaches.
 
-The older approach, which is more ad hoc, amounts to implementing monads and various related structures at the library level and using them to track effects using the type system.
+\subsection{Monads and their friends}
+
+The oldest approach, which is quite ad hoc, amounts to implementing monads and various related structures at the library level and using them to track effects using the type system. This approach can be called the \m{mtl} approach, after a Haskell library that implements it.
 
 Monads were initially invented by category theorists in the 1960s for the purpose of universal algebra and named after a concept coming from the philosophy of Leibniz. A running joke in the functional programming community, originally due to Mac Lane \cite{CWM}, is that
 
@@ -301,32 +303,34 @@ Each monad has an operation $\m{pure} : A \to M\ A$ which turns a value into an 
 
 Monads, however, are not the silver bullet of effectful programming and come bundled not only with operations, but also with problems. The most obvious problem is that a monad represents a single effect, but we of course want to have multiple effects at once. Implementing a new monad for each desirable combination of effects is not a sane option and this causes us to search for a way of composing monads.
 
-Such a way of composing monads are monad transformers. A monad transformer \m{T} is an object of type $\m{T} : (\Type \to \Type) \to (\Type \to \Type)$ that represents an effect and $\m{T}\ \m{M}\ \m{A}$ (\m{T} applied to a monad \m{M} and a type \m{A}), represents a type of computations that return a value of type \m{A} but may also perform effects represented by \m{T} and \m{M}. It comes bundled with an operation $\m{lift} : \m{M}\ \m{A} \to \m{T}\ \m{M}\ \m{A}$ that turns a computation that can have only one kind of effect into one that can have two.
+Such a way of composing monads are monad transformers \cite{mtl}. A monad transformer \m{T} is an object of type $\m{T} : (\Type \to \Type) \to (\Type \to \Type)$ that represents an effect and $\m{T}\ \m{M}\ \m{A}$ (\m{T} applied to a monad \m{M} and a type \m{A}), represents a type of computations that return a value of type \m{A} but may also perform effects represented by \m{T} and \m{M}. It comes bundled with an operation $\m{lift} : \m{M}\ \m{A} \to \m{T}\ \m{M}\ \m{A}$ that turns a computation that can have only one kind of effect into one that can have two.
 
 Transformers \m{T} and \m{S} and a monad \m{M} can then be composed to give a monad $\m{T}\ (\m{S}\ \m{M})$. Because each monad has its corresponding transformer, we can get rid of all the monads (except for one, the identity monad) and use just the transformers.
 
 Monad transformers, even though they solve the problem of composing monads, come with their own problems too. The simplest and most annoying
 is the fact that for complicated transformer stacks we need to use the \m{lift} operation a lot. For example, we would need two \m{lift}s to get from $\m{M}\ \m{A}$ to $\m{T}\ (\m{S}\ \m{M})\ \m{A}$. This is quite a big problem, because real-world code often requires more than just two effects.
 
-This deficiency can be remedied by introducing a more abstract design based on typeclasses. Here each effect \m{E} is split into a specification and an implementation. The specification is a typeclass expressing that a monad \m{M} supports an effect \m{E} and the various monad transformers can then implement this typeclass.
+This deficiency can be remedied by introducing a more abstract design based on typeclasses \cite{mtl}. Here each effect \m{E} is split into a specification and an implementation. The specification is a typeclass expressing that a monad \m{M} supports an effect \m{E} and the various monad transformers can then implement this typeclass.
 
 This solves the problem with too many \m{lift}s, but still has its own problems. One is that the number of implementations required is quadratic, because usually each transformer needs to implement each typeclass. However, in practice this is not as big a problem as having to implement a separate monad for each combination of effects.
 
-Another problem, far bigger and more conceptual, is the order of effects: if a monad is both stateful and nondeterministic, how do these two effects interact? Is there a global state or does each branch of the computation have its own local state?
+Another problem, far bigger and more conceptual, is the ordering of effects: if a monad is both stateful and nondeterministic, how do these two effects interact? Is there a global state or does each branch of the computation have its own local state?
 
-The problems with effect ordering lead to the idea that maybe there shouldn't be an ordering, or rather that effects should be explicitly handled to determine the ordering or even discard or reinterpret some of them. But this requires the effects to become just pieces of syntax, a language that expresses a signature of what an effect can do. This leads us down the rabbit hole to the idea of free monads and recent development like Haskell's \m{extensible-effects} library.
+\subsection{Algebraic effects and handlers}
 
+These problems with effect ordering suggest the idea that maybe there shouldn't be a static ordering. Maybe the meaning of combinations of effects, like state + nondeterminism, shouldn't be fixed ahead of time? Ultimately, maybe even the meaning of the effects themselves shouldn't be fixed?
 
+This leads to a refinement of the notion of effect specification, which ceases to be an interface describing the operations associated with the effect and becomes an algebraic data type that represents these operations. Thus these new effects can be called \textbf{algebraic effects}, but there is more to this name than just the algebraicness of the data types.
+
+This change prompts a refinement of the notion of implementation of an effect. Instead of simply being a monad transformer, an implementation of an effect is now an \textbf{effect handler} -- an operation that takes an effectful computation as input and transforms it into another computation. We can use handlers to realize an effect in some concrete way, translate the effect into some other effect or even throw the effect away.
+
+For example, when we have a ``log'' effect and a ``debug'' effect, our production code can realize logging using some logging service and discard the debugging effect while our test code can do exactly the opposite! This can be useful for testing in an even more general way: the test code can interpret effects by mocking them, which is a very popular unit testing technique in the object-oriented programming world.
+
+This approach has two flavours. The first one aims to implement these algebraic effects and handlers at the library level using concepts like free monads or open unions. \cite{ExtensibleEffects} \cite{Freer}
+
+WUUUUUT jedziem do lasu na grzyby
 
 The most recent and promising approach, represented by languages such as Koka \cite{Koka}, Eff \cite{Eff}, Frank \cite{Frank}, Multicore OCaml \cite{MulticoreOCaml} and Helium \cite{Helium}, is called algebraic effects
-
-. It boils down to having a \textbf{type and effect system}, in which every expressions is associated with a type and a list or set of effects that it may cause. Values are then those expressions where this list/set is empty and computations are all the rest.
-
-
-\begin{itemize}
-    \item Algebraic effects and handlers.
-    \item Monads, monad transformers etc.
-\end{itemize}
 
 \section{Effects in Coq?}
 
@@ -428,6 +432,11 @@ Because of this, it may seem that we don't need a way to express effects in Coq.
     \bibitem{Moggi}
         Eugenio Moggi, \textit{Notions of computation and monads}, \\
         \url{https://person.dibris.unige.it/moggi-eugenio/ftp/ic91.pdf}
+
+    \bibitem{mtl}
+        Mark P. Jones,
+        \textit{Functional Programming with Overloading and Higher-Order Polymorphism}, \\
+        \url{http://web.cecs.pdx.edu/~mpj/pubs/springschool95.pdf}
 
     \bibitem{Koka}
         Daan Leijen,
