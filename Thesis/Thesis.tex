@@ -287,7 +287,7 @@ The problem of null references is easily fixed with some kind of effect system. 
 
 After seeing some anecdotal evidence supporting the superiority of having an effect system, we are ready to see the contending approaches.
 
-\subsection{Monads and their friends}
+\subsection{Monads, transformers and typeclasses}
 
 The oldest approach, which is quite ad hoc, amounts to implementing monads and various related structures at the library level and using them to track effects using the type system. This approach can be called the \m{mtl} approach, after a Haskell library that implements it.
 
@@ -297,24 +297,24 @@ Monads were initially invented by category theorists in the 1960s for the purpos
     a monad in $X$ is just a monoid in the category of endofunctors of $X$, with product $\times$ replaced by composition of endofunctors and unit set by the identity endofunctor. What's the problem?
 \end{quote}
 
-Despite their obscure provenance and a reputation of being hard to understand \cite{MonadTutorialFallacy}, Moggi realized in his famous 1991 paper \cite{Moggi} that they are in fact quite a simple abstraction that can be used to represent effects. Namely, a monad $M : \Type \to \Type$ is a function from types to types, and $M\ A$ may be interpreted as the type of computations that return a value of type $A$, but which may have an effect represented by $M$.
+Despite their obscure provenance and a reputation of being hard to understand \cite{MonadTutorialFallacy}, Moggi realized in his famous 1991 paper \cite{Moggi} that they are in fact quite a simple abstraction that can be used to represent effects. Namely, a \textbf{monad} $M : \Type \to \Type$ is a function from types to types, and $M\ A$ may be interpreted as the type of computations that return a value of type $A$, but which may have an effect represented by $M$.
 
 Each monad has an operation $\m{pure} : A \to M\ A$ which turns a value into an effectless computation and an operation $\m{bind} : M\ A \to (A \to M\ B) \to M\ B$, which runs the first computation and feeds its result to a function that uses it to produce another computation. These operations are related by laws that are monoid laws in disguise.
 
 Monads, however, are not the silver bullet of effectful programming and come bundled not only with operations, but also with problems. The most obvious problem is that a monad represents a single effect, but we of course want to have multiple effects at once. Implementing a new monad for each desirable combination of effects is not a sane option and this causes us to search for a way of composing monads.
 
-Such a way of composing monads are monad transformers \cite{mtl}. A monad transformer \m{T} is an object of type $\m{T} : (\Type \to \Type) \to (\Type \to \Type)$ that represents an effect and $\m{T}\ \m{M}\ \m{A}$ (\m{T} applied to a monad \m{M} and a type \m{A}), represents a type of computations that return a value of type \m{A} but may also perform effects represented by \m{T} and \m{M}. It comes bundled with an operation $\m{lift} : \m{M}\ \m{A} \to \m{T}\ \m{M}\ \m{A}$ that turns a computation that can have only one kind of effect into one that can have two.
+Such a way of composing monads are monad transformers \cite{mtl}. A \textbf{monad transformer} \m{T} is an object of type $\m{T} : (\Type \to \Type) \to (\Type \to \Type)$ that represents an effect and $\m{T}\ \m{M}\ \m{A}$ (\m{T} applied to a monad \m{M} and a type \m{A}), represents a type of computations that return a value of type \m{A} but may also perform effects represented by \m{T} and \m{M}. It comes bundled with an operation $\m{lift} : \m{M}\ \m{A} \to \m{T}\ \m{M}\ \m{A}$ that turns a computation that can have only one kind of effect into one that can have two.
 
 Transformers \m{T} and \m{S} and a monad \m{M} can then be composed to give a monad $\m{T}\ (\m{S}\ \m{M})$. Because each monad has its corresponding transformer, we can get rid of all the monads (except for one, the identity monad) and use just the transformers.
 
 Monad transformers, even though they solve the problem of composing monads, come with their own problems too. The simplest and most annoying
-is the fact that for complicated transformer stacks we need to use the \m{lift} operation a lot. For example, we would need two \m{lift}s to get from $\m{M}\ \m{A}$ to $\m{T}\ (\m{S}\ \m{M})\ \m{A}$. This is quite a big problem, because real-world code often requires more than just two effects.
+is the fact that for complicated transformer stacks we need to use the \m{lift} operation a lot. For example, we would need two \m{lift}s to get from $\m{M}\ \m{A}$ to $\m{T}\ (\m{S}\ \m{M})\ \m{A}$. This is a rather annoying problem, because real-world code often requires way more than just two effects.
 
-This deficiency can be remedied by introducing a more abstract design based on typeclasses \cite{mtl}. Here each effect \m{E} is split into a specification and an implementation. The specification is a typeclass expressing that a monad \m{M} supports an effect \m{E} and the various monad transformers can then implement this typeclass.
+This deficiency can be remedied by introducing a more abstract design based on describing effects with \textbf{typeclasses} \cite{mtl}, which are basically the same thing as interfaces. Here each effect \m{E} is split into a specification and an implementation. The specification is a typeclass that expresses \m{E} by listing the operations that it supports. For example, the state effect supports \m{get} to retrieve the current state and \m{put} to modify the state. That a particular monad \m{M} supports the effect \m{E} is then expressed by implementing an instance of this typeclass for the monad \m{M}.
 
 This solves the problem with too many \m{lift}s, but still has its own problems. One is that the number of implementations required is quadratic, because usually each transformer needs to implement each typeclass. However, in practice this is not as big a problem as having to implement a separate monad for each combination of effects.
 
-Another problem, far bigger and more conceptual, is the ordering of effects: if a monad is both stateful and nondeterministic, how do these two effects interact? Is there a global state or does each branch of the computation have its own local state?
+Another problem, far bigger and more conceptual, is the ordering of effects: if a monad is both stateful and nondeterministic, how do these two effects interact? Is there a global shared state or does each branch of the computation have its own local state?
 
 \subsection{Algebraic effects and handlers}
 
@@ -324,19 +324,31 @@ This leads to a refinement of the notion of effect specification, which ceases t
 
 This change prompts a refinement of the notion of implementation of an effect. Instead of simply being a monad transformer, an implementation of an effect is now an \textbf{effect handler} -- an operation that takes an effectful computation as input and transforms it into another computation. We can use handlers to realize an effect in some concrete way, translate the effect into some other effect or even throw the effect away.
 
-For example, when we have a ``log'' effect and a ``debug'' effect, our production code can realize logging using some logging service and discard the debugging effect while our test code can do exactly the opposite! This can be useful for testing in an even more general way: the test code can interpret effects by mocking them, which is a very popular unit testing technique in the object-oriented programming world.
+For example, when we have a ``log'' effect and a ``debug'' effect, our production code can realize logging using some logging service and discard the debugging effect while our test code can do exactly the opposite! Handlers can be useful for testing in an even more general way: the test code can interpret effects by mocking them, which is a very popular unit testing technique in the object-oriented programming world.
 
-This approach has two flavours. The first one aims to implement these algebraic effects and handlers at the library level using concepts like free monads or open unions. \cite{ExtensibleEffects} \cite{Freer}
+Algebraic effects and handlers come in two flavours. One of them is to implement these abstractions at the library level using some new concepts like free monads or open unions, but also relying on the old menagerie of monads and monad transformers. This approach can be called \m{extensible-effects} after a Haskell library that proposed it. \cite{ExtensibleEffects} \cite{Freer}
 
-WUUUUUT jedziem do lasu na grzyby
+The second flavour, the most recent and promising one, represented by languages such as Koka \cite{Koka}, Eff \cite{Eff}, Frank \cite{Frank}, Multicore OCaml \cite{MulticoreOCaml} and Helium \cite{Helium}, instead aims to implement support for programming with algebraic effects and handlers at the language level, which has many practical advantages.
 
-The most recent and promising approach, represented by languages such as Koka \cite{Koka}, Eff \cite{Eff}, Frank \cite{Frank}, Multicore OCaml \cite{MulticoreOCaml} and Helium \cite{Helium}, is called algebraic effects
+Native treatment of effects allows special treatment during compilation, which results in better performance. Integrating effect checking and effect inference with type checking and type inference results in better error messages and more manageable function signatures. Built-in support for effectful computations means lighter syntax and less boilerplate -- for example, Haskell style \m{do}-notation is no longer needed, and built-in support for effect definitions means it is way easier to implement a custom effect than with \m{extensible-effects}, which requires one to dive a little into the library internals.
+
+But probably the greatest advantage of this approach is its conceptual simplicity. Both \m{mtl} and \m{extensible-effects} suffer from a plethora of closely related concepts: monads and monad transformers, free and free-er monads, their operations and laws, the idea that they (indirectly) represent effects, and on top of it typeclasses, which are quite orthogonal to the subject at hand. This can be contrasted with the conceptual simplicity of native algebraic effects, with just the two core concepts of effects and handlers.
+
+This conceptual simplicity is crucial for industry adoption. If the average Java programmer can't understand the basic ideas behind effects, there will be no wide adoption and thus no benefits from reduced number of bugs.
 
 \section{Effects in Coq?}
 
-At long last, Coq is a completely pure language. This is not because of some ingenuity on the party of its creators -- it's just that Coq has no IO and, more generally, no way to communicate with the outside world. This shouldn't surprise us -- as a proof assistant it's main purpose is to prove theorems, not to write programs interacting with databases or the Internet.
+Now that we know the basics of effects, we can decide on how to best implement them in Coq.
 
-Because of this, it may seem that we don't need a way to express effects in Coq. After all, we can't make any use of them, right? Not at all. First, even though in Coq we can't interact with the outside world, we may want to model programs or programming languages that can. Second, remember that effects also encompass control mechanisms, and these are useful for our purposes. The function \m{label} we saw at the end of the previous chapter could look way better if expressed using the state effect.
+First off, we need to recall that Coq implements Calculus of Inductive Constructions. This variant of type theory was not designed with the value-computation distinction in mind. Because of this, any native support of effects is ruled out -- this would amount to implementing a whole new language, not to mention that at present no variant of type theory has both algebraic effect and dependent types.
+
+Then we should ask ourselves, why do we want to have a way of expressing effects in Coq? After all, Coq is a proof assistant concerned mainly with theorem proving and formal verification that doesn't even support any kind of IO -- you can't use it to write the simplest Hello World program, you can't connect to a database, you can't use it to write a web server (but see \cite{CoqIO}).
+
+We can answer this by recalling that effects are not only about communication with the outside world -- they can also model control mechanisms like failure, exceptions or nondeterminism, and we surely want to make programming with these easier. The function \m{label} we saw at the end of the previous chapter could look way better if expressed using the state effect.
+
+Another reason is that, even though in Coq we can't interact with the outside world, we may want to model programs or programming languages that can. At last, IO and other such effects may be added to Coq in the future and we want to be prepared for that (related languages, like Agda \cite{Agda} and Idris \cite{Idris} both have IO).
+
+We are thus forced to implement our effects at the library level and because the \m{extensible-effects} approach depends crucially on many \m{mtl} abstractions as described earlier, we choose to implement the latter and leave the former for future work.
 
 \chapter{Design}
 
@@ -438,6 +450,16 @@ Because of this, it may seem that we don't need a way to express effects in Coq.
         \textit{Functional Programming with Overloading and Higher-Order Polymorphism}, \\
         \url{http://web.cecs.pdx.edu/~mpj/pubs/springschool95.pdf}
 
+    \bibitem{ExtensibleEffects}
+        Oleg Kiselyov, Amr Sabry, Cameron Swords, \\
+        \textit{Extensible Effects. An Alternative to Monad Transformers},
+        \url{http://okmij.org/ftp/Haskell/extensible/exteff.pdf}
+
+    \bibitem{Freer}
+        Oleg Kiselyov, Hiromi Ishii, \\
+        \textit{Freer Monads, More Extensible Effects}, \\
+        \url{http://okmij.org/ftp/Haskell/extensible/more.pdf}
+
     \bibitem{Koka}
         Daan Leijen,
         \textit{Koka: Programming with Row Polymorphic Effect Types}, 2014, \\
@@ -447,8 +469,7 @@ Because of this, it may seem that we don't need a way to express effects in Coq.
         \url{https://www.eff-lang.org/}
 
     \bibitem{Frank}
-        Sam Lindley, Connor McBride, \\
-        \textit{Do Be Do Be Do}, \\
+        Sam Lindley, Connor McBride, \textit{Do Be Do Be Do}, \\
         \url{http://homepages.inf.ed.ac.uk/slindley/papers/frankly-draft-march2014.pdf}
 
     \bibitem{MulticoreOCaml}
@@ -456,6 +477,15 @@ Because of this, it may seem that we don't need a way to express effects in Coq.
         
     \bibitem{Helium}
         \url{https://bitbucket.org/pl-uwr/helium/src/master/}
+
+    \bibitem{CoqIO}
+        \url{coq.io}
+
+    \bibitem{Agda}
+        \url{https://github.com/agda/agda}
+
+    \bibitem{Idris}
+        \url{https://www.idris-lang.org/}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}
