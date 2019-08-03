@@ -41,6 +41,7 @@
 %\renewcommand \qedsymbol {\ensuremath{\square}}
 
 \newcommand{\libname}{\textit{hsCoq}}
+\newcommand{\homepage}{\url{https://github.com/Zeimer/HSLib}}
 
 \newcommand{\defn}{:\equiv}
 \newcommand{\m}[1]{\texttt{#1}}
@@ -340,11 +341,11 @@ This conceptual simplicity is crucial for industry adoption. If the average Java
 
 Now that we know the basics of effects, we can decide on how to best implement them in Coq.
 
-First off, we need to recall that Coq implements Calculus of Inductive Constructions. This variant of type theory was not designed with the value-computation distinction in mind. Because of this, any native support of effects is ruled out -- this would amount to implementing a whole new language, not to mention that at present no variant of type theory has both algebraic effect and dependent types.
+First off, we need to recall that Coq implements Calculus of Inductive Constructions. This variant of type theory was not designed with the value-computation distinction in mind. Because of this, any native support of effects is ruled out -- this would amount to implementing a whole new language, not to mention that such a language would have to be invented first - for example, at present no variant of type theory has both algebraic effects and dependent types.
 
 Then we should ask ourselves, why do we want to have a way of expressing effects in Coq? After all, Coq is a proof assistant concerned mainly with theorem proving and formal verification that doesn't even support any kind of IO -- you can't use it to write the simplest Hello World program, you can't connect to a database, you can't use it to write a web server (but see \cite{CoqIO}).
 
-We can answer this by recalling that effects are not only about communication with the outside world -- they can also model control mechanisms like failure, exceptions or nondeterminism, and we surely want to make programming with these easier. The function \m{label} we saw at the end of the previous chapter could look way better if expressed using the state effect.
+We can answer this by recalling that effects are not only about communication with the outside world -- they can also model control mechanisms like failure, exceptions or nondeterminism, and we surely want to make programming with these easier. The function \m{label} we saw at the end of the previous chapter could look way better expressed using the state effect.
 
 Another reason is that, even though in Coq we can't interact with the outside world, we may want to model programs or programming languages that can. At last, IO and other such effects may be added to Coq in the future and we want to be prepared for that (related languages, like Agda \cite{Agda} and Idris \cite{Idris} both have IO).
 
@@ -352,11 +353,58 @@ We are thus forced to implement our effects at the library level and because the
 
 \chapter{Design}
 
+3. A description of the inner workings of the library.
+3.1. File structure.
+3.2. Design choices:
+3.2.1. Practical comparison with 
+Experimenting with Monadic Equational Reasoning in Coq.
+3.2.2. Applicative-monad proposal etc.
+3.3. Implementation.
+
+Tools: why no ssreflect?
+
+Theoretical comparison of the ease of use with Haskell and Idris.
+
+Tools: why no ssreflect?
+
+Describe the axioms used for this development.
+
 \chapter{Examples}
 
-\chapter{A case study in proof engineering}
+4. Examples: some from Just Do It, maybe some custom ones.
+
+\chapter{Theorems and proofs}
+
+Safety: some theorems and proofs.
+
+5. More: a case study in proof engineering - how do the tactics hs, monad.
 
 \chapter{Conclusion}
+
+We have introduced \libname, a general purpose Coq library for formally verified programming with Haskell-style abstractions. We have centered our presentation on the matter effects, with which we dealt by implementing a collection of \m{mtl}-like abstractions whose main inspiration was \cite{JustDoIt}.
+
+In chapter 1 we gave some arguments for why formal verification is worth pursuing and introduced the Coq proof assistant. In chapter 2 we explained the basics of computational effects and outlined the main approaches. In chapter 3, we elucidated the design choices, which weren't really that many. In chapter 4, we have formalized some examples from \cite{JustDoIt} to show the viability of the library. In chapter 5 we saw some simple theorems which prove our implementation correct, but are also useful from a practical point of view. We also explained the mechanism behind our proof automation.
+
+\section{Technical details}
+
+The source code and build instructions for \libname\ and the source code of this thesis can be found at \homepage. The code is extensively commented and this is the only available kind of documentation. Pull requests and suggestions are welcome.
+
+TODO: wrzucić to do OPAMa
+
+\section{Further work}
+
+There's still some work to be done. The exact things to do can be found by looking at the \m{TODO} section in \m{README.md} and by searching the source code for the keywords \m{Abort}, \m{Admitted} and for the marker TODO.
+
+First off, some proofs and instances are missing. For example, I could neither define an instance of \m{MonadExcept} for \m{FreeT} nor prove that none exists. The same is true for a few more transformer/class pairs.
+
+Notations could get some love too. The current do notations has the ugly 
+\m{;;} for computations that don't bind their result and I couldn't even define the idiom brackets of Idris using Coq's notation mechanism.
+
+Some more theoretical work would be to formally characterize the minimal sets of laws for the various classes and some more practical work would be to implement other useful abstractions known from Haskell, like \m{Traversable} and \m{Foldable}.
+
+Another possibility is to rewrite the whole automation engine, so as to use proof by reflection \cite{ProofByReflection}, which is more reliable than just using Ltac. The beginning of this has been already accomplished with the tactic \m{reflect\_functor}, which implements basic principles of reasoning with functors.
+
+Last but not least, as already hinted at, \libname\ is a great basis on which a library similar to Haskell's \m{extensible-effects} may be implemented.
 
 %%%%% BIBLIOGRAFIA
 
@@ -479,7 +527,7 @@ We are thus forced to implement our effects at the library level and because the
         \url{https://bitbucket.org/pl-uwr/helium/src/master/}
 
     \bibitem{CoqIO}
-        \url{coq.io}
+        \url{https://coq.io}
 
     \bibitem{Agda}
         \url{https://github.com/agda/agda}

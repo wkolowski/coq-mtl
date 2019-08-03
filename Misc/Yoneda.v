@@ -32,4 +32,3 @@ Proof.
   unfold Yoneda, abstract, concretize.
   intro. rewrite fmap_id. reflexivity.
 Qed.
-
