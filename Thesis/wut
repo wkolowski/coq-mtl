@@ -1,7 +1,0 @@
-So, what types do we have at our disposal in Coq and how do we use them? Let's explore them by example, without giving the precise rules (which insiders will find boring and outsiders incomprehensible). (Un)surprisingly, there are only a few ways of forming types needed to encode all mathematics and computer science concepts.
-
-First, there are universes $\m{Prop}$ whose elements are types that represent propositions, and $\m{Type}$, whose elements are types that represent program specifications.
-
-Second, there is the dependent product type $\Pi x : A. B(x)$. Its elements are functions which take an input $x$ of type $A$ and return a result of type $B(x)$. Notice that the type of the result can depend on the argument - something that most programming languages don't allow.
-
-An example would be the type $\Pi P : \m{Type}. P \to P$ of functions that take as input a type $P$ and return a function of type $P \to P$ (here $P \to P$ is a shorthand for $\Pi (p : P). P$ - a situation where the codomain doesn't depend on the argument). One (and the only obvious one) such function is the identity, which we can define as $\m{id} \defn \lambda (P : \m{Type}) (p : P). p$. We can use this function by applying it to some arguments like this: $\m{id}(\m{nat})(42)$, where $\m{nat}$ is the type of natural numbers. This computes to give the answer $42$. The uniqueness rule also tells us that the function $\m{id}$ is the same as the function $\lambda (P : \m{Type}) (p : P). \m{id}(p)$.

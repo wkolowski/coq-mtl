@@ -77,11 +77,9 @@ You can then compile the project at any time using `make` and recompile (for exa
 ### General
 
 * Decide what should I write about in my thesis:
-  * Precise semantics of Functor, Applicative, Monad.
   * Equivalences between definitions.
   * Which laws are there, which ones are needed and which ones are redundant.
   * Not only which types implement which classes, but also which classes they can't implement.
-  * Develop pen and paper proofs so they can be put into the thesis.
 * Investigate concepts:
   * Commutative applicative functors.
   * Commutative monads.

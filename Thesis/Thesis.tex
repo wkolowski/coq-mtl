@@ -63,10 +63,9 @@ The rest of the thesis is structured as follows:
 
 \begin{itemize}
     \item In chapter 2 we discuss the problem of modeling computational effects in programming languages and compare existing approaches.
-    \item In chapter 3 we present our library \libname\ and discuss its design.
-    \item In chapter 4 we give some example effectful programs and prove their properties.
-    \item In chapter 5 we describe our approach to proof engineering (the formalized mathematic's equivalent of software engineering) in our library.
-    \item In chapter 6 we conclude and give some possible directions for further work.
+    \item In chapter 3 we present our library \libname\, discuss its design and implementation and explain our approach to proof engineering (the formalized mathematics' equivalent of software engineering).
+    \item In chapter 4 we demonstrate how to reason with the provided abstractions by proving some example effectful programs correct. We also prove a few general theorems and show that they may be useful for ordinary programmers.
+    \item In chapter 5 we conclude by discussing related and future work.
 \end{itemize}
 
 \section{Formal verification of hardware and software}
@@ -351,39 +350,55 @@ Another reason is that, even though in Coq we can't interact with the outside wo
 
 We are thus forced to implement our effects at the library level and because the \m{extensible-effects} approach depends crucially on many \m{mtl} abstractions as described earlier, we choose to implement the latter and leave the former for future work.
 
-\chapter{Design}
+\chapter{Design and implementation}
 
-3. A description of the inner workings of the library.
-3.1. File structure.
-3.2. Design choices:
-3.2.1. Practical comparison with 
-Experimenting with Monadic Equational Reasoning in Coq.
-3.2.2. Applicative-monad proposal etc.
-3.3. Implementation.
+1. Intro.
 
-Tools: why no ssreflect?
+2. File structure
 
-Theoretical comparison of the ease of use with Haskell and Idris.
+\section{Design choices}
 
-Tools: why no ssreflect?
+1. Classes vs canonical structures.
 
-Describe the axioms used for this development.
+2. Telescopes, classes with bundled laws etc. No setoids.
 
-\chapter{Examples}
+4. Axioms used in the proof: extensionality.
 
-4. Examples: some from Just Do It, maybe some custom ones.
+5. Proofs: why no ssreflect? Ltac vs reflection.
 
-\chapter{Theorems and proofs}
+\section{Implementation}
 
-Safety: some theorems and proofs.
+1. Functor, Applicative, Monad.
 
-5. More: a case study in proof engineering - how do the tactics hs, monad.
+2. Applicative-monad proposal etc.
+
+3. Laws and minimal sets of laws.
+
+3.5. A case study in proof engineering - how do the tactics hs, monad work.
+
+4. Transformers.
+
+5. Classes from JustDoIt. Improvements over mtl.
+
+\chapter{Examples, theorems and proofs}
+
+1. Reasoning with concrete monads: rewrite example from chapter 1.
+
+2. Reasoning with classes: towers of hanoi, fast product, JustDoIt.
+
+3. Some theorems and proofs:
+
+3.1. Laws for monad not minimal.
+
+3.2. Applicative is Monoidal.
+
+3.3. Equivalence of Monad definitions.
 
 \chapter{Conclusion}
 
 We have introduced \libname, a general purpose Coq library for formally verified programming with Haskell-style abstractions. We have centered our presentation on the matter effects, with which we dealt by implementing a collection of \m{mtl}-like abstractions whose main inspiration was \cite{JustDoIt}.
 
-In chapter 1 we gave some arguments for why formal verification is worth pursuing and introduced the Coq proof assistant. In chapter 2 we explained the basics of computational effects and outlined the main approaches. In chapter 3, we elucidated the design choices, which weren't really that many. In chapter 4, we have formalized some examples from \cite{JustDoIt} to show the viability of the library. In chapter 5 we saw some simple theorems which prove our implementation correct, but are also useful from a practical point of view. We also explained the mechanism behind our proof automation.
+In chapter 1 we gave some arguments for why formal verification is worth pursuing and introduced the Coq proof assistant. In chapter 2 we explained the basics of computational effects and outlined the main approaches. In chapter 3 we elucidated the design choices, which weren't really that many, described the implementation and explained the mechanism behind our proof automation. In chapter 4, we have formalized some examples from \cite{JustDoIt} to show the viability of the library. We also saw some simple theorems which prove our implementation correct, but are also useful from a practical point of view.
 
 \section{Technical details}
 
@@ -391,20 +406,32 @@ The source code and build instructions for \libname\ and the source code of this
 
 TODO: wrzucić to do OPAMa
 
+\section{Related work}
+
+There has been relatively little work on effects in Coq. \cite{MERC} is another attempt at an \m{mtl}-like library for Coq. It is similar to our work by also drawing inspiration from \cite{JustDoIt}, but differs in technical details (it uses canonical structures instead of classes) and focus (their motivation is formalization of programming languages).
+
+TODO 
+https://hal.archives-ouvertes.fr/file/index/docid/872324/filename/DDEP-coqstates.pdf
+
+https://hal.inria.fr/hal-01799712/document
+
+
+Remention mtl and extensible-effects. Mention Idris.
+
+
 \section{Further work}
 
-There's still some work to be done. The exact things to do can be found by looking at the \m{TODO} section in \m{README.md} and by searching the source code for the keywords \m{Abort}, \m{Admitted} and for the marker TODO.
+There's still some work to be done. The TODO list can be found by looking at the \m{TODO} section in \m{README.md} and by searching the source code for the keywords \m{Abort}, \m{Admitted} and for the marker TODO.
 
 First off, some proofs and instances are missing. For example, I could neither define an instance of \m{MonadExcept} for \m{FreeT} nor prove that none exists. The same is true for a few more transformer/class pairs.
 
-Notations could get some love too. The current do notations has the ugly 
-\m{;;} for computations that don't bind their result and I couldn't even define the idiom brackets of Idris using Coq's notation mechanism.
+Notations could get some love too. The current do notation requires the ugly \m{;;} for computations that don't bind their result and I couldn't even define the idiom brackets of Idris using Coq's notation mechanism.
 
 Some more theoretical work would be to formally characterize the minimal sets of laws for the various classes and some more practical work would be to implement other useful abstractions known from Haskell, like \m{Traversable} and \m{Foldable}.
 
-Another possibility is to rewrite the whole automation engine, so as to use proof by reflection \cite{ProofByReflection}, which is more reliable than just using Ltac. The beginning of this has been already accomplished with the tactic \m{reflect\_functor}, which implements basic principles of reasoning with functors.
+Another possibility is to rewrite the whole automation engine, so as to use proof by reflection \cite{CPDT}, which is more reliable than the more ad hoc tactics written in Ltac. The first step toward this goal was already made with the tactic \m{reflect\_functor}, which implements basic principles of reasoning with functors.
 
-Last but not least, as already hinted at, \libname\ is a great basis on which a library similar to Haskell's \m{extensible-effects} may be implemented.
+Last but not least, as already mentioned, \libname\ is a great basis on which a library similar to Haskell's \m{extensible-effects} may be implemented.
 
 %%%%% BIBLIOGRAFIA
 
@@ -534,6 +561,11 @@ Last but not least, as already hinted at, \libname\ is a great basis on which a 
 
     \bibitem{Idris}
         \url{https://www.idris-lang.org/}
+
+    \bibitem{MERC}
+        Reynald Affeldt, David Nowak, \\
+        \textit{Experimenting with Monadic EquationalReasoning in Coq} \\
+        \url{http://jssst.or.jp/files/user/taikai/2018/PPL/ppl2-2.pdf}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}
