@@ -410,14 +410,11 @@ TODO: wrzucić to do OPAMa
 
 There has been relatively little work on effects in Coq. \cite{MERC} is another attempt at an \m{mtl}-like library for Coq. It is similar to our work by also drawing inspiration from \cite{JustDoIt}, but differs in technical details (it uses canonical structures instead of classes) and focus (their motivation is formalization of programming languages).
 
-TODO 
-https://hal.archives-ouvertes.fr/file/index/docid/872324/filename/DDEP-coqstates.pdf
+There is one implementation of effects in Coq, available at \cite{CoqIO}, that allows one to define programs with IO and even concurrency and then extract the code to OCaml. This development is, however, rather obscure (there is not even a single paper about it). There are also an implementation of exceptions by means of a translation from the Calculus of Constructions to itself, realized in Coq as a plugin \cite{FailureIsNotAnOption}.
 
-https://hal.inria.fr/hal-01799712/document
+Besides, there has been some work on formally verifying programs with algebraic effects and handlers in Coq. \cite{CoqEff1} \cite{CoqEff2}
 
-
-Remention mtl and extensible-effects. Mention Idris.
-
+Among dependently typed languages most similar to Coq, only Idris seems to have a consciously designed effect system \cite{IdrisEffects}. Another, less similar language, that treats dependent types and effects natively is F* \cite{FStar}.
 
 \section{Further work}
 
@@ -566,6 +563,29 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
         Reynald Affeldt, David Nowak, \\
         \textit{Experimenting with Monadic EquationalReasoning in Coq} \\
         \url{http://jssst.or.jp/files/user/taikai/2018/PPL/ppl2-2.pdf}
+
+    \bibitem{FailureIsNotAnOption}
+        Pierre-Marie Pédrot, Nicolas Tabareau \\
+        \textit{Failure is Not an Option: An Exceptional Type Theory}, \\
+        \url{https://link.springer.com/chapter/10.1007/978-3-319-89884-1_9}
+
+    \bibitem{CoqEff1}
+        Jean-Guillaume Dumas, Dominique Duval, Burak Ekici, Damien Pous \\
+        \textit{Formal verification in Coq of program properties involving the global state effect}, \\
+        \url{https://hal.archives-ouvertes.fr/file/index/docid/872324/filename/DDEP-coqstates.pdf}
+
+    \bibitem{CoqEff2}
+        Thomas Letan, Yann Régis-Gianas, Pierre Chifflier, Guillaume Hiet, \\
+        \textit{Modular Verification of Programs with Effects and Effect Handlers in Coq}, \\
+        \url{https://hal.inria.fr/hal-01799712/document}
+
+    \bibitem{IdrisEffects}
+        Edwin C. Brady, \\
+        \textit{Programming and Reasoning with Algebraic Effects and Dependent Types}, \\
+        \url{https://eb.host.cs.st-andrews.ac.uk/drafts/effects.pdf}
+
+    \bibitem{FStar}
+        \url{https://www.fstar-lang.org/}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}
