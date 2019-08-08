@@ -404,17 +404,15 @@ In chapter 1 we gave some arguments for why formal verification is worth pursuin
 
 The source code and build instructions for \libname\ and the source code of this thesis can be found at \homepage. The code is extensively commented and this is the only available kind of documentation. Pull requests and suggestions are welcome.
 
-TODO: wrzucić to do OPAMa
-
 \section{Related work}
 
 There has been relatively little work on effects in Coq. \cite{MERC} is another attempt at an \m{mtl}-like library for Coq. It is similar to our work by also drawing inspiration from \cite{JustDoIt}, but differs in technical details (it uses canonical structures instead of classes) and focus (their motivation is formalization of programming languages).
 
-There is one implementation of effects in Coq, available at \cite{CoqIO}, that allows one to define programs with IO and even concurrency and then extract the code to OCaml. This development is, however, rather obscure (there is not even a single paper about it). There are also an implementation of exceptions by means of a translation from the Calculus of Constructions to itself, realized in Coq as a plugin \cite{FailureIsNotAnOption}.
+There is an implementation of effects in Coq, available at \cite{CoqIO}, that allows one to define programs with IO and even concurrency and then extract the code to OCaml. This development is, however, rather obscure (there is not even a single paper about it). There also is an implementation of exceptions by means of a translation from the Calculus of Constructions to itself, realized in Coq as a plugin \cite{FailureIsNotAnOption}.
 
-Besides, there has been some work on formally verifying programs with algebraic effects and handlers in Coq. \cite{CoqEff1} \cite{CoqEff2}
+Besides, there has been some work on formally verifying programs with algebraic effects and handlers in Coq \cite{CoqEff1} \cite{CoqEff2} and more generally, on effectful programming in Coq \cite{CoqEff3}.
 
-Among dependently typed languages most similar to Coq, only Idris seems to have a consciously designed effect system \cite{IdrisEffects}. Another, less similar language, that treats dependent types and effects natively is F* \cite{FStar}.
+Among dependently typed languages most similar to Coq, there has been some work on an effect system for Idris \cite{IdrisEffects}. Another languages that mixes dependent types and effects (and also refinement types) is F* \cite{FStar}.
 
 \section{Further work}
 
@@ -426,7 +424,7 @@ Notations could get some love too. The current do notation requires the ugly \m{
 
 Some more theoretical work would be to formally characterize the minimal sets of laws for the various classes and some more practical work would be to implement other useful abstractions known from Haskell, like \m{Traversable} and \m{Foldable}.
 
-Another possibility is to rewrite the whole automation engine, so as to use proof by reflection \cite{CPDT}, which is more reliable than the more ad hoc tactics written in Ltac. The first step toward this goal was already made with the tactic \m{reflect\_functor}, which implements basic principles of reasoning with functors.
+Another possibility is to rewrite the whole automation engine, so as to use proof by reflection \cite{CPDT}, which is more reliable than the more ad hoc tactics written in Ltac. The first step toward this goal has already been made with the tactic \m{reflect\_functor}, which implements basic principles of reasoning with functors.
 
 Last but not least, as already mentioned, \libname\ is a great basis on which a library similar to Haskell's \m{extensible-effects} may be implemented.
 
@@ -578,6 +576,11 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
         Thomas Letan, Yann Régis-Gianas, Pierre Chifflier, Guillaume Hiet, \\
         \textit{Modular Verification of Programs with Effects and Effect Handlers in Coq}, \\
         \url{https://hal.inria.fr/hal-01799712/document}
+
+    \bibitem{CoqEff3}
+        Greg Morrisett, \\
+        \textit{Programming with Effects in Coq}, \\
+        \url{https://link.springer.com/chapter/10.1007%2F978-3-540-70594-9_3}
 
     \bibitem{IdrisEffects}
         Edwin C. Brady, \\
