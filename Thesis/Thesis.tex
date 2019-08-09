@@ -4,6 +4,8 @@
 \documentclass[declaration,inz,english,shortabstract]{iithesis}
 
 \usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{svg}
 
 %%%%% DANE DO STRONY TYTULOWEJ
 % Niezaleznie od jezyka pracy wybranego w opcjach klasy, tytul i streszczenie
@@ -352,9 +354,14 @@ We are thus forced to implement our effects at the library level and because the
 
 \chapter{Design and implementation}
 
-1. Intro.
+In this chapter we describe the design and implementation of \libname. Most of the general design choices were made to match Haskell (module structure, naming of functions etc.), whereas the monadic effect classes are taken from \cite{JustDoIt}. This results in the hierarchy of classes and their implementations shown in figure \ref{fig:hierarchy}.
 
-2. File structure
+\begin{figure}
+    \centerline{\includegraphics[width=20cm]{Hierarchy.pdf}}
+    \caption{The library structure. Black boxes are classes, a black arrow from A to B means that class B depends on class A. Red ovals are class instances and a red arrow from A to B means that B is an instance of class A. A few classes were omitted (mainly variants of \m{MonadAlt}) and instances of the monadic effect classes (\m{MonadWriter} through \m{MonadFree}) were also omitted, as they would make the diagram unreadable.}
+    \label{fig:hierarchy}
+\end{figure}
+
 
 \section{Design choices}
 
@@ -499,12 +506,12 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
         \url{http://adam.chlipala.net/cpdt/}
 
     \bibitem{BillionDollarMistake}
-        Tony Hoare, \\
+        Tony Hoare,
         \textit{Null References: The Billion Dollar Mistake}, \\
         \url{https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/}
     
     \bibitem{CWM}
-        Saunders Mac Lane, \\
+        Saunders Mac Lane,
         \textit{Categories for the Working Mathematician}
 
     \bibitem{MonadTutorialFallacy}
@@ -522,7 +529,7 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{ExtensibleEffects}
         Oleg Kiselyov, Amr Sabry, Cameron Swords, \\
-        \textit{Extensible Effects. An Alternative to Monad Transformers},
+        \textit{Extensible Effects. An Alternative to Monad Transformers}, \\
         \url{http://okmij.org/ftp/Haskell/extensible/exteff.pdf}
 
     \bibitem{Freer}

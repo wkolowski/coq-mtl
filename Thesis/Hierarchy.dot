@@ -1,0 +1,58 @@
+digraph
+{
+  rankdir = LR
+
+  node[shape = rectangle]
+
+  Foldable
+
+  Functor -> Applicative
+  Functor -> Monoidal
+
+  Applicative -> CommutativeApplicative
+  Applicative -> Alternative
+  Applicative -> Monad
+  
+  Monoid -> MonadWriter
+
+  Monad ->
+  {
+    MonadWriter
+    MonadReader
+    MonadState
+    MonadFail
+    MonadAlt
+    MonadExcept
+    MonadFree
+  }
+
+  MonadFail -> MonadNondet
+  MonadAlt -> MonadNondet
+  MonadState -> MonadStateNondet
+  MonadNondet -> MonadStateNondet
+  
+  Monad -> MonadTrans
+
+  node[shape = oval, color = red]
+  edge[color = red]
+
+  Monad ->
+  {
+    Codensity
+    Identity
+  }
+
+  MonadTrans ->
+  {
+      ContT
+      FreeT
+      ListT
+      OptionT
+      ReaderT
+      /*RoseTreeT*/
+      RWST
+      StateT
+      SumT
+      WriterT
+  }
+}
