@@ -46,6 +46,6 @@ Proof.
     cbn. intros.
       case_eq (label l n); intros m1 t1 H1.
       case_eq (label r (S m1)); intros m2 t2 H2.
-      rewrite H1, H2 in H. inversion H; subst.
+      cbn in H. rewrite H1, H2 in H. inversion H; subst.
       rewrite (IHr _ _ _ H2), (IHl _ _ _ H1), plus_assoc. reflexivity.
 Qed.

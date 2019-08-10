@@ -41,13 +41,12 @@ Definition ap
     mf >>= fun f =>
     mx >>= fun x => pure (f x).
 
+(*
 Instance Applicative_Monad
   (M : Type -> Type) (inst : Monad M) : Applicative M :=
 {
     pure := @pure M inst;
     ap := @ap M inst;
 }.
-Proof.
-  unfold ap, bind, compose; intros.
-    rewrite join_fmap_fmap.
-    autorewrite with join.
+Abort.
+*)
