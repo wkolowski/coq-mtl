@@ -17,8 +17,14 @@ At last, this project ended up being my BSc thesis. This development is based on
 * Control/Monad/Class/ - monadic classes.
 * Misc/ — various things, not too interesting.
 * Parser/ — monadic parser combinators.
-* Theory/ — various theoretical results, relating applicative functors to monoidal functors, monads with bind to monads with join, kleisli triples to monads with bind and so on. A formalization of the 'Just Do It' paper also lives here.
+* Theory/ — various theoretical results, relating applicative functors to monoidal functors, monads with bind to monads with join, Kleisli triples to monads with bind and so on. A formalization of the 'Just Do It' paper also lives here.
 * Thesis/ - directory containing my thesis.
+
+## Classes and their instances
+
+![Classes and instances](Thesis/Hierarchy.jpg)
+
+A black box is a class. A black arrows goes from a superclass to a subclass. A red oval is an instance. A red arrow goes from a class to an instance of that class.
 
 ## Done
 
@@ -50,13 +56,13 @@ The most basic way to get things running is something along the lines of (probab
 ```
 git clone https://github.com/Zeimer/HSLib
 cd HSLib
-./rebuild.sh
+./build.sh
 ```
 
 Potential problems you may encounter:
 * permission denied — use sudo.
 * coq_makefile not found — probably your root user doesn't know where coq_makefile is. Try chown and chmod to allow your non-root user to run it.
-* ./rebuild.sh fails — a problem most likely related to CoqPath. Try COQPATH=path to HSLib on your computer.
+* `./build.sh` fails — a problem most likely related to CoqPath. Try COQPATH=path to HSLib on your computer.
 * incompatible version of Coq — the most recent commit known to work with Coq 8.9
 
 A more foolproof solution is therefore:
@@ -67,10 +73,17 @@ sudo chown -R your_username:your_username HSLib
 sudo chmod -R u+rwx HSLib
 COQPATH=$(pwd)
 cd HSLib
-sudo ./rebuild.sh
+sudo ./build.sh
 ```
 
-You can then compile the project at any time using `make` and recompile (for example in case you add a new file) using `./rebuild.sh`.
+The thesis can be built with
+
+```
+cd Thesis
+./buildthesis.sh
+```
+
+Note that this requires the command `dot` (GraphViz) and various latex-related stuff.
 
 ## TODO
 
@@ -111,10 +124,5 @@ You can then compile the project at any time using `make` and recompile (for exa
 * Check if the Lazy monad makes sense.
 * Implement the Set monad.
 
-### Technical
-
-* Revise the compilation steps from this README file.
-
 ### Potential
-* Try a different design in which laws come bundled in separate classes of Sort Prop (dubious).
 * Implement a reflective tactic for reasoning with applicatives, monads and so on.
