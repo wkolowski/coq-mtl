@@ -364,7 +364,15 @@ In this chapter we describe the design and implementation of \libname. Most of t
 
 \section{Design choices}
 
-\subsection{Classes, modules and canonical structures}
+\subsection{Typeclasses, canonical structures and modules}
+
+The good news is that Coq has various mechanisms for achieving abstraction and modularity, such as typeclasses, canonical structures \cite{CanonicalStructures1} \cite{CanonicalStructures2} \cite{CanonicalStructures3} and modules \cite{Modules1} \cite{Modules2}. The bad news is that these mechanisms are related, overlapping, and their use inside the standard library and in third party libraries is not very consistent. We will therefore try to explain the similarities and differences motivating our choice of using classes to implement the library.
+
+Typeclasses \cite{Classes1} \cite{Classes2} were originally invented for the purpose of overloading arithmetical operators in Haskell, but since then they were found to have many more applications and spread to other languages, like Rust.
+
+In Coq, typeclasses are basically parametrized dependent records (collections of fields where types of later fields can depend on values of earlier fields and all of the fields can depend on the parameters) together with the mechanism of instance search (implemented using ordinary proof search) and a priority mechanism for deciding between overlapping instances.
+
+In comparison to Haskell's, Coq's typeclasses are more powerful, as they are both first-class and higher-order. For example, in Coq we can have functions which take functions between typeclasses as inputs and return functions between typeclasses as outputs. Such constructions are not allowed in Haskell.
 
 
 
@@ -599,6 +607,14 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{FStar}
         \url{https://www.fstar-lang.org/}
+    
+    \bibitem{Classes1}
+        Matthieu Sozeau, Nicolas Oury,
+        \textit{First-Class Type Classes}, \\
+        \url{https://www.irif.fr/~sozeau/research/publications/First-Class_Type_Classes.pdf}
+
+    \bibitem{Classes2}
+        \url{https://coq.inria.fr/distrib/current/refman/addendum/type-classes.html}
 
     \bibitem{CanonicalStructures1}
         Georges Gonthier, Beta Ziliani, Aleksandar Nanevski, Derek Dreyer, \\
@@ -606,23 +622,17 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
         \url{https://software.imdea.org/~aleks/papers/lessadhoc/journal.pdf}
 
     \bibitem{CanonicalStructures2}
-        Assia Mahboubi, Enrico Tassi \\
+        Assia Mahboubi, Enrico Tassi, \\
         \textit{Canonical Structures for the working Coq user} \\
         \url{https://hal.inria.fr/hal-00816703v2/document}
 
     \bibitem{CanonicalStructures3}
         \url{https://coq.inria.fr/refman/addendum/canonical-structures.html}
-    
-    \bibitem{Classes1}
-        Matthieu Sozeau, Nicolas Oury, \\
-        \textit{First-Class Type Classes}
-        \url{https://www.irif.fr/~sozeau/research/publications/First-Class_Type_Classes.pdf}
-
-    \bibitem{Classes2}
-        \url{https://coq.inria.fr/distrib/current/refman/addendum/type-classes.html}
-    
 
     \bibitem{Modules1}
+        Jacek Chrząszcz,
+        \textit{Modules in Coq Are and Will Be Correct}, \\
+        \url{https://link.springer.com/chapter/10.1007%2F978-3-540-24849-1_9}
     \bibitem{Modules2}
         \url{https://coq.inria.fr/distrib/current/refman/language/module-system.html}
 \end{thebibliography}
