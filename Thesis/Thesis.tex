@@ -179,9 +179,9 @@ This concludes our introduction to the Coq proof assistant. From now on we will 
 
 \chapter{Effects}
 
-\section{Basic concepts}
-
 Although \libname\ is a rather general-purpose library, it also tackles the problem of how to best express (and program with) effects. The research on effects is still young and active, so in this chapter we will take a look at the basic concepts to gain some familiarity with it. However, to keep the exposition accessible to ordinary programmers, our treatment will be rather loose and hands-on.
+
+\section{Basic concepts}
 
 A \textbf{side effect} is some kind of communication with the outside world, like:
 
@@ -338,6 +338,10 @@ But probably the greatest advantage of this approach is its conceptual simplicit
 
 This conceptual simplicity is crucial for industry adoption. If the average Java programmer can't understand the basic ideas behind effects, there will be no wide adoption and thus no benefits from reduced number of bugs.
 
+\chapter{Design and implementation}
+
+In this chapter we describe the design and implementation of \libname. We motivate the library's design by discussing possible ways of implementing effects in Coq, design choices related to abstraction and modularity mechanisms, and matters related to formal correctness, including axioms and our approach to proof engineering.
+
 \section{Effects in Coq?}
 
 Now that we know the basics of effects, we can decide on how to best implement them in Coq.
@@ -346,23 +350,19 @@ First off, we need to recall that Coq implements Calculus of Inductive Construct
 
 Then we should ask ourselves, why do we want to have a way of expressing effects in Coq? After all, Coq is a proof assistant concerned mainly with theorem proving and formal verification that doesn't even support any kind of IO -- you can't use it to write the simplest Hello World program, you can't connect to a database, you can't use it to write a web server (but see \cite{CoqIO}).
 
-We can answer this by recalling that effects are not only about communication with the outside world -- they can also model control mechanisms like failure, exceptions or nondeterminism, and we surely want to make programming with these easier. The function \m{label} we saw at the end of the previous chapter could look way better expressed using the state effect.
+We can answer this by recalling that effects are not only about communication with the outside world -- they can also model control mechanisms like failure, exceptions or nondeterminism, and we surely want to make programming with these easier. The function \m{label} we saw at the end of chapter 1 could look way better expressed using the state effect.
 
 Another reason is that, even though in Coq we can't interact with the outside world, we may want to model programs or programming languages that can. At last, IO and other such effects may be added to Coq in the future and we want to be prepared for that (related languages, like Agda \cite{Agda} and Idris \cite{Idris} both have IO).
 
 We are thus forced to implement our effects at the library level and because the \m{extensible-effects} approach depends crucially on many \m{mtl} abstractions as described earlier, we choose to implement the latter and leave the former for future work.
 
-\chapter{Design and implementation}
-
-In this chapter we describe the design and implementation of \libname. Most of the general design choices were made to match Haskell (module structure, naming of functions etc.), whereas the monadic effect classes are taken from \cite{JustDoIt}. This results in the hierarchy of classes and their implementations shown in figure \ref{fig:hierarchy}.
+\section{Design choices}
 
 \begin{figure}
     \centerline{\includegraphics[width=20cm]{Hierarchy.pdf}}
     \caption{The library structure. Black boxes are classes, a black arrow from A to B means that class B depends on class A. Red ovals are class instances and a red arrow from A to B means that B is an instance of class A. A few classes were omitted (mainly variants of \m{MonadAlt}) and instances of the monadic effect classes (\m{MonadWriter} through \m{MonadFree}) were also omitted, as they would make the diagram unreadable.}
     \label{fig:hierarchy}
 \end{figure}
-
-\section{Design choices}
 
 \subsection{Typeclasses, canonical structures and modules}
 
@@ -374,6 +374,16 @@ In Coq, typeclasses are basically parametrized dependent records (collections of
 
 In comparison to Haskell's, Coq's typeclasses are more powerful, as they are both first-class and higher-order. For example, in Coq we can have functions which take functions between typeclasses as inputs and return functions between typeclasses as outputs. Such constructions are not allowed in Haskell.
 
+Canonical structures are a mechanism unique to Coq. They were introduced in a PhD thesis written in French \cite{CanonicalStructures0} and remain quite obscure since then, but see \cite{CanonicalStructures1} \cite{CanonicalStructures2} \cite{CanonicalStructures3}. They are built on the foundation of parametrized dependent records, just like typeclasses, but they differ from the latter in the instance search mechanism -- canonical structures are found using unification and not ad hoc proof search.
+
+They also lack native handling of overlapping instances and backtracking, but this can be remedied with some hacks (see the conclusion section of \cite{CanonicalStructures2} for a detailed comparison). They are usually coupled with the module mechanism -- this approach is well present in the Mathematical Components library \cite{MCB}, a spin-off of the formalizations of the Four Colour Theorem. \cite{FourColour1} \cite{FourColour2}
+
+The last of Coq's abstraction mechanisms is the module system \cite{Modules1} \cite{Modules2}, inspired by the module system of ML. A module, just like typeclasses and canonical structures, are very similar to parametrized dependent records (though not implemented using them), but they are less restrictive, because the body of a module can also contain vernacular commands, like inductive type definitions.
+
+It is precisely these inductive type definitions that forbid Coq modules from being first-class (it may come as a surprise, but defining a new type can be considered an effect!). Modules are also often used as namespaces, because all names declared in a module must be accessed by prefixing them with the module name, unless the module is imported into scope.
+
+
+Most of the basic design choices (the class hierarchy up to monad transformers, naming of modules nad functions, etc.) were made to match Haskell, whereas the monadic effect classes and their laws are taken from \cite{JustDoIt}. This results in the hierarchy of classes and their instances shown in figure \ref{fig:hierarchy}.
 
 
 \subsection{Rest}
@@ -616,6 +626,11 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
     \bibitem{Classes2}
         \url{https://coq.inria.fr/distrib/current/refman/addendum/type-classes.html}
 
+    \bibitem{CanonicalStructures0}
+        Amokrane Saïbi, \\
+        \textit{Outils Génériques de Modélisation et de Démonstration pour la Formalisation des Mathématiques en Théorie des Types. Application à la Théorie des Catégories.}, 1998, \\
+        \url{https://tel.archives-ouvertes.fr/tel-00523810/file/Saibi_-_1999_-_Outils_GA_nA_riques_de_modA_lisation_et_de_dA_monstration_pour_la_Formalisation_des_MathA_matiques_en_thA_orie_des_Types_Application_A_la_thA_orie_des_catA_gories.pdf}
+
     \bibitem{CanonicalStructures1}
         Georges Gonthier, Beta Ziliani, Aleksandar Nanevski, Derek Dreyer, \\
         \textit{How to make ad hoc proof automationless ad hoc}, \\
@@ -629,10 +644,15 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
     \bibitem{CanonicalStructures3}
         \url{https://coq.inria.fr/refman/addendum/canonical-structures.html}
 
+    \bibitem{MCB}
+        Assia Mahboubi and Enrico Tassi with contributions by Yves Bertot and Georges Gonthier, \\
+        \url{https://math-comp.github.io/mcb/}
+
     \bibitem{Modules1}
         Jacek Chrząszcz,
         \textit{Modules in Coq Are and Will Be Correct}, \\
         \url{https://link.springer.com/chapter/10.1007%2F978-3-540-24849-1_9}
+
     \bibitem{Modules2}
         \url{https://coq.inria.fr/distrib/current/refman/language/module-system.html}
 \end{thebibliography}
