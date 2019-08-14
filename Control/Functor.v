@@ -1,4 +1,4 @@
-Require Export HSLib.Base.
+Require Export Base.
 
 (** A standard presentation of Haskell-style functors. The intended
     categorical semantics is a functor in the category of Coq's

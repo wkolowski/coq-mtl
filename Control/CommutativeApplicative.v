@@ -1,4 +1,4 @@
-Require Export HSLib.Control.Applicative.
+Require Export Control.Applicative.
 
 (** An applicative functor is commutative if its [ap]'s arguments can be
     evaluated in any order. The categorical semantics is therefore along

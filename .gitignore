@@ -15,6 +15,7 @@ makefile
 *.log
 *.out
 *.toc
+*.pyg
 
 .vscode
 _minted*

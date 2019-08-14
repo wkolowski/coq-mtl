@@ -129,7 +129,7 @@ Coercion instA : MonadNondet >-> MonadAlt.
 
 End S0.
 
-Require Import HSLib.Control.Monad.All.
+Require Import Control.Monad.All.
 
 Instance MonadFail_List : MonadFail Monad_List :=
 {

@@ -1,4 +1,4 @@
-Require Export HSLib.Control.Functor.
+Require Export Control.Functor.
 
 (** Auxiliary functions needed to define [Monoidal]. *)
 Definition reassoc

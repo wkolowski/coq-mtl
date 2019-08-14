@@ -5,7 +5,6 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
-\usepackage{svg}
 
 %%%%% DANE DO STRONY TYTULOWEJ
 % Niezaleznie od jezyka pracy wybranego w opcjach klasy, tytul i streszczenie
@@ -374,25 +373,23 @@ In Coq, typeclasses are basically parametrized dependent records (collections of
 
 In comparison to Haskell's, Coq's typeclasses are more powerful, as they are both first-class and higher-order. For example, in Coq we can have functions which take functions between typeclasses as inputs and return functions between typeclasses as outputs. Such constructions are not allowed in Haskell.
 
-Canonical structures are a mechanism unique to Coq. They were introduced in a PhD thesis written in French \cite{CanonicalStructures0} and remain quite obscure since then, but see \cite{CanonicalStructures1} \cite{CanonicalStructures2} \cite{CanonicalStructures3}. They are built on the foundation of parametrized dependent records, just like typeclasses, but they differ from the latter in the instance search mechanism -- canonical structures are found using unification and not ad hoc proof search.
+Canonical structures are a mechanism unique to Coq. They were introduced in a 1998 French PhD thesis \cite{CanonicalStructures0} and remain quite obscure since then, but see \cite{CanonicalStructures1} \cite{CanonicalStructures2} \cite{CanonicalStructures3}. They are built on the foundation of parametrized dependent records, just like typeclasses, but they differ from the latter in the instance search mechanism -- canonical structures are found using unification and not ad hoc proof search.
 
 They also lack native handling of overlapping instances and backtracking, but this can be remedied with some hacks (see the conclusion section of \cite{CanonicalStructures2} for a detailed comparison). They are usually coupled with the module mechanism -- this approach is well present in the Mathematical Components library \cite{MCB}, a spin-off of the formalizations of the Four Colour Theorem. \cite{FourColour1} \cite{FourColour2}
 
 The last of Coq's abstraction mechanisms is the module system \cite{Modules1} \cite{Modules2}, inspired by the module system of ML. A module, just like typeclasses and canonical structures, are very similar to parametrized dependent records (though not implemented using them), but they are less restrictive, because the body of a module can also contain vernacular commands, like inductive type definitions.
 
-It is precisely these inductive type definitions that forbid Coq modules from being first-class (it may come as a surprise, but defining a new type can be considered an effect!). Modules are also often used as namespaces, because all names declared in a module must be accessed by prefixing them with the module name, unless the module is imported into scope.
+It is precisely these inductive type definitions that forbid Coq modules from being first-class (it may come as a surprise, but defining a new type can be considered an effect, because new named constants are added into the environment). Modules are also often used as namespaces, because all names declared in a module must be accessed by prefixing them with the module name, unless the module is imported into scope.
 
+Our abstraction and modularity mechanism of choice were typeclasses. The most important reason was that we wanted the library to be intelligible to people with Haskell background, so all the basic design choices (not only the uses of classes, but also the whole class hierarchy up to monad transformers, naming of modules and functions, etc.) were made to match Haskell. An additional motivation was that the only other work on monads in Coq \cite{MERC} uses canonical structures. Together with the monadic effect classes taken from \cite{JustDoIt}, this results in the hierarchy of classes and their instances shown in figure \ref{fig:hierarchy}.
 
-Most of the basic design choices (the class hierarchy up to monad transformers, naming of modules nad functions, etc.) were made to match Haskell, whereas the monadic effect classes and their laws are taken from \cite{JustDoIt}. This results in the hierarchy of classes and their instances shown in figure \ref{fig:hierarchy}.
+\subsection{Telescopes, setoids and other exotic animals}
 
+\subsection{Axioms}
 
-\subsection{Rest}
+A very important property of every Coq development is being axiom free. The main reason is that the computational content of type theory is very axiom-sensitive. Because every axiom is just an element of some type, postulating it breaks the important property of canonicity. For example, if we postulate an axiom \m{nimber} of type \m{nat}, how does the term \m{nimber + 42} evaluate? The answer is that we don't know (or rather, it doesn't), because the definition of addition only handles the cases of zero and successor. This term is therefore stuck, i.e. it ``doesn't compute''.
 
-2. Telescopes, classes with bundled laws etc. No setoids.
-
-4. Axioms used in the proof: extensionality.
-
-5. Proofs: why no ssreflect? Ltac vs reflection.
+\libname\ doesn't have this property. This is because a lot of monad laws (and other laws too), to be proved, require the functional extensionality axiom, which states that two functions are equal as soon as they have equal results for all inputs. We therefore adopt this axiom from the very beginning and use it wherever we need it without explicit mention. The resulting loss of canonicity isn't that bad, however, because it only prevents us from performing some computations with equality proofs, which are not at all important. We therefore consider adopting this axiom to be justified.
 
 \section{Implementation}
 
@@ -402,7 +399,9 @@ Most of the basic design choices (the class hierarchy up to monad transformers, 
 
 3. Laws and minimal sets of laws.
 
-3.5. A case study in proof engineering - how do the tactics hs, monad work.
+\subsection{Proofs}
+
+why no ssreflect? Ltac vs reflection. A case study in proof engineering - how do the tactics hs, monad work.
 
 4. Transformers.
 

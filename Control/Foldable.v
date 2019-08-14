@@ -1,5 +1,5 @@
-Require Export HSLib.Base.
-Require Import HSLib.Misc.Monoid.
+Require Export Base.
+Require Import Misc.Monoid.
 
 Require Import Arith.
 

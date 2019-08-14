@@ -5,4 +5,4 @@
 dot Hierarchy.dot -Tpdf -o Hierarchy.pdf
 
 # Compile the thesis.
-latexmk -pdf -f -quiet -interaction=nonstopmode
+latexmk -pdf -f -quiet -interaction=nonstopmode # -synctex=1 -file-line-error -shell-escape
