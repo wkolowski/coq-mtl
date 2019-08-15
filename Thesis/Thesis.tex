@@ -357,12 +357,6 @@ We are thus forced to implement our effects at the library level and because the
 
 \section{Design choices}
 
-\begin{figure}
-    \centerline{\includegraphics[width=20cm]{Hierarchy.pdf}}
-    \caption{The library structure. Black boxes are classes, a black arrow from A to B means that class B depends on class A. Red ovals are class instances and a red arrow from A to B means that B is an instance of class A. A few classes were omitted (mainly variants of \m{MonadAlt}) and instances of the monadic effect classes (\m{MonadWriter} through \m{MonadFree}) were also omitted, as they would make the diagram unreadable.}
-    \label{fig:hierarchy}
-\end{figure}
-
 \subsection{Typeclasses, canonical structures and modules}
 
 The good news is that Coq has various mechanisms for achieving abstraction and modularity, such as typeclasses, canonical structures \cite{CanonicalStructures1} \cite{CanonicalStructures2} \cite{CanonicalStructures3} and modules \cite{Modules1} \cite{Modules2}. The bad news is that these mechanisms are related, overlapping, and their use inside the standard library and in third party libraries is not very consistent. We will therefore try to explain the similarities and differences motivating our choice of using classes to implement the library.
@@ -371,19 +365,229 @@ Typeclasses \cite{Classes1} \cite{Classes2} were originally invented for the pur
 
 In Coq, typeclasses are basically parametrized dependent records (collections of fields where types of later fields can depend on values of earlier fields and all of the fields can depend on the parameters) together with the mechanism of instance search (implemented using ordinary proof search) and a priority mechanism for deciding between overlapping instances.
 
-In comparison to Haskell's, Coq's typeclasses are more powerful, as they are both first-class and higher-order. For example, in Coq we can have functions which take functions between typeclasses as inputs and return functions between typeclasses as outputs. Such constructions are not allowed in Haskell.
+\begin{listing}[H]
 
-Canonical structures are a mechanism unique to Coq. They were introduced in a 1998 French PhD thesis \cite{CanonicalStructures0} and remain quite obscure since then, but see \cite{CanonicalStructures1} \cite{CanonicalStructures2} \cite{CanonicalStructures3}. They are built on the foundation of parametrized dependent records, just like typeclasses, but they differ from the latter in the instance search mechanism -- canonical structures are found using unification and not ad hoc proof search.
+\begin{minted}
+[
+    frame=lines,
+    bgcolor=CoqIDE,
+    linenos
+]{Coq}
+    
+Class Semigroup (A : Type) : Type :=
+{
+    op : A -> A -> A;
+    assoc : forall x y z : A, op (op x y) z = op x (op y z);
+}.
+
+\end{minted}
+
+\caption{Semigroups represented with typeclasses}
+\label{SgrClass}
+
+\end{listing}
+
+Canonical structures are a mechanism unique to Coq. They were introduced in a 1998 PhD thesis in French \cite{CanonicalStructures0} and remain quite obscure since then, but there were some attempts at explaining them better \cite{CanonicalStructures1} \cite{CanonicalStructures2} \cite{CanonicalStructures3}. They are built on the foundation of parametrized dependent records, just like typeclasses, but they differ from the latter in the instance search mechanism -- canonical structures are found using unification and not ad hoc proof search.
 
 They also lack native handling of overlapping instances and backtracking, but this can be remedied with some hacks (see the conclusion section of \cite{CanonicalStructures2} for a detailed comparison). They are usually coupled with the module mechanism -- this approach is well present in the Mathematical Components library \cite{MCB}, a spin-off of the formalizations of the Four Colour Theorem. \cite{FourColour1} \cite{FourColour2}
+
+\begin{listing}[H]
+
+\begin{minted}
+[
+    frame=lines,
+    bgcolor=CoqIDE,
+    linenos
+]{Coq}
+
+Module Semigroup.
+
+    Record class (A : Type) := Class
+    {
+        op' : A -> A -> A;
+        assoc : forall x y z : A, op' (op' x y) z = op' x (op' y z);
+    }.
+
+    Structure type := Pack
+    {
+        obj : Type;
+        class_of : class obj;
+    }.
+
+    Definition op (e : type) : obj e -> obj e -> obj e :=
+    let 'Pack _ (Class _ op' _) := e in op'.
+
+    Arguments op {e} x y : simpl never.
+    Arguments Class {A} op'.
+
+End Semigroup.
+
+\end{minted}
+
+\caption{Semigroups represented with canonical structures (and modules)}
+\label{SgrCS}
+
+\end{listing}
 
 The last of Coq's abstraction mechanisms is the module system \cite{Modules1} \cite{Modules2}, inspired by the module system of ML. A module, just like typeclasses and canonical structures, are very similar to parametrized dependent records (though not implemented using them), but they are less restrictive, because the body of a module can also contain vernacular commands, like inductive type definitions.
 
 It is precisely these inductive type definitions that forbid Coq modules from being first-class (it may come as a surprise, but defining a new type can be considered an effect, because new named constants are added into the environment). Modules are also often used as namespaces, because all names declared in a module must be accessed by prefixing them with the module name, unless the module is imported into scope.
 
-Our abstraction and modularity mechanism of choice were typeclasses. The most important reason was that we wanted the library to be intelligible to people with Haskell background, so all the basic design choices (not only the uses of classes, but also the whole class hierarchy up to monad transformers, naming of modules and functions, etc.) were made to match Haskell. An additional motivation was that the only other work on monads in Coq \cite{MERC} uses canonical structures. Together with the monadic effect classes taken from \cite{JustDoIt}, this results in the hierarchy of classes and their instances shown in figure \ref{fig:hierarchy}.
+\begin{listing}[H]
 
-\subsection{Telescopes, setoids and other exotic animals}
+\begin{minted}
+[
+    frame=lines,
+    bgcolor=CoqIDE,
+    linenos
+]{Coq}
+
+Module Type Semigroup.
+
+    Parameter A : Type.
+    Parameter op : A -> A -> A.
+    Axiom assoc :
+        forall x y z : A, op (op x y) z = op x (op y z).
+
+End Semigroup.
+
+\end{minted}
+
+\caption{Semigroups represented with modules}
+\label{SgrModule}
+
+\end{listing}
+
+Listings \ref{SgrClass} \ref{SgrCS} \ref{SgrModule} show example formalizations of the concept of semigroup, a basic algebraic structure which consists of a type with an associative binary operation, using all three approaches. They all look very much alike, except that the solution using canonical structures is longer, because one usually formalizes both the bundled and unbundled version of the concept (see next section for explanation).
+
+Our abstraction and modularity mechanism of choice were typeclasses. The most important reason was that we wanted the library to be intelligible to people with Haskell background, so all the basic design choices (not only the uses of classes, but also the whole class hierarchy up to monad transformers, naming of modules and functions, etc.) were made to match Haskell. An additional motivation was that the only other work on monads in Coq \cite{MERC} uses canonical structures, so we wanted try something different. Together with the monadic effect classes taken from \cite{JustDoIt}, this results in the hierarchy of classes and their instances shown in figure \ref{fig:hierarchy}.
+
+\subsection{Bundles, outlaws, setoids and other exotic animals}
+
+Choosing typeclasses as our abstraction mechanism doesn't exhaust the design space yet. In comparison to Haskell's, Coq's typeclasses are way more powerful, as they are both first-class and higher-order. For example, in Coq we can have functions which take functions between typeclasses as inputs and return functions between typeclasses as outputs, whereas in Haskell such constructions are not allowed. This particular example is a bit artificial, but when implementing a class hierarchy in Coq, there are at least three additional design choices that have to be made which are not available in Haskell.
+
+\begin{listing}[H]
+
+\begin{minted}
+[
+    frame=lines,
+    bgcolor=CoqIDE,
+    linenos
+]{Coq}
+
+Class Semigroup : Type :=
+{
+    A : Type;
+    op : A -> A -> A;
+    assoc : forall x y z : A, op (op x y) z = op x (op y z);
+}.
+
+\end{minted}
+
+\caption{The bundled approach}
+\label{Bundled}
+
+\end{listing}
+
+\begin{listing}[H]
+
+\begin{minted}
+[
+    frame=lines,
+    bgcolor=CoqIDE,
+    linenos
+]{Coq}
+
+Class Semigroup (A : Type) : Type :=
+{
+    op : A -> A -> A;
+    assoc : forall x y z : A, op (op x y) z = op x (op y z);
+}.
+
+\end{minted}
+
+\caption{The unbundled approach}
+\label{Unbundled}
+
+\end{listing}
+
+The first one I will call bundling -- our classes can be either bundled or to some degree unbundled, as shown in listings \ref{Bundled} \ref{Unbundled}. 
+
+\begin{listing}[H]
+
+\begin{minted}
+[
+    frame=lines,
+    bgcolor=CoqIDE,
+    linenos
+]{Coq}
+
+Class Semigroup : Type :=
+{
+    A : Type;
+    op : A -> A -> Type;
+}.
+
+Coercion A : Semigroup >-> Sortclass.
+
+Class SemigroupLaws (S : Semigroup) : Prop :=
+{
+    assoc : forall x y z : S, op (op x y) z = op x (op y z);
+}.
+
+Class LawfulSemigroup : Type :=
+{
+    sgr : Semigroup;
+    laws : SemigroupLaws sgr;
+}.
+
+\end{minted}
+
+\caption{The (bundled) lawless approach}
+\label{Lawless}
+
+\end{listing}
+
+\begin{listing}[H]
+
+\begin{minted}
+[
+    frame=lines,
+    bgcolor=CoqIDE,
+    linenos
+]{Coq}
+
+Class Setoid : Type :=
+{
+    carrier : Type;
+    eqv : carrier -> carrier -> Prop;
+    refl : forall x : carrier, eqv x x;
+    sym : forall x y : carrier, eqv x y -> eqv y x;
+    trans : forall x y z : carrier, eqv x y -> eqv y z -> eqv x z;
+}.
+
+Coercion carrier : Setoid >-> Sortclass.
+
+Class Semigroup : Type :=
+{
+    A : Setoid;
+    op : A -> A -> A;
+    assoc : forall x y z : A, eqv (op (op x y) z) (op x (op y z));
+}.
+
+\end{minted}
+
+\caption{The (bundled) setoid approach}
+\label{Setoid}
+
+\end{listing}
+
+
+\begin{figure}
+    \centerline{\includegraphics[width=20cm]{Hierarchy.pdf}}
+    \caption{The library structure. Black boxes are classes, a black arrow from A to B means that class B depends on class A. Red ovals are class instances and a red arrow from A to B means that B is an instance of class A. A few classes were omitted (mainly variants of \m{MonadAlt}) and instances of the monadic effect classes (\m{MonadWriter} through \m{MonadFree}) were also omitted, as they would make the diagram unreadable.}
+    \label{fig:hierarchy}
+\end{figure}
 
 \subsection{Axioms}
 
