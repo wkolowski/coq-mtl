@@ -460,11 +460,11 @@ End Semigroup.
 
 Listings \ref{SgrClass} \ref{SgrCS} \ref{SgrModule} show example formalizations of the concept of semigroup, a basic algebraic structure which consists of a type with an associative binary operation, using all three approaches. They all look very much alike, except that the solution using canonical structures is longer, because one usually formalizes both the bundled and unbundled version of the concept (see next section for explanation).
 
-Our abstraction and modularity mechanism of choice were typeclasses. The most important reason was that we wanted the library to be intelligible to people with Haskell background, so all the basic design choices (not only the uses of classes, but also the whole class hierarchy up to monad transformers, naming of modules and functions, etc.) were made to match Haskell. An additional motivation was that the only other work on monads in Coq \cite{MERC} uses canonical structures, so we wanted try something different. Together with the monadic effect classes taken from \cite{JustDoIt}, this results in the hierarchy of classes and their instances shown in figure \ref{fig:hierarchy}.
+Our abstraction and modularity mechanism of choice were typeclasses. The most important reason was that we wanted the library to be intelligible to people with Haskell background. An additional motivation was that the only other work on monads in Coq \cite{MERC} uses canonical structures, so we wanted try something different.
 
 \subsection{Bundles, outlaws, setoids and other exotic animals}
 
-Choosing typeclasses as our abstraction mechanism doesn't exhaust the design space yet. In comparison to Haskell's, Coq's typeclasses are way more powerful, as they are both first-class and higher-order. For example, in Coq we can have functions which take functions between typeclasses as inputs and return functions between typeclasses as outputs, whereas in Haskell such constructions are not allowed. This particular example is a bit artificial, but when implementing a class hierarchy in Coq, there are at least three additional design choices that have to be made which are not available in Haskell.
+Choosing typeclasses as our abstraction mechanism doesn't exhaust the design space yet. In comparison to Haskell's, Coq's typeclasses are way more powerful, as they are both first-class and higher-order. For example, in Coq we can have functions which take functions between typeclasses as inputs and return functions between typeclasses as outputs, whereas in Haskell such constructions are not allowed. This particular example is a bit artificial, but when implementing a class hierarchy in Coq, there are at least three additional design choices that we can make but which are not available in Haskell.
 
 \begin{listing}[H]
 
@@ -511,7 +511,9 @@ Class Semigroup (A : Type) : Type :=
 
 \end{listing}
 
-The first one I will call bundling -- our classes can be either bundled or to some degree unbundled, as shown in listings \ref{Bundled} \ref{Unbundled}. 
+The first one I will call bundling. A bundled class is one that has no parameters -- all the aspects of the concept being formalized are represented using fields. An example is shown in listing \ref{Bundled}. An unbundled class is one where some of the fields were moved to become parameters instead, as shown in listing \ref{Unbundled}. A class can be unbundled to various degrees -- in our example, we have only unbundled the type \m{A}, but we could have also unbundled the operation \m{op}.
+
+The bundled approach is better when we are interested in treating our concepts as objects on which we will operate. The unbundled approach is better when we want to use typeclasses as interfaces, which link the class' parameters to its fields. Another advantage of the unbundled approach is that we can put an unbundled class together with its parameters in a new class (in a way very similar to that from listing \ref{SgrCS}) to recover the bundled version of this class. The other way around (recovering an unbundled class from its bundled version) is harder. We will therefore follow the unbundled approach.
 
 \begin{listing}[H]
 
@@ -548,6 +550,12 @@ Class LawfulSemigroup : Type :=
 
 \end{listing}
 
+Another approach to class design, whose example is shown in listing \ref{Lawless}, I will call the lawful/lawless approach. The idea is a bit similar to bundling/unbundling: a lawful class is one that contains all the relevant laws, whereas in the lawless approach we split a class into two: the ``main'' class with all the data and operations and the ``laws'' class that contains all the (equational or other) laws that these data and operations should satisfy.
+
+There are a few reasons why one might want to split laws from the main class. First, we may be interested in how fast the resulting code will execute in Coq (and not only after extraction), while carrying around proofs of all the laws and computing with them may slow down the execution speed. Second, we might want users of our classes to be able to program without having to worry about any proofs. Third, we might be interested in proving some nontrivial properties, like equivalence of various classes (we will do this in chapter 4), in which case having to prove equality of proofs of the laws might be notoriously annoying.
+
+For \libname\ we adopt the lawful approach because we are interested not in programming per se, but in formally verified programming. In practice, it turns out that the lawful approach doesn't have a big impact on execution speed. Since we are interested in proving class equivalences for practical purposes (to allow the programmer to implement what's easiest for him but get everything), we don't need to do deal with proof equality in our proofs.
+
 \begin{listing}[H]
 
 \begin{minted}
@@ -573,6 +581,8 @@ Class Semigroup : Type :=
     A : Setoid;
     op : A -> A -> A;
     assoc : forall x y z : A, eqv (op (op x y) z) (op x (op y z));
+    op_eqv : forall x x' y y' : A,
+                eqv x x' -> eqv y y' -> eqv (op x y) (op x' y');
 }.
 
 \end{minted}
@@ -582,6 +592,15 @@ Class Semigroup : Type :=
 
 \end{listing}
 
+The last thing we could do is using setoids instead of types to formalize the concepts of interest. A setoid is a type together with an equivalence relation and this approach boils down to replacing all types wiht setoids and adding the necessary compatibility laws for operations, as shown in listing \ref{Setoid}.
+
+The main use of setoids is dealing with equality -- because we cannot form quotient types in Coq, any kind of mathematics that requires quotients (algebra), gluing (topology), or just simply changing the notion of equality for a particular structure, needs to be carried out using setoids. We would need to use them if we wanted to focus on the category-theoretical aspect of monads and monad transformers, but since we are interested mainly in the practical aspects, we will not need any setoids.
+
+To sum it up, bundled classes are best used for formalizing mathematics, with setoids when in need of quotients/gluing, whereas unbundled classes are best used for representing interfaces, possibly without the laws if we care only about programming and not proving.
+
+\subsection{The final class hierarchy}
+
+The choices we made mostly exhaust the design space. All other basic basic design choices (the class hierarchy up to monad transformers, naming of modules and functions, etc.) were made to match Haskell. Together with the monadic effect classes taken from \cite{JustDoIt}, this results in the hierarchy of classes and their instances shown in figure \ref{fig:hierarchy}.
 
 \begin{figure}
     \centerline{\includegraphics[width=20cm]{Hierarchy.pdf}}
@@ -594,6 +613,9 @@ Class Semigroup : Type :=
 A very important property of every Coq development is being axiom free. The main reason is that the computational content of type theory is very axiom-sensitive. Because every axiom is just an element of some type, postulating it breaks the important property of canonicity. For example, if we postulate an axiom \m{nimber} of type \m{nat}, how does the term \m{nimber + 42} evaluate? The answer is that we don't know (or rather, it doesn't), because the definition of addition only handles the cases of zero and successor. This term is therefore stuck, i.e. it ``doesn't compute''.
 
 \libname\ doesn't have this property. This is because a lot of monad laws (and other laws too), to be proved, require the functional extensionality axiom, which states that two functions are equal as soon as they have equal results for all inputs. We therefore adopt this axiom from the very beginning and use it wherever we need it without explicit mention. The resulting loss of canonicity isn't that bad, however, because it only prevents us from performing some computations with equality proofs, which are not at all important. We therefore consider adopting this axiom to be justified.
+
+\chapter{Implementation, examples and theorems}
+
 
 \section{Implementation}
 
@@ -610,8 +632,6 @@ why no ssreflect? Ltac vs reflection. A case study in proof engineering - how do
 4. Transformers.
 
 5. Classes from JustDoIt. Improvements over mtl.
-
-\chapter{Examples, theorems and proofs}
 
 1. Reasoning with concrete monads: rewrite example from chapter 1.
 
