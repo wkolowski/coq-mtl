@@ -21,7 +21,7 @@
 % w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
 % w ponizszym poleceniu mozna zlamac poleceniem \fmlinebreak
 \advisor        {prof dr rehabilitowany Wpisuyashi TODO}
-\date           {wrzesień 2019}                     % Data zlozenia pracy
+\date           {10 września 2019}                     % Data zlozenia pracy
 % Dane do oswiadczenia o autorskim wykonaniu
 %\transcriptnum {}                     % Numer indeksu
 %\advisorgen    {dr. Jana Kowalskiego} % Nazwisko promotora w dopelniaczu
@@ -337,9 +337,9 @@ But probably the greatest advantage of this approach is its conceptual simplicit
 
 This conceptual simplicity is crucial for industry adoption. If the average Java programmer can't understand the basic ideas behind effects, there will be no wide adoption and thus no benefits from reduced number of bugs.
 
-\chapter{Design and implementation}
+\chapter{Design}
 
-In this chapter we describe the design and implementation of \libname. We motivate the library's design by discussing possible ways of implementing effects in Coq, design choices related to abstraction and modularity mechanisms, and matters related to formal correctness, including axioms and our approach to proof engineering.
+In this chapter we describe the design and implementation of \libname. We motivate the library's design by discussing possible ways of implementing effects in Coq, design choices related to abstraction and modularity mechanisms, various ways of using classes for formalizing concepts, and the matter of axioms.
 
 \section{Effects in Coq?}
 
@@ -355,15 +355,13 @@ Another reason is that, even though in Coq we can't interact with the outside wo
 
 We are thus forced to implement our effects at the library level and because the \m{extensible-effects} approach depends crucially on many \m{mtl} abstractions as described earlier, we choose to implement the latter and leave the former for future work.
 
-\section{Design choices}
+\section{Typeclasses, canonical structures and modules}
 
-\subsection{Typeclasses, canonical structures and modules}
-
-The good news is that Coq has various mechanisms for achieving abstraction and modularity, such as typeclasses, canonical structures \cite{CanonicalStructures1} \cite{CanonicalStructures2} \cite{CanonicalStructures3} and modules \cite{Modules1} \cite{Modules2}. The bad news is that these mechanisms are related, overlapping, and their use inside the standard library and in third party libraries is not very consistent. We will therefore try to explain the similarities and differences motivating our choice of using classes to implement the library.
+The good news is that Coq has various mechanisms for achieving abstraction and modularity, such as typeclasses, canonical structures and modules. The bad news is that these mechanisms are related, overlapping, and their use inside the standard library and in third party libraries is not very consistent. We will therefore try to explain the similarities and differences motivating our choice of using typeclasses to implement the library.
 
 Typeclasses \cite{Classes1} \cite{Classes2} were originally invented for the purpose of overloading arithmetical operators in Haskell, but since then they were found to have many more applications and spread to other languages, like Rust.
 
-In Coq, typeclasses are basically parametrized dependent records (collections of fields where types of later fields can depend on values of earlier fields and all of the fields can depend on the parameters) together with the mechanism of instance search (implemented using ordinary proof search) and a priority mechanism for deciding between overlapping instances.
+In Coq, typeclasses are basically parametrized dependent records (collections of fields where types of later fields can depend on values of earlier fields and all of the fields can depend on the parameters) together with the mechanism of instance search (implemented using ordinary proof search) and a priority mechanism for deciding between overlapping instances. Listing \ref{SgrClass} shows an example use of typeclasses to formalize a semigroup, a very simple algebraic structure that consists of a type together with an associative binary operation.
 
 \begin{listing}[H]
 
@@ -389,7 +387,7 @@ Class Semigroup (A : Type) : Type :=
 
 Canonical structures are a mechanism unique to Coq. They were introduced in a 1998 PhD thesis in French \cite{CanonicalStructures0} and remain quite obscure since then, but there were some attempts at explaining them better \cite{CanonicalStructures1} \cite{CanonicalStructures2} \cite{CanonicalStructures3}. They are built on the foundation of parametrized dependent records, just like typeclasses, but they differ from the latter in the instance search mechanism -- canonical structures are found using unification and not ad hoc proof search.
 
-They also lack native handling of overlapping instances and backtracking, but this can be remedied with some hacks (see the conclusion section of \cite{CanonicalStructures2} for a detailed comparison). They are usually coupled with the module mechanism -- this approach is well present in the Mathematical Components library \cite{MCB}, a spin-off of the formalizations of the Four Colour Theorem. \cite{FourColour1} \cite{FourColour2}
+They also lack native handling of overlapping instances and backtracking, but this can be remedied with some hacks (see the conclusion section of \cite{CanonicalStructures2} for a detailed comparison of typeclasses and canonical structures). They are usually coupled with the module mechanism -- this approach is well present in the Mathematical Components library \cite{MCB}, a spin-off of the formalization of the Four Colour Theorem \cite{FourColour1} \cite{FourColour2}. Listing \ref{SgrCS} shows a formalization of semigroups using canonical structures.
 
 \begin{listing}[H]
 
@@ -431,7 +429,7 @@ End Semigroup.
 
 The last of Coq's abstraction mechanisms is the module system \cite{Modules1} \cite{Modules2}, inspired by the module system of ML. A module, just like typeclasses and canonical structures, are very similar to parametrized dependent records (though not implemented using them), but they are less restrictive, because the body of a module can also contain vernacular commands, like inductive type definitions.
 
-It is precisely these inductive type definitions that forbid Coq modules from being first-class (it may come as a surprise, but defining a new type can be considered an effect, because new named constants are added into the environment). Modules are also often used as namespaces, because all names declared in a module must be accessed by prefixing them with the module name, unless the module is imported into scope.
+It is precisely these inductive type definitions that forbid Coq modules from being first-class (it may come as a surprise, but defining a new type can be considered an effect, because new named constants are added into the environment). Modules are also often used as namespaces, because all names declared in a module must be accessed by prefixing them with the module name, unless the module is imported into scope. Listing \ref{SgrModule} shows a formalization of semigroups using modules (or, to be more precise, module types).
 
 \begin{listing}[H]
 
@@ -458,13 +456,13 @@ End Semigroup.
 
 \end{listing}
 
-Listings \ref{SgrClass} \ref{SgrCS} \ref{SgrModule} show example formalizations of the concept of semigroup, a basic algebraic structure which consists of a type with an associative binary operation, using all three approaches. They all look very much alike, except that the solution using canonical structures is longer, because one usually formalizes both the bundled and unbundled version of the concept (see next section for explanation).
+Listings \ref{SgrClass}, \ref{SgrCS} and \ref{SgrModule} all look very much alike, except that the solution using canonical structures is longer, because one usually formalizes both the bundled and unbundled version of the concept (see next section for explanation).
 
 Our abstraction and modularity mechanism of choice were typeclasses. The most important reason was that we wanted the library to be intelligible to people with Haskell background. An additional motivation was that the only other work on monads in Coq \cite{MERC} uses canonical structures, so we wanted try something different.
 
-\subsection{Bundles, outlaws, setoids and other exotic animals}
+\section{Bundles, outlaws, setoids and other exotic animals}
 
-Choosing typeclasses as our abstraction mechanism doesn't exhaust the design space yet. In comparison to Haskell's, Coq's typeclasses are way more powerful, as they are both first-class and higher-order. For example, in Coq we can have functions which take functions between typeclasses as inputs and return functions between typeclasses as outputs, whereas in Haskell such constructions are not allowed. This particular example is a bit artificial, but when implementing a class hierarchy in Coq, there are at least three additional design choices that we can make but which are not available in Haskell.
+Choosing typeclasses as our abstraction mechanism doesn't exhaust the design space yet. In comparison to Haskell's, Coq's typeclasses are way more powerful, as they are both first-class and higher-order. For example, in Coq we can have functions which take functions between typeclasses as inputs and return functions between typeclasses as outputs, whereas in Haskell such constructions are not allowed. This particular example is a bit artificial, but when implementing a class hierarchy in Coq, there are at least three additional design choices that we can make which are not available in Haskell.
 
 \begin{listing}[H]
 
@@ -511,9 +509,9 @@ Class Semigroup (A : Type) : Type :=
 
 \end{listing}
 
-The first one I will call bundling. A bundled class is one that has no parameters -- all the aspects of the concept being formalized are represented using fields. An example is shown in listing \ref{Bundled}. An unbundled class is one where some of the fields were moved to become parameters instead, as shown in listing \ref{Unbundled}. A class can be unbundled to various degrees -- in our example, we have only unbundled the type \m{A}, but we could have also unbundled the operation \m{op}.
+The first one I will call bundling. A bundled class is one that has no parameters -- all the aspects of the concept being formalized are represented using fields. An example is shown in listing \ref{Bundled}. An unbundled class is one where some of the fields were moved to become parameters instead, as shown in listing \ref{Unbundled}. A class can be unbundled to various degrees -- in our example, we have only unbundled the type \m{A}, but we could have also unbundled the operation \m{op} (or even the law \m{assoc}, but that would be silly).
 
-The bundled approach is better when we are interested in treating our concepts as objects on which we will operate. The unbundled approach is better when we want to use typeclasses as interfaces, which link the class' parameters to its fields. Another advantage of the unbundled approach is that we can put an unbundled class together with its parameters in a new class (in a way very similar to that from listing \ref{SgrCS}) to recover the bundled version of this class. The other way around (recovering an unbundled class from its bundled version) is harder. We will therefore follow the unbundled approach.
+The bundled approach is better when we are interested in treating our concepts as objects on which we will operate. The unbundled approach is better when we want to use typeclasses as interfaces, which link the class parameters to its fields. Another advantage of the unbundled approach is that we can put an unbundled class together with its parameters in a new class (in a way very similar to that from listing \ref{SgrCS}) to recover the bundled version of this class. The other way around (recovering an unbundled class from its bundled version) is harder. We will therefore follow the unbundled approach.
 
 \begin{listing}[H]
 
@@ -552,9 +550,9 @@ Class LawfulSemigroup : Type :=
 
 Another approach to class design, whose example is shown in listing \ref{Lawless}, I will call the lawful/lawless approach. The idea is a bit similar to bundling/unbundling: a lawful class is one that contains all the relevant laws, whereas in the lawless approach we split a class into two: the ``main'' class with all the data and operations and the ``laws'' class that contains all the (equational or other) laws that these data and operations should satisfy.
 
-There are a few reasons why one might want to split laws from the main class. First, we may be interested in how fast the resulting code will execute in Coq (and not only after extraction), while carrying around proofs of all the laws and computing with them may slow down the execution speed. Second, we might want users of our classes to be able to program without having to worry about any proofs. Third, we might be interested in proving some nontrivial properties, like equivalence of various classes (we will do this in chapter 4), in which case having to prove equality of proofs of the laws might be notoriously annoying.
+There are a few reasons why one might want to split laws from the main class. First, we may be interested in how fast the resulting code will execute in Coq (and not only after extraction), and carrying around proofs of all the laws and computing with them may slow down the execution speed. Second, we might want users of our classes to be able to program without having to prove anything at all. Third, we might be interested in proving some nontrivial properties, like equivalence of various classes (we will do this in chapter 4), in which case having to prove equality of proofs of the laws might be notoriously annoying or even require introducing an additional axiom -- the Proof Irrelevance Axiom.
 
-For \libname\ we adopt the lawful approach because we are interested not in programming per se, but in formally verified programming. In practice, it turns out that the lawful approach doesn't have a big impact on execution speed. Since we are interested in proving class equivalences for practical purposes (to allow the programmer to implement what's easiest for him but get everything), we don't need to do deal with proof equality in our proofs.
+For \libname\ we adopt the lawful approach because we are interested not in programming per se, but in formally verified programming. In practice, it turns out that the lawful approach doesn't have a big impact on execution speed. Since we are interested in proving typeclass equivalences for practical purposes (to allow the programmer to implement what's easiest for him but get everything), we don't need to do deal with proof equality in our proofs.
 
 \begin{listing}[H]
 
@@ -594,7 +592,7 @@ Class Semigroup : Type :=
 
 The last thing we could do is using setoids instead of types to formalize the concepts of interest. A setoid is a type together with an equivalence relation and this approach boils down to replacing all types wiht setoids and adding the necessary compatibility laws for operations, as shown in listing \ref{Setoid}.
 
-The main use of setoids is dealing with equality -- because we cannot form quotient types in Coq, any kind of mathematics that requires quotients (algebra), gluing (topology), or just simply changing the notion of equality for a particular structure, needs to be carried out using setoids. We would need to use them if we wanted to focus on the category-theoretical aspect of monads and monad transformers, but since we are interested mainly in the practical aspects, we will not need any setoids.
+The main use of setoids is in dealing with equality -- because we cannot form quotient types in Coq, any kind of mathematics that requires quotients (algebra), gluing (topology), or just simply changing the notion of equality for a particular structure, needs to be carried out using setoids. We would need to use them if we wanted to focus on the category-theoretical aspect of monads and monad transformers, but since we are interested mainly in the practical aspects, we will not need any setoids.
 
 To sum it up, bundled classes are best used for formalizing mathematics, with setoids when in need of quotients/gluing, whereas unbundled classes are best used for representing interfaces, possibly without the laws if we care only about programming and not proving.
 
@@ -608,42 +606,44 @@ The choices we made mostly exhaust the design space. All other basic basic desig
     \label{fig:hierarchy}
 \end{figure}
 
-\subsection{Axioms}
+\section{Axioms}
 
 A very important property of every Coq development is being axiom free. The main reason is that the computational content of type theory is very axiom-sensitive. Because every axiom is just an element of some type, postulating it breaks the important property of canonicity. For example, if we postulate an axiom \m{nimber} of type \m{nat}, how does the term \m{nimber + 42} evaluate? The answer is that we don't know (or rather, it doesn't), because the definition of addition only handles the cases of zero and successor. This term is therefore stuck, i.e. it ``doesn't compute''.
 
-\libname\ doesn't have this property. This is because a lot of monad laws (and other laws too), to be proved, require the functional extensionality axiom, which states that two functions are equal as soon as they have equal results for all inputs. We therefore adopt this axiom from the very beginning and use it wherever we need it without explicit mention. The resulting loss of canonicity isn't that bad, however, because it only prevents us from performing some computations with equality proofs, which are not at all important. We therefore consider adopting this axiom to be justified.
+\libname\ doesn't have the property of being axiom free. This is because a lot of monad laws (and other laws too), to be proved, require the Functional Extensionality Axiom, which states that two functions are equal as soon as they have equal results for all inputs. We therefore adopt this axiom from the very beginning and use it wherever we need it without explicit mention. The resulting loss of canonicity isn't that bad, however, because it only prevents us from performing some computations with equality proofs, which are not at all important. We therefore consider adopting this axiom to be justified.
 
-\chapter{Implementation, examples and theorems}
-
+\chapter{Implementation, examples and theorems - TODO}
 
 \section{Implementation}
 
-1. Functor, Applicative, Monad.
+\begin{itemize}
+    \item Functor, Applicative, Monad.
+    \item Discuss the applicative-monad proposal and the fact that every monad is monoidal (induces an \m{Applicative} instance) but in two nonequivalent ways (different evaluation order).
+    \item Discuss the laws that we adopt to remedy this and the non-minimality of applicative/monad laws.
+    \item Transformers.
+    \item Proof engineering: discuss the basic design (why no ssreflect), Ltac vs reflection.
+    \item Proof engineering: describe how do the tactics hs, monad work.
+    \item Some cleverness and fixing -- \m{ListT} and \m{Free} instances defined using Church encoding.
+    \item Mention that such instances satisfy all laws by reflexivity.
+    \item Classes from JustDoIt. Some deeper discussion of improvements over mtl.
+\end{itemize}
 
-2. Applicative-monad proposal etc.
+\section{Examples}
 
-3. Laws and minimal sets of laws.
+\begin{itemize}
+    \item Reasoning with concrete monads: rewrite example from chapter 1.
+    \item Reasoning with classes: towers of hanoi, fast product.
+    \item Compare the above with the pen-and-paper proof from \cite{JustDoIt}
+    \item Mention that \cite{JustDoIt} is mostly formalized.
+\end{itemize}
 
-\subsection{Proofs}
+\section{Theorems}
 
-why no ssreflect? Ltac vs reflection. A case study in proof engineering - how do the tactics hs, monad work.
-
-4. Transformers.
-
-5. Classes from JustDoIt. Improvements over mtl.
-
-1. Reasoning with concrete monads: rewrite example from chapter 1.
-
-2. Reasoning with classes: towers of hanoi, fast product, JustDoIt.
-
-3. Some theorems and proofs:
-
-3.1. Laws for monad not minimal.
-
-3.2. Applicative is Monoidal.
-
-3.3. Equivalence of Monad definitions.
+\begin{itemize}
+    \item Explain why such ``abstract'' theorems are useful from a practical point of view.
+    \item Applicative is Monoidal.
+    \item Equivalence of Monad definitions.
+\end{itemize}
 
 \chapter{Conclusion}
 
