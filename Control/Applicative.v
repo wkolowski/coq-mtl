@@ -14,11 +14,12 @@ Class Applicative (F : Type -> Type) : Type :=
     pure : forall {A : Type}, A -> F A;
     ap : forall {A B : Type}, F (A -> B) -> F A -> F B;
     identity :
-      forall (A : Type) (ax : F A),
-        ap (pure id) ax = ax;
+      forall (A : Type) (ax : F A), ap (pure id) ax = ax;
     composition :
-      forall (A B C : Type) (af : F (A -> B)) (ag : F (B  -> C)) (ax : F A),
-        ap (ap (ap (pure compose) ag) af) ax = ap ag (ap af ax);
+      forall
+        (A B C : Type)
+        (f : F (A -> B)) (g : F (B  -> C)) (x : F A),
+          ap (ap (ap (pure compose) g) f) x = ap g (ap f x);
     homomorphism :
       forall (A B : Type) (f : A -> B) (x : A),
         ap (pure f) (pure x) = pure (f x);

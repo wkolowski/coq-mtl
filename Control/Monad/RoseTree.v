@@ -50,8 +50,8 @@ Instance Applicative_RT : Applicative RT :=
 Proof.
   all: cbn; intros.
     cbn. rewrite (@fmap_id _ Functor_RT). reflexivity.
-    induction ag as [g | gl IHgl gr IHgr]; cbn.
-      induction af as [f | fl IHfl fr IHfr]; cbn.
+    induction g as [g | gl IHgl gr IHgr]; cbn.
+      induction f as [f | fl IHfl fr IHfr]; cbn.
         rewrite (@fmap_comp' _ Functor_RT). reflexivity.
         rewrite IHfl, IHfr. reflexivity.
       rewrite IHgl, IHgr. reflexivity.

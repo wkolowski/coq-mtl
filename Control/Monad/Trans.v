@@ -9,13 +9,16 @@ Class MonadTrans (T : (Type -> Type) -> Type -> Type) : Type :=
 {
     is_monad : forall (M : Type -> Type), Monad M -> Monad (T M);
     lift :
-      forall {M : Type -> Type} {_inst : Monad M} {A : Type}, M A -> T M A;
+      forall {M : Type -> Type} {_inst : Monad M} {A : Type},
+        M A -> T M A;
     lift_pure :
       forall (M : Type -> Type) {_inst : Monad M} (A : Type) (x : A),
         lift (pure x) = pure x;
     lift_bind :
-      forall {M : Type -> Type} {_inst : Monad M} (A B : Type) (x : M A)
-        (f : A -> M B), lift (x >>= f) = lift x >>= (f .> lift)
+      forall
+        {M : Type -> Type} {_inst : Monad M} (A B : Type)
+        (x : M A) (f : A -> M B),
+          lift (x >>= f) = lift x >>= (f .> lift)
 }.
 
 (** A tactic for dealing with functor instances specific to monad

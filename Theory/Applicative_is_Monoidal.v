@@ -34,9 +34,9 @@ Instance Monoidal_Applicative
 Proof.
   all: unfold pure_Monoidal, ap_Monoidal; intros; monoidal.
     rewrite !par_comp. cbn. unfold apply.
-      rewrite <- (pairF_default_l _ (pairF ag (pairF af ax))).
+      rewrite <- (pairF_default_l _ (pairF g (pairF f x))).
       rewrite <- ?pairF_assoc, <- ?fmap_comp'. repeat f_equal.
-      ext p. destruct p as [[[u g] f] x]. cbn. reflexivity.
+      ext p. destruct p as [[[u g'] f'] x']. cbn. reflexivity.
     rewrite <- fmap_comp'. reflexivity.
     rewrite <- fmap_comp', par_comp. cbn.
       replace (fun p : (A -> B) * unit => id (fst p) x)

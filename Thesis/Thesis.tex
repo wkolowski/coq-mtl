@@ -129,14 +129,13 @@ How does this play out in practice? Let's take a look at an example development,
 
 \definecolor{CoqIDE}{RGB}{255,248,220}
 
-\begin{inputminted}
+\inputminted
 [
     frame=lines,
     bgcolor=CoqIDE,
     linenos
 ]
 {Coq}{snippets/snippet1.v}
-\end{inputminted}
 
 A Coq file consists of a series of commands, which define types and terms, import and export modules, state or look up theorems etc. In this file we want to implement a function that labels the leaves of a tree with natural numbers starting from $0$.
 
@@ -614,7 +613,145 @@ A very important property of every Coq development is being axiom free. The main
 
 \chapter{Implementation, examples and theorems - TODO}
 
+In this chapter we describe the implementation of our library, including some subtleties that we didn't foresee coming during design, explain our approach to proof automation (how to prove all these laws without too much labor), give some example use cases of our library and prove a few theorems which may seem unnecessary at first, but turn out to have some practical use.
+
 \section{Implementation}
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=8,
+        lastline=16
+    ]
+    {Coq}{../Control/Functor.v}
+
+    \caption{The \m{Functor} typeclass}
+    \label{Functor}
+\end{listing}
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=11,
+        lastline=33
+    ]
+    {Coq}{../Control/Applicative.v}
+
+    \caption{The \m{Applicative} typeclass}
+    \label{Applicative}
+\end{listing}
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=21,
+        lastline=39
+    ]
+    {Coq}{../Control/Monad.v}
+
+    \caption{The \m{Monad} typeclass}
+    \label{Monad}
+\end{listing}
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=60,
+        lastline=73
+    ]
+    {Coq}{../Control/Monad.v}
+
+    \caption{Monad notations}
+    \label{MonadNotations}
+\end{listing}
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=9,
+        lastline=25
+    ]
+    {Coq}{../Control/Monad/Free.v}
+
+    \caption{The \m{Free} monad}
+    \label{Free}
+\end{listing}
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=8,
+        lastline=22
+    ]
+    {Coq}{../Control/Monad/Trans.v}
+
+    \caption{The \m{MonadTrans} typeclass}
+    \label{MonadTrans}
+\end{listing}
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=7,
+        lastline=22
+    ]
+    {Coq}{../Control/Monad/Trans/ListT.v}
+
+    \caption{ListT monad transformer}
+    \label{ListT}
+\end{listing}
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=78,
+        lastline=100
+    ]
+    {Coq}{../Base.v}
+
+    \caption{Base tactics}
+    \label{BaseTactics}
+\end{listing}
+
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=6,
+        lastline=12
+    ]
+    {Coq}{../Control/Monad/Class/MonadFail.v}
+
+    \caption{The \m{MonadFail} typeclass}
+    \label{MonadFail}
+\end{listing}
 
 \begin{itemize}
     \item Functor, Applicative, Monad.

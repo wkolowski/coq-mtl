@@ -103,7 +103,7 @@ Instance Applicative_List : Applicative list :=
 Proof.
   3, 5: hs.
   induction ax; cbn in *; rewrite ?IHax; reflexivity.
-  induction af as [| f fs]; induction ag as [| g gs]; cbn; intros.
+  induction f as [| f fs]; induction g as [| g gs]; cbn; intros.
     reflexivity.
     rewrite ?ap_list_nil_r. cbn. reflexivity.
     reflexivity.
