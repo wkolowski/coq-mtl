@@ -57,7 +57,7 @@ Definition pairF_Applicative
 Hint Unfold default_Applicative pairF_Applicative : HSLib.
 
 (** The proof is quite easy, nothing to see here. *)
-Instance Applicative_isMonoidal
+Instance Applicative_Monoidal
   (F : Type -> Type) (inst : Applicative F) : Monoidal F :=
 {
     is_functor := inst;

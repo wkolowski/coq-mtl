@@ -1,4 +1,4 @@
-Require Export Base.
+Require Export HSLib.Base.
 
 (** This module aims to check whether [Applicative]'s laws are orthogonal,
     i.e. independent from each other. We take an axiomatic approach.
@@ -60,6 +60,13 @@ Proof.
   rewrite <- fmap_pure_ap, fmap_id. reflexivity.
 Qed.
 
+Lemma homomorphism' :
+  fmap_pure_ap -> fmap_pure -> homomorphism.
+Proof.
+  compute. intros fmap_pure_ap fmap_pure A B f x.
+  rewrite <- fmap_pure_ap, fmap_pure. reflexivity.
+Qed.
+
 Lemma fmap_id' :
   fmap_pure_ap -> identity -> fmap_id.
 Proof.
@@ -73,11 +80,4 @@ Lemma fmap_pure' :
 Proof.
   compute. intros fmap_pure_ap homomorphism A B f x.
   rewrite fmap_pure_ap, homomorphism. reflexivity.
-Qed.
-
-Lemma homomorphism' :
-  fmap_pure_ap -> fmap_pure -> homomorphism.
-Proof.
-  compute. intros fmap_pure_ap fmap_pure A B f x.
-  rewrite <- fmap_pure_ap, fmap_pure. reflexivity.
 Qed.

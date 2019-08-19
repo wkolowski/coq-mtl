@@ -1,4 +1,4 @@
-Require Export Applicative_minimal.
+Require Export ApplicativeLaws.
 
 (** We continue the approach started in the module [Applicative_minimal].
     We rename [F] to [M] for convenience. *)

@@ -632,6 +632,10 @@ In this chapter we describe the implementation of our library, including some su
     \label{Functor}
 \end{listing}
 
+At the root of the library are, of course, functors, shown in listing \ref{Functor}. There should be nothing surprising to people who know them from Haskell, maybe except that the laws are now part of the definition. Note that we use \m{.>} to denote forward function composition, so that \m{f .> g} \m{fun x => g (f x)}
+
+A few category-theoretical remarks: unlike Haskell types and functions, which do \textit{not} form a category (see \cite{Hask} for details), Coq types and functions do form a category (or to be more precise, we can form a category whose objects are types from a given universe and morphisms are functions between them). The \m{Functor} typeclass represents functors in this category. Note that all functors \m{F} are strong in the sense that there is a morphism \m{strength : A -> F B -> F (A * B)}.
+
 \begin{listing}
     \inputminted
     [
@@ -639,13 +643,50 @@ In this chapter we describe the implementation of our library, including some su
         bgcolor=CoqIDE,
         linenos,
         firstline=11,
-        lastline=33
+        lastline=34
     ]
     {Coq}{../Control/Applicative.v}
 
     \caption{The \m{Applicative} typeclass}
     \label{Applicative}
 \end{listing}
+
+The next step in the typeclass hierarchy are \m{Applicative} functors, shown in listing \ref{Applicative}. From the definition we see that an \m{Applicative} functor is a \m{Functor} into which we can inject a value (the function \m{pure}) and which allows to apply a function wrapped in the functor to an argument wrapped in the functor (the function \m{ap}, which is short for ``apply'').
+
+These two operations, \m{pure} and \m{ap}, have to satisfy some laws and this is the first time that some subtle complications arise. The four laws that are usually presented (such as in \cite{LYAH}) are \m{identity}, \m{composition}, \m{homomorphism} and \m{interchange}. Other sources (like \cite{HackageApplicative} and \cite{WikibooksApplicative}) sometimes also mention a fifth law, \m{fmap\_pure\_ap}, but they often either state that this law follows from naturality and the other laws or they keep quiet about it.
+
+In Coq naturality is not internalized (and in fact it can be broken by assuming classical axioms like the Law of Excludded Middle), so this law does not follow from the others. A more intuitive reason is that the other four laws don't mention any \m{Functor} concept at all, so there's no way to link \m{fmap} with \m{pure} and \m{ap} in any way. This is why we include this law in our definition.
+
+This is not the end of the troubles, however, because it turns out that this set of five laws is not minimal. For example, \m{identity} follows from \m{fmap\_pure\_ap} and \m{fmap\_id} (for details, see the file \m{Theory/Laws/ApplicativeLaws.v}). It could lead us to drop \m{identity} from the definition of \m{Applicative}, but we decided not to.
+
+\begin{listing}
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=17,
+        lastline=35
+    ]
+    {Coq}{../Control/Monoidal.v}
+
+    \caption{The \m{Monoidal} typeclass}
+    \label{Monoidal}
+\end{listing}
+
+
+
+
+\begin{itemize}
+    \item Discuss the applicative-monad proposal and the fact that every monad is monoidal (induces an \m{Applicative} instance) but in two nonequivalent ways (different evaluation order).
+    \item Discuss the laws that we adopt to remedy this and the non-minimality of monad laws.
+    \item Transformers.
+    \item Proof engineering: discuss the basic design (why no ssreflect), Ltac vs reflection.
+    \item Proof engineering: describe how do the tactics hs, monad work.
+    \item Some cleverness and fixing -- \m{ListT} and \m{Free} instances defined using Church encoding.
+    \item Mention that such instances satisfy all laws by reflexivity.
+    \item Classes from JustDoIt. Some deeper discussion of improvements over mtl.
+\end{itemize}
 
 \begin{listing}
     \inputminted
@@ -752,18 +793,6 @@ In this chapter we describe the implementation of our library, including some su
     \caption{The \m{MonadFail} typeclass}
     \label{MonadFail}
 \end{listing}
-
-\begin{itemize}
-    \item Functor, Applicative, Monad.
-    \item Discuss the applicative-monad proposal and the fact that every monad is monoidal (induces an \m{Applicative} instance) but in two nonequivalent ways (different evaluation order).
-    \item Discuss the laws that we adopt to remedy this and the non-minimality of applicative/monad laws.
-    \item Transformers.
-    \item Proof engineering: discuss the basic design (why no ssreflect), Ltac vs reflection.
-    \item Proof engineering: describe how do the tactics hs, monad work.
-    \item Some cleverness and fixing -- \m{ListT} and \m{Free} instances defined using Church encoding.
-    \item Mention that such instances satisfy all laws by reflexivity.
-    \item Classes from JustDoIt. Some deeper discussion of improvements over mtl.
-\end{itemize}
 
 \section{Examples}
 
@@ -1015,6 +1044,20 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{Modules2}
         \url{https://coq.inria.fr/distrib/current/refman/language/module-system.html}
+
+    \bibitem{Hask}
+        \url{https://wiki.haskell.org/Hask}
+
+    \bibitem{LYAH}
+        Miran Lipovača, \\
+        \textit{Learn You a Haskell for Great Good}, \\
+        \url{http://learnyouahaskell.com/functors-applicative-functors-and-monoids#applicative-functors}
+
+    \bibitem{HackageApplicative}
+        \url{https://hackage.haskell.org/package/base-4.12.0.0/docs/Control-Applicative.html}
+
+    \bibitem{WikibooksApplicative}
+        \url{https://en.wikibooks.org/wiki/Haskell/Applicative_functors}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}
