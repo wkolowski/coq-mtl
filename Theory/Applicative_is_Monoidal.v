@@ -56,7 +56,12 @@ Definition pairF_Applicative
 
 Hint Unfold default_Applicative pairF_Applicative : HSLib.
 
-(** The proof is quite easy, nothing to see here. *)
+(*Hint Remove fmap_pure_ap : HSLib.*)
+
+(** The proof is quite easy, nothing to see here.
+    Note that [fmap_pure_ap] is not necessary in the big rewrite
+    alternative ||, but the tactic [hs] uses it, so it's necessary
+    to prove the equivalence. *)
 Instance Applicative_Monoidal
   (F : Type -> Type) (inst : Applicative F) : Monoidal F :=
 {
@@ -68,7 +73,7 @@ Proof.
   all: hs;
   repeat (
     rewrite identity || rewrite homomorphism ||
-    rewrite fmap_pure_ap || rewrite <- composition ||
+    (*rewrite fmap_pure_ap ||*) rewrite <- composition ||
     rewrite interchange
   );
   reflexivity.

@@ -611,13 +611,13 @@ A very important property of every Coq development is being axiom free. The main
 
 \libname\ doesn't have the property of being axiom free. This is because a lot of monad laws (and other laws too), to be proved, require the Functional Extensionality Axiom, which states that two functions are equal as soon as they have equal results for all inputs. We therefore adopt this axiom from the very beginning and use it wherever we need it without explicit mention. The resulting loss of canonicity isn't that bad, however, because it only prevents us from performing some computations with equality proofs, which are not at all important. We therefore consider adopting this axiom to be justified.
 
-\chapter{Implementation, examples and theorems - TODO}
+\chapter{Implementation, examples and theorems}
 
 In this chapter we describe the implementation of our library, including some subtleties that we didn't foresee coming during design, explain our approach to proof automation (how to prove all these laws without too much labor), give some example use cases of our library and prove a few theorems which may seem unnecessary at first, but turn out to have some practical use.
 
 \section{Implementation}
 
-\begin{listing}
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
@@ -632,11 +632,11 @@ In this chapter we describe the implementation of our library, including some su
     \label{Functor}
 \end{listing}
 
-At the root of the library are, of course, functors, shown in listing \ref{Functor}. There should be nothing surprising to people who know them from Haskell, maybe except that the laws are now part of the definition. Note that we use \m{.>} to denote forward function composition, so that \m{f .> g} \m{fun x => g (f x)}
+At the root of the library are, of course, functors, shown in listing \ref{Functor}. There should be nothing surprising to people who know them from Haskell, maybe except that the laws are now part of the definition. Note that we use \m{.>} to denote forward function composition, so that \m{f .> g} means \m{fun x => g (f x)}
 
-A few category-theoretical remarks: unlike Haskell types and functions, which do \textit{not} form a category (see \cite{Hask} for details), Coq types and functions do form a category (or to be more precise, we can form a category whose objects are types from a given universe and morphisms are functions between them). The \m{Functor} typeclass represents functors in this category. Note that all functors \m{F} are strong in the sense that there is a morphism \m{strength : A -> F B -> F (A * B)}.
+A few category-theoretical remarks: unlike Haskell types and functions, which do \textit{not} form a category (see \cite{Hask} for details), Coq types and functions do form a category (or to be more precise, we can form a category whose objects are types from a given universe and morphisms are functions between them). The \m{Functor} typeclass represents endofunctors in this category. Note that all such functors \m{F} are strong in the sense that there is a morphism \m{strength : A -> F B -> F (A * B)}.
 
-\begin{listing}
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
@@ -653,20 +653,20 @@ A few category-theoretical remarks: unlike Haskell types and functions, which do
 
 The next step in the typeclass hierarchy are \m{Applicative} functors, shown in listing \ref{Applicative}. From the definition we see that an \m{Applicative} functor is a \m{Functor} into which we can inject a value (the function \m{pure}) and which allows to apply a function wrapped in the functor to an argument wrapped in the functor (the function \m{ap}, which is short for ``apply'').
 
-These two operations, \m{pure} and \m{ap}, have to satisfy some laws and this is the first time that some subtle complications arise. The four laws that are usually presented (such as in \cite{LYAH}) are \m{identity}, \m{composition}, \m{homomorphism} and \m{interchange}. Other sources (like \cite{HackageApplicative} and \cite{WikibooksApplicative}) sometimes also mention a fifth law, \m{fmap\_pure\_ap}, but they often either state that this law follows from naturality and the other laws or they keep quiet about it.
+These two operations, \m{pure} and \m{ap}, have to satisfy some laws and this is the first time that some subtle complications arise. The four laws that are usually presented (such as in \cite{LYAH}) are \m{identity}, \m{composition}, \m{homomorphism} and \m{interchange}. Other sources (like \cite{HackageApplicative} and \cite{WikibooksApplicative}) also mention a fifth law, \m{fmap\_pure\_ap}, but they often either state that this law follows from the other laws using naturality or they keep quiet about it.
 
-In Coq naturality is not internalized (and in fact it can be broken by assuming classical axioms like the Law of Excludded Middle), so this law does not follow from the others. A more intuitive reason is that the other four laws don't mention any \m{Functor} concept at all, so there's no way to link \m{fmap} with \m{pure} and \m{ap} in any way. This is why we include this law in our definition.
+In Coq naturality is not internalized (and in fact it can be broken by assuming classical axioms like the Law of Excludded Middle), so here this law does not follow from the others. A more intuitive reason is that the other four laws don't mention any \m{Functor} concept at all, so there's no way to link \m{fmap} with \m{pure} and \m{ap} in any way. This is why we include this law in our definition.
 
-This is not the end of the troubles, however, because it turns out that this set of five laws is not minimal. For example, \m{identity} follows from \m{fmap\_pure\_ap} and \m{fmap\_id} (for details, see the file \m{Theory/Laws/ApplicativeLaws.v}). It could lead us to drop \m{identity} from the definition of \m{Applicative}, but we decided not to.
+This, however, leads to some further troubles, because it turns out that this set of five laws is not minimal. For example, \m{identity} follows from \m{fmap\_pure\_ap} and \m{fmap\_id} (for details, see the file \m{Theory/Laws/ApplicativeLaws.v}). It could lead us to drop \m{identity} from the definition of \m{Applicative}, but we decided not to.
 
-\begin{listing}
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=17,
-        lastline=35
+        firstline=10,
+        lastline=40
     ]
     {Coq}{../Control/Monoidal.v}
 
@@ -674,21 +674,15 @@ This is not the end of the troubles, however, because it turns out that this set
     \label{Monoidal}
 \end{listing}
 
+Another question we could ask is: what are \m{Applicative} functors categorically? It is a sad question, because it gets answered rarely, but the answer is actually very simple -- \m{Applicative} functors are just \m{Monoidal} functors in disguise! The definition of a \m{Monoidal} functor is shown in listing \ref{Monoidal}. 
 
+The category of Coq types and functions has a terminal object (the \m{unit} type) and binary products, which together (with some coherence conditions too) form its monoidal structure. A \m{Monoidal} functor (and thus, an \m{Applicative} functor) is a \m{Functor} which preserves this monoidal structure, which means just that \m{default}, \m{pairF}, \m{fmap fst}, \m{fmap snd} and \m{fmap reassoc} behave just like \m{tt} (the only value of the \m{unit} type), \m{pair}, \m{fst}, \m{snd} and \m{reassoc} and they do this in a natural way.
 
+We have formally proved that \m{Applicative} and \m{Monoidal} are equivalent (see the file \m{Theory/Applicative\_is\_Monoidal.v}), which justifies the above explanation of the categorical meaning of \m{Applicative}. It also assures us that our set of \m{Applicative} laws is correct and that putting \m{fmap\_pure\_ap} in the definition was necessary.
 
-\begin{itemize}
-    \item Discuss the applicative-monad proposal and the fact that every monad is monoidal (induces an \m{Applicative} instance) but in two nonequivalent ways (different evaluation order).
-    \item Discuss the laws that we adopt to remedy this and the non-minimality of monad laws.
-    \item Transformers.
-    \item Proof engineering: discuss the basic design (why no ssreflect), Ltac vs reflection.
-    \item Proof engineering: describe how do the tactics hs, monad work.
-    \item Some cleverness and fixing -- \m{ListT} and \m{Free} instances defined using Church encoding.
-    \item Mention that such instances satisfy all laws by reflexivity.
-    \item Classes from JustDoIt. Some deeper discussion of improvements over mtl.
-\end{itemize}
+But there is yet another perk of this proof, showing that proving is not only of theoretical interest, but also has practical aspects -- thanks to this proof users of our library can now define an instance of either \m{Applicative} or \m{Monoidal} and get an instance of the other typeclass for free, something which is not possible in a language like Haskell.
 
-\begin{listing}
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
@@ -703,7 +697,25 @@ This is not the end of the troubles, however, because it turns out that this set
     \label{Monad}
 \end{listing}
 
-\begin{listing}
+Next come monads, shown in listing \ref{Monad}. The definition is very similar to modern Haskell, where \m{Applicative} is a superclass of \m{Monad} since GHC 7.10.1. The three usual laws are there, but there's also a fourth one, namely \m{bind\_ap} (this law is also mentioned in \cite{HackageMonad}).
+
+The reason is that in the category of Coq types and functions each \m{Monad} is monoidal (in fact, the \m{Monad} typeclass represents a strong monoidal monad on the category of Coq types and functions), which means that it induces an instance of \m{Applicative}. It does so in two nonequivalent ways, which correspond to the two ways of defining \m{ap} using \m{bind} (which is sequential). To avoid potential doubling of \m{Monad} instances, we put the law \m{bind\_ap} in the definition, which forces \m{ap} to evaluate its arguments from left to right.
+
+Just as in the \m{Applicative} case, an additional trouble is that this set of four laws is not minimal. For example, \m{bind\_pure\_l} follows from \m{fmap\_id}, \m{fmap\_pure\_ap}, \m{bind\_ap} and \m{bind\_pure\_l} -- see the file \m{Theory/Laws/MonadLaws.v} for details. We could have therefore dropped \m{bind\_pure\_l}, but we didn't decide to do so.
+
+To make sure that this definition of monads makes sense, we prove that it is equivalent to a simpler definition, which uses just \m{pure}, \m{bind} and the appropriate laws. We also prove it equivalent to a definition based on \m{Applicative}, but with \m{join} instead of \m{bind}. See the directory \m{Theory/Equivs/} for more details.
+
+\begin{itemize}
+    \item monad semantics through MonadComp
+    \item do notation and deduplication of applicative/monad stuff names
+    \item Free instance using Church encoding and reflexivity.
+    \item Transformers and ListT.
+    \item Proof engineering: discuss the basic design (why no ssreflect), Ltac vs reflection.
+    \item Proof engineering: describe how do the tactics hs, monad work.
+    \item Classes from JustDoIt. Some deeper discussion of improvements over mtl.
+\end{itemize}
+
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
@@ -718,7 +730,7 @@ This is not the end of the troubles, however, because it turns out that this set
     \label{MonadNotations}
 \end{listing}
 
-\begin{listing}
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
@@ -733,7 +745,7 @@ This is not the end of the troubles, however, because it turns out that this set
     \label{Free}
 \end{listing}
 
-\begin{listing}
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
@@ -748,7 +760,7 @@ This is not the end of the troubles, however, because it turns out that this set
     \label{MonadTrans}
 \end{listing}
 
-\begin{listing}
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
@@ -763,7 +775,7 @@ This is not the end of the troubles, however, because it turns out that this set
     \label{ListT}
 \end{listing}
 
-\begin{listing}
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
@@ -779,7 +791,7 @@ This is not the end of the troubles, however, because it turns out that this set
 \end{listing}
 
 
-\begin{listing}
+\begin{listing}[H]
     \inputminted
     [
         frame=lines,
@@ -801,14 +813,6 @@ This is not the end of the troubles, however, because it turns out that this set
     \item Reasoning with classes: towers of hanoi, fast product.
     \item Compare the above with the pen-and-paper proof from \cite{JustDoIt}
     \item Mention that \cite{JustDoIt} is mostly formalized.
-\end{itemize}
-
-\section{Theorems}
-
-\begin{itemize}
-    \item Explain why such ``abstract'' theorems are useful from a practical point of view.
-    \item Applicative is Monoidal.
-    \item Equivalence of Monad definitions.
 \end{itemize}
 
 \chapter{Conclusion}
@@ -1058,6 +1062,9 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{WikibooksApplicative}
         \url{https://en.wikibooks.org/wiki/Haskell/Applicative_functors}
+
+    \bibitem{HackageMonad}
+        \url{https://hackage.haskell.org/package/base-4.12.0.0/docs/Control-Monad.html}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}

@@ -1,6 +1,12 @@
 Require Export Control.Functor.
 
-(** Auxiliary functions needed to define [Monoidal]. *)
+(** This file contains an alternative characterization of [Applicative]
+    functors as lax monoidal functors (or rather, strong monoidal functors,
+    because in the category of Coq's types and functions all monoidal
+    functors are strong.
+
+    Below are some auxiliary functions needed to define [Monoidal]. *)
+
 Definition reassoc
   {A B C : Type} : (A * B) * C -> A * (B * C) :=
     fun '((a, b), c) => (a, (b, c)).
@@ -11,9 +17,6 @@ Definition par
 
 Notation "f *** g" := (par f g) (at level 40).
 
-(** An alternative characterization of applicative functors as lax monoidal
-    functors (or rather, strong monoidal functors, because in the category
-    of Coq's types and functions all monoidal functors are strong. *)
 Class Monoidal (F : Type -> Type) : Type :=
 {
     is_functor :> Functor F;
@@ -30,8 +33,10 @@ Class Monoidal (F : Type -> Type) : Type :=
         fmap reassoc (pairF (pairF a b) c) = pairF a (pairF b c);
     natural :
       forall
-        (A A' B B' : Type) (f : A -> A') (g : B -> B') (a : F A) (b : F B),
-          fmap (f *** g) (pairF a b) = pairF (fmap f a) (fmap g b)
+        (A A' B B' : Type)
+        (f : A -> A') (g : B -> B')
+        (a : F A) (b : F B),
+          fmap (f *** g) (pairF a b) = pairF (fmap f a) (fmap g b);
 }.
 
 Hint Rewrite @pairF_default_l @pairF_default_r @pairF_assoc : monoidal.

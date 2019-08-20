@@ -11,6 +11,11 @@ Class Monad (M : Type -> Type) : Type :=
     compM_assoc :
       forall (A B C D : Type) (f : A -> M B) (g : B -> M C) (h : C -> M D),
         compM f (compM g h) = compM (compM f g) h;
+(*
+    compM_const :
+      forall (A B C : Type) (f : B -> M C) (a : A) (b : B),
+        (compM (fun _ : A => pure b) f) a = f b;
+*)
 }.
 
 Coercion is_applicative : Monad >-> Applicative.
@@ -26,6 +31,7 @@ Hint Unfold bindM : HSLib.
 
 Require MonadBind.
 
+(*
 Instance Comp_to_Bind
   (M : Type -> Type) (inst : Monad M) : MonadBind.Monad M :=
 {
@@ -34,6 +40,12 @@ Instance Comp_to_Bind
 }.
 Proof.
   all: unfold bindM; cbn; intros.
-    admit.
+    rewrite compM_const. reflexivity.
     rewrite compM_pure_r. reflexivity.
+    replace (fun x : A => ((fun _ : unit => f x) >=> g) tt)
+       with (f >=> g).
+      Focus 2. ext x. rewrite compM_const.
+      rewrite compM_assoc.
+
 Abort.
+*)
