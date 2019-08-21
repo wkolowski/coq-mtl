@@ -23,9 +23,19 @@ Coercion is_applicative : Monad >-> Applicative.
 Notation "f >=> g" := (compM f g) (at level 40).
 
 Definition bindM
-  (M : Type -> Type) (inst : Monad M)
+  {M : Type -> Type} {inst : Monad M}
   {A B : Type} (x : M A) (f : A -> M B) : M B :=
     compM (fun _ : unit => x) f tt.
+
+Lemma bind_ap :
+  forall
+    (M : Type -> Type) (inst : Monad M) (A B : Type)
+    (mf : M (A -> B)) (mx : M A),
+        mf <*> mx = bindM mf (fun f => bindM mx (fun x => pure (f x))).
+Proof.
+  intros. unfold bindM.
+  Print Monad.
+Abort.
 
 Hint Unfold bindM : HSLib.
 

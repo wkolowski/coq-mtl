@@ -65,7 +65,7 @@ Notation "f >=> g" := (compM f g) (at level 40).
 Notation "x '<-' e1 ; e2" := (bind e1 (fun x => e2))
   (right associativity, at level 42, only parsing).
 
-Notation "e1 ;; e2" := (constrA e1 e2)
+Notation "e1 ;; e2" := (e1 >> e2)
   (right associativity, at level 42, only parsing).
 
 Notation "'do' e" := e (at level 50, only parsing).
