@@ -3,13 +3,16 @@ Require Import Control.Monad.Trans.
 Require Import Control.Monad.Class.All.
 
 (** A transformer which puts a layer of a list monad on top of the base
-    monad [M], implemented using Church encoding. *)
+    monad [M], implemented using Church encoding.
+
+    Notations akin to these for standard lists are provided.
+
+    All definitions are just like these for the ordinary [list] monad,
+    but expressed using folds instead of structural recursion. *)
 Definition ListT
   (M : Type -> Type) (A : Type) : Type :=
     forall X : Type, M X -> (A -> M X -> M X) -> M X.
 
-(** Modified versions of list notations akin to these from the standard
-    library. *)
 Module ListT_Notations.
 
 Notation "[[ ]]" :=
@@ -22,9 +25,6 @@ Notation "[[ x ; y ; .. ; z ]]" :=
 End ListT_Notations.
 
 Export ListT_Notations.
-
-(** All definitions are just like these for the ordinary [list] monad, but
-    expressed using folds instead of structural recursion. *)
 
 Definition fmap_ListT
   {M : Type -> Type} {inst : Functor M} {A B : Type}

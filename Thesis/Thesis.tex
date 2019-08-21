@@ -615,7 +615,7 @@ A very important property of every Coq development is being axiom free. The main
 
 In this chapter we describe the implementation of our library, including some subtleties that we didn't foresee coming during design, explain our approach to proof automation (how to prove all these laws without too much labor), give some example use cases of our library and prove a few theorems which may seem unnecessary at first, but turn out to have some practical use.
 
-\section{Implementation}
+\section{The core library}
 
 \begin{listing}[H]
     \inputminted
@@ -758,7 +758,9 @@ Inductive Free (F : Type -> Type) (A : Type) : Type :=
 
 Our solution to this problem was to use Church encoding instead of inductive types. The resulting definition is shown in listing \ref{Free}. In this definition, we quantify over a type \m{X}, which represents the type we're defining, and then we put all the constructors into one big dependent function whose result is \m{X}.
 
-This definition is fine in the sense that it allows us to define all necessary functions are prove all the laws. This may seem surprising, because it is well known that Church-encoded types don't support induction (i.e. their induction principles are not definable in Coq) \cite{InductionNotDerivable}. What's even more surprising is that they satisfy all these laws definitionally, i.e. we can prove all of them using just the tactic \m{reflexivity} -- see the proof of functor laws in listing \m{Free}.
+This definition is fine in the sense that it allows us to define all necessary functions are prove all the laws. This may seem surprising, because it is well known that Church-encoded types don't support induction (i.e. their induction principles are not definable in Coq) \cite{InductionNotDerivable}. What's even more surprising is that they satisfy all these laws definitionally, i.e. we can prove all of them using just the tactic \m{reflexivity} -- see the proof of \m{Functor} laws in listing \ref{Free}.
+
+Of course \m{Free} is not the only \m{Monad} instance. We provide all the standard ones: \m{Cont}, \m{Free}, \m{Identity}, \m{list}, \m{option}, \m{Reader}, \m{RWS}, \m{State}, \m{Sum}, \m{Writer} and there are also some less standard ones: \m{Codensity} (see \cite{ReflectionWithoutRemorse}), \m{Lazy} (which attempts to capture lazy evaluation in a monad) and \m{RoseTree} (a tree which keeps values only in its leaves).
 
 \begin{listing}[H]
     \inputminted
@@ -775,14 +777,18 @@ This definition is fine in the sense that it allows us to define all necessary f
     \label{MonadTrans}
 \end{listing}
 
+The pinnacle of the core library are monad transformers, represented by the class \m{MonadTrans}, as shown in listing \ref{MonadTrans}. As we can see from the definition, a monad transformer is something which takes a monad and returns a monad, together with an operation \m{lift} that turns a base monad computation into a transformed monad computation, together with some obvious laws: \m{lift}ing a pure value has to result in a pure value, and \m{lift} it has to commute with \m{bind}.
+
+Luckily, monad transformers are just as unproblematic as \m{Functor}s were. The library implements all the standard instances, including \m{ContT}, \m{FreeT}, \m{ListT}, \m{OptionT}, \m{ReaderT}, \m{RWST}, \m{StateT}, \m{SumT} and \m{WriterT}.
+
 \begin{listing}[H]
     \inputminted
     [
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=7,
-        lastline=22
+        firstline=12,
+        lastline=25
     ]
     {Coq}{../Control/Monad/Trans/ListT.v}
 
@@ -790,12 +796,15 @@ This definition is fine in the sense that it allows us to define all necessary f
     \label{ListT}
 \end{listing}
 
-\begin{itemize}
-    \item Transformers and ListT.
-    \item Proof engineering: discuss the basic design (why no ssreflect), Ltac vs reflection.
-    \item Proof engineering: describe how do the tactics hs, monad work.
-    \item Classes from JustDoIt. Some deeper discussion of improvements over mtl.
-\end{itemize}
+The most noteworthy of these instances is \m{ListT}. Haskell's version of this monad transformer is broken (it doesn't respect the laws) and numerous solutions were proposed \cite{ListT1} \cite{ListT2} \cite{ListT3}. Our definition, shown in listing \ref{ListT}, follows \cite{ListT1} most closely, but once again we had to use Church encoding because the inductive version would fail the strict positivity criterion.
+
+Thanks to Church encoding, all proofs (besides those that refer to the underlying monad) go through by \m{reflexivity} and this is a very strong sign that our \m{ListT} is really done right. Also thanks to Coq's notation mechanism, we can write \m{ListT} computations (\m{[[x; y; z]]}) nearly the same as we do ordinary lists (\m{[x; y; z]}).
+
+\section{Proof engineering}
+
+It's time to discuss proof engineering (the formal mathematician's equivalent of software engineering), which was neglected until now. Are we so lucky that all proofs whatsoever go through just by \m{reflexivity}, like for the Church-encoded monads and monad transformers? Of course not.
+
+Proof engineering: discuss the basic design (why no ssreflect), Ltac vs reflection. Proof engineering: describe how do the tactics hs, monad work.
 
 \begin{listing}[H]
     \inputminted
@@ -812,6 +821,9 @@ This definition is fine in the sense that it allows us to define all necessary f
     \label{BaseTactics}
 \end{listing}
 
+\section{Monadic effect classes}
+
+Classes from JustDoIt. Some deeper discussion of improvements over mtl.
 
 \begin{listing}[H]
     \inputminted
@@ -1092,6 +1104,20 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
         Herman Geuvers, \\
         \textit{Induction Is Not Derivable in Second Order Dependent Type Theory}, \\
         \url{https://link.springer.com/chapter/10.1007/3-540-45413-6_16}
+
+    \bibitem{ReflectionWithoutRemorse}
+        Atze van der Ploeg, Oleg Kiselyov, \\
+        \textit{Reflection without Remorse}, \\
+        \url{http://okmij.org/ftp/Haskell/zseq.pdf}
+
+    \bibitem{ListT1}
+        \url{https://wiki.haskell.org/ListT_done_right}
+
+    \bibitem{ListT2}
+        \url{https://wiki.haskell.org/ListT_done_right_alternative}
+
+    \bibitem{ListT3}
+        \url{https://hackage.haskell.org/package/list-t}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}
