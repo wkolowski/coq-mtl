@@ -113,7 +113,7 @@ Coq \cite{Coq} is a proof assistant that was started in the late 1980's in Franc
     \item Ltac, the tactic language, is a language which facilitates writing proofs -- these can in principle be written using the term language, but it's unwieldy even for simple proofs.
 \end{itemize}
 
-The basic objects of our interest in Coq (and in any kind of the aforementioned formal systems) are types. Their role is to classify terms -- for example, $\m{21} + \m{21}$ is a term of type \m{nat}, written $\m{21} + \m{21} : \m{nat}$. Types are syntactical entities, which means that the judgement $\m{x} : \m{A}$ can always be checked algorithmically.
+The basic objects of our interest in Coq (and in any kind of the aforementioned formal systems) are types. Their role is to classify terms -- for example, $\m{21} + \m{21}$ is a term of type \m{nat}, written $\m{21} + \m{21} : \m{nat}$. Types are syntactical entities, which means that the judgment $\m{x} : \m{A}$ can always be checked algorithmically.
 
 Thanks to the the Curry-Howard correspondence \cite{CurryHoward}, types can seen both as specifications of programs and as statements of theorems. All programming and proving may be then conceptualized as manipulating a few kinds of rules:
 
@@ -802,9 +802,34 @@ Thanks to Church encoding, all proofs (besides those that refer to the underlyin
 
 \section{Proof engineering}
 
-It's time to discuss proof engineering (the formal mathematician's equivalent of software engineering), which was neglected until now. Are we so lucky that all proofs whatsoever go through just by \m{reflexivity}, like for the Church-encoded monads and monad transformers? Of course not.
+It's time to discuss proof engineering (the formal mathematician's equivalent of software engineering), which was neglected until now. Are we so lucky that all proofs whatsoever go through just by \m{reflexivity}, like for the Church-encoded monads and monad transformers? Of course not -- most proofs require something more than just \m{reflexivity}.
 
-Proof engineering: discuss the basic design (why no ssreflect), Ltac vs reflection. Proof engineering: describe how do the tactics hs, monad work.
+Thus, they lend themselves well to being automated. Before we explain the details, let's discuss the possible designs.
+
+Because writing proofterms by hand is unwieldy, Coq has a tactic language called Ltac, which greatly facilitates serious procing. Ltac is a very rich language and this has led to many proof styles being employed in various places.
+
+The most important distinction is between manual proofs (which consist of a series of tactics that prove the theorem step by step, like in the example in chapter 1) and automated proofs (which usually take the form of a big tactic that proves a whole theorem all at once).
+
+Another distinction is between reflective and non-reflective proofs. Reflective proofs are proofs written in Coq's term language that operate on syntactic representations of theorems. The sole role of Ltac in this approach is reification, i.e. transforming these theorems into their syntactic representations (this is something that Coq's term language cannot do, because it would result in inconsistency). Non-reflective proofs are the ordinary Ltac-based proofs that don't use the above machinery of reflection and reification.
+
+This gives rise to four proof styles:
+
+\begin{itemize}
+    \item Manual, non-reflective: often used by beginners or for hard theorems that don't automate well.
+    \item Manual, reflective: this is the style most associated with the SSReflect proof language \cite{SSReflect1} \cite{SSReflect2}, used in the formalization of the Four Colour Theorem \cite{FourColour1} \cite{FourColour2} and the Mathematical Components library \cite{MCB}.
+    \item Automated, non-reflective: often used by experts for repetitive theorems or collections of theorems, like programming language formalization, where proofs can have hundreds of cases, only some of them interesting.
+    \item Automated, reflective: most often used for repetitive goals with well-present mathematical structure, like the arithematic of natural numbers (Coq's tactic \m{omega}) or simplifying expressions and proving equalities in rings (Coq's tactic \m{ring}).
+\end{itemize}
+
+In our case, there will be a massive amount of typeclass instances that have to be proven to satisfy the same laws over and over again. Almost all of these proofs are very repetitive and predictable. They amount mostly to unfolding definitions, rewriting equational laws, decomposing hypotheses and implicational reasoning.
+
+This means we want our proofs to be automated and not manual. Even though the typeclasses we are dealing with are very well structured mathematically, most of our proofs will be not about using \m{Functor}/\m{Applicative}/\m{Monad} laws to prove something, but to prove these laws for some concrete instance.
+
+As we want our tactics to also be of use to users of the library and we cannot predict what kinds of monads and effect they will want to create, we therefore chose to follow the automated non-reflective approach.
+
+
+
+Proof engineering: describe how do the tactics hs, monad work.
 
 \begin{listing}[H]
     \inputminted
@@ -1118,6 +1143,14 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{ListT3}
         \url{https://hackage.haskell.org/package/list-t}
+
+    \bibitem{SSReflect1}
+        Georges Gonthier, Assia Mahboubi, Enrico Tassi \\
+        \textit{A Small Scale Reflection Extension for the Coq system}, \\
+        \url{https://hal.inria.fr/inria-00258384v17/document}
+
+    \bibitem{SSReflect2}
+        \url{https://coq.inria.fr/refman/proof-engine/ssreflect-proof-language.html}
 \end{thebibliography}
 
 %\begin{thebibliography}{1}

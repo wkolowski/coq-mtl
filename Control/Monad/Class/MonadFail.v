@@ -8,7 +8,7 @@ Class MonadFail (M : Type -> Type) (inst : Monad M) : Type :=
     fail : forall {A :  Type}, M A;
     bind_fail_l :
       forall (A B : Type) (f : A -> M B),
-        fail >>= f = fail
+        fail >>= f = fail;
 }.
 
 Hint Rewrite @bind_fail_l : HSLib.
