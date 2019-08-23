@@ -15,7 +15,6 @@ Global Set Universe Polymorphism.
 Set Polymorphic Inductive Cumulativity.
 
 (** Useful shorthand tactics for doing generalization and inversion. *)
-Ltac gen x := generalize dependent x.
 Ltac inv H := inversion H; subst; clear H.
 
 (** We will reason by functional extensionality quite a lot. For this, we
@@ -31,10 +30,9 @@ Ltac ext_aux x := extensionality x.
 Tactic Notation "ext" ident(x) := extensionality x.
 Tactic Notation "ext2" ident(x) ident(y) := ext x; ext y.
 Tactic Notation "ext3" ident(x) ident(y) ident(z) := ext x; ext y; ext z.
-Tactic Notation "ext4" ident(x) ident(y) ident(z) ident(w) :=
-  ext x; ext y; ext z; ext w.
 
 Tactic Notation "ext" := let x := fresh "x" in ext x.
+
 Ltac exts := repeat ext.
 
 (** [Program.Basics] has the rest of the things we need, namely [id] and
@@ -80,9 +78,12 @@ Hint Rewrite @id_eq @id_left @id_right : HSLib.
 (** Note that rewriting and unfolding databases are separate, so we have
     to define a dummy value and add it to the unfolding database in order
     to initialize it. *)
+
+(*
 Definition the_ultimate_answer := 42.
 
 Hint Unfold the_ultimate_answer : HSLib.
+*)
 
 (** [umatch] is a tactic for conveniently [destruct]ing nested pattern
     matches. *)

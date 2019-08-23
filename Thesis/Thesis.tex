@@ -50,6 +50,10 @@
 \newcommand{\Type}{\texttt{Type}}
 \newcommand{\nat}{\texttt{nat}}
 \newcommand{\Tree}{\texttt{Tree}}
+
+\newcommand{\hintdb}{\m{HSLib}}
+\newcommand{\hs}{\m{hs}}
+
 %%%%%
 
 \begin{document}
@@ -611,6 +615,27 @@ A very important property of every Coq development is being axiom free. The main
 
 \libname\ doesn't have the property of being axiom free. This is because a lot of monad laws (and other laws too), to be proved, require the Functional Extensionality Axiom, which states that two functions are equal as soon as they have equal results for all inputs. We therefore adopt this axiom from the very beginning and use it wherever we need it without explicit mention. The resulting loss of canonicity isn't that bad, however, because it only prevents us from performing some computations with equality proofs, which are not at all important. We therefore consider adopting this axiom to be justified.
 
+\section{Proof engineering}
+
+Now that we know our axioms, we can start proving, right? Well, not really. When programmers want to create something bigger than a toy program, they face the question of software engineering -- what architecture will be the best, what design will be the most robust, which tools to use etc. Writing assembly by hand or non-structured programming are not considered good software engineering practices anymore.
+
+The same is true of mathematicians who go formal -- when they want to prove lots of theorems that form a coherent theory, they face the question of proof engineering -- what ``architecture'' will express best the structure of the theory, what style of proving will let them prove their theorems in the most painless way and so on. Writing proofterms by hand or simple proofscripts composed only of the most basic tactics are not good proof engineering practices. We should therefore stick with some good practices, but what are they?
+
+Ltac, Coq's tactic language, is a very rich language and this has led to many proof styles being employed in various places. The most important distinction is between manual proofs (which consist of a series of tactics that prove the theorem step by step, like in the example in chapter 1) and automated proofs (which usually take the form of a big tactic that proves a whole theorem all at once).
+
+Another distinction is between reflective and non-reflective proofs. Reflective proofs are proofs written in Coq's term language that operate on syntactic representations of theorems. The sole role of Ltac in this approach is reification, i.e. transforming these theorems into their syntactic representations (this is something that Coq's term language cannot do, because it would result in inconsistency). Non-reflective proofs are the ordinary Ltac-based proofs that don't use the above machinery of reflection and reification. This gives rise to four proof styles:
+
+\begin{itemize}
+    \item Manual, non-reflective: often used by beginners and not considered a good practice, unless we're dealing with hard theorems that don't automate well.
+    \item Manual, reflective: this is the style most associated with the SSReflect proof language \cite{SSReflect1} \cite{SSReflect2}, used in the formalization of the Four Colour Theorem \cite{FourColour1} \cite{FourColour2} and the Mathematical Components library \cite{MCB}.
+    \item Automated, non-reflective: often used by experts for theorems with lots of repetitive cases or collections of similar theorems. An example is the field of programming language formalization, where proofs can have hundreds of cases, most of them utterly obring. A very known proponent of this style is Adam Chlipala, who advocates it in his book \cite{CPDT}.
+    \item Automated, reflective: most often used for solving specific goals of a specific kind, like Presburger arithematic (the arithmetic of natural numbers with addition and multiplication by a constant -- Coq's tactic \m{omega}) or simplifying expressions and proving equalities in rings (Coq's tactic \m{ring}).
+\end{itemize}
+
+In our case, there will be a massive amount of typeclass instances that have to be proven to satisfy the same laws over and over again. Almost all of these proofs are very repetitive and predictable. They amount mostly to unfolding definitions, rewriting equational laws, decomposing hypotheses and implicational reasoning. This means we want our proofs to be automated and not manual.
+
+It may also seem that we want the tactics to be reflective, because the typeclasses we are dealing with are very well structured mathematically. This is however not the case, because we want our tactics to also be of use to users of our library, but we cannot predict what kinds of monads and effect they will want to create. This makes makes the world of \m{Functor}s, \m{Applicative}s, \m{Monad}s and effects not a closed world, like that of Presburger arithmetic or ring expressions, but an open one. We therefore choose to follow the automated non-reflective approach.
+
 \chapter{Implementation, examples and theorems}
 
 In this chapter we describe the implementation of our library, including some subtleties that we didn't foresee coming during design, explain our approach to proof automation (how to prove all these laws without too much labor), give some example use cases of our library and prove a few theorems which may seem unnecessary at first, but turn out to have some practical use.
@@ -802,32 +827,10 @@ Thanks to Church encoding, all proofs (besides those that refer to the underlyin
 
 \section{Proof engineering}
 
-It's time to discuss proof engineering (the formal mathematician's equivalent of software engineering), which was neglected until now. Are we so lucky that all proofs whatsoever go through just by \m{reflexivity}, like for the Church-encoded monads and monad transformers? Of course not -- most proofs require something more than just \m{reflexivity}.
+Are we so lucky that all proofs whatsoever go through just by \m{reflexivity}, like for the Church-encoded monads and monad transformers? Of course not -- most proofs require something more than just \m{reflexivity}.
+
 
 Thus, they lend themselves well to being automated. Before we explain the details, let's discuss the possible designs.
-
-Because writing proofterms by hand is unwieldy, Coq has a tactic language called Ltac, which greatly facilitates serious procing. Ltac is a very rich language and this has led to many proof styles being employed in various places.
-
-The most important distinction is between manual proofs (which consist of a series of tactics that prove the theorem step by step, like in the example in chapter 1) and automated proofs (which usually take the form of a big tactic that proves a whole theorem all at once).
-
-Another distinction is between reflective and non-reflective proofs. Reflective proofs are proofs written in Coq's term language that operate on syntactic representations of theorems. The sole role of Ltac in this approach is reification, i.e. transforming these theorems into their syntactic representations (this is something that Coq's term language cannot do, because it would result in inconsistency). Non-reflective proofs are the ordinary Ltac-based proofs that don't use the above machinery of reflection and reification.
-
-This gives rise to four proof styles:
-
-\begin{itemize}
-    \item Manual, non-reflective: often used by beginners or for hard theorems that don't automate well.
-    \item Manual, reflective: this is the style most associated with the SSReflect proof language \cite{SSReflect1} \cite{SSReflect2}, used in the formalization of the Four Colour Theorem \cite{FourColour1} \cite{FourColour2} and the Mathematical Components library \cite{MCB}.
-    \item Automated, non-reflective: often used by experts for repetitive theorems or collections of theorems, like programming language formalization, where proofs can have hundreds of cases, only some of them interesting.
-    \item Automated, reflective: most often used for repetitive goals with well-present mathematical structure, like the arithematic of natural numbers (Coq's tactic \m{omega}) or simplifying expressions and proving equalities in rings (Coq's tactic \m{ring}).
-\end{itemize}
-
-In our case, there will be a massive amount of typeclass instances that have to be proven to satisfy the same laws over and over again. Almost all of these proofs are very repetitive and predictable. They amount mostly to unfolding definitions, rewriting equational laws, decomposing hypotheses and implicational reasoning.
-
-This means we want our proofs to be automated and not manual. Even though the typeclasses we are dealing with are very well structured mathematically, most of our proofs will be not about using \m{Functor}/\m{Applicative}/\m{Monad} laws to prove something, but to prove these laws for some concrete instance.
-
-As we want our tactics to also be of use to users of the library and we cannot predict what kinds of monads and effect they will want to create, we therefore chose to follow the automated non-reflective approach.
-
-
 
 Proof engineering: describe how do the tactics hs, monad work.
 
@@ -837,13 +840,13 @@ Proof engineering: describe how do the tactics hs, monad work.
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=78,
-        lastline=100
+        firstline=1,
+        lastline=36
     ]
-    {Coq}{../Base.v}
+    {Coq}{../Thesis/snippets/BasicTactics.v}
 
-    \caption{Base tactics}
-    \label{BaseTactics}
+    \caption{Basic tactics}
+    \label{BasicTactics}
 \end{listing}
 
 \section{Monadic effect classes}
@@ -863,6 +866,36 @@ Classes from JustDoIt. Some deeper discussion of improvements over mtl.
 
     \caption{The \m{MonadFail} typeclass}
     \label{MonadFail}
+\end{listing}
+
+\begin{listing}[H]
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=1,
+        lastline=12
+    ]
+    {Coq}{../Control/Monad/Class/MonadAlt.v}
+
+    \caption{The \m{MonadAlt} typeclass}
+    \label{MonadAlt}
+\end{listing}
+
+\begin{listing}[H]
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=1,
+        lastline=25
+    ]
+    {Coq}{../Control/Monad/Class/MonadNondet.v}
+
+    \caption{The \m{MonadNondet} typeclass}
+    \label{MonadNondet}
 \end{listing}
 
 \section{Examples}
@@ -975,7 +1008,7 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{CPDT}
         Adam Chlipala,
-        \textit{Certified Programming with Dependent Types}, 2019,
+        \textit{Certified Programming with Dependent Types}, \\
         \url{http://adam.chlipala.net/cpdt/}
 
     \bibitem{BillionDollarMistake}
