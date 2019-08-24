@@ -827,12 +827,17 @@ Thanks to Church encoding, all proofs (besides those that refer to the underlyin
 
 \section{Proof engineering}
 
-Are we so lucky that all proofs whatsoever go through just by \m{reflexivity}, like for the Church-encoded monads and monad transformers? Of course not -- most proofs require something more than just \m{reflexivity}.
+Are we so lucky that all proofs whatsoever go through just by \m{reflexivity}, like for the Church-encoded monads and monad transformers? Of course not -- most proofs require a bit more than just \m{reflexivity}.
 
+This bit is surprisingly small -- the core of our automation is shown in listing \ref{Tactics}. The first ten lines are tactics for conveniently reasoning by functional extensionality (so that we can write \m{exts} instead of \m{extensionality a; extensionality b; ...}). Then comes the tactic \m{unmatch}, which destructs the innermost subject of a pattern match, and the tactic \m{destr}, which deconstructs products and units, and case splits on suns and subjects of pattern matching. \m{simplify} is a tactic that introduces variables to context, reasons by functional extensionality when it's possible and then calls \m{destr} to further simplify the goal.
 
-Thus, they lend themselves well to being automated. Before we explain the details, let's discuss the possible designs.
+\m{hs} is the main workhorse tactic of the library -- after introducing variables to the context, it proceeds by repeatedly unfolding definitions and rewriting equations and then tries to finish the goal off by unfolding a few more definitions and reasoning by \m{reflexivity} and \m{congruence} (which is an implementation of the congruence closure algorithm). At last, the \m{monad} tactic tries to simplify the goal, solve it using \m{hs} and if that isn't enough, then it tries some tricks for proving equations between monadic computations.
 
-Proof engineering: describe how do the tactics hs, monad work.
+How does the rewriting and unfolding exactly work? It is quite simple: the tactics \m{autorewrite} and \m{autounfold} are called with some \textbf{hint databases} as arguments. For \m{autorewrite}, the hint database contains names of equations and for \m{autounfold} it contains names of defined objects. These tactics work by repeatedly rewriting/unfolding these equations/definitions in some order (determined by their implementations) until no more rewrites/unfoldings are possible.
+
+Where do the hint databases come from? We have to create them and this is what line 29 in listing \ref{Tactics} does: it declares that the theorems named \m{id\_eq}, \m{id\_left}, \m{id\_right} belong to the hint database named \hintdb. Each time we encounter some useful equations (either in a typeclass definition or after proving them by hand), we add them to this hint database and from that point on \m{autorewrite} will be able to use them. We have to do the same for \m{autounfold}: each time we define something we will want to get unfolded, we add it to a hint database named \hintdb\ and from that point on \m{autounfold} will be able to unfold it for us.
+
+Of course, these automation tactics are not enough to deal with all instances of all typeclasse. In a few cases we have to finish the proofs by hand. In a few other cases these tactics don't help us at all -- the most obvious example are lists, which require inductive proofs, but our tactics don't do any induction. The \m{Applicative} instance for lists is probably the most automation-resilient proof of the whole library. There are also a few proofs to which these tactics weren't even meant to apply, like the proof of equivalence of \m{Applicative} and \m{Monoidal} functors, which requires custom ad-hoc automation. Nonetheless, it's still surprising that some fifty lines of Ltac code can prove so many useful theorems.
 
 \begin{listing}[H]
     \inputminted
@@ -840,13 +845,13 @@ Proof engineering: describe how do the tactics hs, monad work.
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=1,
-        lastline=36
+        firstline=3,
+        lastline=49
     ]
-    {Coq}{../Thesis/snippets/BasicTactics.v}
+    {Coq}{../Thesis/snippets/Tactics.v}
 
-    \caption{Basic tactics}
-    \label{BasicTactics}
+    \caption{The automation tactics}
+    \label{Tactics}
 \end{listing}
 
 \section{Monadic effect classes}

@@ -25,8 +25,6 @@ Ltac inv H := inversion H; subst; clear H.
     - [exts] is repeated [ext] *)
 Require Export Coq.Logic.FunctionalExtensionality.
 
-Ltac ext_aux x := extensionality x.
-
 Tactic Notation "ext" ident(x) := extensionality x.
 Tactic Notation "ext2" ident(x) ident(y) := ext x; ext y.
 Tactic Notation "ext3" ident(x) ident(y) ident(z) := ext x; ext y; ext z.
