@@ -854,9 +854,9 @@ Of course, these automation tactics are not enough to deal with all instances of
     \label{Tactics}
 \end{listing}
 
-\section{Monadic effect classes}
+\section{Typeclass-based effects}
 
-Classes from JustDoIt. Some deeper discussion of improvements over mtl.
+We now describe ``typeclass-based effects'' (note that this is not a widely used term and, to be honest, we don't know if there is any widely used name for this approach to effects). Their popularity in Haskell is due to the \m{mtl} library (after which we also called this approach ``the \m{mtl} approach''), which was originally inspired by \cite{mtl}. Equational reasoning was incorporated to this approach in \cite{JustDoIt}. This thesis is, to our knowledge, one of the earliest attempts to formalize this approach in Coq (with only \cite{MERC} being published earlier).
 
 \begin{listing}[H]
     \inputminted
@@ -873,14 +873,19 @@ Classes from JustDoIt. Some deeper discussion of improvements over mtl.
     \label{MonadFail}
 \end{listing}
 
+In practice it works like this: each effect gets its own typeclass that lists all operations related to that effect and also equational laws that relate these operations to each other and to \m{pure} and \m{bind}. If a monad implements such a typeclass, it means that this monad supports that effect.
+
+An example is shown in listing \ref{MonadFail}. This is one of the simplest possible effects -- failure. A monad that supports failure should provide an operation \m{fail} that is related to \m{bind} by the law \m{bind\_fail\_l}, which intuitively says that all computations following a failure also fail.
+
+
 \begin{listing}[H]
     \inputminted
     [
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=1,
-        lastline=12
+        firstline=6,
+        lastline=15
     ]
     {Coq}{../Control/Monad/Class/MonadAlt.v}
 
@@ -894,8 +899,8 @@ Classes from JustDoIt. Some deeper discussion of improvements over mtl.
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=1,
-        lastline=25
+        firstline=7,
+        lastline=22
     ]
     {Coq}{../Control/Monad/Class/MonadNondet.v}
 
