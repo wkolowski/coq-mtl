@@ -79,3 +79,19 @@ End MonadFailFuns.
 Arguments mfilter {M instM instMF A} _ _.
 Arguments mpartition {M instM instMF A} _ _.
 Arguments mcatOptions {M instM instMF A} _.
+
+(*
+Require Import Control.Monad.Trans.
+
+Instance MonadFail_MonadTrans
+  (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
+  (M : Type -> Type) (instM : Monad M) (instMF : MonadFail M instM)
+  : MonadFail (T M) (is_monad _ instM) :=
+{
+    fail := fun A => lift (@fail M instM instMF A);
+}.
+Proof.
+  intros. Print MonadTrans. rewrite <- lift_bind. rewrite lift_bind.
+  rewrite lift_constrA, ask_ask. reflexivity.
+Defined.
+*)

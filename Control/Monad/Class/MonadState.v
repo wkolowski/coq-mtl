@@ -123,3 +123,22 @@ Arguments modify {S M instM instMS}.
 Arguments gets {S M instM instMS A}.
 Arguments put_gets {S M instM instMS A}.
 Arguments modify_put {S M instM instMS}.
+
+(*
+Require Import Control.Monad.Trans.
+
+Instance MonadState_MonadTrans
+  (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
+  (M : Type -> Type) (instM : Monad M)
+  (S : Type) (instMS : MonadState S M instM)
+  : MonadState S (T M) (is_monad _ instM) :=
+{
+    get := lift get;
+    put := put .> lift;
+}.
+Proof.
+  Focus 4. intros. Print MonadTrans.
+  Print MonadTrans.
+  rewrite lift_constrA, ask_ask. reflexivity.
+Defined.
+*)

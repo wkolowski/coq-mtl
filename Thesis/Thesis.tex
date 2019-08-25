@@ -856,7 +856,7 @@ Of course, these automation tactics are not enough to deal with all instances of
 
 \section{Typeclass-based effects}
 
-We now describe ``typeclass-based effects'' (note that this is not a widely used term and, to be honest, we don't know if there is any widely used name for this approach to effects). Their popularity in Haskell is due to the \m{mtl} library (after which we also called this approach ``the \m{mtl} approach''), which was originally inspired by \cite{mtl}. Equational reasoning was incorporated to this approach in \cite{JustDoIt}. This thesis is, to our knowledge, one of the earliest attempts to formalize this approach in Coq (with only \cite{MERC} being published earlier).
+We now describe ``typeclass-based effects'' (note that this is not a widely used term and, to be honest, we don't know if there is any widely used name for this approach to effects). Their popularity in Haskell is due to the \m{mtl} library (after which we also called this approach ``the \m{mtl} approach''), which was originally inspired by \cite{mtl}. Equational reasoning with such typeclass-based effects was first studied in \cite{JustDoIt}. This thesis is, to our knowledge, one of the earliest attempts to formalize this approach in Coq (with only \cite{MERC} being published earlier).
 
 \begin{listing}[H]
     \inputminted
@@ -873,10 +873,9 @@ We now describe ``typeclass-based effects'' (note that this is not a widely used
     \label{MonadFail}
 \end{listing}
 
-In practice it works like this: each effect gets its own typeclass that lists all operations related to that effect and also equational laws that relate these operations to each other and to \m{pure} and \m{bind}. If a monad implements such a typeclass, it means that this monad supports that effect.
+In practice the whole thing works like this: each effect gets its own typeclass that lists all operations related to that effect and also equational laws that relate these operations to each other and to \m{pure} and \m{bind}. If a monad implements such a typeclass, it means that this monad supports that effect, i.e. it can be used to run programs that use that effect.
 
 An example is shown in listing \ref{MonadFail}. This is one of the simplest possible effects -- failure. A monad that supports failure should provide an operation \m{fail} that is related to \m{bind} by the law \m{bind\_fail\_l}, which intuitively says that all computations following a failure also fail.
-
 
 \begin{listing}[H]
     \inputminted
@@ -893,6 +892,8 @@ An example is shown in listing \ref{MonadFail}. This is one of the simplest poss
     \label{MonadAlt}
 \end{listing}
 
+Another example, shown in listing \ref{MonadAlt}, is the \m{MonadAlt} typeclass, which represents the nondeterministic choice effect. A monad that supports this effect should provide an operation \m{choose} that is associative (the law \m{choose\_assoc}, which intuitively means that the various ways of associating a multiple choice don't make the choice biased) and left-distributes over \m{bind} (the law \m{bind\_choose\_l}, which intuitively means that a computation that depends on a choice is the same as a choice between computations).
+
 \begin{listing}[H]
     \inputminted
     [
@@ -900,7 +901,7 @@ An example is shown in listing \ref{MonadFail}. This is one of the simplest poss
         bgcolor=CoqIDE,
         linenos,
         firstline=7,
-        lastline=22
+        lastline=20
     ]
     {Coq}{../Control/Monad/Class/MonadNondet.v}
 
@@ -908,13 +909,52 @@ An example is shown in listing \ref{MonadFail}. This is one of the simplest poss
     \label{MonadNondet}
 \end{listing}
 
+A great strength of typeclass-based effects is that we can easily create new effects by composing previously defined effects and linking their operations with additional laws. An example is shown in listing \ref{MonadNondet}. The typeclass \m{MonadNondet} represents nondeterminism, understood as the ability to fail or make a binary choice (note that this is equivalent to being able to choose from a finite number of alternatives). The ``failure'' part comes from the \m{MonadFail} typeclass and the ``choice'' part comes from the \m{MonadAlt} typeclass. Moreover, there are two additional laws (\m{choose\_fail\_l} and \m{choose\_fail\_r}) which intuitively mean that we don't choose failure if we are not forced to.
+
+\begin{listing}[H]
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=7,
+        lastline=12
+    ]
+    {Coq}{../Control/Monad/Class/MonadReader.v}
+
+    \caption{The \m{MonadReader} typeclass}
+    \label{MonadReader}
+\end{listing}
+
+\begin{listing}[H]
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=35,
+        lastline=45
+    ]
+    {Coq}{../Control/Monad/Class/MonadReader.v}
+
+    \caption{The \m{MonadReader} instance for all monad transformers can be defined at once}
+    \label{MonadReaderMonadTrans}
+\end{listing}
+
+But typeclass-based effects also have a great weakness which was already mentioned -- they require a quadratic amount of instances to be defined (in \m{mtl} the formula is the number of typeclasses times the number of monad transformers). In \libname\ the situation is very similar, but surprisingly, there is a single exception -- the \m{MonadReader} typeclass, shown in listing \ref{MonadReader}.
+
+It represents a very simple effect that lets us \m{ask} the environment for a value of type \m{R}. The law \m{ask\_ask} states that asking twice is the same as asking just once. Because this typeclass is so simple, it turns out we can define a \m{MonadReader} instance for all monad transformers in one fell swoop, something that is not possible in Haskell. This reduces the amount of boilerplate we have to write, even though the amount of instances is still quadratic, and gives some hope that maybe this will be possible for other kinds of effect typeclasses. This hope is in vain however, as we empirically checked that this trick doesn't work even for other very simple effects, like \m{MonadFail}.
+
+We have implemented most typeclasses that appear in \cite{JustDoIt}, including \m{MonadExcept}, \m{MonadFail}, \m{MonadAlt} (and its variants \m{MonadAltBag}, \m{MonadAltSet} and \m{MonadAlt2}), \m{MonadNondet}, \m{MonadState}, \m{MonadStateNondet}, but we omitted the probability monad. We have also formalized most of \cite{JustDoIt} -- see the file \m{Theory/JustDoIt.v} for details.
+
+We have also implemented a few effect typeclasses that should be familiar from \m{mtl}, like \m{MonadReader}, \m{MonadWriter} and \m{MonadFree}, but there are some differences: as we have seen, \m{MonadReader} lacks the \m{local} operation that is present in \m{mtl} and it was quite hard to figure out the ``correct'' laws that \m{MonadWriter} instances should obey (what we did was empirically test which laws were satisfied by most instances and adopted these).
+
 \section{Examples}
 
 \begin{itemize}
     \item Reasoning with concrete monads: rewrite example from chapter 1.
     \item Reasoning with classes: towers of hanoi, fast product.
     \item Compare the above with the pen-and-paper proof from \cite{JustDoIt}
-    \item Mention that \cite{JustDoIt} is mostly formalized.
 \end{itemize}
 
 \chapter{Conclusion}
