@@ -15,7 +15,7 @@ match oa with
     | Some a => Some (f a)
 end.
 
-Hint Unfold fmap_Option : HSLib.
+Hint Unfold fmap_Option : CoqMTL.
 
 (** [Functor] laws can be proven by an easy case analysis, which can be
     handled automatically. *)
@@ -40,7 +40,7 @@ match of, oa with
     | _, _ => None
 end.
 
-Hint Unfold pure_Option ap_Option : HSLib.
+Hint Unfold pure_Option ap_Option : CoqMTL.
 
 Instance Applicative_Option : Applicative option :=
 {
@@ -61,7 +61,7 @@ match x, y with
     | Some a, _ => Some a
 end.
 
-Hint Unfold aempty_Option aplus_Option : HSLib.
+Hint Unfold aempty_Option aplus_Option : CoqMTL.
 
 Instance Alternative_Option : Alternative option :=
 {
@@ -80,7 +80,7 @@ match oa with
     | Some a => f a
 end.
 
-Hint Unfold bind_Option : HSLib.
+Hint Unfold bind_Option : CoqMTL.
 
 (** Failing is commutative, because it doesn't matter what fails nor in
     what order - only the presence of failure is important. *)
@@ -110,7 +110,7 @@ match oa with
     | Some a => f a
 end.
 
-Hint Unfold foldMap_Option : HSLib.
+Hint Unfold foldMap_Option : CoqMTL.
 
 Instance Foldable_Option : Foldable option :=
 {

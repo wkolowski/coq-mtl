@@ -11,7 +11,7 @@ Class MonadReader
     ask_ask : ask >> ask = ask;
 }.
 
-Hint Rewrite @ask_ask : HSLib.
+Hint Rewrite @ask_ask : CoqMTL.
 
 Section MonadReader_funs.
 

@@ -38,7 +38,7 @@ Class Monad (M : Type -> Type) : Type :=
 
 Coercion is_applicative : Monad >-> Applicative.
 
-Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : HSLib.
+Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc @bind_ap : CoqMTL.
 
 (** The other basic monadic operations: [join] and monadic composition. *)
 Definition join
@@ -141,7 +141,7 @@ Qed.
 
 End DerivedMonadLaws.
 
-Hint Rewrite @fmap_bind_pure @bind_fmap @fmap_bind : HSLib.
+Hint Rewrite @fmap_bind_pure @bind_fmap @fmap_bind : CoqMTL.
 
 (** Laws relating fundamental monadic operations ([>>=], [>=>], [join])
     with themselves and other operations, like [fmap] and [>>]. *)
@@ -279,4 +279,4 @@ Defined.
 
 End DerivedMonadLaws2.
 
-Hint Rewrite @constlA_spec @constrA_spec : HSLib.
+Hint Rewrite @constlA_spec @constrA_spec : CoqMTL.

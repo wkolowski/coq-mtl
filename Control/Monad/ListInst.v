@@ -9,7 +9,7 @@ Definition List (A : Type) : Type := list A.
 (** [fmap] is taken directly from the standard library. *)
 Definition fmap_List := map.
 
-Hint Rewrite app_nil_l app_nil_r : HSLib.
+Hint Rewrite app_nil_l app_nil_r : CoqMTL.
 
 Instance Functor_List : Functor list :=
 {
@@ -25,7 +25,7 @@ Defined.
     degenerate case of nondeterminism. *)
 Definition pure_List {A : Type} (x : A) : list A := [x].
 
-Hint Unfold List pure_List : HSLib.
+Hint Unfold List pure_List : CoqMTL.
 
 (** Even though the definition of [ap] is straightforward, proving that
     it satisfies the [Applicative] laws is quite difficult, probably the

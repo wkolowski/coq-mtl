@@ -16,7 +16,7 @@ Definition fmap_OptionT
   (A B : Type) (f : A -> B) : OptionT M A -> OptionT M B :=
     fmap (fmap_Option f).
 
-Hint Unfold OptionT fmap_OptionT : HSLib.
+Hint Unfold OptionT fmap_OptionT : CoqMTL.
 
 Instance Functor_OptionT (M : Type -> Type) {inst : Functor M}
     : Functor (OptionT M) :=
@@ -43,7 +43,7 @@ Definition ap_OptionT
         | _ => pure None
     end).
 
-Hint Unfold pure_OptionT ap_OptionT : HSLib.
+Hint Unfold pure_OptionT ap_OptionT : CoqMTL.
 
 Instance Applicative_OptionT
   (M : Type -> Type) (inst : Monad M) : Applicative (OptionT M) :=
@@ -69,7 +69,7 @@ Definition aplus_OptionT
         | _, _ => pure None
     end)).
 
-Hint Unfold aempty_OptionT aplus_OptionT : HSLib.
+Hint Unfold aempty_OptionT aplus_OptionT : CoqMTL.
 
 Instance Alternative_OptionT
   (M : Type -> Type) (inst : Monad M) : Alternative (OptionT M) :=
@@ -89,7 +89,7 @@ Definition bind_OptionT
         | Some a => f a
     end).
 
-Hint Unfold bind_OptionT : HSLib.
+Hint Unfold bind_OptionT : CoqMTL.
 
 Instance Monad_OptionT
   (M : Type -> Type) (inst : Monad M) : Monad (OptionT M) :=
@@ -105,7 +105,7 @@ Definition lift_OptionT
   {M : Type -> Type} {_inst : Monad M} {A : Type} (ma : M A)
     : OptionT M A := fmap Some ma.
 
-Hint Unfold lift_OptionT : HSLib.
+Hint Unfold lift_OptionT : CoqMTL.
 
 Instance MonadTrans_OptionT : MonadTrans OptionT :=
 {
@@ -120,7 +120,7 @@ Definition fail_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type}
     : OptionT M A := pure None.
 
-Hint Unfold fail_OptionT : HSLib.
+Hint Unfold fail_OptionT : CoqMTL.
 
 Instance MonadFail_OptionT
   (M : Type -> Type) (inst : Monad M)

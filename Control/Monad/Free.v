@@ -70,7 +70,7 @@ Definition wrap_Free
       wrap (fmap (fun f : forall X : Type, (A -> X) -> (F X -> X) -> X =>
                f X pure wrap) x).
 
-Hint Unfold fmap_Free pure_Free ap_Free bind_Free wrap_Free : HSLib.
+Hint Unfold fmap_Free pure_Free ap_Free bind_Free wrap_Free : CoqMTL.
 
 Instance MonadFree_Free
   (F : Type -> Type) (instF : Functor F)

@@ -85,7 +85,7 @@ Class MonadFail : Type :=
         fail >>= f = fail
 }.
 
-Hint Rewrite @constrA_fail_l : HSLib.
+Hint Rewrite @constrA_fail_l : CoqMTL.
 
 Definition guard {inst' : MonadFail} (b : bool) : M unit :=
   if b then skip else fail.
@@ -227,7 +227,7 @@ Class MonadExcept
         catch (pure x) h = pure x;
 }.
 
-Hint Rewrite @catch_fail_l @catch_fail_r @catch_assoc @catch_pure : HSLib.
+Hint Rewrite @catch_fail_l @catch_fail_r @catch_assoc @catch_pure : CoqMTL.
 
 (*
 Lemma product_In_0 :

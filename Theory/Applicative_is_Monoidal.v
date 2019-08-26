@@ -54,9 +54,9 @@ Definition pairF_Applicative
   {F : Type -> Type} {inst : Applicative F} {A B : Type}
   (x : F A) (y : F B) : F (A * B)%type := pair <$> x <*> y.
 
-Hint Unfold default_Applicative pairF_Applicative : HSLib.
+Hint Unfold default_Applicative pairF_Applicative : CoqMTL.
 
-(*Hint Remove fmap_pure_ap : HSLib.*)
+(*Hint Remove fmap_pure_ap : CoqMTL.*)
 
 (** The proof is quite easy, nothing to see here.
     Note that [fmap_pure_ap] is not necessary in the big rewrite

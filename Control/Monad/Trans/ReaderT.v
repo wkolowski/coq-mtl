@@ -18,7 +18,7 @@ Definition fmap_ReaderT
   : ReaderT E M A -> ReaderT E M B :=
     fun (x : ReaderT E M A) (e : E) => fmap f (x e).
 
-Hint Unfold ReaderT fmap_ReaderT : HSLib.
+Hint Unfold ReaderT fmap_ReaderT : CoqMTL.
 
 Instance Functor_ReaderT
   {M : Type -> Type} {inst : Monad M} {E : Type} : Functor (ReaderT E M) :=
@@ -36,7 +36,7 @@ Definition ap_ReaderT
   (f : ReaderT E M (A -> B)) (x : ReaderT E M A) : ReaderT E M B :=
     fun e : E => f e <*> x e.
 
-Hint Unfold pure_ReaderT ap_ReaderT : HSLib.
+Hint Unfold pure_ReaderT ap_ReaderT : CoqMTL.
 
 Instance Applicative_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M)
@@ -73,7 +73,7 @@ Definition bind_ReaderT
   (x : ReaderT E M A) (f : A -> ReaderT E M B) : ReaderT E M B :=
     fun e : E => x e >>= (fun a : A => f a e).
 
-Hint Unfold bind_ReaderT : HSLib.
+Hint Unfold bind_ReaderT : CoqMTL.
 
 Instance Monad_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Monad (ReaderT E M) :=

@@ -25,4 +25,4 @@ Class MonadStateNondet
 Coercion instS : MonadStateNondet >-> MonadState.
 Coercion instN : MonadStateNondet >-> MonadNondet.
 
-Hint Rewrite @seq_fail_r @bind_choose_r : HSLib.
+Hint Rewrite @seq_fail_r @bind_choose_r : CoqMTL.

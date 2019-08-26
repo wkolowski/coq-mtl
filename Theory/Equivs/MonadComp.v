@@ -37,7 +37,7 @@ Proof.
   Print Monad.
 Abort.
 
-Hint Unfold bindM : HSLib.
+Hint Unfold bindM : CoqMTL.
 
 Require MonadBind.
 

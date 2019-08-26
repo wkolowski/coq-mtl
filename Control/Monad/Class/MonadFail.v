@@ -11,7 +11,7 @@ Class MonadFail (M : Type -> Type) (inst : Monad M) : Type :=
         fail >>= f = fail;
 }.
 
-Hint Rewrite @bind_fail_l : HSLib.
+Hint Rewrite @bind_fail_l : CoqMTL.
 
 Set Implicit Arguments.
 

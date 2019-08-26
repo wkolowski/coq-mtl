@@ -19,7 +19,7 @@ Class Monoid : Type :=
 
 Coercion carr : Monoid >-> Sortclass.
 
-Hint Rewrite @id_left @id_right @op_assoc : HSLib.
+Hint Rewrite @id_left @id_right @op_assoc : CoqMTL.
 
 (** Some instances of monoids: the initial monoid, the monoid of boolean
     values with boolean conjunction and the monoid of lists with append. *)

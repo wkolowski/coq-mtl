@@ -26,11 +26,11 @@ end.
 Ltac simplify :=
   cbn; intros; exts; destr.
 
-Hint Rewrite @id_eq @id_left @id_right : HSLib.
+Hint Rewrite @id_eq @id_left @id_right : CoqMTL.
 
 Ltac hs :=
   cbn; intros;
-  repeat (autorewrite with HSLib + autounfold with HSLib);
+  repeat (autorewrite with CoqMTL + autounfold with CoqMTL);
   try (unfold compose, id, const; congruence + reflexivity).
 
 Ltac monad := repeat (simplify; try (hs; fail);

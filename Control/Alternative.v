@@ -30,7 +30,7 @@ Class Alternative (F : Type -> Type) : Type :=
 
 Coercion is_applicative : Alternative >-> Applicative.
 
-Hint Rewrite @aplus_aempty_l @aplus_aempty_r @aplus_assoc : HSLib.
+Hint Rewrite @aplus_aempty_l @aplus_aempty_r @aplus_assoc : CoqMTL.
 
 Notation "x <|> y" := (aplus x y)
   (left associativity, at level 50).

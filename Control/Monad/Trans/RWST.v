@@ -21,7 +21,7 @@ Definition fmap_RWST
     fun r s =>
       x r s >>= fun '(x', sx, wx) => pure $ (f x', sx, wx).
 
-Hint Unfold RWST fmap_RWST : HSLib.
+Hint Unfold RWST fmap_RWST : CoqMTL.
 
 Instance Functor_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
@@ -43,7 +43,7 @@ Definition ap_RWST
       f r s >>= fun '(f', sf, wf) =>
       x r sf >>= fun '(x', sx, wx) => pure (f' x', sx, op wf wx).
 
-Hint Unfold pure_RWST ap_RWST : HSLib.
+Hint Unfold pure_RWST ap_RWST : CoqMTL.
 
 Instance Applicative_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
@@ -85,7 +85,7 @@ Definition bind_RWST
       x r s >>= fun '(x', sx, wx) =>
       f x' r sx >>= fun '(b, sb, wb) => pure (b, sb, op wx wb).
 
-Hint Unfold bind_RWST : HSLib.
+Hint Unfold bind_RWST : CoqMTL.
 
 Instance Monad_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
@@ -105,7 +105,7 @@ Definition lift_RWST
     fun r s =>
       x >>= fun a : A => pure (a, s, neutr).
 
-Hint Unfold lift_RWST : HSLib.
+Hint Unfold lift_RWST : CoqMTL.
 
 Instance MonadTrans_RWST
   {W : Monoid} {R S : Type} : MonadTrans (RWST W R S) :=

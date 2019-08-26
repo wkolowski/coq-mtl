@@ -24,7 +24,7 @@ Definition fmap_RWS
       in
         (f a, s', w).
 
-Hint Unfold fmap_RWS : HSLib.
+Hint Unfold fmap_RWS : CoqMTL.
 
 Instance Functor_RWS (W : Monoid) (R S : Type) : Functor (RWS W R S) :=
 {
@@ -47,7 +47,7 @@ Definition ap_RWS
       let '(f, sf, wf) := mf r s in
       let '(x, sx, wx) := mx r sf in (f x, sx, op wf wx).
 
-Hint Unfold pure_RWS ap_RWS : HSLib.
+Hint Unfold pure_RWS ap_RWS : CoqMTL.
 
 Instance Applicative_RWS
   (W : Monoid) (R S : Type) : Applicative (RWS W R S) :=
@@ -91,7 +91,7 @@ Definition bind_RWS
       let '(x, sx, wx) := mx r s in
       let '(b, sb, wb) := mf x r sx in (b, sb, op wx wb).
 
-Hint Unfold bind_RWS : HSLib.
+Hint Unfold bind_RWS : CoqMTL.
 
 Instance Monad_RWS
   (W : Monoid) (R S : Type) : Monad (RWS W R S) :=

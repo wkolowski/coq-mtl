@@ -69,9 +69,9 @@ Proof. reflexivity. Qed.
     unfolding, we don't need to worry about it breaking anything.
 
     Both our main rewriting and unfolding hint databases are named
-    [HSLib], but there are some minor ones, like [Functor] and
+    [CoqMTL], but there are some minor ones, like [Functor] and
     [Functor']. *)
-Hint Rewrite @id_eq @id_left @id_right : HSLib.
+Hint Rewrite @id_eq @id_left @id_right : CoqMTL.
 
 (** Note that rewriting and unfolding databases are separate, so we have
     to define a dummy value and add it to the unfolding database in order
@@ -80,7 +80,7 @@ Hint Rewrite @id_eq @id_left @id_right : HSLib.
 (*
 Definition the_ultimate_answer := 42.
 
-Hint Unfold the_ultimate_answer : HSLib.
+Hint Unfold the_ultimate_answer : CoqMTL.
 *)
 
 (** [umatch] is a tactic for conveniently [destruct]ing nested pattern
@@ -113,13 +113,13 @@ Ltac simplify :=
 (** [hs] is a tactic for solving simple goals:
     - first try to simplify the goal by computation
     - introduce quantified variables/hypotheses into context
-    - unfold definitions using the unfold hint database [HSLib]
-    - rewrite using the rewrite hint database [HSLib]
+    - unfold definitions using the unfold hint database [CoqMTL]
+    - rewrite using the rewrite hint database [CoqMTL]
     - try to finish the goal by unfolding some sensitive definitions
       and reason by [congruence] and [reflexivity] (interestingly,
       [congruence] can't solve some goals that [reflexivity] can)
 *)
 Ltac hs :=
   cbn; intros;
-  repeat (autorewrite with HSLib + autounfold with HSLib);
+  repeat (autorewrite with CoqMTL + autounfold with CoqMTL);
   try (unfold compose, id, const; congruence + reflexivity).

@@ -65,7 +65,7 @@ Definition lift_ContT
 End ContT_instances.
 
 Hint Unfold
-  fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT : HSLib.
+  fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT : CoqMTL.
 
 Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
 {

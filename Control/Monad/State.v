@@ -11,7 +11,7 @@ Definition fmap_State
   (S A B : Type) (f : A -> B) (st : State S A) : State S B :=
     fun s : S => let (a, s') := st s in (f a, s').
 
-Hint Unfold fmap_State : HSLib.
+Hint Unfold fmap_State : CoqMTL.
 
 Instance Functor_State (S : Type) : Functor (State S) :=
 {
@@ -35,7 +35,7 @@ Definition ap_State
       let (f, stf) := sf st in
       let (a, sta) := sa stf in (f a, sta).
 
-Hint Unfold pure_State ap_State : HSLib.
+Hint Unfold pure_State ap_State : CoqMTL.
 
 Instance Applicative_State (S : Type) : Applicative (State S) :=
 {
@@ -75,7 +75,7 @@ Definition bind_State
   {S A B : Type} (sa : State S A) (f : A -> State S B)
     : State S B := fun s : S => let (a, s') := sa s in f a s'.
 
-Hint Unfold bind_State : HSLib.
+Hint Unfold bind_State : CoqMTL.
 
 Instance Monad_State (S : Type) : Monad (State S) :=
 {

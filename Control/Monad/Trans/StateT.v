@@ -18,7 +18,7 @@ Definition fmap_StateT
     fun (x : StateT S M A) (s : S) =>
       x s >>= fun '(a, s') => pure (f a, s').
 
-Hint Unfold StateT fmap_StateT compose : HSLib.
+Hint Unfold StateT fmap_StateT compose : CoqMTL.
 
 (** These lemmas are there so that the parsers are fast. I don't know why
     this helps with performance... *)
@@ -56,7 +56,7 @@ Definition ap_StateT
       sa stf >>= fun '(a, sta) =>
         pure (f a, sta).
 
-Hint Unfold pure_StateT ap_StateT : HSLib.
+Hint Unfold pure_StateT ap_StateT : CoqMTL.
 
 Lemma p1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type)
@@ -125,7 +125,7 @@ Definition aplus_StateT
   {A : Type} (x y : StateT S M A) : StateT S M A :=
     fun s : S => x s <|> y s.
 
-Hint Unfold aempty_StateT aplus_StateT : HSLib.
+Hint Unfold aempty_StateT aplus_StateT : CoqMTL.
 
 Instance Alternative_StateT
   (S : Type) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
@@ -142,7 +142,7 @@ Definition bind_StateT
   (x : StateT S M A) (f : A -> StateT S M B) : StateT S M B :=
     fun s : S => x s >>= (fun '(a, s') => f a s').
 
-Hint Unfold bind_StateT : HSLib.
+Hint Unfold bind_StateT : CoqMTL.
 
 Lemma m1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
@@ -196,7 +196,7 @@ Definition lift_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : StateT S M A := fun s : S => ma >>= fun a : A => pure (a, s).
 
-Hint Unfold lift_StateT : HSLib.
+Hint Unfold lift_StateT : CoqMTL.
 
 Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
 {

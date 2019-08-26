@@ -98,7 +98,7 @@ Definition improve
 
 Hint Unfold
   fmap_Codensity pure_Codensity ap_Codensity bind_Codensity inject extract
-  : HSLib.
+  : CoqMTL.
 
 Lemma extract_pure :
   forall (A : Type) (x : A),
@@ -133,7 +133,7 @@ Definition wrap_Codensity
 
 Hint Unfold
   fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
-  wrap_Codensity : HSLib.
+  wrap_Codensity : CoqMTL.
 
 Instance MonadFree_Codensity
   {F M : Type -> Type} {instF : Functor F} {instM : Monad M}

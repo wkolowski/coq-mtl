@@ -21,7 +21,7 @@ Definition fmap_SumT
         | inr a => inr (f a)
     end).
 
-Hint Unfold SumT fmap_SumT : HSLib.
+Hint Unfold SumT fmap_SumT : CoqMTL.
 
 Instance Functor_SumT
   {M : Type -> Type} {inst : Monad M} {E : Type} : Functor (SumT E M) :=
@@ -48,7 +48,7 @@ Definition ap_SumT
               end)
       end).
 
-Hint Unfold pure_SumT ap_SumT : HSLib.
+Hint Unfold pure_SumT ap_SumT : CoqMTL.
 
 Instance Applicative_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Applicative (SumT E M) :=
@@ -81,7 +81,7 @@ Definition aplus_SumT
   {A : Type} (x y : SumT E M A) : SumT E M A :=
     @aplus _ instA _ x y.
 
-Hint Unfold aempty_SumT aplus_SumT : HSLib.
+Hint Unfold aempty_SumT aplus_SumT : CoqMTL.
 
 Instance Alternative_SumT
   (E : Type) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
@@ -102,7 +102,7 @@ Definition bind_SumT
         | inr a => f a
     end).
 
-Hint Unfold bind_SumT : HSLib.
+Hint Unfold bind_SumT : CoqMTL.
 
 Instance Monad_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Monad (SumT E M) :=
@@ -117,7 +117,7 @@ Definition lift_SumT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
   : SumT E M A := fmap inr ma.
 
-Hint Unfold lift_SumT : HSLib.
+Hint Unfold lift_SumT : CoqMTL.
 
 Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
 {

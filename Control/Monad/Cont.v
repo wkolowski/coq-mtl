@@ -70,7 +70,7 @@ Instance Monad_Cont (R : Type) : Monad (Cont R) :=
 }.
 Proof. all: reflexivity. Defined.
 
-Hint Unfold fmap_Cont pure_Cont ap_Cont bind_Cont : HSLib.
+Hint Unfold fmap_Cont pure_Cont ap_Cont bind_Cont : CoqMTL.
 
 (** For [Cont R], contrary to [Codensity R], we can define both kinds of
     callCC constructively. The second definition is taken from Purescript's

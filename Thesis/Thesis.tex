@@ -14,8 +14,8 @@
 % polecenia \fmlinebreak.
 \englishtitle   {Formally verified programming with monads in Coq}
 \polishtitle    {Formalnie zweryfikowane programowanie z monadami w Coqu}
-\polishabstract {Prezentujemy \libname, Coqową bibliotekę do formalnie zweryfikowanego programowania z abstrakcjami w stylu Haskella: funktorami, funktorami aplikatywnymi, monadami, transformatorami monad oraz efektami opartymi o klasy typów. Omawiamy nasze decyzje projektowe i przedstawiamy działanie biblioteki na przykładach z \cite{JustDoIt}.}
-\englishabstract{We introduce \libname, a Coq library for formally verified programming with Haskell-style abstractions: functors, applicative functors, monads, monad transformers and typeclass-based effects. We discuss the design choices we made and illustrate the working of the library by formalizing examples taken from \cite{JustDoIt}.}
+\polishabstract {Prezentujemy \libname, Coqową bibliotekę do formalnie zweryfikowanego programowania z abstrakcjami w stylu Haskella: funktorami, funktorami aplikatywnymi, monadami, transformatorami monad oraz efektami opartymi o klasy typów. Omawiamy nasze decyzje projektowe, opisujemy implementację i przedstawiamy działanie biblioteki na kilku przykładach.}
+\englishabstract{We introduce \libname, a Coq library for formally verified programming with Haskell-style abstractions: functors, applicative functors, monads, monad transformers and typeclass-based effects. We discuss the design choices we made, describe the implementation and illustrate the working of the library on some examples.}
 % w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
 \author         {Zeimer}
 % w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
@@ -41,8 +41,8 @@
 %\theoremstyle{plain} \newtheorem{lemma}[definition]{Lemma}
 %\renewcommand \qedsymbol {\ensuremath{\square}}
 
-\newcommand{\libname}{\textit{hsCoq}}
-\newcommand{\homepage}{\url{https://github.com/Zeimer/HSLib}}
+\newcommand{\libname}{\m{coq-mtl}}
+\newcommand{\homepage}{\url{https://github.com/Zeimer/coq-mtl}}
 
 \newcommand{\defn}{:\equiv}
 \newcommand{\m}[1]{\texttt{#1}}
@@ -51,7 +51,7 @@
 \newcommand{\nat}{\texttt{nat}}
 \newcommand{\Tree}{\texttt{Tree}}
 
-\newcommand{\hintdb}{\m{HSLib}}
+\newcommand{\hintdb}{\m{CoqMTL}}
 \newcommand{\hs}{\m{hs}}
 
 %%%%%
@@ -60,17 +60,17 @@
 
 %%%%% POCZATEK ZASADNICZEGO TEKSTU PRACY
 
-\chapter{Introduction}
+\chapter{Introduction} \label{ch1}
 
 This chapter gives some motivations for why formal verification of hardware, software and mathematics is useful and then briefly introduces the Coq proof assistant -- a tool for such verification -- to those who are not familiar with it.
 
 The rest of the thesis is structured as follows:
 
 \begin{itemize}
-    \item In chapter 2 we discuss the problem of modeling computational effects in programming languages and compare existing approaches.
-    \item In chapter 3 we present our library \libname\, discuss its design and implementation and explain our approach to proof engineering (the formalized mathematics' equivalent of software engineering).
-    \item In chapter 4 we demonstrate how to reason with the provided abstractions by proving some example effectful programs correct. We also prove a few general theorems and show that they may be useful for ordinary programmers.
-    \item In chapter 5 we conclude by discussing related and future work.
+    \item In \hyperref[ch2]{Chapter 2} we discuss the problem of modeling computational effects in programming languages and compare existing approaches.
+    \item In \hyperref[ch3]{Chapter 3} we discuss the design of \libname\ and explain our approach to proof engineering (the formalized mathematics' equivalent of software engineering).
+    \item In \hyperref[ch4]{Chapter 4} we describe the implementation, prove a few theorems that assure us of correctness of our abstractions and are useful to ordinary programmers, and show two examples of reasoning about effectful programs.
+    \item In \hyperref[ch5]{Chapter 5} we conclude by discussing related and future work.
 \end{itemize}
 
 \section{Formal verification of hardware and software}
@@ -95,13 +95,13 @@ Academia and industry, however, are not passively waiting for more disasters to 
 
 Hardware and software are not the only things in need of formal verification -- mathematics is also one of them.
 
-The four colour theorem is a problem posed in 1852. It states that any planar map can be coloured with only four colours so that no two regions sharing a boundary are assigned the same colour. It became famous for resisting many proof attempts by many famous mathematicians for more than a century until it was finally proved by Appel and Haken in 1976. Its importance stems from the proof method -- it was the first major theorem proven using a computer program, whose job was to make sure a very large case analysis was exhaustive.
+The four colour theorem is a problem posed in 1852. It states that any planar map can be coloured with only four colours so that no two regions sharing a boundary are assigned the same colour. It became famous for resisting many proof attempts by many famous mathematicians for more than a century until it was finally proved by Appel and Haken in 1976 \cite{AppelHaken1} \cite{AppelHaken2} \cite{AppelHaken3} \cite{AppelHaken4}. Its importance stems from the proof method -- it was the first major theorem proven using a computer program, whose job was to make sure a very large case analysis was exhaustive.
 
-Thomas Tymoczko, a philosopher of mathematics, criticised this proof by labeling it with a term he invented just for this purpose -- ``non-surveyable''. He considered a proof to be non-surveyable when its verification cannot be performed by human mathematicians competent in the relevant field. Appel and Haken's proof certainly did fail the surveyability criterion -- the program was written in IBM 370 assembly, a language graph theorists very likely didn't understand.
+Thomas Tymoczko, a philosopher of mathematics, criticised this proof by labeling it with a term he invented just for this purpose -- ``non-surveyable'' \cite{NonSurveyable}. He considered a proof to be non-surveyable when its verification cannot be performed by human mathematicians competent in the relevant field. Appel and Haken's proof certainly did fail the surveyability criterion -- the program was written in IBM 370 assembly, a language graph theorists very likely didn't understand.
 
 This was the perfect theorem to let formal proofs and formally verified programs shine by dispeling Tymoczko and other mathematician's doubts. This is what indeed happened in 2005, when Georges Gonthier presented a proof of the theorem formalized in Coq \cite{FourColour1} \cite{FourColour2}.
 
-But big theorems with difficult proofs are not the only call for formalized mathematics. Another one is the mere fallibility of humans, especially their limited memory and reasoning skills and the tendency to follow authority. As unmathematical as it sounds, these are the main reasons cited by Vladimir Voevodsky, a field medalist mathematician turned a fan of formal proofs, in one of his talks \cite{UnivalentFoundations}.
+But big theorems with difficult proofs are not the only call for formalized mathematics. Another one is the mere fallibility of humans, especially their limited memory and reasoning skills and the tendency to follow authority. As unmathematical as it sounds, these are the main reasons cited by Vladimir Voevodsky, a Fields medalist mathematician turned a fan of formal proofs, in one of his talks \cite{UnivalentFoundations}.
 
 The fields he refers to are homotopy theory, higher category theory and motivic cohomology -- all of them containing many layers of abstraction, tons of concepts and definitions, and based on rather shaky foundations (in the sense of foundations of mathematics).
 
@@ -179,9 +179,9 @@ This concludes our introduction to the Coq proof assistant. From now on we will 
     \item Certified Programming with Dependent Types \cite{CPDT} is an advanced book that focuses on using dependent types and proof engineering, but also covers topics like axioms, reasoning about equality proofs and general recursion.
 \end{itemize}
 
-\chapter{Effects}
+\chapter{Effects} \label{ch2}
 
-Although \libname\ is a rather general-purpose library, it also tackles the problem of how to best express (and program with) effects. The research on effects is still young and active, so in this chapter we will take a look at the basic concepts to gain some familiarity with it. However, to keep the exposition accessible to ordinary programmers, our treatment will be rather loose and hands-on.
+Although \libname\ started as a rather general-purpose library, it mainly tackles the problem of how to best express (and program with) effects. The research on effects is still young and active, so in this chapter we will take a look at the basic concepts to gain some familiarity with it. However, to keep the exposition accessible to ordinary programmers, our treatment will be rather loose and hands-on.
 
 \section{Basic concepts}
 
@@ -295,13 +295,13 @@ After seeing some anecdotal evidence supporting the superiority of having an eff
 
 The oldest approach, which is quite ad hoc, amounts to implementing monads and various related structures at the library level and using them to track effects using the type system. This approach can be called the \m{mtl} approach, after a Haskell library that implements it.
 
-Monads were initially invented by category theorists in the 1960s for the purpose of universal algebra and named after a concept coming from the philosophy of Leibniz. A running joke in the functional programming community, originally due to Mac Lane \cite{CWM}, is that
+Monads were initially invented by category theorists in the 1960s for the purpose of universal algebra and named after a concept coming from the philosophy of Leibniz. A running joke in the functional programming community (based on an actual quote from \cite{CWM}) is that
 
 \begin{quote}
-    a monad in $X$ is just a monoid in the category of endofunctors of $X$, with product $\times$ replaced by composition of endofunctors and unit set by the identity endofunctor. What's the problem?
+    A monad in $C$ is just a monoid in the category of endofunctors of $C$, with product $\times$ replaced by composition of endofunctors and unit set by the identity endofunctor. What's the problem?
 \end{quote}
 
-Despite their obscure provenance and a reputation of being hard to understand \cite{MonadTutorialFallacy}, Moggi realized in his famous 1991 paper \cite{Moggi} that they are in fact quite a simple abstraction that can be used to represent effects. Namely, a \textbf{monad} $M : \Type \to \Type$ is a function from types to types, and $M\ A$ may be interpreted as the type of computations that return a value of type $A$, but which may have an effect represented by $M$.
+Despite their current reputation of being hard to understand (at least for ordinary programmers \cite{MonadTutorialFallacy}), Moggi realized in his famous 1991 paper \cite{Moggi} that they are in fact quite a simple abstraction that can be used to represent effects. Namely, a \textbf{monad} $M : \Type \to \Type$ is a function from types to types, and $M\ A$ may be interpreted as the type of computations that return a value of type $A$, but which may have an effect represented by $M$.
 
 Each monad has an operation $\m{pure} : A \to M\ A$ which turns a value into an effectless computation and an operation $\m{bind} : M\ A \to (A \to M\ B) \to M\ B$, which runs the first computation and feeds its result to a function that uses it to produce another computation. These operations are related by laws that are monoid laws in disguise.
 
@@ -338,11 +338,11 @@ Native treatment of effects allows special treatment during compilation, which r
 
 But probably the greatest advantage of this approach is its conceptual simplicity. Both \m{mtl} and \m{extensible-effects} suffer from a plethora of closely related concepts: monads and monad transformers, free and free-er monads, their operations and laws, the idea that they (indirectly) represent effects, and on top of it typeclasses, which are quite orthogonal to the subject at hand. This can be contrasted with the conceptual simplicity of native algebraic effects, with just the two core concepts of effects and handlers.
 
-This conceptual simplicity is crucial for industry adoption. If the average Java programmer can't understand the basic ideas behind effects, there will be no wide adoption and thus no benefits from reduced number of bugs.
+In my opinion, this conceptual simplicity is crucial for industry adoption -- if the average Java programmer can't understand the basic ideas behind effects, there will be no wide adoption and thus no benefits from reduced number of bugs.
 
-\chapter{Design}
+\chapter{Design} \label{ch3}
 
-In this chapter we describe the design and implementation of \libname. We motivate the library's design by discussing possible ways of implementing effects in Coq, design choices related to abstraction and modularity mechanisms, various ways of using classes for formalizing concepts, and the matter of axioms.
+In this chapter we describe the design of \libname. We motivate the library's design by discussing possible ways of implementing effects in Coq, design choices related to abstraction and modularity mechanisms, various ways of using classes for formalizing concepts, and the matter of axioms.
 
 \section{Effects in Coq?}
 
@@ -352,7 +352,7 @@ First off, we need to recall that Coq implements Calculus of Inductive Construct
 
 Then we should ask ourselves, why do we want to have a way of expressing effects in Coq? After all, Coq is a proof assistant concerned mainly with theorem proving and formal verification that doesn't even support any kind of IO -- you can't use it to write the simplest Hello World program, you can't connect to a database, you can't use it to write a web server (but see \cite{CoqIO}).
 
-We can answer this by recalling that effects are not only about communication with the outside world -- they can also model control mechanisms like failure, exceptions or nondeterminism, and we surely want to make programming with these easier. The function \m{label} we saw at the end of chapter 1 could look way better expressed using the state effect.
+We can answer this by recalling that effects are not only about communication with the outside world -- they can also model control mechanisms like failure, exceptions or nondeterminism, and we surely want to make programming with these easier. The function \m{label} we saw at the end of \hyperref[ch1]{Chapter 1} could look way better expressed using the state effect.
 
 Another reason is that, even though in Coq we can't interact with the outside world, we may want to model programs or programming languages that can. At last, IO and other such effects may be added to Coq in the future and we want to be prepared for that (related languages, like Agda \cite{Agda} and Idris \cite{Idris} both have IO).
 
@@ -553,7 +553,7 @@ Class LawfulSemigroup : Type :=
 
 Another approach to class design, whose example is shown in listing \ref{Lawless}, I will call the lawful/lawless approach. The idea is a bit similar to bundling/unbundling: a lawful class is one that contains all the relevant laws, whereas in the lawless approach we split a class into two: the ``main'' class with all the data and operations and the ``laws'' class that contains all the (equational or other) laws that these data and operations should satisfy.
 
-There are a few reasons why one might want to split laws from the main class. First, we may be interested in how fast the resulting code will execute in Coq (and not only after extraction), and carrying around proofs of all the laws and computing with them may slow down the execution speed. Second, we might want users of our classes to be able to program without having to prove anything at all. Third, we might be interested in proving some nontrivial properties, like equivalence of various classes (we will do this in chapter 4), in which case having to prove equality of proofs of the laws might be notoriously annoying or even require introducing an additional axiom -- the Proof Irrelevance Axiom.
+There are a few reasons why one might want to split laws from the main class. First, we may be interested in how fast the resulting code will execute in Coq (and not only after extraction), and carrying around proofs of all the laws and computing with them may slow down the execution speed. Second, we might want users of our classes to be able to program without having to prove anything at all. Third, we might be interested in proving some nontrivial properties, like equivalence of various classes (we will do this in \hyperref[ch4]{Chapter 4}), in which case having to prove equality of proofs of the laws might be notoriously annoying or even require introducing an additional axiom -- the Proof Irrelevance Axiom.
 
 For \libname\ we adopt the lawful approach because we are interested not in programming per se, but in formally verified programming. In practice, it turns out that the lawful approach doesn't have a big impact on execution speed. Since we are interested in proving typeclass equivalences for practical purposes (to allow the programmer to implement what's easiest for him but get everything), we don't need to do deal with proof equality in our proofs.
 
@@ -621,7 +621,7 @@ Now that we know our axioms, we can start proving, right? Well, not really. When
 
 The same is true of mathematicians who go formal -- when they want to prove lots of theorems that form a coherent theory, they face the question of proof engineering -- what ``architecture'' will express best the structure of the theory, what style of proving will let them prove their theorems in the most painless way and so on. Writing proofterms by hand or simple proofscripts composed only of the most basic tactics are not good proof engineering practices. We should therefore stick with some good practices, but what are they?
 
-Ltac, Coq's tactic language, is a very rich language and this has led to many proof styles being employed in various places. The most important distinction is between manual proofs (which consist of a series of tactics that prove the theorem step by step, like in the example in chapter 1) and automated proofs (which usually take the form of a big tactic that proves a whole theorem all at once).
+Ltac, Coq's tactic language, is a very rich language and this has led to many proof styles being employed in various places. The most important distinction is between manual proofs (which consist of a series of tactics that prove the theorem step by step, like in the example in \hyperref[ch1]{Chapter 1}) and automated proofs (which usually take the form of a big tactic that proves a whole theorem all at once).
 
 Another distinction is between reflective and non-reflective proofs. Reflective proofs are proofs written in Coq's term language that operate on syntactic representations of theorems. The sole role of Ltac in this approach is reification, i.e. transforming these theorems into their syntactic representations (this is something that Coq's term language cannot do, because it would result in inconsistency). Non-reflective proofs are the ordinary Ltac-based proofs that don't use the above machinery of reflection and reification. This gives rise to four proof styles:
 
@@ -636,7 +636,7 @@ In our case, there will be a massive amount of typeclass instances that have to 
 
 It may also seem that we want the tactics to be reflective, because the typeclasses we are dealing with are very well structured mathematically. This is however not the case, because we want our tactics to also be of use to users of our library, but we cannot predict what kinds of monads and effect they will want to create. This makes makes the world of \m{Functor}s, \m{Applicative}s, \m{Monad}s and effects not a closed world, like that of Presburger arithmetic or ring expressions, but an open one. We therefore choose to follow the automated non-reflective approach.
 
-\chapter{Implementation, theorems and examples}
+\chapter{Implementation, theorems and examples} \label{ch4}
 
 In this chapter we describe the implementation of our library, including some subtleties that we didn't foresee coming during design, explain our approach to proof automation (how to prove all these laws without too much labor), give some example use cases of our library and prove a few theorems which may seem unnecessary at first, but turn out to have some practical use.
 
@@ -966,7 +966,7 @@ We have also implemented a few effect typeclasses that should be familiar from \
 
 \section{Examples}
 
-We finish this chapter with two examples of reasoning with our monads and effects. First we revisit the example from chapter 1 and see how it can be improved with do-notation and automation tactics. We finish with a formalization of the fast product example from \cite{JustDoIt}.
+We finish this chapter with two examples of reasoning with our monads and effects. First we revisit the example from \hyperref[ch1]{Chapter 1} and see how it can be improved with do-notation and automation tactics. We finish with a formalization of the fast product example from \cite{JustDoIt}.
 
 \subsection{Tree labeling, again}
 
@@ -978,7 +978,7 @@ The function works just like before. If we hit a \m{Leaf}, we retrieve the state
 
 To get the function we really want (\m{lbl}, which starts labeling from zero) we have to instantiate the definition of \m{label} with some monad supporting the state effect and we of course choose the \m{State} monad. We see that we can compute with this definition just like we could with the old one and the result is, of course, the same.
 
-The correctness theorem (which states that after running \m{label} on a tree \m{t}, the counter increases by the size of \m{t}) looks quite similar the old one, just as does the proof. There are two important things to notice. First, we prove this theorem only for the concrete \m{State} monad and not for any monad supporting the \m{MonadState} effect. This is because the state effect doesn't give us any way of pulling the state outside the monad and we need this ability to even state the theorem. Second, we crucially use out automation tactic \m{hs}, which change the proof state from barely readable (it mentions the particular definitions of \m{pure}, \m{bind} and so on for the \m{State} monad) to one that strongly resembles the earlier, non-monadic version from chapter 1.
+The correctness theorem (which states that after running \m{label} on a tree \m{t}, the counter increases by the size of \m{t}) looks quite similar the old one, just as does the proof. There are two important things to notice. First, we prove this theorem only for the concrete \m{State} monad and not for any monad supporting the \m{MonadState} effect. This is because the state effect doesn't give us any way of pulling the state outside the monad and we need this ability to even state the theorem. Second, we crucially use out automation tactic \m{hs}, which change the proof state from barely readable (it mentions the particular definitions of \m{pure}, \m{bind} and so on for the \m{State} monad) to one that strongly resembles the earlier, non-monadic version from \hyperref[ch1]{Chapter 1}.
 
 The overall result is that the \m{label} function is more general, its definition is easier to read and the proof didn't get any harder. Not bad.
 
@@ -993,7 +993,7 @@ The overall result is that the \m{label} function is more general, its definitio
     ]
     {Coq}{../Thesis/snippets/Example1.v}
 
-    \caption{The tree labeling example from chapter 1, generalized with the \m{MonadState} typeclass and improved with do-notation}
+    \caption{The tree labeling example from \hyperref[ch1]{Chapter 1}, generalized with the \m{MonadState} typeclass and improved with do-notation}
     \label{Example1}
 \end{listing}
 
@@ -1047,11 +1047,11 @@ The theorem \m{work\_foldr} states that \m{work} is equal to a function implemen
 
 The above proof is as simple as the pen-and-paper one that can be found in \cite{JustDoIt} in section 5.1 (even though the line of reasoning is a bit different). This shows that at least for simple theorems our library doesn't induce a ``formalization overhead''.
 
-\chapter{Conclusion}
+\chapter{Conclusion} \label{ch5}
 
-We have introduced \libname, a general purpose Coq library for formally verified programming with Haskell-style abstractions. We have centered our presentation on the matter effects, with which we dealt by implementing a collection of \m{mtl}-like abstractions whose main inspiration was \cite{JustDoIt}.
+We have introduced \libname, a Coq library for formally verified programming with Haskell-style abstractions. We have centered our presentation on the matter effects, with which we dealt by implementing a collection of \m{mtl}-like abstractions whose main inspiration was \cite{JustDoIt}.
 
-In chapter 1 we gave some arguments for why formal verification is worth pursuing and introduced the Coq proof assistant. In chapter 2 we explained the basics of computational effects and outlined the main approaches. In chapter 3 we elucidated the design choices, which weren't really that many, described the implementation and explained the mechanism behind our proof automation. In chapter 4, we have formalized some examples from \cite{JustDoIt} to show the viability of the library. We also saw some simple theorems which prove our implementation correct, but are also useful from a practical point of view.
+In \hyperref[ch1]{Chapter 1} we gave some arguments for why formal verification is worth pursuing and introduced the Coq proof assistant. In \hyperref[ch2]{Chapter 2} we explained the basics of computational effects and outlined the main approaches. In \hyperref[ch3]{Chapter 3} we elucidated the design choices, which weren't really that many, described the implementation and explained the mechanism behind our proof automation. In \hyperref[ch4]{Chapter 4}, we have formalized some examples from \cite{JustDoIt} to show the viability of the library. We also saw some simple theorems which prove our implementation correct, but are also useful from a practical point of view.
 
 \section{Technical details}
 
@@ -1075,11 +1075,11 @@ First off, some proofs and instances are missing. For example, I could neither d
 
 Notations could get some love too. The current do notation requires the ugly \m{;;} for computations that don't bind their result and I couldn't even define the idiom brackets of Idris using Coq's notation mechanism.
 
-Some more theoretical work would be to formally characterize the minimal sets of laws for the various classes and some more practical work would be to implement other useful abstractions known from Haskell, like \m{Traversable} and \m{Foldable}.
+Some more theoretical work would be to formally characterize the minimal sets of laws for the various classes and some more practical work would be to implement other useful abstractions known from Haskell, like \m{Traversable}.
 
 Another possibility is to rewrite the whole automation engine, so as to use proof by reflection \cite{CPDT}, which is more reliable than the more ad hoc tactics written in Ltac. The first step toward this goal has already been made with the tactic \m{reflect\_functor}, which implements basic principles of reasoning with functors.
 
-Last but not least, as already mentioned, \libname\ is a great basis on which a library similar to Haskell's \m{extensible-effects} may be implemented.
+Last but not least, as already mentioned, \libname\ is a basis on which a library similar to Haskell's \m{extensible-effects} may be implemented.
 
 %%%%% BIBLIOGRAFIA
 
@@ -1101,18 +1101,41 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
         \url{https://spectreattack.com/spectre.pdf}
     
     \bibitem{Heartbleed}
-        \url{https://heartbleed.com},
-        2019
+        \url{https://heartbleed.com}
 
     \bibitem{DeepSpec}
-        \url{https://deepspec.org},
-        2019
+        \url{https://deepspec.org}
 
     \bibitem{Boeing}
         Gregory Travis, \\
-        How the Boeing 737 Max Disaster Looks to a Software Developer, \\
+        \textit{How the Boeing 737 Max Disaster Looks to a Software Developer}, \\
         \url{https://spectrum.ieee.org/aerospace/aviation/how-the-boeing-737-max-disaster-looks-to-a-software-developer}
     
+    \bibitem{AppelHaken1}
+        Kenneth Appel, Wolfgang Haken,
+        \textit{Every map is four colourable}, 1976, \\
+        \url{https://pdfs.semanticscholar.org/3d50/72364f230e1ab5a0b3725d84d15689615077.pdf}
+    
+        \bibitem{AppelHaken2}
+        Kenneth Appel, Wolfgang Haken, \\
+        \textit{Every planar map is four colorable. Part I: Discharging}, 1977, \\
+        \url{https://projecteuclid.org/euclid.ijm/1256049011}
+
+    \bibitem{AppelHaken3}
+        Kenneth Appel, Wolfgang Haken, \\
+        \textit{Every  map  is  four  colourable,  Part  II:  Reducibility}, 1977, \\
+        \url{https://projecteuclid.org/euclid.ijm/1256049012}
+
+    \bibitem{AppelHaken4}
+        Kenneth Appel, Wolfgang Haken,
+        \textit{Every  map  is  four  colourable}, 1989, \\
+        \url{https://bookstore.ams.org/conm-98}
+
+    \bibitem{NonSurveyable}
+        Thomas Tymoczko, \\
+        \textit{The Four-Color Problem and Its Philosophical Significance}, 1979, \\
+        \url{http://thatmarcusfamily.org/philosophy/Course_Websites/Math_S08/Readings/tymoczko.pdf}
+
     \bibitem{FourColour1}
         Georges Gonthier,
         \textit{A computer-checked proof of the Four Colour Theorem}, 2005 \\
@@ -1125,7 +1148,7 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{UnivalentFoundations}
         Vladimir Voevodsky,
-        \textit{UNIVALENT FOUNDATIONS},
+        \textit{UNIVALENT FOUNDATIONS}, \\
         slides for a talk given at IAS on 26 March 2014, \\
         \url{http://www.math.ias.edu/~vladimir/Site3/Univalent_Foundations_files/2014_IAS.pdf}
 
@@ -1134,10 +1157,11 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{CurryHoward}
         Morten Heine Sørensen, Paweł Urzyczyn, \\
-        \textit{Lectures on the Curry-Howard Isomorphism}, 2006
+        \textit{Lectures on the Curry-Howard Isomorphism}, 2006, \\
+        \url{http://disi.unitn.it/~bernardi/RSISE11/Papers/curry-howard.pdf}
     
     \bibitem{SoftwareFoundations}
-        Benjamin C. Pierce, Andrew W. Appel and many others, \\
+        Benjamin C. Pierce, Andrew W. Appel et al, \\
         \textit{Software Foundations}, 2019, \\
         \url{https://softwarefoundations.cis.upenn.edu/}
     
@@ -1158,24 +1182,26 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
     
     \bibitem{CWM}
         Saunders Mac Lane,
-        \textit{Categories for the Working Mathematician}
+        \textit{Categories for the Working Mathematician}, 1971, \\
+        \url{http://books.google.com/books?id=MXboNPdTv7QC&pg=PA138&lpg=PA138&dq=%22monoid+in+the+category+of+endofunctors%22+mac+lane&source=bl&ots=feQWTkH2Uw&sig=tv-1JwaMOygKGmFE2vM2FhJVS9o&hl=en&ei=5iWsTJCkBIPSsAPQwJ36Aw&sa=X&oi=book_result&ct=result&resnum=1&ved=0CBIQ6AEwAA#v=onepage&q&f=false}
 
     \bibitem{MonadTutorialFallacy}
         Brent Yorgey, \textit{Abstraction, intuition, and the ``monad tutorial fallacy''}, \\
         \url{https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/}
 
     \bibitem{Moggi}
-        Eugenio Moggi, \textit{Notions of computation and monads}, \\
+        Eugenio Moggi,
+        \textit{Notions of computation and monads}, 1991, \\
         \url{https://person.dibris.unige.it/moggi-eugenio/ftp/ic91.pdf}
 
     \bibitem{mtl}
-        Mark P. Jones,
-        \textit{Functional Programming with Overloading and Higher-Order Polymorphism}, \\
+        Mark P. Jones, \\
+        \textit{Functional Programming with Overloading and Higher-Order Polymorphism}, 1995, \\
         \url{http://web.cecs.pdx.edu/~mpj/pubs/springschool95.pdf}
 
     \bibitem{ExtensibleEffects}
         Oleg Kiselyov, Amr Sabry, Cameron Swords, \\
-        \textit{Extensible Effects. An Alternative to Monad Transformers}, \\
+        \textit{Extensible Effects. An Alternative to Monad Transformers}, 2013, \\
         \url{http://okmij.org/ftp/Haskell/extensible/exteff.pdf}
 
     \bibitem{Freer}
@@ -1192,7 +1218,7 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
         \url{https://www.eff-lang.org/}
 
     \bibitem{Frank}
-        Sam Lindley, Connor McBride, \textit{Do Be Do Be Do}, \\
+        Sam Lindley, Connor McBride, \textit{Do Be Do Be Do}, 2014, \\
         \url{http://homepages.inf.ed.ac.uk/slindley/papers/frankly-draft-march2014.pdf}
 
     \bibitem{MulticoreOCaml}
@@ -1212,32 +1238,32 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{MERC}
         Reynald Affeldt, David Nowak, \\
-        \textit{Experimenting with Monadic EquationalReasoning in Coq} \\
+        \textit{Experimenting with Monadic EquationalReasoning in Coq}, 2018, \\
         \url{http://jssst.or.jp/files/user/taikai/2018/PPL/ppl2-2.pdf}
 
     \bibitem{FailureIsNotAnOption}
         Pierre-Marie Pédrot, Nicolas Tabareau \\
-        \textit{Failure is Not an Option: An Exceptional Type Theory}, \\
+        \textit{Failure is Not an Option: An Exceptional Type Theory}, 2018, \\
         \url{https://link.springer.com/chapter/10.1007/978-3-319-89884-1_9}
 
     \bibitem{CoqEff1}
         Jean-Guillaume Dumas, Dominique Duval, Burak Ekici, Damien Pous \\
-        \textit{Formal verification in Coq of program properties involving the global state effect}, \\
+        \textit{Formal verification in Coq of program properties involving the global state effect}, 2014, \\
         \url{https://hal.archives-ouvertes.fr/file/index/docid/872324/filename/DDEP-coqstates.pdf}
 
     \bibitem{CoqEff2}
         Thomas Letan, Yann Régis-Gianas, Pierre Chifflier, Guillaume Hiet, \\
-        \textit{Modular Verification of Programs with Effects and Effect Handlers in Coq}, \\
+        \textit{Modular Verification of Programs with Effects and Effect Handlers in Coq}, 2018, \\
         \url{https://hal.inria.fr/hal-01799712/document}
 
     \bibitem{CoqEff3}
-        Greg Morrisett, \\
-        \textit{Programming with Effects in Coq}, \\
+        Greg Morrisett,
+        \textit{Programming with Effects in Coq}, 2008, \\
         \url{https://link.springer.com/chapter/10.1007%2F978-3-540-70594-9_3}
 
     \bibitem{IdrisEffects}
         Edwin C. Brady, \\
-        \textit{Programming and Reasoning with Algebraic Effects and Dependent Types}, \\
+        \textit{Programming and Reasoning with Algebraic Effects and Dependent Types}, 2013, \\
         \url{https://eb.host.cs.st-andrews.ac.uk/drafts/effects.pdf}
 
     \bibitem{FStar}
@@ -1258,12 +1284,12 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{CanonicalStructures1}
         Georges Gonthier, Beta Ziliani, Aleksandar Nanevski, Derek Dreyer, \\
-        \textit{How to make ad hoc proof automationless ad hoc}, \\
+        \textit{How to make ad hoc proof automationless ad hoc}, 2013, \\
         \url{https://software.imdea.org/~aleks/papers/lessadhoc/journal.pdf}
 
     \bibitem{CanonicalStructures2}
         Assia Mahboubi, Enrico Tassi, \\
-        \textit{Canonical Structures for the working Coq user} \\
+        \textit{Canonical Structures for the working Coq user}, 2013, \\
         \url{https://hal.inria.fr/hal-00816703v2/document}
 
     \bibitem{CanonicalStructures3}
@@ -1271,11 +1297,12 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{MCB}
         Assia Mahboubi and Enrico Tassi with contributions by Yves Bertot and Georges Gonthier, \\
+        \textit{Mathematical Components}, 2018, \\
         \url{https://math-comp.github.io/mcb/}
 
     \bibitem{Modules1}
         Jacek Chrząszcz,
-        \textit{Modules in Coq Are and Will Be Correct}, \\
+        \textit{Modules in Coq Are and Will Be Correct}, 2004, \\
         \url{https://link.springer.com/chapter/10.1007%2F978-3-540-24849-1_9}
 
     \bibitem{Modules2}
@@ -1285,8 +1312,8 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
         \url{https://wiki.haskell.org/Hask}
 
     \bibitem{LYAH}
-        Miran Lipovača, \\
-        \textit{Learn You a Haskell for Great Good}, \\
+        Miran Lipovača,
+        \textit{Learn You a Haskell for Great Good}, 2011, \\
         \url{http://learnyouahaskell.com/functors-applicative-functors-and-monoids#applicative-functors}
 
     \bibitem{HackageApplicative}
@@ -1300,12 +1327,12 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{InductionNotDerivable}
         Herman Geuvers, \\
-        \textit{Induction Is Not Derivable in Second Order Dependent Type Theory}, \\
+        \textit{Induction Is Not Derivable in Second Order Dependent Type Theory}, 2001, \\
         \url{https://link.springer.com/chapter/10.1007/3-540-45413-6_16}
 
     \bibitem{ReflectionWithoutRemorse}
         Atze van der Ploeg, Oleg Kiselyov, \\
-        \textit{Reflection without Remorse}, \\
+        \textit{Reflection without Remorse}, 2014, \\
         \url{http://okmij.org/ftp/Haskell/zseq.pdf}
 
     \bibitem{ListT1}
@@ -1319,7 +1346,7 @@ Last but not least, as already mentioned, \libname\ is a great basis on which a 
 
     \bibitem{SSReflect1}
         Georges Gonthier, Assia Mahboubi, Enrico Tassi \\
-        \textit{A Small Scale Reflection Extension for the Coq system}, \\
+        \textit{A Small Scale Reflection Extension for the Coq system}, 2016, \\
         \url{https://hal.inria.fr/inria-00258384v17/document}
 
     \bibitem{SSReflect2}

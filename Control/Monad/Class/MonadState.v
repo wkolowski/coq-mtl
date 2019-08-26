@@ -28,7 +28,7 @@ Class MonadState
         get >>= fun s : S => k s s
 }.
 
-Hint Rewrite @put_put @put_get @get_put @get_get : HSLib.
+Hint Rewrite @put_put @put_get @get_put @get_get : CoqMTL.
 
 Section MonadStateLaws_bind.
 
@@ -63,7 +63,7 @@ Qed.
 
 End MonadStateLaws_bind.
 
-Hint Rewrite put_put' put_put'' put_get' : HSLib.
+Hint Rewrite put_put' put_put'' put_get' : CoqMTL.
 
 Set Implicit Arguments.
 
@@ -96,7 +96,7 @@ Definition gets {A : Type} (f : S -> A) : M A :=
     s <- get;
     pure $ f s.
 
-Hint Rewrite @constrA_spec : HSLib.
+Hint Rewrite @constrA_spec : CoqMTL.
 
 Lemma put_gets :
   forall (A : Type) (s : S) (f : S -> A),

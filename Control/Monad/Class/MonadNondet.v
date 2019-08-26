@@ -19,4 +19,4 @@ Class MonadNondet (M : Type -> Type) (inst : Monad M) : Type :=
 Coercion instF : MonadNondet >-> MonadFail.
 Coercion instA : MonadNondet >-> MonadAlt.
 
-Hint Rewrite @choose_fail_l @choose_fail_r : HSLib.
+Hint Rewrite @choose_fail_l @choose_fail_r : CoqMTL.

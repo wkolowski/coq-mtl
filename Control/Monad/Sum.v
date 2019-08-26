@@ -15,7 +15,7 @@ match x with
     | inr b => inr (f b)
 end.
 
-Hint Unfold fmap_Sum : HSLib.
+Hint Unfold fmap_Sum : CoqMTL.
 
 Instance Functor_Sum (E : Type) : Functor (sum E) :=
 {
@@ -39,7 +39,7 @@ match sf, sa with
     | inr f, inr x => inr (f x)
 end.
 
-Hint Unfold pure_Sum ap_Sum : HSLib.
+Hint Unfold pure_Sum ap_Sum : CoqMTL.
 
 Instance Applicative_Sum (E : Type) : Applicative (sum E) :=
 {
@@ -77,7 +77,7 @@ match sa with
     | inr a => f a
 end.
 
-Hint Unfold bind_Sum : HSLib.
+Hint Unfold bind_Sum : CoqMTL.
 
 Instance Monad_Sum (A : Type) : Monad (sum A) :=
 {
@@ -121,7 +121,7 @@ match x with
     | inr a => f a
 end.
 
-Hint Unfold foldMap_Sum : HSLib.
+Hint Unfold foldMap_Sum : CoqMTL.
 
 Instance FoldableSum (E : Type) : Foldable (sum E) :=
 {

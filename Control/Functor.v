@@ -31,7 +31,7 @@ Proof.
   intros. rewrite fmap_comp. unfold compose. reflexivity.
 Qed.
 
-Hint Rewrite @fmap_comp' : HSLib.
+Hint Rewrite @fmap_comp' : CoqMTL.
 
 (** All [Functor]s are strong. *)
 Lemma strength :
@@ -42,7 +42,7 @@ Defined.
 
 End DerivedFunctorLaws.
 
-Hint Rewrite @fmap_id @fmap_comp : HSLib.
+Hint Rewrite @fmap_id @fmap_comp : CoqMTL.
 
 (** An implementation of functions that can be found in Haskell's
     Data.Functor. *)

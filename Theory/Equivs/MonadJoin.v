@@ -49,8 +49,8 @@ Export MonadNotations.
 
 Ltac mjoin :=
   repeat (intros;
-    autounfold with MonadJoin HSLib;
-    autorewrite with MonadJoin HSLib;
+    autounfold with MonadJoin CoqMTL;
+    autorewrite with MonadJoin CoqMTL;
     f_equal; exts; try reflexivity).
 
 Lemma assoc :

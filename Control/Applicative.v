@@ -33,8 +33,8 @@ Class Applicative (F : Type -> Type) : Type :=
 
 Coercion is_functor : Applicative >-> Functor.
 
-Hint Rewrite @composition @homomorphism @fmap_pure_ap : HSLib.
-Hint Rewrite <- @interchange : HSLib.
+Hint Rewrite @composition @homomorphism @fmap_pure_ap : CoqMTL.
+Hint Rewrite <- @interchange : CoqMTL.
 
 Module ApplicativeNotations.
 
@@ -92,7 +92,7 @@ Proof.
   reflexivity.
 Qed.
 
-Hint Rewrite @fmap_pure constrA_pure_l : HSLib.
+Hint Rewrite @fmap_pure constrA_pure_l : CoqMTL.
 
 End DerivedApplicativeLaws.
 

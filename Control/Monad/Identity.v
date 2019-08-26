@@ -54,4 +54,4 @@ Instance Monad_Identity : Monad Identity :=
 }.
 Proof. all: reflexivity. Defined.
 
-Hint Unfold fmap_Identity pure_Identity ap_Identity bind_Identity : HSLib.
+Hint Unfold fmap_Identity pure_Identity ap_Identity bind_Identity : CoqMTL.
