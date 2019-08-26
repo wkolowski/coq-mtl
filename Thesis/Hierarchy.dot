@@ -22,11 +22,14 @@ digraph
     MonadState
     MonadFail
     MonadAlt
-    MonadExcept
     MonadFree
   }
 
-  MonadFail -> MonadNondet
+  MonadFail ->
+  {
+    MonadNondet
+    MonadExcept
+  }
   MonadAlt -> MonadNondet
   MonadState -> MonadStateNondet
   MonadNondet -> MonadStateNondet

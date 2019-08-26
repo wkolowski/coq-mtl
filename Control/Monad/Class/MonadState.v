@@ -11,7 +11,8 @@ Require Export Control.Monad.
       some computation, it's just like we used [get] only once and
       copied the state
 *)
-Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
+Class MonadState
+  (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
     get : M S;
     put : S -> M unit;
@@ -23,7 +24,8 @@ Class MonadState (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
       get >>= put = pure tt;
     get_get :
       forall (A : Type) (k : S -> S -> M A),
-        get >>= (fun s : S => get >>= k s) = get >>= fun s : S => k s s
+        get >>= (fun s : S => get >>= k s) =
+        get >>= fun s : S => k s s
 }.
 
 Hint Rewrite @put_put @put_get @get_put @get_get : HSLib.

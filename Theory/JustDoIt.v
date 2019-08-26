@@ -229,12 +229,7 @@ Class MonadExcept
 
 Hint Rewrite @catch_fail_l @catch_fail_r @catch_assoc @catch_pure : HSLib.
 
-Fixpoint product (l : list nat) : nat :=
-match l with
-    | [] => 1
-    | h :: t => h * product t
-end.
-
+(*
 Lemma product_In_0 :
   forall l : list nat,
     In 0 l -> product l = 0.
@@ -243,6 +238,13 @@ Proof.
     reflexivity.
     rewrite IHt; auto.
 Qed.
+*)
+
+Fixpoint product (l : list nat) : nat :=
+match l with
+    | [] => 1
+    | h :: t => h * product t
+end.
 
 Fixpoint has (n : nat) (l : list nat) : bool :=
 match l with
@@ -270,12 +272,16 @@ Definition fastprod
     (l : list nat) : M nat := catch (work l) (pure 0).
 
 Theorem fastprod_spec :
-  forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
-    fastprod l = pure (product l).
+  forall
+    (inst' : MonadFail inst) (inst'' : MonadExcept inst')
+    (l : list nat),
+      fastprod l = pure (product l).
 Proof.
   unfold fastprod, work; intros.
   case_eq (has 0 l); intros.
-    rewrite catch_fail_l, product_has_0; auto.
+    rewrite catch_fail_l, product_has_0.
+      reflexivity.
+      assumption.
     rewrite catch_pure. reflexivity.
 Qed.
 
@@ -283,7 +289,7 @@ Definition next
   {inst' : MonadFail inst} (n : nat) (ml : M nat) : M nat :=
     if beq_nat 0 n then fail else fmap (mult n) ml.
 
-Lemma work_foldr :
+Theorem work_foldr :
   forall (inst' : MonadFail inst),
     work = fold_right next (pure 1).
 Proof.
@@ -298,7 +304,7 @@ Proof.
 Qed.
 
 Fixpoint hasE
-  {inst' : MonadFail inst} {inst'' : MonadExcept inst'}
+  {inst' : MonadFail inst} (*{inst'' : MonadExcept inst'}*)
   (n : nat) (l : list nat) : M unit :=
 match l with
     | [] => pure tt
