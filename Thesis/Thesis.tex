@@ -997,6 +997,56 @@ The overall result is that the \m{label} function is more general, its definitio
     \label{Example1}
 \end{listing}
 
+\subsection{Fast product}
+
+A fast product is a procedure for calculating the product of a list that returns zero as soon as it encounters a zero on this list, without having to consider the rest of the list. We will implement it using exceptions, so first we have to introduce the \m{MonadExcept} effect, shown in listing \ref{MonadExcept}.
+
+\begin{listing}[H]
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=14,
+        lastline=31
+    ]
+    {Coq}{../Control/Monad/Class/MonadExcept.v}
+
+    \caption{The \m{MonadExcept} typeclass}
+    \label{MonadExcept}
+\end{listing}
+
+The only exception that monads supporting the \m{MonadExcept} effect can throw is \m{fail}, inherited from the \m{MonadFail} effect. \m{MonadExcept} additionally provides an operation \m{catch} for catching these exceptions. \m{fail} and \m{catch} are related by four laws: they form a monoid (\m{catch\_fail\_l}, \m{catch\_fail\_r} and \m{catch\_assoc}, which intuitively mean that, respectively, failing computations are caught, failing handlers are not used and that the nesting of exception handlers doesn't matter), and they also obey the law \m{catch\_pure} which says that handlers are not used for computations that don't fail. The laws of \m{MonadFail} are of course inherited too.
+
+Note that the operations supported by \m{MonadExcept} (\m{fail} and \m{catch}) have the same types as those supported by \m{MonadNondet} (\m{fail} and \m{choose}), but their intended meaning is very different, as captured by the laws. It is therefore the operations together with the laws that determine the meaning of an effect, not just the operations alone.
+
+\begin{listing}[H]
+    \inputminted
+    [
+        frame=lines,
+        bgcolor=CoqIDE,
+        linenos,
+        firstline=266,
+        lastline=304
+    ]
+    {Coq}{../Theory/JustDoIt.v}
+
+    \caption{The fast product example}
+    \label{Example2}
+\end{listing}
+
+We now proceed to the example, shown in listing \ref{Example2}. Not shown are the functions \m{product}, which computes the product of a list of natural numbers, \m{has}, which checks if a natural number is present in a list and the proof of the lemma \m{product\_has\_0}, which says that if a zero appears in a list, then the product of that list is equal to zero.
+
+We now define a function \m{work}, which works for any monad which supports the failure effect. It checks if a list contains a zero and fails if it does and calls \m{product} otherwise. Using this auxiliary function we define \m{fastprod}, which wraps \m{work} in a handler that just returns zero in case of failure.
+
+The correctness of \m{fastprod} is stated as theorem \m{fastprod\_spec}, which says that \m{fastprod} is equal to a pure computation that just calls \m{product}. The proof is very simple. We unfold the definitions of \m{fastprod} and \m{work}, introduce variables to context and perform a case split on whether the list contains a zero. In both subcases we use the laws of \m{MonadExcept} (together with the lemma \m{product\_has\_0} in the first case) to conclude that the result is the same as a pure computation using \m{product}.
+
+This may look unimpressive, because \m{work} is implemented using a simple case split, without recursion. We could also implement \m{work} recursively, by checking if the head of the list is zero and failing in this case, otherwise muliplying the product of the tail by the head.
+
+The theorem \m{work\_foldr} states that \m{work} is equal to a function implemented precisely this way (but using \m{fold\_right} instead of pattern matching). The proof is also very simple: we reason by functional extensionality and then by induction. The empty list case is simple. In the \m{cons} case we reason by cases on whether the head of the list is zero. In both cases we finish by using some \m{Monad} and \m{MonadFail} laws together with the induction hypothesis.
+
+The above proof is as simple as the pen-and-paper one that can be found in \cite{JustDoIt} in section 5.1 (even though the line of reasoning is a bit different). This shows that at least for simple theorems our library doesn't induce a ``formalization overhead''.
+
 \chapter{Conclusion}
 
 We have introduced \libname, a general purpose Coq library for formally verified programming with Haskell-style abstractions. We have centered our presentation on the matter effects, with which we dealt by implementing a collection of \m{mtl}-like abstractions whose main inspiration was \cite{JustDoIt}.
