@@ -349,7 +349,9 @@ Definition parseQ : Parser Q := do
   b <- parsePositive;
   pure (a # b).
 
-(** Some tests. *)
+
+(** Some tests. Commented out not to freak people out during build. *)
+(*
 Compute str "abc" "abcd".
 Compute word "dupa konia".
 Compute many' 5 letter "asdsd".
@@ -367,6 +369,7 @@ Compute parseNat_chainr "211".
 Compute natural "123".
 Compute parseQ "1/5".
 Compute comment "-- haskellowy komentarz polityczny".
+*)
 
 (*
 Inductive Expr : Type :=

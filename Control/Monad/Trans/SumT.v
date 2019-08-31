@@ -57,7 +57,7 @@ Instance Applicative_SumT
     pure := @pure_SumT M inst E;
     ap := @ap_SumT M inst E;
 }.
-Proof. Time all: monad. Defined.
+Proof. all: monad. Defined.
 
 (** [SumT] is not [Alternative], just as the ordinary [sum]. *)
 
@@ -165,6 +165,7 @@ Instance MonadExcept_SumT
       end)
 }.
 Proof.
+(*
   all: cbn; intros.
     unfold fail_SumT. rewrite bind_pure_l. reflexivity.
     Focus 2. rewrite bind_assoc. f_equal. ext ea. destruct ea.
@@ -175,6 +176,7 @@ Proof.
       ext ea. destruct ea.
         Focus 2. reflexivity.
         unfold fail_SumT.
+*)
 Abort.
 
 (** [SumT] preserves [MonadAlt] but not [MonadNondet] (and thus not

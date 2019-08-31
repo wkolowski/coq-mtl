@@ -8,7 +8,7 @@ Require Import Control.
       which says that a monad is an [Applicative] functor with [bind],
       satisfying the laws [bind_pure_l], [bind_pure_r], [bind_assoc] and
       [bind_ap], which relates the [Applicative] and [Monad] structure
-    
+
     - the join-based definition (from Theory.Equivs.MonadJoin), which says
       that a monad is an [Applicative] functor with [join] that satisfies
       the laws [join_fmap_join], [join_pure], [join_fmap_pure],

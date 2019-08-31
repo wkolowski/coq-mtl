@@ -34,7 +34,6 @@ Lemma bind_ap :
         mf <*> mx = bindM mf (fun f => bindM mx (fun x => pure (f x))).
 Proof.
   intros. unfold bindM.
-  Print Monad.
 Abort.
 
 Hint Unfold bindM : CoqMTL.

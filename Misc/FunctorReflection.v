@@ -1,3 +1,11 @@
+(** This file contains an implementation of the tactic [reflect_functor],
+    which does some simplification of functor-related expressions. The
+    tactic is implemented using reflection, as can be seen from the name.
+    However, I needed the Equations package to comfortably deal with some
+    dependent pattern matching. I don't want Equations to be a dependency
+    for coq-mtl, so this file is commented out until it's needed again. *)
+
+(*
 From Equations Require Import Equations.
 
 Require Export Control.Functor.
@@ -186,3 +194,4 @@ Proof.
   Fail reflect_functor.
   reflexivity.
 Qed.
+*)

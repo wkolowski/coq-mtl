@@ -52,7 +52,7 @@ Instance Applicative_OptionT
     pure := @pure_OptionT M inst;
     ap := @ap_OptionT M inst;
 }.
-Proof. Time all: monad. Defined.
+Proof. all: monad. Defined.
 
 Definition aempty_OptionT
   (M : Type -> Type) (inst : Monad M) (A : Type) : OptionT M A :=
@@ -78,7 +78,7 @@ Instance Alternative_OptionT
     aempty := aempty_OptionT M inst;
     aplus := aplus_OptionT M inst;
 }.
-Proof. Time all: monad. Defined.
+Proof. all: monad. Defined.
 
 Definition bind_OptionT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -152,7 +152,6 @@ Instance MonadNondet_OptionT
     instA := @MonadAlt_OptionT M inst (@instA _ _ inst');
 }.
 Proof.
-  Focus 2. cbn. intros. unfold fail_OptionT.
 Abort.
 
 (** Besides failing, [OptionT] adds to any monad the ability to catch the
@@ -201,7 +200,6 @@ Instance MonadWriter_OptionT
 Proof.
   intros. cbn. unfold pure_OptionT. rewrite listen_pure.
     rewrite bind_pure_l. reflexivity.
-  Check @listen.
   intros. cbn. unfold pure_OptionT, fmap_OptionT, fmap_Option.
 Abort.
 

@@ -14,24 +14,29 @@ Definition I (a b : nat) : list nat := aux (b - a) a.
 (** Tests for [Applicative]. *)
 Require Export Control.Applicative.
 
+(*
 Compute zipWithA
   (fun _ _ => [true; false]) [1; 2; 3] [4; 5; 6; 7].
+*)
 
 (** Tests for [Alternative]: compute some Pythagorean triples. *)
 Require Export Control.Alternative.
 
 Require Import Arith.
 
+(*
 Compute do
   a <- I 1 25;
   b <- I 1 25;
   c <- I 1 25;
   guard (beq_nat (a * a + b * b) (c * c));;
   pure (a, b, c).
+*)
 
-(** Tests for [Foldable]. *)
+(** Tests for [Foldable]. TODO: commented out. *)
 Require Import Control.Foldable.
 
+(*
 Compute isEmpty (None).
 Compute size (Some 42).
 Compute toListF (Some 5).
@@ -42,6 +47,7 @@ Compute size (inr 5).
 Compute maxF [1; 2; 3].
 Compute findFirst (beq_nat 42) [1; 3; 5; 7; 11; 42].
 Compute count (leb 10) [1; 3; 5; 7; 11; 42].
+*)
 
 (** Tests for parsers. Toggle between imports for Parser.Parser and
     Parser.Parser_ListT to test one of these. *)
@@ -55,7 +61,7 @@ Require Import Parser.Parser.
     factor  ::= nat | ( expr )
 *)
 
-Time Fixpoint exprn (n : nat) : Parser Z :=
+Fixpoint exprn (n : nat) : Parser Z :=
 match n with
     | 0 => aempty
     | S n' =>
@@ -73,11 +79,13 @@ end.
 Definition expr : Parser Z :=
   fun input : string => exprn (String.length input) input.
 
+(*
 Compute expr "2+2".
 Compute expr "0-5)".
+*)
 
 (** The same grammar as above. *)
-Time Fixpoint exprn2 (n : nat) : Parser Z :=
+Fixpoint exprn2 (n : nat) : Parser Z :=
 match n with
     | 0 => aempty
     | S n' =>
@@ -93,10 +101,12 @@ end.
 Definition expr2 : Parser Z :=
   fun input : string => exprn2 (String.length input) input.
 
+(*
 Compute expr2 "3-2"%string.
+*)
 
 (** Still the same grammar. *)
-Time Fixpoint exprn3 (n : nat) : Parser Z :=
+Fixpoint exprn3 (n : nat) : Parser Z :=
 match n with
     | 0 => aempty
     | S n' =>
@@ -111,7 +121,9 @@ end.
 Definition expr3 : Parser Z :=
   fun input : string => exprn3 (String.length input) input.
 
+(*
 Compute expr3 "1-(2-(3-4)-5)"%string.
+*)
 
 (** Nearly as before, but augmented with "^" for exponentiation. *)
 Fixpoint exprn4 (n : nat) : Parser Z :=
@@ -133,7 +145,7 @@ end.
 Definition expr4 : Parser Z :=
   fun input : string => exprn4 (String.length input) input.
 
-Compute expr4 "(1-2)^3".
+(*Compute expr4 "(1-2)^3".*)
 
 Inductive Expr : Type :=
     | App : Expr -> Expr -> Expr
@@ -142,7 +154,7 @@ Inductive Expr : Type :=
     | Var : string -> Expr.
 
 (** Parser for lambda calculus with let using Coq-like syntax. *)
-Time Fixpoint parseExprn (n : nat) : Parser Expr :=
+Fixpoint parseExprn (n : nat) : Parser Expr :=
 match n with
     | 0 => aempty
     | S n' =>
@@ -180,12 +192,14 @@ end.
 Definition parseExpr : Parser Expr :=
   fun input : string => parseExprn (String.length input) input.
 
+(*
 Time Compute parseExpr "(x x)".
 Time Compute parseExpr "fun f => fun x => (f x)".
 Time Compute parseExpr "let x := (x x) in x".
+*)
 
 (** Parser for lambda calculus with let using Haskell-like syntax. *)
-Time Fixpoint parseExprn' (n : nat) : Parser Expr :=
+Fixpoint parseExprn' (n : nat) : Parser Expr :=
 match n with
     | 0 => aempty
     | S n' =>
@@ -220,6 +234,8 @@ end.
 Definition parseExpr' : Parser Expr :=
   fun input : string => parseExprn' (String.length input) input.
 
+(*
 Time Compute parseExpr' "(x x)".
 Time Compute parseExpr' "\f -> \x -> (f x)".
 Time Compute parseExpr' "let x = (x x) in x".
+*)

@@ -11,6 +11,10 @@ Require Import Control.Monad.
 (*Set Universe Polymorphism.*)
 Set Implicit Arguments.
 
+Require Import Arith.
+Require Import Nat.
+Require Import Omega.
+
 Section S0.
 
 Variable M : Type -> Type.
@@ -36,8 +40,6 @@ match n with
     | S n' => x >> rep n' x
 end.
 
-Require Import Arith.
-
 Lemma rep_constrA :
   forall (x : M unit) (n m : nat),
     rep (n + m) x = rep n x >> rep m x.
@@ -52,9 +54,6 @@ Lemma rep1 :
 Proof.
   intros. cbn. unfold skip, constrA, compose. monad.
 Qed.
-
-Require Import Nat.
-Require Import Omega.
 
 Theorem hanoi_rep :
   forall (inst' : MonadCount) (n : nat),
@@ -197,9 +196,13 @@ Definition perms
 
 End S1.
 
+(* TODO: commented out *)
+
+(*
 Compute select [1; 2; 3].
 
 Compute perms [1; 2; 3].
+*)
 
 (** ** 5. Exceptional computations *)
 
