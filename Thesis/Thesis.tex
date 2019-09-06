@@ -75,16 +75,16 @@ The rest of the thesis is structured as follows:
 
 \section{Formal verification of hardware and software}
 
-Since their invention in the 1940s, computers' significane rose at a very fast pace. They were getting applied to an ever expanding range of problems by more and more people, private companies and governments alike. It shouldn't be a considered a surprise then that we became very reliant on them for both small conveniences and large scale projects.
+Since their invention in the 1940s, computers' significance rose at a very fast pace. They were getting applied to an ever expanding range of problems by more and more people, private companies and governments alike. It shouldn't be a considered a surprise then that we became very reliant on them for both small conveniences and large scale projects.
 
-But significane is not the only thing that rose -- another one is complexity. Exponentially growing processing speed required the complexity of chip designs to grow at a similar rate. More complex products and services require more complex software architectures and with new business models, like cloud computing, comes even more complexity in the form of virtualization, containerization and so on.
+But significance is not the only thing that rose -- another one is complexity. Exponentially growing processing speed required the complexity of chip designs to grow at a similar rate. More complex products and services require more complex software architectures and with new business models, like cloud computing, comes even more complexity in the form of virtualization, containerization and so on.
 
 And with complexity comes, of course, the potential for bugs, which may cause a lot of damage. A malfunction in software running the stock exchange can mean billions of dollars of losses (if not an accidental global recession!); in software running a nuclear power plant -- deadly radiation for thousands of people and energy shortage for millions more.
 
-Due to these dangers a lot of effort has been put into assuring that hardware and software are correct and with great success, but here and there bugs still have crept in. Some of the most spectecular were, recently:
+Due to these dangers a lot of effort has been put into assuring that hardware and software are correct and with great success, but here and there bugs still have crept in. Some of the most spectacular were, recently:
 
 \begin{itemize}
-    \item Metldown, which ``exploits side effects of out-of-order execution on modern processors to read arbitrary kernel-memory locations including  personal  data  and  passwords.'' \cite{Meltdown}
+    \item Meltdown, which ``exploits side effects of out-of-order execution on modern processors to read arbitrary kernel-memory locations including  personal  data  and  passwords.'' \cite{Meltdown}
     \item Spectre, which uses speculative execution and branch prediction to ``leak the victim's confidential information via a side  channel to  the  adversary.'' \cite{Spectre}
     \item Heartbleed, which ``allows stealing the information protected, under normal conditions, by the SSL/TLS encryption used to secure the Internet'' \cite{Heartbleed}
 \end{itemize}
@@ -99,7 +99,7 @@ The four colour theorem is a problem posed in 1852. It states that any planar ma
 
 Thomas Tymoczko, a philosopher of mathematics, criticised this proof by labeling it with a term he invented just for this purpose -- ``non-surveyable'' \cite{NonSurveyable}. He considered a proof to be non-surveyable when its verification cannot be performed by human mathematicians competent in the relevant field. Appel and Haken's proof certainly did fail the surveyability criterion -- the program was written in IBM 370 assembly, a language graph theorists very likely didn't understand.
 
-This was the perfect theorem to let formal proofs and formally verified programs shine by dispeling Tymoczko and other mathematician's doubts. This is what indeed happened in 2005, when Georges Gonthier presented a proof of the theorem formalized in Coq \cite{FourColour1} \cite{FourColour2}.
+This was the perfect theorem to let formal proofs and formally verified programs shine by dispelling Tymoczko and other mathematician's doubts. This is what indeed happened in 2005, when Georges Gonthier presented a proof of the theorem formalized in Coq \cite{FourColour1} \cite{FourColour2}.
 
 But big theorems with difficult proofs are not the only call for formalized mathematics. Another one is the mere fallibility of humans, especially their limited memory and reasoning skills and the tendency to follow authority. As unmathematical as it sounds, these are the main reasons cited by Vladimir Voevodsky, a Fields medalist mathematician turned a fan of formal proofs, in one of his talks \cite{UnivalentFoundations}.
 
@@ -208,7 +208,7 @@ An \textbf{effect} (sometimes also called a \textbf{computational effect}) is ei
     \item Sometimes nontermination and even termination are also considered effects, but that's a tougher topic, beyond the scope of this thesis.
 \end{itemize}
 
-It should be quite obvious that effects are useful. They are in fact the main reason for running most computer programs and without them running even the simplest number-crunching program would be pointless, since without IO operations it couldn't tell us the result. We thus want to be able to express effects. But we also want to be able to reason about our effectful programs, which in most programming languages is notoriously difficult, and moreover we want to verify our resaoning.
+It should be quite obvious that effects are useful. They are in fact the main reason for running most computer programs and without them running even the simplest number-crunching program would be pointless, since without IO operations it couldn't tell us the result. We thus want to be able to express effects. But we also want to be able to reason about our effectful programs, which in most programming languages is notoriously difficult, and moreover we want to verify our reasoning.
 
 \section{A comparison}
 
@@ -222,7 +222,7 @@ In Java, there's no global state, but objects still have internal state that met
 
 Haskell, on the other hand, is a reasonably pure language. There is no global state. There's an impure error mechanism, but it is barely used and usually replaced with explicit error handling. IO can be used anywhere by using functions like \m{unsafePerformIO}, but this can't be done accidentally and is generally avoided. Therefore, nearly all error handling and IO and all other effects are expressed using monads, which are clearly visible in type signatures and make values and computations very easy to tell apart. This is the reason that Haskell is generally perceived as a pure language.
 
-At last, Koka \cite{Koka} is one of the purest languages in existence. It clearly separates values from computations -- each expression, besides its type, is also assigned the list of all effects that it may produce and even nontermination is tracked this way. The tracking is performed by the effect system and is an integral part of Koka's design. This may be contrasted with Haskell, where monads are a library-level concept and the languge was not designed with the value-computation distinction in mind.
+At last, Koka \cite{Koka} is one of the purest languages in existence. It clearly separates values from computations -- each expression, besides its type, is also assigned the list of all effects that it may produce and even nontermination is tracked this way. The tracking is performed by the effect system and is an integral part of Koka's design. This may be contrasted with Haskell, where monads are a library-level concept and the language was not designed with the value-computation distinction in mind.
 
 To better see these differences, let's look at a piece of code that loops before trying to print something to the screen in each of these four languages.
 
@@ -593,7 +593,7 @@ Class Semigroup : Type :=
 
 \end{listing}
 
-The last thing we could do is using setoids instead of types to formalize the concepts of interest. A setoid is a type together with an equivalence relation and this approach boils down to replacing all types wiht setoids and adding the necessary compatibility laws for operations, as shown in listing \ref{Setoid}.
+The last thing we could do is using setoids instead of types to formalize the concepts of interest. A setoid is a type together with an equivalence relation and this approach boils down to replacing all types with setoids and adding the necessary compatibility laws for operations, as shown in listing \ref{Setoid}.
 
 The main use of setoids is in dealing with equality -- because we cannot form quotient types in Coq, any kind of mathematics that requires quotients (algebra), gluing (topology), or just simply changing the notion of equality for a particular structure, needs to be carried out using setoids. We would need to use them if we wanted to focus on the category-theoretical aspect of monads and monad transformers, but since we are interested mainly in the practical aspects, we will not need any setoids.
 
@@ -628,8 +628,8 @@ Another distinction is between reflective and non-reflective proofs. Reflective 
 \begin{itemize}
     \item Manual, non-reflective: often used by beginners and not considered a good practice, unless we're dealing with hard theorems that don't automate well.
     \item Manual, reflective: this is the style most associated with the SSReflect proof language \cite{SSReflect1} \cite{SSReflect2}, used in the formalization of the Four Colour Theorem \cite{FourColour1} \cite{FourColour2} and the Mathematical Components library \cite{MCB}.
-    \item Automated, non-reflective: often used by experts for theorems with lots of repetitive cases or collections of similar theorems. An example is the field of programming language formalization, where proofs can have hundreds of cases, most of them utterly obring. A very known proponent of this style is Adam Chlipala, who advocates it in his book \cite{CPDT}.
-    \item Automated, reflective: most often used for solving specific goals of a specific kind, like Presburger arithematic (the arithmetic of natural numbers with addition and multiplication by a constant -- Coq's tactic \m{omega}) or simplifying expressions and proving equalities in rings (Coq's tactic \m{ring}).
+    \item Automated, non-reflective: often used by experts for theorems with lots of repetitive cases or collections of similar theorems. An example is the field of programming language formalization, where proofs can have hundreds of cases, most of them utterly boring. A very known proponent of this style is Adam Chlipala, who advocates it in his book \cite{CPDT}.
+    \item Automated, reflective: most often used for solving specific goals of a specific kind, like Presburger arithmetic (the arithmetic of natural numbers with addition and multiplication by a constant -- Coq's tactic \m{omega}) or simplifying expressions and proving equalities in rings (Coq's tactic \m{ring}).
 \end{itemize}
 
 In our case, there will be a massive amount of typeclass instances that have to be proven to satisfy the same laws over and over again. Almost all of these proofs are very repetitive and predictable. They amount mostly to unfolding definitions, rewriting equational laws, decomposing hypotheses and implicational reasoning. This means we want our proofs to be automated and not manual.
@@ -680,7 +680,7 @@ The next step in the typeclass hierarchy are \m{Applicative} functors, shown in 
 
 These two operations, \m{pure} and \m{ap}, have to satisfy some laws and this is the first time that some subtle complications arise. The four laws that are usually presented (such as in \cite{LYAH}) are \m{identity}, \m{composition}, \m{homomorphism} and \m{interchange}. Other sources (like \cite{HackageApplicative} and \cite{WikibooksApplicative}) also mention a fifth law, \m{fmap\_pure\_ap}, but they often either state that this law follows from the other laws using naturality or they keep quiet about it.
 
-In Coq naturality is not internalized (and in fact it can be broken by assuming classical axioms like the Law of Excludded Middle), so this law does not follow from the others. A more intuitive reason is that the other four laws don't mention any \m{Functor} concept at all, so there's no way to link \m{fmap} with \m{pure} and \m{ap} in any way. This is why we include this law in our definition.
+In Coq naturality is not internalized (and in fact it can be broken by assuming classical axioms like the Law of Excluded Middle), so this law does not follow from the others. A more intuitive reason is that the other four laws don't mention any \m{Functor} concept at all, so there's no way to link \m{fmap} with \m{pure} and \m{ap} in any way. This is why we include this law in our definition.
 
 This, however, leads to some further troubles, because it turns out that this set of five laws is not minimal. For example, \m{identity} follows from \m{fmap\_pure\_ap} and \m{fmap\_id} (for details, see the file \m{Theory/Laws/ApplicativeLaws.v}). It could lead us to drop \m{identity} from the definition of \m{Applicative}, but we decided not to.
 
@@ -837,7 +837,7 @@ How does the rewriting and unfolding exactly work? It is quite simple: the tacti
 
 Where do the hint databases come from? We have to create them and this is what line 29 in listing \ref{Tactics} does: it declares that the theorems named \m{id\_eq}, \m{id\_left}, \m{id\_right} belong to the hint database named \hintdb. Each time we encounter some useful equations (either in a typeclass definition or after proving them by hand), we add them to this hint database and from that point on \m{autorewrite} will be able to use them. We have to do the same for \m{autounfold}: each time we define something we will want to get unfolded, we add it to a hint database named \hintdb\ and from that point on \m{autounfold} will be able to unfold it for us.
 
-Of course, these automation tactics are not enough to deal with all instances of all typeclasse. In a few cases we have to finish the proofs by hand. In a few other cases these tactics don't help us at all -- the most obvious example are lists, which require inductive proofs, but our tactics don't do any induction. The \m{Applicative} instance for lists is probably the most automation-resilient proof of the whole library. There are also a few proofs to which these tactics weren't even meant to apply, like the proof of equivalence of \m{Applicative} and \m{Monoidal} functors, which requires custom ad-hoc automation. Nonetheless, it's still surprising that some fifty lines of Ltac code can prove so many useful theorems.
+Of course, these automation tactics are not enough to deal with all instances of all typeclasses. In a few cases we have to finish the proofs by hand. In a few other cases these tactics don't help us at all -- the most obvious example are lists, which require inductive proofs, but our tactics don't do any induction. The \m{Applicative} instance for lists is probably the most automation-resilient proof of the whole library. There are also a few proofs to which these tactics weren't even meant to apply, like the proof of equivalence of \m{Applicative} and \m{Monoidal} functors, which requires custom ad-hoc automation. Nonetheless, it's still surprising that some fifty lines of Ltac code can prove so many useful theorems.
 
 \begin{listing}[H]
     \inputminted
@@ -1041,7 +1041,7 @@ We now define a function \m{work}, which works for any monad which supports the 
 
 The correctness of \m{fastprod} is stated as theorem \m{fastprod\_spec}, which says that \m{fastprod} is equal to a pure computation that just calls \m{product}. The proof is very simple. We unfold the definitions of \m{fastprod} and \m{work}, introduce variables to context and perform a case split on whether the list contains a zero. In both subcases we use the laws of \m{MonadExcept} (together with the lemma \m{product\_has\_0} in the first case) to conclude that the result is the same as a pure computation using \m{product}.
 
-This may look unimpressive, because \m{work} is implemented using a simple case split, without recursion. We could also implement \m{work} recursively, by checking if the head of the list is zero and failing in this case, otherwise muliplying the product of the tail by the head.
+This may look unimpressive, because \m{work} is implemented using a simple case split, without recursion. We could also implement \m{work} recursively, by checking if the head of the list is zero and failing in this case, otherwise multiplying the product of the tail by the head.
 
 The theorem \m{work\_foldr} states that \m{work} is equal to a function implemented precisely this way (but using \m{fold\_right} instead of pattern matching). The proof is also very simple: we reason by functional extensionality and then by induction. The empty list case is simple. In the \m{cons} case we reason by cases on whether the head of the list is zero. In both cases we finish by using some \m{Monad} and \m{MonadFail} laws together with the induction hypothesis.
 
@@ -1113,7 +1113,7 @@ Last but not least, as already mentioned, \libname\ is a basis on which a librar
     
     \bibitem{AppelHaken1}
         Kenneth Appel, Wolfgang Haken,
-        \textit{Every map is four colourable}, 1976, \\
+        \textit{Every map is four colorable}, 1976, \\
         \url{https://pdfs.semanticscholar.org/3d50/72364f230e1ab5a0b3725d84d15689615077.pdf}
     
         \bibitem{AppelHaken2}
@@ -1123,12 +1123,12 @@ Last but not least, as already mentioned, \libname\ is a basis on which a librar
 
     \bibitem{AppelHaken3}
         Kenneth Appel, Wolfgang Haken, \\
-        \textit{Every  map  is  four  colourable,  Part  II:  Reducibility}, 1977, \\
+        \textit{Every  map  is  four  colorable,  Part  II:  Reducibility}, 1977, \\
         \url{https://projecteuclid.org/euclid.ijm/1256049012}
 
     \bibitem{AppelHaken4}
         Kenneth Appel, Wolfgang Haken,
-        \textit{Every  map  is  four  colourable}, 1989, \\
+        \textit{Every  map  is  four  colorable}, 1989, \\
         \url{https://bookstore.ams.org/conm-98}
 
     \bibitem{NonSurveyable}
@@ -1238,7 +1238,7 @@ Last but not least, as already mentioned, \libname\ is a basis on which a librar
 
     \bibitem{MERC}
         Reynald Affeldt, David Nowak, \\
-        \textit{Experimenting with Monadic EquationalReasoning in Coq}, 2018, \\
+        \textit{Experimenting with Monadic Equational Reasoning in Coq}, 2018, \\
         \url{http://jssst.or.jp/files/user/taikai/2018/PPL/ppl2-2.pdf}
 
     \bibitem{FailureIsNotAnOption}
