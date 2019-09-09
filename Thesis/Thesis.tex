@@ -802,7 +802,7 @@ Of course \m{Free} is not the only \m{Monad} instance. We provide all the standa
     \label{MonadTrans}
 \end{listing}
 
-The pinnacle of the core library are monad transformers, represented by the class \m{MonadTrans}, as shown in listing \ref{MonadTrans}. As we can see from the definition, a monad transformer is something which takes a monad and returns a monad, together with an operation \m{lift} that turns a base monad computation into a transformed monad computation, together with some obvious laws: \m{lift}ing a pure value has to result in a pure value, and \m{lift} it has to commute with \m{bind}.
+The pinnacle of the core library are monad transformers, represented by the class \m{MonadTrans}, as shown in listing \ref{MonadTrans}. As we can see from the definition, a monad transformer is something which takes a monad and returns a monad, together with an operation \m{lift} that turns a base monad computation into a transformed monad computation, together with some obvious laws: \m{lift}ing a pure value has to result in a pure value, and \m{lift} has to commute with \m{bind}.
 
 Luckily, monad transformers are just as unproblematic as \m{Functor}s were. The library implements all the standard instances, including \m{ContT}, \m{FreeT}, \m{ListT}, \m{OptionT}, \m{ReaderT}, \m{RWST}, \m{StateT}, \m{SumT} and \m{WriterT}.
 
@@ -978,7 +978,7 @@ The function works just like before. If we hit a \m{Leaf}, we retrieve the state
 
 To get the function we really want (\m{lbl}, which starts labeling from zero) we have to instantiate the definition of \m{label} with some monad supporting the state effect and we of course choose the \m{State} monad. We see that we can compute with this definition just like we could with the old one and the result is, of course, the same.
 
-The correctness theorem (which states that after running \m{label} on a tree \m{t}, the counter increases by the size of \m{t}) looks quite similar the old one, just as does the proof. There are two important things to notice. First, we prove this theorem only for the concrete \m{State} monad and not for any monad supporting the \m{MonadState} effect. This is because the state effect doesn't give us any way of pulling the state outside the monad and we need this ability to even state the theorem. Second, we crucially use out automation tactic \m{hs}, which change the proof state from barely readable (it mentions the particular definitions of \m{pure}, \m{bind} and so on for the \m{State} monad) to one that strongly resembles the earlier, non-monadic version from \hyperref[ch1]{Chapter 1}.
+The correctness theorem (which states that after running \m{label} on a tree \m{t}, the counter increases by the size of \m{t}) looks quite similar the old one, just as does the proof. There are two important things to notice. First, we prove this theorem only for the concrete \m{State} monad and not for any monad supporting the \m{MonadState} effect. This is because the state effect doesn't give us any way of pulling the state outside the monad and we need this ability to even state the theorem. Second, we crucially use our automation tactic \m{hs}, which changes the proof state from barely readable (it mentions the particular definitions of \m{pure}, \m{bind} and so on for the \m{State} monad) to one that strongly resembles the earlier, non-monadic version from \hyperref[ch1]{Chapter 1}.
 
 The overall result is that the \m{label} function is more general, its definition is easier to read and the proof didn't get any harder. Not bad.
 

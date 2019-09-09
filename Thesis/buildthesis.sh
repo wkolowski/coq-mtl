@@ -5,4 +5,8 @@
 dot Hierarchy.dot -Tpdf -o Hierarchy.pdf
 
 # Compile the thesis.
-latexmk -pdf -f -quiet -interaction=nonstopmode # -synctex=1 -file-line-error -shell-escape
+latexmk -pdf -f -quiet -interaction=nonstopmode Thesis.tex
+
+# Compile the slides for thesis defense.
+cd Defense
+latexmk -pdf -f -quiet -interaction=nonstopmode Slides.tex

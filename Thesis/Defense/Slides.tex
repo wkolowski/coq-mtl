@@ -1,0 +1,134 @@
+\documentclass{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage{polski}
+\usepackage[polish]{babel}
+\usepackage{graphicx}
+
+\usetheme{Darmstadt}
+\useoutertheme{miniframes}
+\makeatletter
+  \beamer@compressfalse
+\makeatother
+
+\title{Formalnie zweryfikowane programowanie z monadami w Coqu}
+\author{Zeimer}
+\date{10 września 2019}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\addtocontents{toc}{\setcounter{tocdepth}{1}}
+\frame{\tableofcontents}
+
+\section{Motywacja}
+
+\begin{frame}{Motywacje praktyczne}
+\begin{itemize}
+	\item Monady bywają przydatne - parę razy potrzebowałem ich w kontekście opcji czy list, żeby za dużo nie pisać.
+	\item W bibliotece standardowej Coqa nie ma monad.
+	\item Próba wyszukania słowa ``monad'' na liście Coqowych pakietów \url{https://coq.inria.fr/opam/www/} nie daje żadnej sensownej odpowiedzi (choć jest kilka wystąpień).
+	\item W Coqu nie ma żadnego pomysłu na zarządzanie efektami.
+	\item Być może dlatego, że w Coqu nie ma żadnych ``prawdziwych'' efektów w stylu IO (choć ostatnio pojawiły się biblioteki/pakiety, które dają Coqowi IO).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Motywacje dydaktyczne}
+\begin{itemize}
+	\item Człowiek ucząc się Haskella poznaje głównie sposób użycia monad w praktyce.
+	\item Gorzej z kwestiami takimi jak prawa: choć Haskell reklamuje się jako przyjazny rozumowaniu równaniowemu, to dowodzenie praw zazwyczaj odbywa się w komentarzach albo postach na blogach.
+	\item Kto normalny dowodzi praw, jeżeli typechecker go nie zmusza? Ja nie.
+	\item W Coqu jest wprost przeciwnie - typechecker zmusza do dowodzenia praw, a CoqIDE umożliwia robienie tego w wygodny, interaktywny sposób.
+	\item (Re)implementacja monad w Coqu daje więc dużo większe pole do nauki niż Haskell.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Motywacje teoretyczne}
+\begin{itemize}
+	\item Prawa monad dużo lepiej wyglądają, gdy prezentuje się je za pomocą \texttt{>=>} zamiast \texttt{>>=}, więc dlaczego ludzie tak nie robią?
+	\item Czy stare Haskellowe \texttt{Monad} to to samo co nowe \texttt{Monad}, którego nadklasą jest \texttt{Applicative}?
+	\item Czy faktycznie wszystkie dowody przechodzą tak gładko, jak chcieliby Haskellowi miłośnicy rozumowań równaniowych?
+	\item Czy na temat efektów da się w ogóle formalnie rozumować wewnątrz języka?
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Co i jak z tego wyszło}
+\begin{itemize}
+	\item Początki projektu sięgają kwietnia 2017 -- była to wówczas próba załatania braku w standardowej bibliotece Coqa różnych wygodnych rzeczy znanych z Haskella.
+	\item Była to pierwsza tego typu Coqowa biblioteka albo nie umiem szukać (choć w międzyczasie powstała też podobna biblioteka z nieco innymi celami oraz używająca innych mechanizmów abstrakcji).
+	\item Siła rzeczy (oraz kontakty z promotorem i seminarium z efektów algebraicznych) popychały ewolucję projektu w kierunku czegoś, co zaczęło przypominać mądrzejszą kopię Haskellowej biblioteki \texttt{mtl}.
+	\item Myślę, że efekty sa całkiem dobre (przynajmniej dopóki patrzymy tylko na proste przykłady -- co by było w dużej skali, nie wiadomo).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Do kogo adresowana jest praca?}
+\begin{itemize}
+	\item Wychodzę z założenia, że piszę po to, aby być czytanym.
+	\item Oficjalnym celem pracy jest zgarnięcie papierka zwanego dyplomem inżyniera, a nieoficjalnym -- nauczenie czytelnika (i samego siebie) czegoś wartościowego.
+	\item Ciekawym skutkiem tego podejścia jest to, że każdy rozdział (a czasem nawet pojedyncze sekcje) są adresowane do zupełnie różnych grup odbiorców, choć fakt ten może być niewidzialny.
+	\item Recenzje pracy są pozytywne, więc chyba nie jest taka zła.
+\end{itemize}
+\end{frame}
+
+\section{Rozdział 1 -- bajki o weryfikacji}
+
+\begin{frame}{Weryfikacja hard- i software'u}
+\begin{itemize}
+	\item Rozdział 1 pisałem z myślą o recenzencie zanim jeszcze dowiedziałem się, kto nim jest.
+	\item Jego cel jest prosty -- uzasadnienie potrzebności i ważności interesujących mnie rzeczy za pomocą sprytnej retoryki.
+	\item Jeżeli spec od formalnej weryfikacji chce uzasadnić swoje istnienie, musi wspomnieć coś o spadających samolotach.
+	\item Koniunktura sprzyja takiemu postawieniu sprawy, gdyż ostatnimi czasy namnożyło się bardzo poważnych błędów, jak Meltdown, Spectre czy Heartbleed. Spadające samoloty też były, więc retoryka jest nawet zgodna z prawdą.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Weryfikacja matematyki}
+\begin{itemize}
+	\item Podrozdział 1.2 to próba przemówienia do rozumu matematykom.
+	\item Matematykom wydaje się, że logika jest sztuczna i nie odpowiada praktyce, a formalizacja nie jest warta zachodu.
+	\item Klasycznym kontrprzykładem jest dowód twierdzenia o czterech barwach, wymagający sprawdzenia setek przypadków.
+	\item Innym ciekawym przypadkiem są perypetia Vladimira Voevodskyego, laureata medalu Fieldsa, który w 1989 opublikował pewną pracę o $\infty$-grupoidach i teorii homotopii. Znalezienie w niej błędu zajęło innemu ekspertowi 9 lat, ale przez kolejne 15 lat Voevodsky nie wierzył w jego argumenty.
+\end{itemize}
+\end{frame}
+
+\section{Rozdział 2 -- efekty}
+
+\begin{frame}{Efekty}
+\begin{itemize}
+	\item Rozdział 2 pisałem z myślą o typowym programiście, który niespecjalnie zdaje sobie sprawę z konieczności mądrego zarządzania efektami.
+	\item 
+\end{itemize}
+\end{frame}
+
+\begin{frame}{slajt}
+\begin{itemize}
+	\item ajtem
+\end{itemize}
+\end{frame}
+
+\begin{frame}{slajt}
+\begin{itemize}
+	\item ajtem
+\end{itemize}
+\end{frame}
+
+\begin{frame}{slajt}
+\begin{itemize}
+	\item ajtem
+\end{itemize}
+\end{frame}
+
+\begin{frame}{slajt}
+\begin{itemize}
+	\item ajtem
+\end{itemize}
+\end{frame}
+
+
+\section{Rozdział 1}
+\section{Rozdział 2}
+\section{Rozdział 3}
+\section{Rozdział 4}
+\section{Rozdział 5}
+
+\end{document}
