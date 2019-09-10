@@ -12,7 +12,7 @@
 \makeatother
 
 \title{Formalnie zweryfikowane programowanie z monadami w Coqu}
-\author{Zeimer}
+\author{Wojciech Kołowski}
 \date{10 września 2019}
 
 \begin{document}
@@ -62,6 +62,8 @@
 \end{itemize}
 \end{frame}
 
+\section{Streszczenie pracy}
+
 \begin{frame}{Do kogo adresowana jest praca?}
 \begin{itemize}
 	\item Wychodzę z założenia, że piszę po to, aby być czytanym.
@@ -70,8 +72,6 @@
 	\item Recenzje pracy są pozytywne, więc chyba nie jest taka zła.
 \end{itemize}
 \end{frame}
-
-\section{Rozdział 1 -- bajki o weryfikacji}
 
 \begin{frame}{Weryfikacja hard- i software'u}
 \begin{itemize}
@@ -91,44 +91,41 @@
 \end{itemize}
 \end{frame}
 
-\section{Rozdział 2 -- efekty}
-
 \begin{frame}{Efekty}
 \begin{itemize}
 	\item Rozdział 2 pisałem z myślą o typowym programiście, który niespecjalnie zdaje sobie sprawę z konieczności mądrego zarządzania efektami.
-	\item 
+	\item W sekcjach 2.1 i 2.2 staram się wyjaśnić podstawowe pojęcia i prezentuję dość prymitywny przykład.
+	\item Celem tego jest zbudowanie jakiejś prostej ideologii, przez pryzmat której zwykły programista może postrzegać to, co dzieje się w jego języku.
+	\item W sekcji 2.3 porównuję 3 podejścia do efektów:
+	\begin{itemize}
+		\item Monady, transformatory, klasy efektów (jak np. \texttt{MonadState} etc.) i reszta znana z \texttt{mtl}a.
+		\item \texttt{extensible-effects}
+		\item Efektry algebraiczne, czyli najnowszy krzyk mody.
+	\end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{slajt}
+\begin{frame}{Abstrakcja i inżynieria dowodu}
 \begin{itemize}
-	\item ajtem
+	\item Większa część rozdziału 3 (3.1, 3.2, 3.3) jest adresowana do mnie samego. Strasznie irytuje mnie mnogość powiązanych mechanizmów abstrakcji dostępna w Coqu i to, że żadne prace (o ile mnie pamięć nie myli) nie tłumaczą swojego wyboru mechanizmów abstrakcji. Musiałem coś z tym zrobić -- wyszło porównanie klas typów, struktur kanonicznych i modułów.
+	\item Pozostała część rozdziału (3.4 i 3.5) była adresowana do inżynierów oprogramowania. Jej celem było podkreślenie roli nowej dziedziny inżynierii, która wyłania się z formalizacji -- inżynierii oprogramowania. Tu aksjomaty stają się częścią architektury, a automatyzacja dowodów -- czymś analogicznym np. do systemów ORM (choć porównanie jest być może naciągane). 
 \end{itemize}
 \end{frame}
 
-\begin{frame}{slajt}
+\begin{frame}{Implementacja}
 \begin{itemize}
-	\item ajtem
+	\item Rozdział 4 skierowany jest głównie do wnikliwego czytelnika, który zna się na rzeczy, np. recenzenta.
+	\item Jego celem jest sztampowy opis implementacji połączony z innowacyjnym opisem różnych dziwnych rzeczy, które odkryłem, a których się nie spodziewałem.
+	\item Okazuje się, że znane z Haskella klasy wymagają nowych prawy (bo naturalność nie działa), a te sprawiają np., że nowe zestawy praw nie są minimalne -- niektóre prawa da się wyprowadzić z innych.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{slajt}
+\begin{frame}{Inne odkrycia}
 \begin{itemize}
-	\item ajtem
+	\item Trzeba było też zrewidować kilka metod implementacji. Dla przykładu, wolne monady znane z Haskella nie są legalne w Coqu, więc trzeba posiłkować się kodowaniem Churcha.
+	\item Ciekawym doświadczeniem było empiryczne poszukiwanie praw dla klasy \texttt{WriterT}.
+	\item Były też i porażki -- np. nie udało mi się pokazać, że \texttt{FreeT} spełnia prawa \texttt{MonadExcept}, czyli efektu wyjątków.
 \end{itemize}
 \end{frame}
-
-\begin{frame}{slajt}
-\begin{itemize}
-	\item ajtem
-\end{itemize}
-\end{frame}
-
-
-\section{Rozdział 1}
-\section{Rozdział 2}
-\section{Rozdział 3}
-\section{Rozdział 4}
-\section{Rozdział 5}
 
 \end{document}

@@ -17,10 +17,10 @@
 \polishabstract {Prezentujemy \libname, Coqową bibliotekę do formalnie zweryfikowanego programowania z abstrakcjami w stylu Haskella: funktorami, funktorami aplikatywnymi, monadami, transformatorami monad oraz efektami opartymi o klasy typów. Omawiamy nasze decyzje projektowe, opisujemy implementację i przedstawiamy działanie biblioteki na kilku przykładach.}
 \englishabstract{We introduce \libname, a Coq library for formally verified programming with Haskell-style abstractions: functors, applicative functors, monads, monad transformers and typeclass-based effects. We discuss the design choices we made, describe the implementation and illustrate the working of the library on some examples.}
 % w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
-\author         {Zeimer}
+\author         {Wojciech Kołowski}
 % w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
 % w ponizszym poleceniu mozna zlamac poleceniem \fmlinebreak
-\advisor        {dr Wpisuyashi TODO}
+\advisor        {dr Maciej Piróg}
 \date           {10 września 2019}                     % Data zlozenia pracy
 % Dane do oswiadczenia o autorskim wykonaniu
 %\transcriptnum {}                     % Numer indeksu
@@ -430,7 +430,7 @@ End Semigroup.
 
 \end{listing}
 
-The last of Coq's abstraction mechanisms is the module system \cite{Modules1} \cite{Modules2}, inspired by the module system of ML. A module, just like typeclasses and canonical structures, are very similar to parametrized dependent records (though not implemented using them), but they are less restrictive, because the body of a module can also contain vernacular commands, like inductive type definitions.
+The last of Coq's abstraction mechanisms is the module system \cite{Modules1} \cite{Modules2}, inspired by the module system of ML. Modules, just like typeclasses and canonical structures, are very similar to parametrized dependent records (though not implemented using them), but they are less restrictive, because the body of a module can also contain vernacular commands, like inductive type definitions.
 
 It is precisely these inductive type definitions that forbid Coq modules from being first-class (it may come as a surprise, but defining a new type can be considered an effect, because new named constants are added into the environment). Modules are also often used as namespaces, because all names declared in a module must be accessed by prefixing them with the module name, unless the module is imported into scope. Listing \ref{SgrModule} shows a formalization of semigroups using modules (or, to be more precise, module types).
 
@@ -461,7 +461,7 @@ End Semigroup.
 
 Listings \ref{SgrClass}, \ref{SgrCS} and \ref{SgrModule} all look very much alike, except that the solution using canonical structures is longer, because one usually formalizes both the bundled and unbundled version of the concept (see next section for explanation).
 
-Our abstraction and modularity mechanism of choice were typeclasses. The most important reason was that we wanted the library to be intelligible to people with Haskell background. An additional motivation was that the only other work on monads in Coq \cite{MERC} uses canonical structures, so we wanted try something different.
+Our abstraction and modularity mechanism of choice were typeclasses. The most important reason was that we wanted the library to be intelligible to people with Haskell background. An additional motivation was that the only other work on monads in Coq \cite{MERC} uses canonical structures, so we wanted to try something different.
 
 \section{Bundles, outlaws, setoids and other exotic animals}
 
@@ -595,7 +595,7 @@ Class Semigroup : Type :=
 
 The last thing we could do is using setoids instead of types to formalize the concepts of interest. A setoid is a type together with an equivalence relation and this approach boils down to replacing all types with setoids and adding the necessary compatibility laws for operations, as shown in listing \ref{Setoid}.
 
-The main use of setoids is in dealing with equality -- because we cannot form quotient types in Coq, any kind of mathematics that requires quotients (algebra), gluing (topology), or just simply changing the notion of equality for a particular structure, needs to be carried out using setoids. We would need to use them if we wanted to focus on the category-theoretical aspect of monads and monad transformers, but since we are interested mainly in the practical aspects, we will not need any setoids.
+The main use of setoids is in dealing with equality -- because we cannot form quotient types in Coq, any kind of mathematics that requires quotients (algebra), gluing (topology), or just simply changing the notion of equality for a particular structure, needs to be carried out using setoids. We would need to use them if we wanted to focus on the category-theoretical aspects of monads and monad transformers, but since we are interested mainly in the practical aspects, we will not need any setoids.
 
 To sum it up, bundled classes are best used for formalizing mathematics, with setoids when in need of quotients/gluing, whereas unbundled classes are best used for representing interfaces, possibly without the laws if we care only about programming and not proving.
 
