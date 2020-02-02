@@ -41,6 +41,7 @@ Definition fmap_MonadBind
 
 Hint Unfold fmap_MonadBind compose : MonadBind.
 
+#[refine]
 Instance Functor_MonadBind
   (M : Type -> Type) (inst : Monad M) : Functor M :=
 {
@@ -57,6 +58,7 @@ Definition ap_MonadBind
 
 Hint Unfold ap_MonadBind : MonadBind.
 
+#[refine]
 Instance Applicative_MonadBind
   (M : Type -> Type) (inst : Monad M) : Applicative M :=
 {

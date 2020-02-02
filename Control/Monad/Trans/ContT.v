@@ -24,6 +24,7 @@ Definition fmap_ContT
   (A B : Type) (f : A -> B) (x : ContT R M A) : ContT R M B :=
     fun y : B -> M R => x (fun a : A => y (f a)).
 
+#[refine]
 Instance FunctorContT : Functor (ContT R M) :=
 {
     fmap := fmap_ContT
@@ -37,6 +38,7 @@ Definition ap_ContT
   (A B : Type) (mf : ContT R M (A -> B)) (ma : ContT R M A) : ContT R M B :=
     fun y : B -> M R => mf (fun f : A -> B => ma (fun a : A => y (f a))).
 
+#[refine]
 Instance ApplicativeContT : Applicative (ContT R M) :=
 {
     is_functor := FunctorContT;
@@ -49,6 +51,7 @@ Definition bind_ContT
   (A B : Type) (x : ContT R M A) (f : A -> ContT R M B) : ContT R M B :=
     fun y : B -> M R => x (fun a : A => f a y).
 
+#[refine]
 Instance Monad_ContT : Monad (ContT R M) :=
 {
     is_applicative := ApplicativeContT;
@@ -67,6 +70,7 @@ End ContT_instances.
 Hint Unfold
   fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT : CoqMTL.
 
+#[refine]
 Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
 {
     is_monad := fun M _ => @Monad_ContT R M;
@@ -77,6 +81,7 @@ Proof. all: monad. Defined.
 (** If we transform a nondeterministic monad, we also get a
     nondeterministic monad. *)
 
+#[refine]
 Instance MonadAlt_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (ContT R M) (Monad_ContT R M) :=
@@ -86,6 +91,7 @@ Instance MonadAlt_ContT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadFail_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (ContT R M) (Monad_ContT R M) :=
@@ -94,6 +100,7 @@ Instance MonadFail_ContT
 }.
 Proof. reflexivity. Defined.
 
+#[refine]
 Instance MonadNondet_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (ContT R M) (Monad_ContT R M) :=
@@ -108,6 +115,7 @@ Proof. all: monad. Defined.
     definition, we can't just apply the law [catch_pure] coming from [M]
     and everything breaks. I am not sure whether this is a real problem
     or me not being able to figure it out. *)
+#[refine]
 Instance MonadExcept_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ContT R M) (Monad_ContT R M) :=
@@ -123,6 +131,7 @@ Abort.
 (** Transforming a reader, writer or state monad also results in such a
     monad. *)
 
+#[refine]
 Instance MonadReader_ContT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -137,6 +146,7 @@ Defined.
 
 (** This instance is dubious, because [listen] doesn't refer to [M]'s
     [listen]. *)
+#[refine]
 Instance MonadWriter_ContT
   (R : Type) (W : Monoid) (M : Type -> Type)
   (instM : Monad M) (instMW : MonadWriter W M instM)
@@ -147,6 +157,7 @@ Instance MonadWriter_ContT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadState_ContT
   (S R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -168,6 +179,7 @@ Defined.
     [seq_fail_r], because the inner monad's [fail] only occurs inside
     the continuation, which doesn't necessarily get called - it can
     be thrown away. *)
+#[refine]
 Instance MonadStateNondet_ContT
   (S R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -183,6 +195,7 @@ Proof.
 Abort.
 
 (** If [M] is the free monad of [F], so is [ContT R M]. *)
+#[refine]
 Instance MonadFree_ContT
   (F : Type -> Type) (instF : Functor F)
   (R : Type) (M : Type -> Type)

@@ -16,6 +16,7 @@ Definition force {A : Type} (la : Lazy A) : A := la tt.
 Definition fmap_Lazy {A B : Type} (f : A -> B) (la : Lazy A) : Lazy B :=
   delay $ f (la tt).
 
+#[refine]
 Instance Functor_Lazy : Functor Lazy :=
 {
     fmap := @fmap_Lazy;
@@ -29,6 +30,7 @@ Definition ap_Lazy
   {A B : Type} (f : Lazy (A -> B)) (x : Lazy A) : Lazy B :=
     fun _ => f tt (x tt).
 
+#[refine]
 Instance Applicative_Lazy : Applicative Lazy :=
 {
     is_functor := Functor_Lazy;
@@ -44,6 +46,7 @@ Definition bind_Lazy
   {A B : Type} (la : Lazy A) (f : A -> Lazy B) : Lazy B :=
     fun _ => f (la tt) tt.
 
+#[refine]
 Instance Monad_Lazy : Monad Lazy :=
 {
     is_applicative := Applicative_Lazy;

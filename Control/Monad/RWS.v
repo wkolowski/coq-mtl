@@ -26,6 +26,7 @@ Definition fmap_RWS
 
 Hint Unfold fmap_RWS : CoqMTL.
 
+#[refine]
 Instance Functor_RWS (W : Monoid) (R S : Type) : Functor (RWS W R S) :=
 {
     fmap := @fmap_RWS W R S
@@ -49,6 +50,7 @@ Definition ap_RWS
 
 Hint Unfold pure_RWS ap_RWS : CoqMTL.
 
+#[refine]
 Instance Applicative_RWS
   (W : Monoid) (R S : Type) : Applicative (RWS W R S) :=
 {
@@ -93,6 +95,7 @@ Definition bind_RWS
 
 Hint Unfold bind_RWS : CoqMTL.
 
+#[refine]
 Instance Monad_RWS
   (W : Monoid) (R S : Type) : Monad (RWS W R S) :=
 {
@@ -103,6 +106,7 @@ Proof. all: monad. Defined.
 
 (** [RWS W R S] has instances corresponding to all three of its effects. *)
 
+#[refine]
 Instance MonadReader_RWS
   (W : Monoid) (R S : Type)
   : MonadReader R (RWS W R S) (Monad_RWS W R S) :=
@@ -111,6 +115,7 @@ Instance MonadReader_RWS
 }.
 Proof. hs. Defined.
 
+#[refine]
 Instance MonadWriter_RWS
   (W : Monoid) (R S : Type) : MonadWriter W (RWS W R S) (Monad_RWS W R S) :=
 {
@@ -121,6 +126,7 @@ Instance MonadWriter_RWS
 }.
 Proof. all: hs; monad. Defined.
 
+#[refine]
 Instance MonadState_RWS
   (W : Monoid) (R S : Type) : MonadState S (RWS W R S) (Monad_RWS W R S) :=
 {

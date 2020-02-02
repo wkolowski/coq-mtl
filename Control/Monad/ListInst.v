@@ -11,6 +11,7 @@ Definition fmap_List := map.
 
 Hint Rewrite app_nil_l app_nil_r : CoqMTL.
 
+#[refine]
 Instance Functor_List : Functor list :=
 {
     fmap := fmap_List
@@ -94,6 +95,7 @@ Proof.
         apply IHgs.
 Qed.
 
+#[refine]
 Instance Applicative_List : Applicative list :=
 {
     is_functor := Functor_List;
@@ -118,6 +120,7 @@ Definition aempty_List {A : Type} : list A := [].
 
 Definition aplus_List {A : Type} (x y : list A) : list A := app x y.
 
+#[refine]
 Instance Alternative_List : Alternative list :=
 {
     is_applicative := Applicative_List;
@@ -156,6 +159,7 @@ Proof.
   compute in ap_comm. inversion ap_comm.
 Qed.
 
+#[refine]
 Instance Monad_List : Monad list :=
 {
     is_applicative := Applicative_List;
@@ -178,12 +182,14 @@ Defined.
     computation can fail by returning an empty list and nondeterministic
     choice is modeled by [app]. *)
 
+#[refine]
 Instance MonadFail_List : MonadFail list Monad_List :=
 {
     fail := fun A => []
 }.
 Proof. intros. cbn. reflexivity. Defined.
 
+#[refine]
 Instance MonadAlt_List : MonadAlt list Monad_List :=
 {
     choose := @app;
@@ -195,6 +201,7 @@ Proof.
     rewrite IHt, app_assoc. reflexivity.
 Defined.
 
+#[refine]
 Instance MonadNondet_List : MonadNondet list Monad_List :=
 {
     instF := MonadFail_List;
@@ -209,6 +216,7 @@ match l with
     | h :: t => op (f h) (foldMap_List f t)
 end.
 
+#[refine]
 Instance FoldableList : Foldable list :=
 {
     foldMap := @foldMap_List

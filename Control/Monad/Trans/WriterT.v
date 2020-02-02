@@ -21,6 +21,7 @@ Definition fmap_WriterT
 
 Hint Unfold WriterT fmap_WriterT : CoqMTL.
 
+#[refine]
 Instance Functor_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} : Functor (WriterT W M) :=
 {
@@ -41,6 +42,7 @@ Definition ap_WriterT
 
 Hint Unfold pure_WriterT ap_WriterT : CoqMTL.
 
+#[refine]
 Instance Applicative_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M)
   : Applicative (WriterT W M) :=
@@ -65,6 +67,7 @@ Proof.
     compute in aempty. destruct aempty. assumption.
 Qed.
 
+#[refine]
 Instance Alternative_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : Alternative M)
   : Alternative (WriterT W M) :=
@@ -84,6 +87,7 @@ Definition bind_WriterT
 
 Hint Unfold bind_WriterT : CoqMTL.
 
+#[refine]
 Instance Monad_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) : Monad (WriterT W M) :=
 {
@@ -100,6 +104,7 @@ Definition lift_WriterT
 
 Hint Unfold lift_WriterT : CoqMTL.
 
+#[refine]
 Instance MonadTrans_WriterT (W : Monoid) : MonadTrans (WriterT W) :=
 {
     is_monad := @Monad_WriterT W;
@@ -108,6 +113,7 @@ Instance MonadTrans_WriterT (W : Monoid) : MonadTrans (WriterT W) :=
 Proof. all: unfold compose; monad. Defined.
 
 (** [WriterT] adds a layer of [MonadWriter] on top of the base monad [M]. *)
+#[refine]
 Instance MonadWriter_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M)
   : MonadWriter W (WriterT W M) (Monad_WriterT W M inst) :=
@@ -121,6 +127,7 @@ Proof. all: monad. Defined.
 
 (** [WriterT] preserves all other kinds of monads. *)
 
+#[refine]
 Instance MonadAlt_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (WriterT W M) (Monad_WriterT W M inst) :=
@@ -129,6 +136,7 @@ Instance MonadAlt_WriterT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadFail_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (WriterT W M) (Monad_WriterT W M inst) :=
@@ -137,6 +145,7 @@ Instance MonadFail_WriterT
 }.
 Proof. monad. Defined.
 
+#[refine]
 Instance MonadNondet_WriterT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadNondet M inst)
@@ -147,6 +156,7 @@ Instance MonadNondet_WriterT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadExcept_WriterT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
@@ -157,6 +167,7 @@ Instance MonadExcept_WriterT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadReader_WriterT
   (W : Monoid) (E : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -170,6 +181,7 @@ Proof.
   monad.
 Defined.
 
+#[refine]
 Instance MonadState_WriterT
   (W : Monoid) (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -202,6 +214,7 @@ Proof.
     f_equal. ext s. monad.
 Defined.
 
+#[refine]
 Instance MonadStateNondet_WriterT
   (W : Monoid) (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -221,6 +234,7 @@ Proof.
 Defined.
 
 (** If [M] is the free monad of [F], so is [WriterT W M]. *)
+#[refine]
 Instance MonadFree_WriterT
   (F : Type -> Type) (instF : Functor F)
   (W : Monoid) (M : Type -> Type)

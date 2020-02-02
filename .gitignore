@@ -1,9 +1,9 @@
 *.vo
-*.vo.aux
-*.v.d
+*.vos
+*.vok
 *.glob
 *.crashcoqide
-*aux
+*.aux
 *~
 makefile
 *.conf

@@ -23,6 +23,7 @@ Definition fmap_RWST
 
 Hint Unfold RWST fmap_RWST : CoqMTL.
 
+#[refine]
 Instance Functor_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
     : Functor (RWST W R S M) :=
@@ -45,6 +46,7 @@ Definition ap_RWST
 
 Hint Unfold pure_RWST ap_RWST : CoqMTL.
 
+#[refine]
 Instance Applicative_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
     : Applicative (RWST W R S M) :=
@@ -87,6 +89,7 @@ Definition bind_RWST
 
 Hint Unfold bind_RWST : CoqMTL.
 
+#[refine]
 Instance Monad_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
     : Monad (RWST W R S M) :=
@@ -107,6 +110,7 @@ Definition lift_RWST
 
 Hint Unfold lift_RWST : CoqMTL.
 
+#[refine]
 Instance MonadTrans_RWST
   {W : Monoid} {R S : Type} : MonadTrans (RWST W R S) :=
 {
@@ -117,6 +121,7 @@ Proof. all: unfold compose; monad. Defined.
 (** [RWST] puts a layer of [MonadReader], [MonadWriter] and [MonadState]
     on top of the base monad [M]. *)
 
+#[refine]
 Instance MonadReader_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadReader R (RWST W R S M) (Monad_RWST W R S M inst) :=
@@ -125,6 +130,7 @@ Instance MonadReader_RWST
 }.
 Proof. monad. Defined.
 
+#[refine]
 Instance MonadWriter_RWST
   (R S : Type) (W : Monoid) (M : Type -> Type) (inst : Monad M)
   : MonadWriter W (RWST W R S M) (Monad_RWST W R S M inst) :=
@@ -137,6 +143,7 @@ Instance MonadWriter_RWST
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadState_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (RWST W R S M) (Monad_RWST W R S M inst) :=
@@ -152,6 +159,7 @@ Defined.
 (** Just like [ReaderT], [WriterT] and [StateT], [RWST] preserves all other
     kinds of monads. *)
 
+#[refine]
 Instance MonadAlt_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadAlt M inst)
@@ -162,6 +170,7 @@ Instance MonadAlt_RWST
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadFail_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadFail M inst)
@@ -171,6 +180,7 @@ Instance MonadFail_RWST
 }.
 Proof. monad. Defined.
 
+#[refine]
 Instance MonadNondet_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadNondet M inst)
@@ -181,6 +191,7 @@ Instance MonadNondet_RWST
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadStateNondet_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -199,6 +210,7 @@ Proof.
     ext asw. destruct asw as [[a sa] wa]. apply bind_choose_l.
 Defined.
 
+#[refine]
 Instance MonadExcept_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
@@ -211,6 +223,7 @@ Instance MonadExcept_RWST
 Proof. all: monad. Defined.
 
 (** If [M] is the free monad of [F], so is [RWST W R S M]. *)
+#[refine]
 Instance MonadFree_RWST
   (F : Type -> Type) (instF : Functor F)
   (W : Monoid) (R S : Type) (M : Type -> Type)

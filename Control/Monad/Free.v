@@ -21,6 +21,7 @@ Definition fmap_Free
   {A B : Type} (f : A -> B) (x : Free F A) : Free F B :=
     fun X pure wrap => x X (f .> pure) wrap.
 
+#[refine]
 Instance Functor_Free : Functor (Free F) :=
 {
     fmap := @fmap_Free
@@ -35,6 +36,7 @@ Definition ap_Free
   {A B : Type} (mf : Free F (A -> B)) (ma : Free F A) : Free F B :=
     fun X pure wrap => mf X (fun f => fmap f ma X pure wrap) wrap.
 
+#[refine]
 Instance Applicative_Free : Applicative (Free F) :=
 {
     pure := @pure_Free;
@@ -46,6 +48,7 @@ Definition bind_Free
   {A B : Type} (x : Free F A) (f : A -> Free F B) : Free F B :=
     fun X pure wrap => x X (fun a => f a X pure wrap) wrap.
 
+#[refine]
 Instance Monad_Free : Monad (Free F) :=
 {
     bind := @bind_Free
@@ -72,6 +75,7 @@ Definition wrap_Free
 
 Hint Unfold fmap_Free pure_Free ap_Free bind_Free wrap_Free : CoqMTL.
 
+#[refine]
 Instance MonadFree_Free
   (F : Type -> Type) (instF : Functor F)
   : MonadFree F (Free F) instF (Monad_Free F) :=

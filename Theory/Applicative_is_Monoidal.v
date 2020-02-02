@@ -24,6 +24,7 @@ Definition ap_Monoidal
     rewrites in the reverse direction. If you gazed at the goals for
     long enough, you could probably have proved this all by yourself,
     but thanks to me you don't need to... *)
+#[refine]
 Instance Monoidal_Applicative
   (F : Type -> Type) (inst : Monoidal F) : Applicative F :=
 {
@@ -62,6 +63,7 @@ Hint Unfold default_Applicative pairF_Applicative : CoqMTL.
     Note that [fmap_pure_ap] is not necessary in the big rewrite
     alternative ||, but the tactic [hs] uses it, so it's necessary
     to prove the equivalence. *)
+#[refine]
 Instance Applicative_Monoidal
   (F : Type -> Type) (inst : Applicative F) : Monoidal F :=
 {

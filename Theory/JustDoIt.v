@@ -130,6 +130,7 @@ End S0.
 
 Require Import Control.Monad.All.
 
+#[refine]
 Instance MonadFail_List : MonadFail Monad_List :=
 {
     fail := @nil
@@ -138,6 +139,7 @@ Proof.
   all: compute; reflexivity.
 Defined.
 
+#[refine]
 Instance MonadAlt_List : MonadAlt Monad_List :=
 {
     choose := @app;
@@ -148,6 +150,7 @@ Proof.
     cbn. apply bind_List_app.
 Defined.
 
+#[refine]
 Instance MonadNondet_List : MonadNondet Monad_List :=
 {
     instF := MonadFail_List;

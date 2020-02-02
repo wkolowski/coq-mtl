@@ -9,6 +9,7 @@ Definition Identity (A : Type) : Type := A.
 Definition fmap_Identity
   {A B : Type} (f : A -> B) (a : Identity A) : Identity B := f a.
 
+#[refine]
 Instance FunctorIdentity : Functor Identity :=
 {
     fmap := @fmap_Identity
@@ -22,6 +23,7 @@ Definition pure_Identity {A : Type} (x : A) : Identity A := x.
 Definition ap_Identity
   {A B : Type} (f : Identity (A -> B)) (x : Identity A) : Identity B := f x.
 
+#[refine]
 Instance Applicative_Identity : Applicative Identity :=
 {
     is_functor := FunctorIdentity;
@@ -47,6 +49,7 @@ Instance CommutativeApplicative_Identity :
   CommutativeApplicative _ Applicative_Identity.
 Proof. split. reflexivity. Defined.
 
+#[refine]
 Instance Monad_Identity : Monad Identity :=
 {
     is_applicative := Applicative_Identity;

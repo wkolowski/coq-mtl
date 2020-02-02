@@ -47,6 +47,7 @@ End Comp.
 
 (** * join-based definition *)
 
+#[refine]
 Instance Join_to_Monad
   (M : Type -> Type) (inst : Join.Monad M) : Monad M :=
 {
@@ -58,6 +59,7 @@ Proof.
   apply Join.assoc.
 Defined.
 
+#[refine]
 Instance Monad_to_Join (M : Type -> Type) (inst : Monad M)
   : Join.Monad M :=
 {
@@ -75,6 +77,7 @@ Defined.
 
 (** * bind-based definition *)
 
+#[refine]
 Instance MonadBind_to_Monad
   (M : Type -> Type) (inst : Bind.Monad M) : Monad M :=
 {
@@ -83,6 +86,7 @@ Instance MonadBind_to_Monad
 }.
 Proof. all: MonadBind.mbind. Defined.
 
+#[refine]
 Instance Monad_to_MonadBind
   (M : Type -> Type) (inst : Monad M) : MonadBind.Monad M :=
 {
@@ -95,6 +99,7 @@ Proof. all: monad. Defined.
 
 Require Import KleisliTriple.
 
+#[refine]
 Instance Monad_to_KleisliTriple
   (M : Type -> Type) (inst : Monad M) : KleisliTriple M :=
 {
@@ -105,6 +110,7 @@ Proof.
   all: unfold flip; monad.
 Defined.
 
+#[refine]
 Instance KleisliTriple_to_Monad
   (M : Type -> Type) (inst : KleisliTriple M) : Monad M :=
 {
@@ -115,6 +121,7 @@ Proof. all: kleisli. Defined.
 
 (** * compM-based definition *)
 
+#[refine]
 Instance Monad_to_MonadComp
   (M : Type -> Type) (inst : Monad M) : MonadComp.Monad M :=
 {

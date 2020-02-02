@@ -11,6 +11,7 @@ Definition fmap_Reader
   {R A B : Type} (f : A -> B) (x : Reader R A) : Reader R B :=
     fun r : R => f (x r).
 
+#[refine]
 Instance Functor_Reader (R : Type) : Functor (Reader R) :=
 {
     fmap := @fmap_Reader R
@@ -29,6 +30,7 @@ Definition ap_Reader
   {R A B : Type} (f : Reader R (A -> B)) (x : Reader R A) : Reader R B :=
     fun r : R => f r (x r).
 
+#[refine]
 Instance ApplicativeReader (R : Type) : Applicative (Reader R) :=
 {
     is_functor := Functor_Reader R;
@@ -60,6 +62,7 @@ Definition bind_Reader
   {R A B : Type} (x : Reader R A) (f : A -> Reader R B) : Reader R B :=
     fun r : R => f (x r) r.
 
+#[refine]
 Instance Monad_Reader (R : Type) : Monad (Reader R) :=
 {
     is_applicative := ApplicativeReader R;
@@ -69,6 +72,7 @@ Proof. all: reflexivity. Defined.
 
 (** [Reader R] is the primordial [MonadReader] instance. [ask] is just
     the identity. *)
+#[refine]
 Instance MonadReader_Reader
   (R : Type) : MonadReader R (Reader R) (Monad_Reader R) :=
 {

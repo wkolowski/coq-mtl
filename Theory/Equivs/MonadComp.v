@@ -41,6 +41,7 @@ Hint Unfold bindM : CoqMTL.
 Require MonadBind.
 
 (*
+#[refine]
 Instance Comp_to_Bind
   (M : Type -> Type) (inst : Monad M) : MonadBind.Monad M :=
 {

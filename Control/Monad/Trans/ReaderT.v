@@ -20,6 +20,7 @@ Definition fmap_ReaderT
 
 Hint Unfold ReaderT fmap_ReaderT : CoqMTL.
 
+#[refine]
 Instance Functor_ReaderT
   {M : Type -> Type} {inst : Monad M} {E : Type} : Functor (ReaderT E M) :=
 {
@@ -38,6 +39,7 @@ Definition ap_ReaderT
 
 Hint Unfold pure_ReaderT ap_ReaderT : CoqMTL.
 
+#[refine]
 Instance Applicative_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M)
   : Applicative (ReaderT E M) :=
@@ -59,6 +61,7 @@ Proof.
   compute in aempty. apply aempty. exact tt.
 Qed.
 
+#[refine]
 Instance Alternative_ReaderT
   (E : Type) (M : Type -> Type) {inst : Monad M} {instA : Alternative M}
   : Alternative (ReaderT E M) :=
@@ -75,6 +78,7 @@ Definition bind_ReaderT
 
 Hint Unfold bind_ReaderT : CoqMTL.
 
+#[refine]
 Instance Monad_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Monad (ReaderT E M) :=
 {
@@ -87,8 +91,9 @@ Definition lift_ReaderT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : ReaderT E M A := fun _ => ma.
 
-Hint Unfold lift_ReaderT.
+Hint Unfold lift_ReaderT : CoqMTL.
 
+#[refine]
 Instance MonadTrans_ReaderT (E : Type) : MonadTrans (ReaderT E) :=
 {
     is_monad := @Monad_ReaderT E;
@@ -97,6 +102,7 @@ Instance MonadTrans_ReaderT (E : Type) : MonadTrans (ReaderT E) :=
 Proof. all: reflexivity. Defined.
 
 (** [ReaderT] adds a layer of [MonadReader] to any monad [M]. *)
+#[refine]
 Instance MonadReader_Reader
   (M : Type -> Type) (inst : Monad M) (R : Type)
   : MonadReader R (ReaderT R M) (Monad_ReaderT R M inst) :=
@@ -108,6 +114,7 @@ Proof. monad. Defined.
 (** Transforming any other kind of monad results in a monad of the same
     kind. *)
 
+#[refine]
 Instance MonadAlt_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (ReaderT R M) (Monad_ReaderT R M inst) :=
@@ -117,6 +124,7 @@ Instance MonadAlt_ReaderT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadFail_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (ReaderT R M) (Monad_ReaderT R M inst) :=
@@ -125,6 +133,7 @@ Instance MonadFail_ReaderT
 }.
 Proof. monad. Defined.
 
+#[refine]
 Instance MonadNondet_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (ReaderT R M) (Monad_ReaderT R M inst) :=
@@ -134,6 +143,7 @@ Instance MonadNondet_ReaderT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadExcept_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ReaderT E M) (Monad_ReaderT E M inst) :=
@@ -144,6 +154,7 @@ Instance MonadExcept_ReaderT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadState_ReaderT
   (S R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -159,6 +170,7 @@ Proof.
   intros. ext r. cbn. monad.
 Defined.
 
+#[refine]
 Instance MonadWriter_ReaderT
   (W : Monoid) (E : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)
@@ -169,6 +181,7 @@ Instance MonadWriter_ReaderT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadStateNondet_ReaderT
   (E S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -184,6 +197,7 @@ Proof.
 Defined.
 
 (** If [M] is the free monad of [F], so is [ReaderT E M]. *)
+#[refine]
 Instance MonadFree_ReaderT
   (F : Type -> Type) (instF : Functor F)
   (E : Type) (M : Type -> Type)

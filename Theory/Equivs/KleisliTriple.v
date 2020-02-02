@@ -36,6 +36,7 @@ Definition fmap_Kleisli
 
 Hint Unfold fmap_Kleisli compose : Kleisli.
 
+#[refine]
 Instance Functor_Kleisli : Functor M :=
 {
     fmap := @fmap_Kleisli
@@ -54,6 +55,7 @@ Definition ap_Kleisli {A B : Type} (mf : M (A -> B)) (ma : M A) : M B :=
 
 Hint Unfold pure_Kleisli bind_Kleisli ap_Kleisli flip : Kleisli.
 
+#[refine]
 Instance Applicative_Kleisli : Applicative M :=
 {
     pure := @pure_Kleisli;

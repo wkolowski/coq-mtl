@@ -19,6 +19,7 @@ Hint Unfold fmap_Option : CoqMTL.
 
 (** [Functor] laws can be proven by an easy case analysis, which can be
     handled automatically. *)
+#[refine]
 Instance Functor_Option : Functor option :=
 {
     fmap := @fmap_Option
@@ -42,6 +43,7 @@ end.
 
 Hint Unfold pure_Option ap_Option : CoqMTL.
 
+#[refine]
 Instance Applicative_Option : Applicative option :=
 {
     is_functor := Functor_Option;
@@ -63,6 +65,7 @@ end.
 
 Hint Unfold aempty_Option aplus_Option : CoqMTL.
 
+#[refine]
 Instance Alternative_Option : Alternative option :=
 {
     is_applicative := Applicative_Option;
@@ -90,6 +93,7 @@ Proof.
   split. monad.
 Defined.
 
+#[refine]
 Instance Monad_Option : Monad option :=
 {
     is_applicative := Applicative_Option;
@@ -97,6 +101,7 @@ Instance Monad_Option : Monad option :=
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadFail_Option : MonadFail option Monad_Option :=
 {
     fail := @None;
@@ -112,6 +117,7 @@ end.
 
 Hint Unfold foldMap_Option : CoqMTL.
 
+#[refine]
 Instance Foldable_Option : Foldable option :=
 {
     foldMap := @foldMap_Option

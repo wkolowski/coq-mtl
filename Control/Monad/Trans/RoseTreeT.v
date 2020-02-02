@@ -21,6 +21,7 @@ Definition fmap_RoseTreeT
   {A B : Type} (f : A -> B) (t : RoseTreeT M A) : RoseTreeT M B :=
     fun X leaf node => t X (f .> leaf) node.
 
+#[refine]
 Instance Functor_RoseTreeT : Functor (RoseTreeT M) :=
 {
     fmap := @fmap_RoseTreeT
@@ -36,6 +37,7 @@ Definition ap_RoseTreeT
   : RoseTreeT M B := fun X leaf node =>
     tf X (fun f => fmap f ta X leaf node) node.
 
+#[refine]
 Instance Applicative_RoseTreeT : Applicative (RoseTreeT M) :=
 {
     pure := @pure_RoseTreeT;
@@ -48,6 +50,7 @@ Definition bind_RoseTreeT
   : RoseTreeT M B := fun X leaf node =>
     ta X (fun a => tf a X leaf node) node.
 
+#[refine]
 Instance Monad_RoseTreeT : Monad (RoseTreeT M) :=
 {
     bind := @bind_RoseTreeT
@@ -73,6 +76,7 @@ Qed.
 
 (** But even if [M] is an [Alternative] functor, there still are some
     problems. *)
+#[refine]
 Instance Alternative_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : Alternative M)
   : Alternative (RoseTreeT M) :=
@@ -87,6 +91,7 @@ Abort.
 
 (** [RoseTreeT] preserves [MonadNondet]. *)
 
+#[refine]
 Instance MonadAlt_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (RoseTreeT M) (Monad_RoseTreeT M) :=
@@ -97,6 +102,7 @@ Instance MonadAlt_RoseTreeT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadFail_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (RoseTreeT M) (Monad_RoseTreeT M) :=
@@ -105,6 +111,7 @@ Instance MonadFail_RoseTreeT
 }.
 Proof. reflexivity. Defined.
 
+#[refine]
 Instance MonadNondet_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (RoseTreeT M) (Monad_RoseTreeT M) :=
@@ -116,6 +123,7 @@ Proof. all: monad. Defined.
 
 (** [MonadExcept] poses the standard problem for Church-encoded
     transformers. *)
+#[refine]
 Instance MonadExcept_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (RoseTreeT M) (Monad_RoseTreeT M) :=
@@ -132,6 +140,7 @@ Abort.
 
 (** [RoseTreeT] preserves reader, writer and state. *)
 
+#[refine]
 Instance MonadReader_RoseTreeT
   (E : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -146,6 +155,7 @@ Proof.
   monad.
 Defined.
 
+#[refine]
 Instance MonadWriter_RoseTreeT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)
@@ -159,6 +169,7 @@ Proof. all: hs. Defined.
 (** BEWARE: there is a strange bug when trying to prove the goals in order
     or [Focus] on the fourth goal. This is why we have to solve it first
     using the select 4: *)
+#[refine]
 Instance MonadState_RoseTreeT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -181,6 +192,7 @@ Defined.
 
 (** Even though [RoseTreeT] preserves both [MonadState] and [MonadNondet],
     [MonadStateNondet] poses standard problems. *)
+#[refine]
 Instance MonadStateNondet_RoseTreeT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -195,6 +207,7 @@ Proof.
 Abort.
 
 (** If [M] is the free monad of [F], so is [RoseTreeT M]. *)
+#[refine]
 Instance MonadFree_RoseTreeT
   (F : Type -> Type) (instF : Functor F)
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)

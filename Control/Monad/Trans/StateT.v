@@ -34,6 +34,7 @@ Lemma f2 :
     fmap_StateT S (f .> g) = fmap_StateT S f .> fmap_StateT S g.
 Proof. monad. Qed.
 
+#[refine]
 Instance Functor_StateT
   {S : Type} {M : Type -> Type} {inst : Monad M} : Functor (StateT S M) :=
 {
@@ -90,6 +91,7 @@ Lemma p5 :
     fmap f x = ap_StateT S (pure_StateT S f) x.
 Proof. monad. Qed.
 
+#[refine]
 Instance Applicative_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) : Applicative (StateT S M) :=
 {
@@ -127,6 +129,7 @@ Definition aplus_StateT
 
 Hint Unfold aempty_StateT aplus_StateT : CoqMTL.
 
+#[refine]
 Instance Alternative_StateT
   (S : Type) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
   : Alternative (StateT S M) :=
@@ -177,6 +180,7 @@ Lemma m5 :
       bind_StateT S mx (fun x : A => pure (f x))).
 Proof. monad. Qed.
 
+#[refine]
 Instance Monad_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) : Monad (StateT S M) :=
 {
@@ -198,6 +202,7 @@ Definition lift_StateT
 
 Hint Unfold lift_StateT : CoqMTL.
 
+#[refine]
 Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
 {
     is_monad := @Monad_StateT S;
@@ -206,6 +211,7 @@ Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
 Proof. all: monad. Defined.
 
 (** [StateT] adds a layer of [MonadState] on top of the base monad [M]. *)
+#[refine]
 Instance MonadState_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (StateT S M) (Monad_StateT S M inst) :=
@@ -220,6 +226,7 @@ Defined.
 
 (** [StateT] preserves all other kinds of monads. *)
 
+#[refine]
 Instance MonadAlt_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (StateT S M) (Monad_StateT S M inst) :=
@@ -229,6 +236,7 @@ Instance MonadAlt_StateT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadFail_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (StateT S M) (Monad_StateT S M inst) :=
@@ -237,6 +245,7 @@ Instance MonadFail_StateT
 }.
 Proof. monad. Defined.
 
+#[refine]
 Instance MonadNondet_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (StateT S M) (Monad_StateT S M inst) :=
@@ -246,6 +255,7 @@ Instance MonadNondet_StateT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadExcept_StateT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
@@ -257,6 +267,7 @@ Instance MonadExcept_StateT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadReader_StateT
   (E S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -271,6 +282,7 @@ Proof.
   rewrite constrA_spec. monad.
 Defined.
 
+#[refine]
 Instance MonadWriter_StateT
   (W : Monoid) (S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadWriter W (StateT S M) (Monad_StateT S M inst) :=
@@ -283,6 +295,7 @@ Instance MonadWriter_StateT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadStateNondet_StateT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -301,6 +314,7 @@ Proof.
 Defined.
 
 (** If [M] is the free monad of [F], so is [StateT E M]. *)
+#[refine]
 Instance MonadFree_StateT
   (F : Type -> Type) (instF : Functor F)
   (S : Type) (M : Type -> Type)

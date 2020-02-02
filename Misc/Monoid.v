@@ -5,7 +5,7 @@ Import ListNotations.
     by [Writer] and [Writert]. *)
 Class Monoid : Type :=
 {
-    carr :> Type;
+    carr : Type;
     neutr : carr;
     op : carr -> carr -> carr;
     id_left :
@@ -24,6 +24,7 @@ Hint Rewrite @id_left @id_right @op_assoc : CoqMTL.
 (** Some instances of monoids: the initial monoid, the monoid of boolean
     values with boolean conjunction and the monoid of lists with append. *)
 
+#[refine]
 Instance Monoid_unit : Monoid :=
 {
     carr := unit;
@@ -34,6 +35,7 @@ Proof.
   all: try destruct x; reflexivity.
 Defined.
 
+#[refine]
 Instance Monoid_bool_andb : Monoid :=
 {
     carr := bool;
@@ -47,6 +49,7 @@ Proof.
   end; cbn; reflexivity.
 Defined.
 
+#[refine]
 Instance Monoid_list_app (A : Type) : Monoid :=
 {
     carr := list A;

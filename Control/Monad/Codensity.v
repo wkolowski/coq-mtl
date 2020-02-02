@@ -15,6 +15,7 @@ Definition fmap_Codensity
     : Codensity F B := fun (R : Type) (y : B -> F R) =>
       x R (fun a : A => y (f a)).
 
+#[refine]
 Instance Functor_Codensity
   (F : Type -> Type) : Functor (Codensity F) :=
 {
@@ -32,6 +33,7 @@ Definition ap_Codensity
     fun (R : Type) (y : B -> F R) =>
       f R (fun h : A -> B => x R (fun a : A => y (h a))).
 
+#[refine]
 Instance Applicative_Codensity
   (F : Type -> Type) : Applicative (Codensity F) :=
 {
@@ -54,6 +56,7 @@ Proof.
   apply (aempty False). intro. assumption.
 Qed.
 
+#[refine]
 Instance Monad_Codensity
   (F : Type -> Type) : Monad (Codensity F) :=
 {
@@ -135,6 +138,7 @@ Hint Unfold
   fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
   wrap_Codensity : CoqMTL.
 
+#[refine]
 Instance MonadFree_Codensity
   {F M : Type -> Type} {instF : Functor F} {instM : Monad M}
   {instMF : MonadFree F M instF instM}

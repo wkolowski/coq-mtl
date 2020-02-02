@@ -22,6 +22,7 @@ Definition fmap_FreeT
   {A B : Type} (f : A -> B) (x : FreeT F M A) : FreeT F M B :=
     fun X pure wrap => x X (f .> pure) wrap.
 
+#[refine]
 Instance Functor_FreeT : Functor (FreeT F M) :=
 {
     fmap := @fmap_FreeT
@@ -36,6 +37,7 @@ Definition ap_FreeT
   {A B : Type} (mf : FreeT F M (A -> B)) (ma : FreeT F M A) : FreeT F M B :=
     fun X pure wrap => mf X (fun f => fmap f ma X pure wrap) wrap.
 
+#[refine]
 Instance Applicative_FreeT : Applicative (FreeT F M) :=
 {
     pure := @pure_FreeT;
@@ -47,6 +49,7 @@ Definition bind_FreeT
   {A B : Type} (x : FreeT F M A) (f : A -> FreeT F M B) : FreeT F M B :=
     fun X pure wrap => x X (fun a => f a X pure wrap) wrap.
 
+#[refine]
 Instance Monad_FreeT : Monad (FreeT F M) :=
 {
     bind := @bind_FreeT
@@ -75,6 +78,7 @@ Definition lift_FreeT
 
 Hint Unfold fmap_FreeT pure_FreeT ap_FreeT bind_FreeT lift_FreeT : CoqMTL.
 
+#[refine]
 Instance MonadTrans_FreeT
   {F : Type -> Type} : MonadTrans (FreeT F) :=
 {
@@ -84,6 +88,7 @@ Instance MonadTrans_FreeT
 Proof. all: monad. Defined.
 
 (** [FreeT F M] adds a layer of the free monad for [F] on top of [M]. *)
+#[refine]
 Instance MonadFree_FreeT
   (F : Type -> Type) (instF : Functor F)
   (M : Type -> Type) (instM : Monad M)
@@ -103,6 +108,7 @@ Defined.
     for this are also quite similar: definitions of some functions don't
     at all refer to the underlying monad's [pure] or [bind]. *)
 
+#[refine]
 Instance MonadAlt_FreeT
   (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadAlt M inst)
@@ -113,6 +119,7 @@ Instance MonadAlt_FreeT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadFail_FreeT
   (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadFail M inst)
@@ -122,6 +129,7 @@ Instance MonadFail_FreeT
 }.
 Proof. reflexivity. Defined.
 
+#[refine]
 Instance MonadNondet_FreeT
   (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadNondet M inst)
@@ -132,6 +140,7 @@ Instance MonadNondet_FreeT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadExcept_FreeT
   (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
@@ -146,6 +155,7 @@ Proof.
   all: monad.
 Abort.
 
+#[refine]
 Instance MonadReader_FreeT
   (E : Type) (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -160,6 +170,7 @@ Proof.
   rewrite <- constrA_spec, ask_ask. reflexivity.
 Defined.
 
+#[refine]
 Instance MonadWriter_FreeT
   (W : Monoid) (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)
@@ -172,6 +183,7 @@ Instance MonadWriter_FreeT
 }.
 Proof. all: reflexivity. Defined.
 
+#[refine]
 Instance MonadState_FreeT
   (S : Type) (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -192,6 +204,7 @@ Proof.
   monad.
 Defined.
 
+#[refine]
 Instance MonadStateNondet_FreeT
   (S : Type) (F : Type -> Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)

@@ -18,6 +18,7 @@ Definition fmap_OptionT
 
 Hint Unfold OptionT fmap_OptionT : CoqMTL.
 
+#[refine]
 Instance Functor_OptionT (M : Type -> Type) {inst : Functor M}
     : Functor (OptionT M) :=
 {
@@ -45,6 +46,7 @@ Definition ap_OptionT
 
 Hint Unfold pure_OptionT ap_OptionT : CoqMTL.
 
+#[refine]
 Instance Applicative_OptionT
   (M : Type -> Type) (inst : Monad M) : Applicative (OptionT M) :=
 {
@@ -71,6 +73,7 @@ Definition aplus_OptionT
 
 Hint Unfold aempty_OptionT aplus_OptionT : CoqMTL.
 
+#[refine]
 Instance Alternative_OptionT
   (M : Type -> Type) (inst : Monad M) : Alternative (OptionT M) :=
 {
@@ -91,6 +94,7 @@ Definition bind_OptionT
 
 Hint Unfold bind_OptionT : CoqMTL.
 
+#[refine]
 Instance Monad_OptionT
   (M : Type -> Type) (inst : Monad M) : Monad (OptionT M) :=
 {
@@ -107,6 +111,7 @@ Definition lift_OptionT
 
 Hint Unfold lift_OptionT : CoqMTL.
 
+#[refine]
 Instance MonadTrans_OptionT : MonadTrans OptionT :=
 {
     is_monad := @Monad_OptionT;
@@ -122,6 +127,7 @@ Definition fail_OptionT
 
 Hint Unfold fail_OptionT : CoqMTL.
 
+#[refine]
 Instance MonadFail_OptionT
   (M : Type -> Type) (inst : Monad M)
   : MonadFail (OptionT M) (Monad_OptionT M inst) :=
@@ -135,6 +141,7 @@ Proof. monad. Defined.
     that our chosen computation can later fail. This is also the reason
     why [OptionT] doesn't have [MonadNondet]. *)
 
+#[refine]
 Instance MonadAlt_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (OptionT M) (Monad_OptionT M inst) :=
@@ -144,6 +151,7 @@ Instance MonadAlt_OptionT
 }.
 Proof. all: monad. Defined.
 
+#[refine]
 Instance MonadNondet_OptionT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (OptionT M) (Monad_OptionT M inst) :=
@@ -156,6 +164,7 @@ Abort.
 
 (** Besides failing, [OptionT] adds to any monad the ability to catch the
     failure. *)
+#[refine]
 Instance MonadExcept_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (OptionT M) (Monad_OptionT M inst) :=
@@ -173,6 +182,7 @@ Proof. all: monad. Defined.
 
 (** [OptionT] preserves reading and state, but not (yet) writing. *)
 
+#[refine]
 Instance MonadReader_OptionT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -184,6 +194,7 @@ Proof.
   rewrite <- ask_ask at 3. rewrite <- constrA_bind_assoc. monad.
 Defined.
 
+#[refine]
 Instance MonadWriter_OptionT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)
@@ -203,6 +214,7 @@ Proof.
   intros. cbn. unfold pure_OptionT, fmap_OptionT, fmap_Option.
 Abort.
 
+#[refine]
 Instance MonadState_OptionT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -226,6 +238,7 @@ Defined.
     [MonadFail] instance, but can only inherit [MonadNondet], [MonadState]
     and [MonadStateNondet]. *)
 (*
+#[refine]
 Instance MonadStateNondet_OptionT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -237,6 +250,7 @@ Instance MonadStateNondet_OptionT
 *)
 
 (** If [M] is the free monad of [F], so is [OptionT M]. *)
+#[refine]
 Instance MonadFree_OptionT
   (F : Type -> Type) (instF : Functor F)
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)

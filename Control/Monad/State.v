@@ -13,6 +13,7 @@ Definition fmap_State
 
 Hint Unfold fmap_State : CoqMTL.
 
+#[refine]
 Instance Functor_State (S : Type) : Functor (State S) :=
 {
     fmap := @fmap_State S
@@ -37,6 +38,7 @@ Definition ap_State
 
 Hint Unfold pure_State ap_State : CoqMTL.
 
+#[refine]
 Instance Applicative_State (S : Type) : Applicative (State S) :=
 {
     is_functor := Functor_State S;
@@ -77,6 +79,7 @@ Definition bind_State
 
 Hint Unfold bind_State : CoqMTL.
 
+#[refine]
 Instance Monad_State (S : Type) : Monad (State S) :=
 {
     is_applicative := Applicative_State S;
@@ -85,6 +88,7 @@ Instance Monad_State (S : Type) : Monad (State S) :=
 Proof. all: monad. Defined.
 
 (** [State S] is the primordial example of a state monad. *)
+#[refine]
 Instance MonadState_State
   (S : Type) : MonadState S (State S) (Monad_State S) :=
 {

@@ -16,6 +16,7 @@ Definition fmap_Writer
 
 Hint Unfold fmap_Writer : CoqMTL.
 
+#[refine]
 Instance Functor_Writer (W : Monoid) : Functor (Writer W) :=
 {
     fmap := @fmap_Writer W
@@ -39,6 +40,7 @@ Definition ap_Writer
 
 Hint Unfold pure_Writer ap_Writer : CoqMTL.
 
+#[refine]
 Instance Applicative_Writer (W : Monoid) : Applicative (Writer W) :=
 {
     is_functor := Functor_Writer W;
@@ -86,6 +88,7 @@ Definition bind_Writer
 
 Hint Unfold bind_Writer : CoqMTL.
 
+#[refine]
 Instance Monad_Writer (W : Monoid) : Monad (Writer W) :=
 {
     is_applicative := Applicative_Writer W;
@@ -96,6 +99,7 @@ Proof. all: monad. Defined.
 (** Of course [Writer W] is the primordial example of [MonadWriter]. We
     can [tell] by just putting a message along [tt] and [listen] by
     moving the messages from the log to the result of the computation. *)
+#[refine]
 Instance MonadWriter_Writer (W : Monoid)
   : MonadWriter W (Writer W) (Monad_Writer W) :=
 {

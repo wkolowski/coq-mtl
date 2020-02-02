@@ -129,6 +129,7 @@ Arguments modify_put {S M instM instMS}.
 (*
 Require Import Control.Monad.Trans.
 
+#[refine]
 Instance MonadState_MonadTrans
   (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
   (M : Type -> Type) (instM : Monad M)

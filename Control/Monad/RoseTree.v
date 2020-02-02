@@ -21,6 +21,7 @@ match t with
     | Node l r => Node (fmap_RT f l) (fmap_RT f r)
 end.
 
+#[refine]
 Instance Functor_RT : Functor RT :=
 {
     fmap := @fmap_RT
@@ -42,6 +43,7 @@ match tf with
     | Node l r => Node (ap_RT l ta) (ap_RT r ta)
 end.
 
+#[refine]
 Instance Applicative_RT : Applicative RT :=
 {
     pure := @pure_RT;
@@ -87,6 +89,7 @@ match ta with
     | Node l r => Node (bind_RT l tf) (bind_RT r tf)
 end.
 
+#[refine]
 Instance Monad_RT : Monad RT :=
 {
     bind := @bind_RT
@@ -128,6 +131,7 @@ match t with
     | Node l r => op (foldMap_RT f l) (foldMap_RT f r)
 end.
 
+#[refine]
 Instance Foldable_RT : Foldable RT :=
 {
     foldMap := @foldMap_RT

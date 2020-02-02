@@ -32,6 +32,7 @@ End MonadReader_funs.
 (** Interestingly, we can prove that if the base monad [M] has an instance
     of [MonadReader], then a monad transformer fed with [M] also has an
     instance of [MonadReader]. This is impossible with the other classes. *)
+#[refine]
 Instance MonadReader_MonadTrans
   (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
   (M : Type -> Type) (instM : Monad M)

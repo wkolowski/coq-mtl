@@ -23,6 +23,7 @@ Definition fmap_SumT
 
 Hint Unfold SumT fmap_SumT : CoqMTL.
 
+#[refine]
 Instance Functor_SumT
   {M : Type -> Type} {inst : Monad M} {E : Type} : Functor (SumT E M) :=
 {
@@ -50,6 +51,7 @@ Definition ap_SumT
 
 Hint Unfold pure_SumT ap_SumT : CoqMTL.
 
+#[refine]
 Instance Applicative_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Applicative (SumT E M) :=
 {
@@ -83,6 +85,7 @@ Definition aplus_SumT
 
 Hint Unfold aempty_SumT aplus_SumT : CoqMTL.
 
+#[refine]
 Instance Alternative_SumT
   (E : Type) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
   : Alternative (SumT E M) :=
@@ -104,6 +107,7 @@ Definition bind_SumT
 
 Hint Unfold bind_SumT : CoqMTL.
 
+#[refine]
 Instance Monad_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Monad (SumT E M) :=
 {
@@ -119,6 +123,7 @@ Definition lift_SumT
 
 Hint Unfold lift_SumT : CoqMTL.
 
+#[refine]
 Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
 {
     is_monad := @Monad_SumT E;
@@ -137,6 +142,7 @@ Definition fail_SumT
   {E : Type} (e : E) {M : Type -> Type} {inst : Monad M} {A : Type}
     : SumT E M A := pure (inl e).
 
+#[refine]
 Instance MonadFail_SumT
   (E : Type) (M : Type -> Type) {inst : Monad M} (e : E)
   : MonadFail (SumT E M) (Monad_SumT E M inst) :=
@@ -150,6 +156,7 @@ Proof. intros. unfold fail_SumT. hs. Defined.
     of them is [fail], but there are others, like [inl e] for any [e : E].
     Since [E] may have more than one inhabitant, there may be more than one
     way to fail and the law [catch_fail_r] doesn't hold. *)
+#[refine]
 Instance MonadExcept_SumT
   (E : Type) (e : E) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
@@ -184,6 +191,7 @@ Abort.
     but only inherits [choose] from [M]'s [MonadAlt] and these two may
     be incompatible. *)
 
+#[refine]
 Instance MonadAlt_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (SumT E M) (Monad_SumT E M inst) :=
@@ -196,6 +204,7 @@ Proof.
   intros. cbn. unfold bind_SumT. rewrite bind_choose_l. reflexivity.
 Defined.
 
+#[refine]
 Instance MonadNondet_SumT
   (E : Type) (e : E) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadNondet M inst)
@@ -212,6 +221,7 @@ Admitted.
 (** [SumT] preserves [MonadReader] and [MonadState], but not (yet)
     [MonadWriter]. *)
 
+#[refine]
 Instance MonadReader_SumT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader R M inst)
@@ -227,6 +237,7 @@ Defined.
     in the definition of [listen], which prevents us from proving the
     law [listen_listen]. *)
 
+#[refine]
 Instance MonadWriter_SumT
   (W : Monoid) (E : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)
@@ -248,6 +259,7 @@ Proof.
   intros. cbn. unfold fmap_SumT.
 Abort.
 
+#[refine]
 Instance MonadState_SumT
   (E S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -282,7 +294,9 @@ Proof.
       ext s. rewrite bind_pure_l. reflexivity.
 Defined.
 
-(* TODO *)Instance MonadStateNondet_SumT
+(* TODO *)
+#[refine]
+Instance MonadStateNondet_SumT
   (E S : Type) (e : E) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (SumT E M) (Monad_SumT E M inst) :=
@@ -294,6 +308,7 @@ Proof.
 Abort.
 
 (** If [M] is the free monad of [F], so is [SumT E M]. *)
+#[refine]
 Instance MonadFree_SumT
   (F : Type -> Type) (instF : Functor F)
   (E : Type) (M : Type -> Type)

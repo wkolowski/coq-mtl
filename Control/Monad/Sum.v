@@ -17,6 +17,7 @@ end.
 
 Hint Unfold fmap_Sum : CoqMTL.
 
+#[refine]
 Instance Functor_Sum (E : Type) : Functor (sum E) :=
 {
     fmap := @fmap_Sum E
@@ -41,6 +42,7 @@ end.
 
 Hint Unfold pure_Sum ap_Sum : CoqMTL.
 
+#[refine]
 Instance Applicative_Sum (E : Type) : Applicative (sum E) :=
 {
     is_functor := Functor_Sum E;
@@ -79,6 +81,7 @@ end.
 
 Hint Unfold bind_Sum : CoqMTL.
 
+#[refine]
 Instance Monad_Sum (A : Type) : Monad (sum A) :=
 {
     is_applicative := Applicative_Sum A;
@@ -90,6 +93,7 @@ Proof. all: monad. Defined.
 
 Definition fail_Sum {E : Type} (e : E) {A : Type} : Sum E A := inl e.
 
+#[refine]
 Instance MonadFail_Sum
   (E : Type) (e : E)
   : MonadFail (Sum E) (Monad_Sum E) :=
@@ -98,6 +102,7 @@ Instance MonadFail_Sum
 }.
 Proof. reflexivity. Defined.
 
+#[refine]
 Instance MonadExcept_Sum
   (E : Type) (e : E) : MonadExcept (sum E) (Monad_Sum E) :=
 {
@@ -123,6 +128,7 @@ end.
 
 Hint Unfold foldMap_Sum : CoqMTL.
 
+#[refine]
 Instance FoldableSum (E : Type) : Foldable (sum E) :=
 {
     foldMap := @foldMap_Sum E

@@ -11,6 +11,7 @@ Definition fmap_Cont
   {R A B : Type} (f : A -> B) (m : Cont R A) : Cont R B :=
     fun g : B -> R => m (f .> g).
 
+#[refine]
 Instance Functor_Cont (R : Type) : Functor (Cont R) :=
 {
     fmap := @fmap_Cont R
@@ -27,6 +28,7 @@ Definition ap_Cont
   {R A B : Type} (f : Cont R (A -> B)) (x : Cont R A) : Cont R B :=
     fun kb : B -> R => f (fun ka : A -> B => x (ka .> kb)).
 
+#[refine]
 Instance Applicative_Cont (R : Type) : Applicative (Cont R) :=
 {
     is_functor := Functor_Cont R;
@@ -63,6 +65,7 @@ Proof.
   inversion ap_comm.
 Qed.
 
+#[refine]
 Instance Monad_Cont (R : Type) : Monad (Cont R) :=
 {
     is_applicative := Applicative_Cont R;
