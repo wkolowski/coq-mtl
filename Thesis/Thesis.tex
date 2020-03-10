@@ -42,7 +42,7 @@
 %\renewcommand \qedsymbol {\ensuremath{\square}}
 
 \newcommand{\libname}{\m{coq-mtl}}
-\newcommand{\homepage}{\url{https://github.com/Zeimer/coq-mtl}}
+\newcommand{\homepage}{\url{https://github.com/wkolowski/coq-mtl}}
 
 \newcommand{\defn}{:\equiv}
 \newcommand{\m}[1]{\texttt{#1}}
@@ -726,7 +726,7 @@ Next come monads, shown in listing \ref{Monad}. The definition is very similar t
 
 The reason is that in the category of Coq types and functions each \m{Monad} is monoidal (in fact, the \m{Monad} typeclass represents a strong monoidal monad on the category of Coq types and functions), which means that it induces an instance of \m{Applicative}. However, it does so in two nonequivalent ways, which correspond to the two ways of defining \m{ap} using \m{bind} (which is sequential). To avoid potential doubling of \m{Monad} instances, we put the law \m{bind\_ap} in the definition, which forces \m{ap} to evaluate its arguments from left to right.
 
-Just as in the \m{Applicative} case, an additional trouble is that this set of four laws is not minimal. For example, \m{bind\_pure\_l} follows from \m{fmap\_id}, \m{fmap\_pure\_ap}, \m{bind\_ap} and \m{bind\_pure\_l} -- see the file \m{Theory/Laws/MonadLaws.v} for details. We could have therefore dropped \m{bind\_pure\_l} from the definition, but we didn't decide to do so.
+Just as in the \m{Applicative} case, an additional trouble is that this set of four laws is not minimal. For example, \m{bind\_pure\_r} follows from \m{fmap\_id}, \m{fmap\_pure\_ap}, \m{bind\_ap} and \m{bind\_pure\_l} -- see the file \m{Theory/Laws/MonadLaws.v} for details. We could have therefore dropped \m{bind\_pure\_r} from the definition, but we didn't decide to do so.
 
 To make sure that this definition of monads makes sense, we proved that it is equivalent to a simpler one, which uses just \m{pure}, \m{bind} and the appropriate laws. We also prove it equivalent to a definition based on \m{Applicative}, but with \m{join} instead of \m{bind}. Of course these two equivalences can be used by the user to define an instance of whichever kind of \m{Monad} is the easiest for him and get the other ones for free.
 
@@ -758,7 +758,7 @@ It is also worth mentioning that our library contains all the usual utility func
         bgcolor=CoqIDE,
         linenos,
         firstline=13,
-        lastline=28
+        lastline=29
     ]
     {Coq}{../Control/Monad/Free.v}
 
@@ -933,7 +933,7 @@ A great strength of typeclass-based effects is that we can easily create new eff
         bgcolor=CoqIDE,
         linenos,
         firstline=35,
-        lastline=45
+        lastline=46
     ]
     {Coq}{../Control/Monad/Class/MonadReader.v}
 
