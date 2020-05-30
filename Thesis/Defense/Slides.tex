@@ -108,7 +108,7 @@
 \begin{frame}{Abstrakcja i inżynieria dowodu}
 \begin{itemize}
 	\item Większa część rozdziału 3 (3.1, 3.2, 3.3) jest adresowana do mnie samego. Strasznie irytuje mnie mnogość powiązanych mechanizmów abstrakcji dostępna w Coqu i to, że żadne prace (o ile mnie pamięć nie myli) nie tłumaczą swojego wyboru mechanizmów abstrakcji. Musiałem coś z tym zrobić -- wyszło porównanie klas typów, struktur kanonicznych i modułów.
-	\item Pozostała część rozdziału (3.4 i 3.5) była adresowana do inżynierów oprogramowania. Jej celem było podkreślenie roli nowej dziedziny inżynierii, która wyłania się z formalizacji -- inżynierii oprogramowania. Tu aksjomaty stają się częścią architektury, a automatyzacja dowodów -- czymś analogicznym np. do systemów ORM (choć porównanie jest być może naciągane). 
+	\item Pozostała część rozdziału (3.4 i 3.5) była adresowana do inżynierów oprogramowania. Jej celem było podkreślenie roli nowej dziedziny inżynierii, która wyłania się z formalizacji -- inżynierii dowodu (proof engineering). Tu aksjomaty stają się częścią architektury, a automatyzacja dowodów -- czymś analogicznym np. do systemów ORM (choć porównanie jest być może naciągane).
 \end{itemize}
 \end{frame}
 
@@ -116,14 +116,14 @@
 \begin{itemize}
 	\item Rozdział 4 skierowany jest głównie do wnikliwego czytelnika, który zna się na rzeczy, np. recenzenta.
 	\item Jego celem jest sztampowy opis implementacji połączony z innowacyjnym opisem różnych dziwnych rzeczy, które odkryłem, a których się nie spodziewałem.
-	\item Okazuje się, że znane z Haskella klasy wymagają nowych prawy (bo naturalność nie działa), a te sprawiają np., że nowe zestawy praw nie są minimalne -- niektóre prawa da się wyprowadzić z innych.
+	\item Okazuje się, że znane z Haskella klasy wymagają nowych praw (bo naturalność nie działa), a te sprawiają np., że nowe zestawy praw nie są minimalne -- niektóre prawa da się wyprowadzić z innych.
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Inne odkrycia}
 \begin{itemize}
-	\item Trzeba było też zrewidować kilka metod implementacji. Dla przykładu, wolne monady znane z Haskella nie są legalne w Coqu, więc trzeba posiłkować się kodowaniem Churcha.
-	\item Ciekawym doświadczeniem było empiryczne poszukiwanie praw dla klasy \texttt{WriterT}.
+	\item Trzeba było też zrewidować kilka metod implementacji. Dla przykładu, wolne monady znane z Haskella nie są legalne w Coqu ze względu na kryterium ścisłej pozytywności, więc trzeba posiłkować się kodowaniem Churcha.
+	\item Ciekawym doświadczeniem było empiryczne poszukiwanie praw dla klasy \texttt{WriterT}, ostatecznie chyba zakończone niepowodzeniem.
 	\item Były też i porażki -- np. nie udało mi się pokazać, że \texttt{FreeT} spełnia prawa \texttt{MonadExcept}, czyli efektu wyjątków.
 \end{itemize}
 \end{frame}
