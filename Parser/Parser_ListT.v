@@ -54,7 +54,7 @@ Lemma ascii_eqb_spec :
   forall x y : ascii, reflect (x = y) (ascii_eqb x y).
 Proof.
   intros. unfold ascii_eqb.
-  destruct (ascii_dec x y); firstorder.
+  destruct (ascii_dec x y); constructor; assumption.
 Qed.
 
 (** Parsers for single characters of the given kind: any character, digit,

@@ -13,7 +13,7 @@ Set Implicit Arguments.
 
 Require Import Arith.
 Require Import Nat.
-Require Import Omega.
+Require Import Lia.
 
 Section S0.
 
@@ -64,8 +64,8 @@ Proof.
   rewrite <- !rep_constrA, <- plus_n_O, <- !pred_of_minus. f_equal.
   induction n' as [| n'']; cbn.
     reflexivity. erewrite (Nat.lt_succ_pred 0).
-      omega.
-      clear. induction n'' as [| n''']; cbn; abstract omega.
+      lia.
+      clear. induction n'' as [| n''']; cbn; lia.
 Qed.
 
 (** ** 4. Nondeterministic computations *)
