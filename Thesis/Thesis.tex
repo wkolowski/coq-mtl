@@ -77,7 +77,7 @@ The rest of the thesis is structured as follows:
 
 Since their invention in the 1940s, computers' significance rose at a very fast pace. They were getting applied to an ever expanding range of problems by more and more people, private companies and governments alike. It shouldn't be considered a surprise then that we became very reliant on them for both small conveniences and large scale projects.
 
-But significance is not the only thing that rose -- another one is complexity. Exponentially growing processing speed required the complexity of chip designs to grow at a similar rate. More complex products and services require more complex software architectures and with new business models, like cloud computing, comes even more complexity in the form of virtualization, containerization and so on.
+But significance is not the only thing that rose -- another one is complexity. Exponentially growing processing speed required the complexity of chip designs to grow at a similar rate. More complex products and services require more complex software architectures and with new business models, like cloud computing, comes even more complexity in the form of virtualization, containerization, and so on.
 
 And with complexity comes, of course, the potential for bugs, which may cause a lot of damage. A malfunction in software running the stock exchange can mean billions of dollars of losses (if not an accidental global recession!); in software running a nuclear power plant -- deadly radiation for thousands of people and energy shortage for millions more.
 
@@ -143,7 +143,7 @@ How does this play out in practice? Let's take a look at an example development,
 
 A Coq file consists of a series of commands, which define types and terms, import and export modules, state or look up theorems etc. In this file we want to implement a function that labels the leaves of a tree with natural numbers starting from $0$.
 
-For this, we will need the type $\m{nat}$, which is provided by the standard library. We can print its definition using the command $\m{Print}$. What we get is an inductive definition of a type with two constructors, $\m{O}$ and $\m{S}$. $\m{O}$ is supposed to represent $0$ and $\m{S}$ is supposed to represent the successor operation, so that $\m{S}\ \m{O}$ represents $1$, $\m{S}\ (\m{S}\ \m{O})$ represents $2$ and so on.
+For this, we will need the type $\m{nat}$, which is provided by the standard library. We can print its definition using the command $\m{Print}$. What we get is an inductive definition of a type with two constructors, $\m{O}$ and $\m{S}$. $\m{O}$ is supposed to represent $0$ and $\m{S}$ is supposed to represent the successor operation, so that $\m{S}\ \m{O}$ represents $1$, $\m{S}\ (\m{S}\ \m{O})$ represents $2$, and so on.
 
 We will also need a type $\m{Tree}$ that represents trees. The definition will be inductive, just as for natural numbers, but this time is has a parameter $A : \m{Type}$ that tells us the type of elements that can be stored in the tree. This can be seen as defining infinitely many types at once -- one for each choice of $A$. There are two constructors: $\m{Leaf}$, which represents a tree with one element, and $\m{Node}$, which represents a tree with two subtrees. Thus our trees are always nonempty and they contain elements only in their leaves.
 
@@ -175,7 +175,7 @@ This concludes our introduction to the Coq proof assistant. From now on we will 
 
 \begin{itemize}
     \item Software Foundations \cite{SoftwareFoundations} is a four volume book by many authors. The first volume treats the basics of Coq and the third one is about formally proving correctness of algorithms in Coq. The second and fourth volumes are less relevant, as they are about formalizing programming languages and randomized testing, respectively.
-    \item Coq'Art \cite{CoqArt} is a comprehensive but a little dated (2004) book that covers way more material than Software Foundations, including coinduction, proof by reflection, case studies and so on.
+    \item Coq'Art \cite{CoqArt} is a comprehensive but a little dated (2004) book that covers way more material than Software Foundations, including coinduction, proof by reflection, case studies, and so on.
     \item Certified Programming with Dependent Types \cite{CPDT} is an advanced book that focuses on using dependent types and proof engineering, but also covers topics like axioms, reasoning about equality proofs and general recursion.
 \end{itemize}
 
@@ -619,7 +619,7 @@ A very important property of every Coq development is being axiom free. The main
 
 Now that we know our axioms, we can start proving, right? Well, not really. When programmers want to create something bigger than a toy program, they face the question of software engineering -- what architecture will be the best, what design will be the most robust, which tools to use etc. Writing assembly by hand or non-structured programming are not considered good software engineering practices anymore.
 
-The same is true of mathematicians who go formal -- when they want to prove lots of theorems that form a coherent theory, they face the question of proof engineering -- what ``architecture'' will express best the structure of the theory, what style of proving will let them prove their theorems in the most painless way and so on. Writing proofterms by hand or simple proofscripts composed only of the most basic tactics are not good proof engineering practices. We should therefore stick with some good practices, but what are they?
+The same is true of mathematicians who go formal -- when they want to prove lots of theorems that form a coherent theory, they face the question of proof engineering -- what ``architecture'' will best express the structure of the theory, what style of proving will let them prove their theorems in the most painless way, and so on. Writing proofterms by hand or simple proofscripts composed only of the most basic tactics are not good proof engineering practices. We should therefore stick with some good practices, but what are they?
 
 Ltac, Coq's tactic language, is a very rich language and this has led to many proof styles being employed in various places. The most important distinction is between manual proofs (which consist of a series of tactics that prove the theorem step by step, like in the example in \hyperref[ch1]{Chapter 1}) and automated proofs (which usually take the form of a big tactic that proves a whole theorem all at once).
 
@@ -634,7 +634,7 @@ Another distinction is between reflective and non-reflective proofs. Reflective 
 
 In our case, there will be a massive amount of typeclass instances that have to be proven to satisfy the same laws over and over again. Almost all of these proofs are very repetitive and predictable. They amount mostly to unfolding definitions, rewriting equational laws, decomposing hypotheses and implicational reasoning. This means we want our proofs to be automated and not manual.
 
-It may also seem that we want the tactics to be reflective, because the typeclasses we are dealing with are very well structured mathematically. This is however not the case, because we want our tactics to also be of use to users of our library, but we cannot predict what kinds of monads and effect they will want to create. This makes makes the world of \m{Functor}s, \m{Applicative}s, \m{Monad}s and effects not a closed world, like that of Presburger arithmetic or ring expressions, but an open one. We therefore choose to follow the automated non-reflective approach.
+It may also seem that we want the tactics to be reflective, because the typeclasses we are dealing with are very well structured mathematically. This is however not the case, because we want our tactics to also be of use to users of our library, but we cannot predict what kinds of monads and effect they will want to create. This makes the world of \m{Functor}s, \m{Applicative}s, \m{Monad}s and effects not a closed world, like that of Presburger arithmetic or ring expressions, but an open one. We therefore choose to follow the automated non-reflective approach.
 
 \chapter{Implementation, theorems and examples} \label{ch4}
 
@@ -978,7 +978,7 @@ The function works just like before. If we hit a \m{Leaf}, we retrieve the state
 
 To get the function we really want (\m{lbl}, which starts labeling from zero) we have to instantiate the definition of \m{label} with some monad supporting the state effect and we of course choose the \m{State} monad. We see that we can compute with this definition just like we could with the old one and the result is, of course, the same.
 
-The correctness theorem (which states that after running \m{label} on a tree \m{t}, the counter increases by the size of \m{t}) looks quite similar the old one, just as does the proof. There are two important things to notice. First, we prove this theorem only for the concrete \m{State} monad and not for any monad supporting the \m{MonadState} effect. This is because the state effect doesn't give us any way of pulling the state outside the monad and we need this ability to even state the theorem. Second, we crucially use our automation tactic \m{hs}, which changes the proof state from barely readable (it mentions the particular definitions of \m{pure}, \m{bind} and so on for the \m{State} monad) to one that strongly resembles the earlier, non-monadic version from \hyperref[ch1]{Chapter 1}.
+The correctness theorem (which states that after running \m{label} on a tree \m{t}, the counter increases by the size of \m{t}) looks quite similar the old one, just as does the proof. There are two important things to notice. First, we prove this theorem only for the concrete \m{State} monad and not for any monad supporting the \m{MonadState} effect. This is because the state effect doesn't give us any way of pulling the state outside the monad and we need this ability to even state the theorem. Second, we crucially use our automation tactic \m{hs}, which changes the proof state from barely readable (it mentions the particular definitions of \m{pure}, \m{bind}, and so on for the \m{State} monad) to one that strongly resembles the earlier, non-monadic version from \hyperref[ch1]{Chapter 1}.
 
 The overall result is that the \m{label} function is more general, its definition is easier to read and the proof didn't get any harder. Not bad.
 
@@ -1026,8 +1026,8 @@ Note that the operations supported by \m{MonadExcept} (\m{fail} and \m{catch}) h
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=269,
-        lastline=307
+        firstline=272,
+        lastline=310
     ]
     {Coq}{../Theory/JustDoIt.v}
 
@@ -1049,7 +1049,7 @@ The above proof is as simple as the pen-and-paper one that can be found in \cite
 
 \chapter{Conclusion} \label{ch5}
 
-We have introduced \libname, a Coq library for formally verified programming with Haskell-style abstractions. We have centered our presentation on the matter effects, with which we dealt by implementing a collection of \m{mtl}-like abstractions whose main inspiration was \cite{JustDoIt}.
+We have introduced \libname, a Coq library for formally verified programming with Haskell-style abstractions. We have centered our presentation on the matter of effects, with which we dealt by implementing a collection of \m{mtl}-like abstractions whose main inspiration was \cite{JustDoIt}.
 
 In \hyperref[ch1]{Chapter 1} we gave some arguments for why formal verification is worth pursuing and introduced the Coq proof assistant. In \hyperref[ch2]{Chapter 2} we explained the basics of computational effects and outlined the main approaches. In \hyperref[ch3]{Chapter 3} we elucidated the design choices, which weren't really that many, described the implementation and explained the mechanism behind our proof automation. In \hyperref[ch4]{Chapter 4}, we have formalized some examples from \cite{JustDoIt} to show the viability of the library. We also saw some simple theorems which prove our implementation correct, but are also useful from a practical point of view.
 
@@ -1065,7 +1065,7 @@ There is an implementation of effects in Coq, available at \cite{CoqIO}, that al
 
 Besides, there has been some work on formally verifying programs with algebraic effects and handlers in Coq \cite{CoqEff1} \cite{CoqEff2} and more generally, on effectful programming in Coq \cite{CoqEff3}.
 
-Among dependently typed languages most similar to Coq, there has been some work on an effect system for Idris \cite{IdrisEffects}. Another languages that mixes dependent types and effects (and also refinement types) is F* \cite{FStar}.
+Among dependently typed languages most similar to Coq, there has been some work on an effect system for Idris \cite{IdrisEffects}. Another language that mixes dependent types and effects (and also refinement types) is F* \cite{FStar}.
 
 \section{Further work}
 
