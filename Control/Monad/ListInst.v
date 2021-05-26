@@ -65,13 +65,6 @@ Proof.
   induction la as [| x xs]; cbn in *; rewrite ?IHxs; reflexivity.
 Qed.
 
-Lemma ap_list_exchange :
-  forall (A B : Type) (x : A) (lf : list (A -> B)),
-    ap_list [fun f : A -> B => f x] lf = ap_list lf [x].
-Proof.
-  induction lf as [| f fs]; cbn in *; rewrite ?IHfs; reflexivity.
-Qed.
-
 Lemma ap_list_exchange2 :
   forall (A B C : Type) (g : B -> C) (fs : list (A -> B)) (xs : list A),
       ap_list (map (compose g) fs) xs = map g (ap_list fs xs).
@@ -81,39 +74,21 @@ Proof.
     rewrite map_app, map_map. f_equal. apply IHfs.
 Qed.
 
-Lemma ap_list_exchange3 :
-  forall
-    (A B C : Type) (f : A -> B) (fs : list (A -> B)) (gs : list (B -> C))
-    (xs : list A),
-      ap_list (ap_list (map compose gs) (f :: fs)) xs =
-      ap_list gs (map f xs ++ ap_list fs xs).
-Proof.
-  induction gs as [| g gs]; cbn; intros.
-    reflexivity.
-    rewrite map_app, map_map, <- app_assoc. f_equal.
-      rewrite ap_list_app, ap_list_exchange2. f_equal.
-        apply IHgs.
-Qed.
-
 #[refine]
 Instance Applicative_List : Applicative list :=
 {
     is_functor := Functor_List;
-    pure := @pure_List; 
+    pure := @pure_List;
     ap := @ap_list
 }.
 Proof.
-  3, 5: hs.
-  induction ax; cbn in *; rewrite ?IHax; reflexivity.
-  induction f as [| f fs]; induction g as [| g gs]; cbn; intros.
+  cbn. intros. rewrite map_id, app_nil_r. reflexivity.
+  induction g as [| g gs]; cbn; intros.
     reflexivity.
-    rewrite ?ap_list_nil_r. cbn. reflexivity.
-    reflexivity.
-    rewrite map_app, map_map, <- app_assoc. f_equal.
-      rewrite ap_list_app. f_equal.
-        apply ap_list_exchange2.
-        rewrite app_nil_r. apply ap_list_exchange3.
+    rewrite ap_list_app, IHgs, ap_list_exchange2. reflexivity.
+  reflexivity.
   induction f as [| f fs]; cbn in *; intros; rewrite ?IHfs; reflexivity.
+  hs.
 Defined.
 
 Definition aempty_List {A : Type} : list A := [].
