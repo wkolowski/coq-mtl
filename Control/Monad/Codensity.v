@@ -134,7 +134,7 @@ Definition wrap_Codensity
   (x : F (Codensity M A)) : Codensity M A :=
     fun R g => wrap (fmap (fun f => f R g) x).
 
-Hint Unfold
+Global Hint Unfold
   fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
   wrap_Codensity : CoqMTL.
 

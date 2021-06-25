@@ -80,4 +80,4 @@ Instance MonadReader_Reader
 }.
 Proof. reflexivity. Defined.
 
-Hint Unfold fmap_Reader pure_Reader ap_Reader bind_Reader : CoqMTL.
+Global Hint Unfold fmap_Reader pure_Reader ap_Reader bind_Reader : CoqMTL.

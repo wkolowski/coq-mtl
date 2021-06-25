@@ -55,7 +55,7 @@ Definition pairF_Applicative
   {F : Type -> Type} {inst : Applicative F} {A B : Type}
   (x : F A) (y : F B) : F (A * B)%type := pair <$> x <*> y.
 
-Hint Unfold default_Applicative pairF_Applicative : CoqMTL.
+Global Hint Unfold default_Applicative pairF_Applicative : CoqMTL.
 
 (*Hint Remove fmap_pure_ap : CoqMTL.*)
 

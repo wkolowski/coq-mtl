@@ -59,7 +59,7 @@ Proof. all: reflexivity. Defined.
 
 End RoseTreeT_Instances.
 
-Hint Unfold
+Global Hint Unfold
   fmap_RoseTreeT pure_RoseTreeT ap_RoseTreeT bind_RoseTreeT : CoqMTL.
 
 (** [RoseTreeT M] isn't an [Alternative] functor precisely because the

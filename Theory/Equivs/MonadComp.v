@@ -36,7 +36,7 @@ Proof.
   intros. unfold bindM.
 Abort.
 
-Hint Unfold bindM : CoqMTL.
+Global Hint Unfold bindM : CoqMTL.
 
 Require MonadBind.
 

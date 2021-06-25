@@ -76,7 +76,7 @@ Definition lift_FreeT
   (x : M A) : FreeT F M A :=
     fun X pure wrap => x >>= pure.
 
-Hint Unfold fmap_FreeT pure_FreeT ap_FreeT bind_FreeT lift_FreeT : CoqMTL.
+Global Hint Unfold fmap_FreeT pure_FreeT ap_FreeT bind_FreeT lift_FreeT : CoqMTL.
 
 #[refine]
 Instance MonadTrans_FreeT

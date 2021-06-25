@@ -67,7 +67,7 @@ Definition lift_ContT
 
 End ContT_instances.
 
-Hint Unfold
+Global Hint Unfold
   fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT : CoqMTL.
 
 #[refine]

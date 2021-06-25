@@ -5,6 +5,7 @@
 *.crashcoqide
 *.aux
 *~
+*.lia.cache
 makefile
 *.conf
 *.d

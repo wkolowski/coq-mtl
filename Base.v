@@ -80,7 +80,7 @@ Hint Rewrite @id_eq @id_left @id_right : CoqMTL.
 (*
 Definition the_ultimate_answer := 42.
 
-Hint Unfold the_ultimate_answer : CoqMTL.
+Global Hint Unfold the_ultimate_answer : CoqMTL.
 *)
 
 (** [umatch] is a tactic for conveniently [destruct]ing nested pattern

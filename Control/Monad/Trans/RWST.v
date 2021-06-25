@@ -21,7 +21,7 @@ Definition fmap_RWST
     fun r s =>
       x r s >>= fun '(x', sx, wx) => pure $ (f x', sx, wx).
 
-Hint Unfold RWST fmap_RWST : CoqMTL.
+Global Hint Unfold RWST fmap_RWST : CoqMTL.
 
 #[refine]
 Instance Functor_RWST
@@ -44,7 +44,7 @@ Definition ap_RWST
       f r s >>= fun '(f', sf, wf) =>
       x r sf >>= fun '(x', sx, wx) => pure (f' x', sx, op wf wx).
 
-Hint Unfold pure_RWST ap_RWST : CoqMTL.
+Global Hint Unfold pure_RWST ap_RWST : CoqMTL.
 
 #[refine]
 Instance Applicative_RWST
@@ -87,7 +87,7 @@ Definition bind_RWST
       x r s >>= fun '(x', sx, wx) =>
       f x' r sx >>= fun '(b, sb, wb) => pure (b, sb, op wx wb).
 
-Hint Unfold bind_RWST : CoqMTL.
+Global Hint Unfold bind_RWST : CoqMTL.
 
 #[refine]
 Instance Monad_RWST
@@ -108,7 +108,7 @@ Definition lift_RWST
     fun r s =>
       x >>= fun a : A => pure (a, s, neutr).
 
-Hint Unfold lift_RWST : CoqMTL.
+Global Hint Unfold lift_RWST : CoqMTL.
 
 #[refine]
 Instance MonadTrans_RWST

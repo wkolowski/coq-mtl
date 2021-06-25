@@ -16,7 +16,7 @@ Definition fmap_OptionT
   (A B : Type) (f : A -> B) : OptionT M A -> OptionT M B :=
     fmap (fmap_Option f).
 
-Hint Unfold OptionT fmap_OptionT : CoqMTL.
+Global Hint Unfold OptionT fmap_OptionT : CoqMTL.
 
 #[refine]
 Instance Functor_OptionT (M : Type -> Type) {inst : Functor M}
@@ -44,7 +44,7 @@ Definition ap_OptionT
         | _ => pure None
     end).
 
-Hint Unfold pure_OptionT ap_OptionT : CoqMTL.
+Global Hint Unfold pure_OptionT ap_OptionT : CoqMTL.
 
 #[refine]
 Instance Applicative_OptionT
@@ -71,7 +71,7 @@ Definition aplus_OptionT
         | _, _ => pure None
     end)).
 
-Hint Unfold aempty_OptionT aplus_OptionT : CoqMTL.
+Global Hint Unfold aempty_OptionT aplus_OptionT : CoqMTL.
 
 #[refine]
 Instance Alternative_OptionT
@@ -92,7 +92,7 @@ Definition bind_OptionT
         | Some a => f a
     end).
 
-Hint Unfold bind_OptionT : CoqMTL.
+Global Hint Unfold bind_OptionT : CoqMTL.
 
 #[refine]
 Instance Monad_OptionT
@@ -109,7 +109,7 @@ Definition lift_OptionT
   {M : Type -> Type} {_inst : Monad M} {A : Type} (ma : M A)
     : OptionT M A := fmap Some ma.
 
-Hint Unfold lift_OptionT : CoqMTL.
+Global Hint Unfold lift_OptionT : CoqMTL.
 
 #[refine]
 Instance MonadTrans_OptionT : MonadTrans OptionT :=
@@ -125,7 +125,7 @@ Definition fail_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type}
     : OptionT M A := pure None.
 
-Hint Unfold fail_OptionT : CoqMTL.
+Global Hint Unfold fail_OptionT : CoqMTL.
 
 #[refine]
 Instance MonadFail_OptionT

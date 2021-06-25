@@ -65,5 +65,5 @@ Proof. all: kleisli. Defined.
 
 End KleisliTriple_Instances.
 
-Hint Unfold
+Global Hint Unfold
   fmap_Kleisli pure_Kleisli bind_Kleisli ap_Kleisli compose flip : Kleisli.

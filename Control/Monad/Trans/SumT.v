@@ -21,7 +21,7 @@ Definition fmap_SumT
         | inr a => inr (f a)
     end).
 
-Hint Unfold SumT fmap_SumT : CoqMTL.
+Global Hint Unfold SumT fmap_SumT : CoqMTL.
 
 #[refine]
 Instance Functor_SumT
@@ -49,7 +49,7 @@ Definition ap_SumT
               end)
       end).
 
-Hint Unfold pure_SumT ap_SumT : CoqMTL.
+Global Hint Unfold pure_SumT ap_SumT : CoqMTL.
 
 #[refine]
 Instance Applicative_SumT
@@ -83,7 +83,7 @@ Definition aplus_SumT
   {A : Type} (x y : SumT E M A) : SumT E M A :=
     @aplus _ instA _ x y.
 
-Hint Unfold aempty_SumT aplus_SumT : CoqMTL.
+Global Hint Unfold aempty_SumT aplus_SumT : CoqMTL.
 
 #[refine]
 Instance Alternative_SumT
@@ -105,7 +105,7 @@ Definition bind_SumT
         | inr a => f a
     end).
 
-Hint Unfold bind_SumT : CoqMTL.
+Global Hint Unfold bind_SumT : CoqMTL.
 
 #[refine]
 Instance Monad_SumT
@@ -121,7 +121,7 @@ Definition lift_SumT
   (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
   : SumT E M A := fmap inr ma.
 
-Hint Unfold lift_SumT : CoqMTL.
+Global Hint Unfold lift_SumT : CoqMTL.
 
 #[refine]
 Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=

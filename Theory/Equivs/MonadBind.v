@@ -39,7 +39,7 @@ Definition fmap_MonadBind
   {A B : Type} (f : A -> B) (ma : M A) : M B :=
     ma >>= (f .> pure).
 
-Hint Unfold fmap_MonadBind compose : MonadBind.
+Global Hint Unfold fmap_MonadBind compose : MonadBind.
 
 #[refine]
 Instance Functor_MonadBind
@@ -56,7 +56,7 @@ Definition ap_MonadBind
   (A B : Type) (mf : M (A -> B)) (ma : M A) : M B :=
     mf >>= fun f => ma >>= fun a => pure (f a).
 
-Hint Unfold ap_MonadBind : MonadBind.
+Global Hint Unfold ap_MonadBind : MonadBind.
 
 #[refine]
 Instance Applicative_MonadBind

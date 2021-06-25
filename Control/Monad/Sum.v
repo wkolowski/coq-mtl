@@ -15,7 +15,7 @@ match x with
     | inr b => inr (f b)
 end.
 
-Hint Unfold fmap_Sum : CoqMTL.
+Global Hint Unfold fmap_Sum : CoqMTL.
 
 #[refine]
 Instance Functor_Sum (E : Type) : Functor (sum E) :=
@@ -40,7 +40,7 @@ match sf, sa with
     | inr f, inr x => inr (f x)
 end.
 
-Hint Unfold pure_Sum ap_Sum : CoqMTL.
+Global Hint Unfold pure_Sum ap_Sum : CoqMTL.
 
 #[refine]
 Instance Applicative_Sum (E : Type) : Applicative (sum E) :=
@@ -79,7 +79,7 @@ match sa with
     | inr a => f a
 end.
 
-Hint Unfold bind_Sum : CoqMTL.
+Global Hint Unfold bind_Sum : CoqMTL.
 
 #[refine]
 Instance Monad_Sum (A : Type) : Monad (sum A) :=
@@ -126,7 +126,7 @@ match x with
     | inr a => f a
 end.
 
-Hint Unfold foldMap_Sum : CoqMTL.
+Global Hint Unfold foldMap_Sum : CoqMTL.
 
 #[refine]
 Instance FoldableSum (E : Type) : Foldable (sum E) :=

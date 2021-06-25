@@ -19,7 +19,7 @@ Definition fmap_WriterT
   (x : WriterT W M A) : WriterT W M B :=
     fmap (fun '(a, w) => (f a, w)) x.
 
-Hint Unfold WriterT fmap_WriterT : CoqMTL.
+Global Hint Unfold WriterT fmap_WriterT : CoqMTL.
 
 #[refine]
 Instance Functor_WriterT
@@ -40,7 +40,7 @@ Definition ap_WriterT
     @bind M inst _ _ mx (fun '(x, w') =>
       pure (f x, op w w'))).
 
-Hint Unfold pure_WriterT ap_WriterT : CoqMTL.
+Global Hint Unfold pure_WriterT ap_WriterT : CoqMTL.
 
 #[refine]
 Instance Applicative_WriterT
@@ -85,7 +85,7 @@ Definition bind_WriterT
     @bind M inst _ _ (f a) (fun '(b, w') =>
       pure (b, op w w'))).
 
-Hint Unfold bind_WriterT : CoqMTL.
+Global Hint Unfold bind_WriterT : CoqMTL.
 
 #[refine]
 Instance Monad_WriterT
@@ -102,7 +102,7 @@ Definition lift_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : WriterT W M A := fmap (fun x : A => (x, neutr)) ma.
 
-Hint Unfold lift_WriterT : CoqMTL.
+Global Hint Unfold lift_WriterT : CoqMTL.
 
 #[refine]
 Instance MonadTrans_WriterT (W : Monoid) : MonadTrans (WriterT W) :=

@@ -37,7 +37,7 @@ Definition compM
   (f : A -> M B) (g : B -> M C) : A -> M C :=
     f .> fmap g .> join.
 
-Hint Unfold bind compM compose : MonadJoin.
+Global Hint Unfold bind compM compose : MonadJoin.
 
 Module MonadNotations.
 

@@ -14,7 +14,7 @@ Definition fmap_Writer
   {W : Monoid} {A B : Type} (f : A -> B) (wa : Writer W A) : Writer W B :=
     let (a, w) := wa in (f a, w).
 
-Hint Unfold fmap_Writer : CoqMTL.
+Global Hint Unfold fmap_Writer : CoqMTL.
 
 #[refine]
 Instance Functor_Writer (W : Monoid) : Functor (Writer W) :=
@@ -38,7 +38,7 @@ Definition ap_Writer
     let (f, w) := wf in
     let (a, w') := wa in (f a, op w w').
 
-Hint Unfold pure_Writer ap_Writer : CoqMTL.
+Global Hint Unfold pure_Writer ap_Writer : CoqMTL.
 
 #[refine]
 Instance Applicative_Writer (W : Monoid) : Applicative (Writer W) :=
@@ -86,7 +86,7 @@ Definition bind_Writer
       let (a, w) := wa in
       let (b, w') := f a in (b, op w w').
 
-Hint Unfold bind_Writer : CoqMTL.
+Global Hint Unfold bind_Writer : CoqMTL.
 
 #[refine]
 Instance Monad_Writer (W : Monoid) : Monad (Writer W) :=

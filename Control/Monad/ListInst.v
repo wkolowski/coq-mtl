@@ -26,7 +26,7 @@ Defined.
     degenerate case of nondeterminism. *)
 Definition pure_List {A : Type} (x : A) : list A := [x].
 
-Hint Unfold List pure_List : CoqMTL.
+Global Hint Unfold List pure_List : CoqMTL.
 
 (** Even though the definition of [ap] is straightforward, proving that
     it satisfies the [Applicative] laws is quite difficult, probably the

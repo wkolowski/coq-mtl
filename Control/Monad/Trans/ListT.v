@@ -101,7 +101,7 @@ Definition lift_ListT
   {M : Type -> Type} {inst : Monad M} (A : Type) (ma : M A) : ListT M A :=
     fun X nil cons => ma >>= fun a : A => cons a nil.
 
-Hint Unfold pure_ListT bind_ListT lift_ListT : CoqMTL.
+Global Hint Unfold pure_ListT bind_ListT lift_ListT : CoqMTL.
 
 #[refine]
 Instance MonadTrans_ListT : MonadTrans ListT :=
@@ -116,7 +116,7 @@ Proof. all: monad. Defined.
 Definition fail_ListT
   {M : Type -> Type} {inst : Monad M} {A : Type} : ListT M A := [[]].
 
-Hint Unfold fail_ListT : CoqMTL.
+Global Hint Unfold fail_ListT : CoqMTL.
 
 #[refine]
 Instance MonadFail_ListT
