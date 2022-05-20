@@ -22,6 +22,7 @@ match t with
 end.
 
 #[refine]
+#[export]
 Instance Functor_RT : Functor RT :=
 {
     fmap := @fmap_RT
@@ -44,6 +45,7 @@ match tf with
 end.
 
 #[refine]
+#[export]
 Instance Applicative_RT : Applicative RT :=
 {
     pure := @pure_RT;
@@ -90,6 +92,7 @@ match ta with
 end.
 
 #[refine]
+#[export]
 Instance Monad_RT : Monad RT :=
 {
     bind := @bind_RT
@@ -132,6 +135,7 @@ match t with
 end.
 
 #[refine]
+#[export]
 Instance Foldable_RT : Foldable RT :=
 {
     foldMap := @foldMap_RT

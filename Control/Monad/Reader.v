@@ -12,6 +12,7 @@ Definition fmap_Reader
     fun r : R => f (x r).
 
 #[refine]
+#[export]
 Instance Functor_Reader (R : Type) : Functor (Reader R) :=
 {
     fmap := @fmap_Reader R
@@ -31,6 +32,7 @@ Definition ap_Reader
     fun r : R => f r (x r).
 
 #[refine]
+#[export]
 Instance ApplicativeReader (R : Type) : Applicative (Reader R) :=
 {
     is_functor := Functor_Reader R;
@@ -42,6 +44,7 @@ Proof. all: reflexivity. Defined.
 (** The order of reading the environments doesn't matter, so it can be
     freely permuted. Therefore [Reader R] is a commutative applicative
     functor. *)
+#[export]
 Instance CommutativeApplicative_Reader (R : Type) :
   CommutativeApplicative _ (ApplicativeReader R).
 Proof. split. reflexivity. Defined.
@@ -63,6 +66,7 @@ Definition bind_Reader
     fun r : R => f (x r) r.
 
 #[refine]
+#[export]
 Instance Monad_Reader (R : Type) : Monad (Reader R) :=
 {
     is_applicative := ApplicativeReader R;
@@ -73,6 +77,7 @@ Proof. all: reflexivity. Defined.
 (** [Reader R] is the primordial [MonadReader] instance. [ask] is just
     the identity. *)
 #[refine]
+#[export]
 Instance MonadReader_Reader
   (R : Type) : MonadReader R (Reader R) (Monad_Reader R) :=
 {
@@ -80,4 +85,4 @@ Instance MonadReader_Reader
 }.
 Proof. reflexivity. Defined.
 
-Global Hint Unfold fmap_Reader pure_Reader ap_Reader bind_Reader : CoqMTL.
+#[global] Hint Unfold fmap_Reader pure_Reader ap_Reader bind_Reader : CoqMTL.

@@ -32,4 +32,4 @@ Class MonadExcept
 
 Coercion instF : MonadExcept >-> MonadFail.
 
-Hint Rewrite @catch_fail_l @catch_fail_r @catch_assoc @catch_pure : CoqMTL.
+#[global] Hint Rewrite @catch_fail_l @catch_fail_r @catch_assoc @catch_pure : CoqMTL.

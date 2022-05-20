@@ -33,8 +33,8 @@ Class Applicative (F : Type -> Type) : Type :=
 
 Coercion is_functor : Applicative >-> Functor.
 
-Hint Rewrite @composition @homomorphism @fmap_pure_ap : CoqMTL.
-Hint Rewrite <- @interchange : CoqMTL.
+#[global] Hint Rewrite @composition @homomorphism @fmap_pure_ap : CoqMTL.
+#[global] Hint Rewrite <- @interchange : CoqMTL.
 
 Module ApplicativeNotations.
 

@@ -22,7 +22,7 @@ Class Monad (M : Type -> Type) : Type :=
 
 Notation "mx >>= f" := (bind mx f) (at level 40).
 
-Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc : MonadBind.
+#[global] Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc : MonadBind.
 
 (** A simple tactic for proving things about this definition. *)
 Ltac mbind :=
@@ -39,9 +39,10 @@ Definition fmap_MonadBind
   {A B : Type} (f : A -> B) (ma : M A) : M B :=
     ma >>= (f .> pure).
 
-Global Hint Unfold fmap_MonadBind compose : MonadBind.
+#[global] Hint Unfold fmap_MonadBind compose : MonadBind.
 
 #[refine]
+#[export]
 Instance Functor_MonadBind
   (M : Type -> Type) (inst : Monad M) : Functor M :=
 {
@@ -56,9 +57,10 @@ Definition ap_MonadBind
   (A B : Type) (mf : M (A -> B)) (ma : M A) : M B :=
     mf >>= fun f => ma >>= fun a => pure (f a).
 
-Global Hint Unfold ap_MonadBind : MonadBind.
+#[global] Hint Unfold ap_MonadBind : MonadBind.
 
 #[refine]
+#[export]
 Instance Applicative_MonadBind
   (M : Type -> Type) (inst : Monad M) : Applicative M :=
 {

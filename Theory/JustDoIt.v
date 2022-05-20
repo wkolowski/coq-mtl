@@ -131,6 +131,7 @@ End S0.
 Require Import Control.Monad.All.
 
 #[refine]
+#[export]
 Instance MonadFail_List : MonadFail Monad_List :=
 {
     fail := @nil
@@ -140,6 +141,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance MonadAlt_List : MonadAlt Monad_List :=
 {
     choose := @app;
@@ -151,6 +153,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance MonadNondet_List : MonadNondet Monad_List :=
 {
     instF := MonadFail_List;

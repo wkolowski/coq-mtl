@@ -9,9 +9,10 @@ Definition List (A : Type) : Type := list A.
 (** [fmap] is taken directly from the standard library. *)
 Definition fmap_List := map.
 
-Hint Rewrite app_nil_l app_nil_r : CoqMTL.
+#[global] Hint Rewrite app_nil_l app_nil_r : CoqMTL.
 
 #[refine]
+#[export]
 Instance Functor_List : Functor list :=
 {
     fmap := fmap_List
@@ -26,7 +27,7 @@ Defined.
     degenerate case of nondeterminism. *)
 Definition pure_List {A : Type} (x : A) : list A := [x].
 
-Global Hint Unfold List pure_List : CoqMTL.
+#[global] Hint Unfold List pure_List : CoqMTL.
 
 (** Even though the definition of [ap] is straightforward, proving that
     it satisfies the [Applicative] laws is quite difficult, probably the
@@ -75,6 +76,7 @@ Proof.
 Qed.
 
 #[refine]
+#[export]
 Instance Applicative_List : Applicative list :=
 {
     is_functor := Functor_List;
@@ -96,6 +98,7 @@ Definition aempty_List {A : Type} : list A := [].
 Definition aplus_List {A : Type} (x y : list A) : list A := app x y.
 
 #[refine]
+#[export]
 Instance Alternative_List : Alternative list :=
 {
     is_applicative := Applicative_List;
@@ -135,6 +138,7 @@ Proof.
 Qed.
 
 #[refine]
+#[export]
 Instance Monad_List : Monad list :=
 {
     is_applicative := Applicative_List;
@@ -158,6 +162,7 @@ Defined.
     choice is modeled by [app]. *)
 
 #[refine]
+#[export]
 Instance MonadFail_List : MonadFail list Monad_List :=
 {
     fail := fun A => []
@@ -165,6 +170,7 @@ Instance MonadFail_List : MonadFail list Monad_List :=
 Proof. intros. cbn. reflexivity. Defined.
 
 #[refine]
+#[export]
 Instance MonadAlt_List : MonadAlt list Monad_List :=
 {
     choose := @app;
@@ -177,6 +183,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance MonadNondet_List : MonadNondet list Monad_List :=
 {
     instF := MonadFail_List;
@@ -192,6 +199,7 @@ match l with
 end.
 
 #[refine]
+#[export]
 Instance FoldableList : Foldable list :=
 {
     foldMap := @foldMap_List

@@ -42,7 +42,7 @@ Defined.
 
 End DerivedFunctorLaws.
 
-Hint Rewrite @fmap_id @fmap_comp : CoqMTL.
+#[global] Hint Rewrite @fmap_id @fmap_comp : CoqMTL.
 
 (** An implementation of functions that can be found in Haskell's
     Data.Functor. *)

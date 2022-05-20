@@ -40,6 +40,7 @@ Definition addExample : Expr (Val :+: Add) :=
 (** ** 3 Evaluation *)
 
 #[refine]
+#[export]
 Instance Functor_Val : Functor Val :=
 {
     fmap := fun (A B : Type) (f : A -> B) (va : Val A) =>
@@ -50,6 +51,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance Functor_Add : Functor Add :=
 {
     fmap := fun (A B : Type) (f : A -> B) (ax : Add A) =>
@@ -60,6 +62,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance Functor_Coproduct
   (F G : Type -> Type) (instF : Functor F) (instG : Functor G)
   : Functor (F :+: G) :=
@@ -84,16 +87,19 @@ Class Eval (F : Type -> Type) (inst : Functor F) : Type :=
     evalAlgebra : F nat -> nat
 }.
 
+#[export]
 Instance Eval_Val : Eval Val Functor_Val :=
 {
     evalAlgebra := fun x : Val nat => match x with Val' n => n end
 }.
 
+#[export]
 Instance Eval_Add : Eval Add Functor_Add :=
 {
     evalAlgebra := fun x : Add nat => match x with Add' n m => n + m end
 }.
 
+#[export]
 Instance Eval_Coproduct
   (F G : Type -> Type) (instF : Functor F) (instG : Functor G)
   (instEF : Eval F instF) (instEG : Eval G instG)
@@ -121,16 +127,19 @@ Class Sub (F G : Type -> Type) : Type :=
 
 Notation "F :<: G" := (Sub F G) (at level 42).
 
+#[export]
 Instance Sub_refl (F : Type -> Type) : Sub F F :=
 {
     inj := fun A : Type => @id (F A)
 }.
 
+#[export]
 Instance Sub_Coproduct (F G : Type -> Type) : Sub F (F :+: G) :=
 {
     inj := @Inl F G
 }.
 
+#[export]
 Instance Sub_Rec
   (F G H : Type -> Type) (inst : Sub F H) : Sub F (G :+: H) :=
 {
@@ -165,6 +174,7 @@ Inductive Mul (E : Type) : Type :=
 Arguments Mul' {E} _ _.
 
 #[refine]
+#[export]
 Instance Functor_Mul : Functor Mul :=
 {
     fmap := fun A B f x => match x with Mul' e1 e2 => Mul' (f e1) (f e2) end
@@ -173,6 +183,7 @@ Proof.
   all: intros; ext x; destruct x; hs.
 Defined.
 
+#[export]
 Instance Eval_Mul : Eval Mul Functor_Mul :=
 {
     evalAlgebra := fun '(Mul' x y) => x * y
@@ -215,6 +226,7 @@ Class RenderClass (F : Type -> Type) : Type :=
 Definition render_Val : Render Val :=
   fun _ f => f (fun _ _ _ => "42").
 
+#[export]
 Instance Render_Val : RenderClass Val :=
 {
     render := render_Val

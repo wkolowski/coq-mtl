@@ -10,6 +10,7 @@ Definition fmap_Identity
   {A B : Type} (f : A -> B) (a : Identity A) : Identity B := f a.
 
 #[refine]
+#[export]
 Instance FunctorIdentity : Functor Identity :=
 {
     fmap := @fmap_Identity
@@ -24,6 +25,7 @@ Definition ap_Identity
   {A B : Type} (f : Identity (A -> B)) (x : Identity A) : Identity B := f x.
 
 #[refine]
+#[export]
 Instance Applicative_Identity : Applicative Identity :=
 {
     is_functor := FunctorIdentity;
@@ -45,11 +47,13 @@ Proof.
 Qed.
 
 (** Since [Identity] has no side effects, it is commutative. *)
+#[export]
 Instance CommutativeApplicative_Identity :
   CommutativeApplicative _ Applicative_Identity.
 Proof. split. reflexivity. Defined.
 
 #[refine]
+#[export]
 Instance Monad_Identity : Monad Identity :=
 {
     is_applicative := Applicative_Identity;
@@ -57,4 +61,4 @@ Instance Monad_Identity : Monad Identity :=
 }.
 Proof. all: reflexivity. Defined.
 
-Global Hint Unfold fmap_Identity pure_Identity ap_Identity bind_Identity : CoqMTL.
+#[global] Hint Unfold fmap_Identity pure_Identity ap_Identity bind_Identity : CoqMTL.

@@ -12,6 +12,7 @@ Definition fmap_Cont
     fun g : B -> R => m (f .> g).
 
 #[refine]
+#[export]
 Instance Functor_Cont (R : Type) : Functor (Cont R) :=
 {
     fmap := @fmap_Cont R
@@ -29,6 +30,7 @@ Definition ap_Cont
     fun kb : B -> R => f (fun ka : A -> B => x (ka .> kb)).
 
 #[refine]
+#[export]
 Instance Applicative_Cont (R : Type) : Applicative (Cont R) :=
 {
     is_functor := Functor_Cont R;
@@ -66,6 +68,7 @@ Proof.
 Qed.
 
 #[refine]
+#[export]
 Instance Monad_Cont (R : Type) : Monad (Cont R) :=
 {
     is_applicative := Applicative_Cont R;
@@ -73,7 +76,7 @@ Instance Monad_Cont (R : Type) : Monad (Cont R) :=
 }.
 Proof. all: reflexivity. Defined.
 
-Global Hint Unfold fmap_Cont pure_Cont ap_Cont bind_Cont : CoqMTL.
+#[global] Hint Unfold fmap_Cont pure_Cont ap_Cont bind_Cont : CoqMTL.
 
 (** For [Cont R], contrary to [Codensity R], we can define both kinds of
     callCC constructively. The second definition is taken from Purescript's

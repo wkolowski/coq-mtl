@@ -14,4 +14,4 @@ Class MonadAlt (M : Type -> Type) (inst : Monad M) : Type :=
         choose x y >>= f = choose (x >>= f) (y >>= f);
 }.
 
-Hint Rewrite @choose_assoc @bind_choose_l : CoqMTL.
+#[global] Hint Rewrite @choose_assoc @bind_choose_l : CoqMTL.

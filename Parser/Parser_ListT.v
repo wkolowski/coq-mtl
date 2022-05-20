@@ -21,9 +21,9 @@ Definition Applicative_Parser := Applicative_ListT _ Monad_Identity.
 Definition Alternative_Parser := Alternative_ListT _ Monad_Identity.
 Definition Monad_Parser := Monad_ListT _ Monad_Identity.
 
-Existing Instance Applicative_Parser.
-Existing Instance Alternative_Parser.
-Existing Instance Monad_Parser.
+#[export] Existing Instance Applicative_Parser.
+#[export] Existing Instance Alternative_Parser.
+#[export] Existing Instance Monad_Parser.
 
 (** *** 2.2 Primitive parsers *)
 

@@ -22,7 +22,7 @@ Class MonadWriter (W : Monoid) (M : Type -> Type) (inst : Monad M) : Type :=
         listen ma >>= fun '(a, w) => fmap (fun b => (b, w)) (f a)*)
 }.
 
-Hint Rewrite @listen_pure (*@listen_tell*) @listen_listen : CoqMTL.
+#[global] Hint Rewrite @listen_pure (*@listen_tell*) @listen_listen : CoqMTL.
 
 (*
 Check

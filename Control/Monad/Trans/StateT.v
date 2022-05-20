@@ -18,7 +18,7 @@ Definition fmap_StateT
     fun (x : StateT S M A) (s : S) =>
       x s >>= fun '(a, s') => pure (f a, s').
 
-Global Hint Unfold StateT fmap_StateT compose : CoqMTL.
+#[global] Hint Unfold StateT fmap_StateT compose : CoqMTL.
 
 (** These lemmas are there so that the parsers are fast. I don't know why
     this helps with performance... *)
@@ -35,6 +35,7 @@ Lemma f2 :
 Proof. monad. Qed.
 
 #[refine]
+#[export]
 Instance Functor_StateT
   {S : Type} {M : Type -> Type} {inst : Monad M} : Functor (StateT S M) :=
 {
@@ -57,7 +58,7 @@ Definition ap_StateT
       sa stf >>= fun '(a, sta) =>
         pure (f a, sta).
 
-Global Hint Unfold pure_StateT ap_StateT : CoqMTL.
+#[global] Hint Unfold pure_StateT ap_StateT : CoqMTL.
 
 Lemma p1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type)
@@ -92,6 +93,7 @@ Lemma p5 :
 Proof. monad. Qed.
 
 #[refine]
+#[export]
 Instance Applicative_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) : Applicative (StateT S M) :=
 {
@@ -127,9 +129,10 @@ Definition aplus_StateT
   {A : Type} (x y : StateT S M A) : StateT S M A :=
     fun s : S => x s <|> y s.
 
-Global Hint Unfold aempty_StateT aplus_StateT : CoqMTL.
+#[global] Hint Unfold aempty_StateT aplus_StateT : CoqMTL.
 
 #[refine]
+#[export]
 Instance Alternative_StateT
   (S : Type) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
   : Alternative (StateT S M) :=
@@ -145,7 +148,7 @@ Definition bind_StateT
   (x : StateT S M A) (f : A -> StateT S M B) : StateT S M B :=
     fun s : S => x s >>= (fun '(a, s') => f a s').
 
-Global Hint Unfold bind_StateT : CoqMTL.
+#[global] Hint Unfold bind_StateT : CoqMTL.
 
 Lemma m1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
@@ -181,6 +184,7 @@ Lemma m5 :
 Proof. monad. Qed.
 
 #[refine]
+#[export]
 Instance Monad_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) : Monad (StateT S M) :=
 {
@@ -200,9 +204,10 @@ Definition lift_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
     : StateT S M A := fun s : S => ma >>= fun a : A => pure (a, s).
 
-Global Hint Unfold lift_StateT : CoqMTL.
+#[global] Hint Unfold lift_StateT : CoqMTL.
 
 #[refine]
+#[export]
 Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
 {
     is_monad := @Monad_StateT S;
@@ -212,6 +217,7 @@ Proof. all: monad. Defined.
 
 (** [StateT] adds a layer of [MonadState] on top of the base monad [M]. *)
 #[refine]
+#[export]
 Instance MonadState_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (StateT S M) (Monad_StateT S M inst) :=
@@ -227,6 +233,7 @@ Defined.
 (** [StateT] preserves all other kinds of monads. *)
 
 #[refine]
+#[export]
 Instance MonadAlt_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (StateT S M) (Monad_StateT S M inst) :=
@@ -237,6 +244,7 @@ Instance MonadAlt_StateT
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadFail_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (StateT S M) (Monad_StateT S M inst) :=
@@ -246,6 +254,7 @@ Instance MonadFail_StateT
 Proof. monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadNondet_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (StateT S M) (Monad_StateT S M inst) :=
@@ -256,6 +265,7 @@ Instance MonadNondet_StateT
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadExcept_StateT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
@@ -268,6 +278,7 @@ Instance MonadExcept_StateT
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadReader_StateT
   (E S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -283,6 +294,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance MonadWriter_StateT
   (W : Monoid) (S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadWriter W (StateT S M) (Monad_StateT S M inst) :=
@@ -296,6 +308,7 @@ Instance MonadWriter_StateT
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadStateNondet_StateT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -315,6 +328,7 @@ Defined.
 
 (** If [M] is the free monad of [F], so is [StateT E M]. *)
 #[refine]
+#[export]
 Instance MonadFree_StateT
   (F : Type -> Type) (instF : Functor F)
   (S : Type) (M : Type -> Type)

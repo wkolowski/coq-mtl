@@ -16,8 +16,8 @@ Class KleisliTriple (M : Type -> Type) : Type :=
         star (f .> star g) x = star g (star f x)
 }.
 
-Hint Rewrite @eta_star @star_eta : Kleisli.
-Hint Rewrite <- @star_comp : Kleisli.
+#[global] Hint Rewrite @eta_star @star_eta : Kleisli.
+#[global] Hint Rewrite <- @star_comp : Kleisli.
 
 Ltac kleisli :=
   repeat (
@@ -37,6 +37,7 @@ Definition fmap_Kleisli
 Hint Unfold fmap_Kleisli compose : Kleisli.
 
 #[refine]
+#[export]
 Instance Functor_Kleisli : Functor M :=
 {
     fmap := @fmap_Kleisli
@@ -56,6 +57,7 @@ Definition ap_Kleisli {A B : Type} (mf : M (A -> B)) (ma : M A) : M B :=
 Hint Unfold pure_Kleisli bind_Kleisli ap_Kleisli flip : Kleisli.
 
 #[refine]
+#[export]
 Instance Applicative_Kleisli : Applicative M :=
 {
     pure := @pure_Kleisli;
@@ -65,5 +67,5 @@ Proof. all: kleisli. Defined.
 
 End KleisliTriple_Instances.
 
-Global Hint Unfold
+#[global] Hint Unfold
   fmap_Kleisli pure_Kleisli bind_Kleisli ap_Kleisli compose flip : Kleisli.

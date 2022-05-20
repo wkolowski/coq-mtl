@@ -21,9 +21,10 @@ Definition fmap_RWST
     fun r s =>
       x r s >>= fun '(x', sx, wx) => pure $ (f x', sx, wx).
 
-Global Hint Unfold RWST fmap_RWST : CoqMTL.
+#[global] Hint Unfold RWST fmap_RWST : CoqMTL.
 
 #[refine]
+#[export]
 Instance Functor_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
     : Functor (RWST W R S M) :=
@@ -44,9 +45,10 @@ Definition ap_RWST
       f r s >>= fun '(f', sf, wf) =>
       x r sf >>= fun '(x', sx, wx) => pure (f' x', sx, op wf wx).
 
-Global Hint Unfold pure_RWST ap_RWST : CoqMTL.
+#[global] Hint Unfold pure_RWST ap_RWST : CoqMTL.
 
 #[refine]
+#[export]
 Instance Applicative_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
     : Applicative (RWST W R S M) :=
@@ -87,9 +89,10 @@ Definition bind_RWST
       x r s >>= fun '(x', sx, wx) =>
       f x' r sx >>= fun '(b, sb, wb) => pure (b, sb, op wx wb).
 
-Global Hint Unfold bind_RWST : CoqMTL.
+#[global] Hint Unfold bind_RWST : CoqMTL.
 
 #[refine]
+#[export]
 Instance Monad_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
     : Monad (RWST W R S M) :=
@@ -108,9 +111,10 @@ Definition lift_RWST
     fun r s =>
       x >>= fun a : A => pure (a, s, neutr).
 
-Global Hint Unfold lift_RWST : CoqMTL.
+#[global] Hint Unfold lift_RWST : CoqMTL.
 
 #[refine]
+#[export]
 Instance MonadTrans_RWST
   {W : Monoid} {R S : Type} : MonadTrans (RWST W R S) :=
 {
@@ -122,6 +126,7 @@ Proof. all: unfold compose; monad. Defined.
     on top of the base monad [M]. *)
 
 #[refine]
+#[export]
 Instance MonadReader_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadReader R (RWST W R S M) (Monad_RWST W R S M inst) :=
@@ -131,6 +136,7 @@ Instance MonadReader_RWST
 Proof. monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadWriter_RWST
   (R S : Type) (W : Monoid) (M : Type -> Type) (inst : Monad M)
   : MonadWriter W (RWST W R S M) (Monad_RWST W R S M inst) :=
@@ -144,6 +150,7 @@ Instance MonadWriter_RWST
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadState_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (RWST W R S M) (Monad_RWST W R S M inst) :=
@@ -160,6 +167,7 @@ Defined.
     kinds of monads. *)
 
 #[refine]
+#[export]
 Instance MonadAlt_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadAlt M inst)
@@ -171,6 +179,7 @@ Instance MonadAlt_RWST
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadFail_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadFail M inst)
@@ -181,6 +190,7 @@ Instance MonadFail_RWST
 Proof. monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadNondet_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadNondet M inst)
@@ -192,6 +202,7 @@ Instance MonadNondet_RWST
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadStateNondet_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -211,6 +222,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance MonadExcept_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadExcept M inst)
@@ -224,6 +236,7 @@ Proof. all: monad. Defined.
 
 (** If [M] is the free monad of [F], so is [RWST W R S M]. *)
 #[refine]
+#[export]
 Instance MonadFree_RWST
   (F : Type -> Type) (instF : Functor F)
   (W : Monoid) (R S : Type) (M : Type -> Type)

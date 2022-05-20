@@ -15,11 +15,12 @@ match oa with
     | Some a => Some (f a)
 end.
 
-Global Hint Unfold fmap_Option : CoqMTL.
+#[global] Hint Unfold fmap_Option : CoqMTL.
 
 (** [Functor] laws can be proven by an easy case analysis, which can be
     handled automatically. *)
 #[refine]
+#[export]
 Instance Functor_Option : Functor option :=
 {
     fmap := @fmap_Option
@@ -41,9 +42,10 @@ match of, oa with
     | _, _ => None
 end.
 
-Global Hint Unfold pure_Option ap_Option : CoqMTL.
+#[global] Hint Unfold pure_Option ap_Option : CoqMTL.
 
 #[refine]
+#[export]
 Instance Applicative_Option : Applicative option :=
 {
     is_functor := Functor_Option;
@@ -63,9 +65,10 @@ match x, y with
     | Some a, _ => Some a
 end.
 
-Global Hint Unfold aempty_Option aplus_Option : CoqMTL.
+#[global] Hint Unfold aempty_Option aplus_Option : CoqMTL.
 
 #[refine]
+#[export]
 Instance Alternative_Option : Alternative option :=
 {
     is_applicative := Applicative_Option;
@@ -83,10 +86,11 @@ match oa with
     | Some a => f a
 end.
 
-Global Hint Unfold bind_Option : CoqMTL.
+#[global] Hint Unfold bind_Option : CoqMTL.
 
 (** Failing is commutative, because it doesn't matter what fails nor in
     what order - only the presence of failure is important. *)
+#[export]
 Instance CommutativeApplicative_Option :
   CommutativeApplicative _ Applicative_Option.
 Proof.
@@ -94,6 +98,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance Monad_Option : Monad option :=
 {
     is_applicative := Applicative_Option;
@@ -102,6 +107,7 @@ Instance Monad_Option : Monad option :=
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadFail_Option : MonadFail option Monad_Option :=
 {
     fail := @None;
@@ -115,9 +121,10 @@ match oa with
     | Some a => f a
 end.
 
-Global Hint Unfold foldMap_Option : CoqMTL.
+#[global] Hint Unfold foldMap_Option : CoqMTL.
 
 #[refine]
+#[export]
 Instance Foldable_Option : Foldable option :=
 {
     foldMap := @foldMap_Option

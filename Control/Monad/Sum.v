@@ -15,9 +15,10 @@ match x with
     | inr b => inr (f b)
 end.
 
-Global Hint Unfold fmap_Sum : CoqMTL.
+#[global] Hint Unfold fmap_Sum : CoqMTL.
 
 #[refine]
+#[export]
 Instance Functor_Sum (E : Type) : Functor (sum E) :=
 {
     fmap := @fmap_Sum E
@@ -40,9 +41,10 @@ match sf, sa with
     | inr f, inr x => inr (f x)
 end.
 
-Global Hint Unfold pure_Sum ap_Sum : CoqMTL.
+#[global] Hint Unfold pure_Sum ap_Sum : CoqMTL.
 
 #[refine]
+#[export]
 Instance Applicative_Sum (E : Type) : Applicative (sum E) :=
 {
     is_functor := Functor_Sum E;
@@ -79,9 +81,10 @@ match sa with
     | inr a => f a
 end.
 
-Global Hint Unfold bind_Sum : CoqMTL.
+#[global] Hint Unfold bind_Sum : CoqMTL.
 
 #[refine]
+#[export]
 Instance Monad_Sum (A : Type) : Monad (sum A) :=
 {
     is_applicative := Applicative_Sum A;
@@ -94,6 +97,7 @@ Proof. all: monad. Defined.
 Definition fail_Sum {E : Type} (e : E) {A : Type} : Sum E A := inl e.
 
 #[refine]
+#[export]
 Instance MonadFail_Sum
   (E : Type) (e : E)
   : MonadFail (Sum E) (Monad_Sum E) :=
@@ -103,6 +107,7 @@ Instance MonadFail_Sum
 Proof. reflexivity. Defined.
 
 #[refine]
+#[export]
 Instance MonadExcept_Sum
   (E : Type) (e : E) : MonadExcept (sum E) (Monad_Sum E) :=
 {
@@ -126,9 +131,10 @@ match x with
     | inr a => f a
 end.
 
-Global Hint Unfold foldMap_Sum : CoqMTL.
+#[global] Hint Unfold foldMap_Sum : CoqMTL.
 
 #[refine]
+#[export]
 Instance FoldableSum (E : Type) : Foldable (sum E) :=
 {
     foldMap := @foldMap_Sum E

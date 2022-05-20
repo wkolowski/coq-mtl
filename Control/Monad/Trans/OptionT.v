@@ -16,9 +16,10 @@ Definition fmap_OptionT
   (A B : Type) (f : A -> B) : OptionT M A -> OptionT M B :=
     fmap (fmap_Option f).
 
-Global Hint Unfold OptionT fmap_OptionT : CoqMTL.
+#[global] Hint Unfold OptionT fmap_OptionT : CoqMTL.
 
 #[refine]
+#[export]
 Instance Functor_OptionT (M : Type -> Type) {inst : Functor M}
     : Functor (OptionT M) :=
 {
@@ -44,9 +45,10 @@ Definition ap_OptionT
         | _ => pure None
     end).
 
-Global Hint Unfold pure_OptionT ap_OptionT : CoqMTL.
+#[global] Hint Unfold pure_OptionT ap_OptionT : CoqMTL.
 
 #[refine]
+#[export]
 Instance Applicative_OptionT
   (M : Type -> Type) (inst : Monad M) : Applicative (OptionT M) :=
 {
@@ -71,9 +73,10 @@ Definition aplus_OptionT
         | _, _ => pure None
     end)).
 
-Global Hint Unfold aempty_OptionT aplus_OptionT : CoqMTL.
+#[global] Hint Unfold aempty_OptionT aplus_OptionT : CoqMTL.
 
 #[refine]
+#[export]
 Instance Alternative_OptionT
   (M : Type -> Type) (inst : Monad M) : Alternative (OptionT M) :=
 {
@@ -92,9 +95,10 @@ Definition bind_OptionT
         | Some a => f a
     end).
 
-Global Hint Unfold bind_OptionT : CoqMTL.
+#[global] Hint Unfold bind_OptionT : CoqMTL.
 
 #[refine]
+#[export]
 Instance Monad_OptionT
   (M : Type -> Type) (inst : Monad M) : Monad (OptionT M) :=
 {
@@ -109,9 +113,10 @@ Definition lift_OptionT
   {M : Type -> Type} {_inst : Monad M} {A : Type} (ma : M A)
     : OptionT M A := fmap Some ma.
 
-Global Hint Unfold lift_OptionT : CoqMTL.
+#[global] Hint Unfold lift_OptionT : CoqMTL.
 
 #[refine]
+#[export]
 Instance MonadTrans_OptionT : MonadTrans OptionT :=
 {
     is_monad := @Monad_OptionT;
@@ -125,9 +130,10 @@ Definition fail_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type}
     : OptionT M A := pure None.
 
-Global Hint Unfold fail_OptionT : CoqMTL.
+#[global] Hint Unfold fail_OptionT : CoqMTL.
 
 #[refine]
+#[export]
 Instance MonadFail_OptionT
   (M : Type -> Type) (inst : Monad M)
   : MonadFail (OptionT M) (Monad_OptionT M inst) :=
@@ -142,6 +148,7 @@ Proof. monad. Defined.
     why [OptionT] doesn't have [MonadNondet]. *)
 
 #[refine]
+#[export]
 Instance MonadAlt_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (OptionT M) (Monad_OptionT M inst) :=
@@ -152,6 +159,7 @@ Instance MonadAlt_OptionT
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadNondet_OptionT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (OptionT M) (Monad_OptionT M inst) :=
@@ -165,6 +173,7 @@ Abort.
 (** Besides failing, [OptionT] adds to any monad the ability to catch the
     failure. *)
 #[refine]
+#[export]
 Instance MonadExcept_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (OptionT M) (Monad_OptionT M inst) :=
@@ -183,6 +192,7 @@ Proof. all: monad. Defined.
 (** [OptionT] preserves reading and state, but not (yet) writing. *)
 
 #[refine]
+#[export]
 Instance MonadReader_OptionT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -195,6 +205,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance MonadWriter_OptionT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)
@@ -215,6 +226,7 @@ Proof.
 Abort.
 
 #[refine]
+#[export]
 Instance MonadState_OptionT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -239,6 +251,7 @@ Defined.
     and [MonadStateNondet]. *)
 (*
 #[refine]
+#[export]
 Instance MonadStateNondet_OptionT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -251,6 +264,7 @@ Instance MonadStateNondet_OptionT
 
 (** If [M] is the free monad of [F], so is [OptionT M]. *)
 #[refine]
+#[export]
 Instance MonadFree_OptionT
   (F : Type -> Type) (instF : Functor F)
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)

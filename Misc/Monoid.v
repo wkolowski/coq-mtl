@@ -19,12 +19,13 @@ Class Monoid : Type :=
 
 Coercion carr : Monoid >-> Sortclass.
 
-Hint Rewrite @id_left @id_right @op_assoc : CoqMTL.
+#[global] Hint Rewrite @id_left @id_right @op_assoc : CoqMTL.
 
 (** Some instances of monoids: the initial monoid, the monoid of boolean
     values with boolean conjunction and the monoid of lists with append. *)
 
 #[refine]
+#[export]
 Instance Monoid_unit : Monoid :=
 {
     carr := unit;
@@ -36,6 +37,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance Monoid_bool_andb : Monoid :=
 {
     carr := bool;
@@ -50,6 +52,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance Monoid_list_app (A : Type) : Monoid :=
 {
     carr := list A;

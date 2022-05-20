@@ -16,6 +16,7 @@ Definition fmap_Codensity
       x R (fun a : A => y (f a)).
 
 #[refine]
+#[export]
 Instance Functor_Codensity
   (F : Type -> Type) : Functor (Codensity F) :=
 {
@@ -34,6 +35,7 @@ Definition ap_Codensity
       f R (fun h : A -> B => x R (fun a : A => y (h a))).
 
 #[refine]
+#[export]
 Instance Applicative_Codensity
   (F : Type -> Type) : Applicative (Codensity F) :=
 {
@@ -57,6 +59,7 @@ Proof.
 Qed.
 
 #[refine]
+#[export]
 Instance Monad_Codensity
   (F : Type -> Type) : Monad (Codensity F) :=
 {
@@ -134,11 +137,12 @@ Definition wrap_Codensity
   (x : F (Codensity M A)) : Codensity M A :=
     fun R g => wrap (fmap (fun f => f R g) x).
 
-Global Hint Unfold
+#[global] Hint Unfold
   fmap_Codensity pure_Codensity ap_Codensity bind_Codensity
   wrap_Codensity : CoqMTL.
 
 #[refine]
+#[export]
 Instance MonadFree_Codensity
   {F M : Type -> Type} {instF : Functor F} {instM : Monad M}
   {instMF : MonadFree F M instF instM}

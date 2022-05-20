@@ -23,10 +23,10 @@ Class Monad (M : Type -> Type) : Type :=
 
 Coercion is_applicative : Monad >-> Applicative.
 
-Hint Rewrite
+#[global] Hint Rewrite
   @join_fmap_join @join_pure @join_fmap_pure @join_fmap_fmap : MonadJoin.
 
-Hint Rewrite <- @join_ap : MonadJoin.
+#[global] Hint Rewrite <- @join_ap : MonadJoin.
 
 Definition bind
   {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -37,7 +37,7 @@ Definition compM
   (f : A -> M B) (g : B -> M C) : A -> M C :=
     f .> fmap g .> join.
 
-Global Hint Unfold bind compM compose : MonadJoin.
+#[global] Hint Unfold bind compM compose : MonadJoin.
 
 Module MonadNotations.
 

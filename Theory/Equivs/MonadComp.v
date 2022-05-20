@@ -36,12 +36,13 @@ Proof.
   intros. unfold bindM.
 Abort.
 
-Global Hint Unfold bindM : CoqMTL.
+#[global] Hint Unfold bindM : CoqMTL.
 
 Require MonadBind.
 
 (*
 #[refine]
+#[export]
 Instance Comp_to_Bind
   (M : Type -> Type) (inst : Monad M) : MonadBind.Monad M :=
 {

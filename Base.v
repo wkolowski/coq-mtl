@@ -71,7 +71,7 @@ Proof. reflexivity. Qed.
     Both our main rewriting and unfolding hint databases are named
     [CoqMTL], but there are some minor ones, like [Functor] and
     [Functor']. *)
-Hint Rewrite @id_eq @id_left @id_right : CoqMTL.
+#[global] Hint Rewrite @id_eq @id_left @id_right : CoqMTL.
 
 (** Note that rewriting and unfolding databases are separate, so we have
     to define a dummy value and add it to the unfolding database in order
@@ -80,7 +80,7 @@ Hint Rewrite @id_eq @id_left @id_right : CoqMTL.
 (*
 Definition the_ultimate_answer := 42.
 
-Global Hint Unfold the_ultimate_answer : CoqMTL.
+#[global] Hint Unfold the_ultimate_answer : CoqMTL.
 *)
 
 (** [umatch] is a tactic for conveniently [destruct]ing nested pattern

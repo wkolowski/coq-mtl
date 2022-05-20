@@ -33,6 +33,7 @@ Definition fmap_ListT
       l X nil (fun h t => cons (f h) t).
 
 #[refine]
+#[export]
 Instance Functor_ListT
   (M : Type -> Type) (inst : Functor M) : Functor (ListT M) :=
 {
@@ -54,6 +55,7 @@ Definition ap_ListT
       mfs X nil (fun f fs => fmap f mxs X fs cons).
 
 #[refine]
+#[export]
 Instance Applicative_ListT
   (M : Type -> Type) (inst : Monad M) : Applicative (ListT M) :=
 {
@@ -72,6 +74,7 @@ Definition aplus_ListT
     : ListT M A := fun X nil cons => ml1 X (ml2 X nil cons) cons.
 
 #[refine]
+#[export]
 Instance Alternative_ListT
   (M : Type -> Type) (inst : Monad M) : Alternative (ListT M) :=
 {
@@ -87,6 +90,7 @@ Definition bind_ListT
     fun X nil cons => l X nil (fun h t => f h X t cons).
 
 #[refine]
+#[export]
 Instance Monad_ListT
   (M : Type -> Type) (inst : Monad M) : Monad (ListT M) :=
 {
@@ -101,9 +105,10 @@ Definition lift_ListT
   {M : Type -> Type} {inst : Monad M} (A : Type) (ma : M A) : ListT M A :=
     fun X nil cons => ma >>= fun a : A => cons a nil.
 
-Global Hint Unfold pure_ListT bind_ListT lift_ListT : CoqMTL.
+#[global] Hint Unfold pure_ListT bind_ListT lift_ListT : CoqMTL.
 
 #[refine]
+#[export]
 Instance MonadTrans_ListT : MonadTrans ListT :=
 {
     is_monad := @Monad_ListT;
@@ -116,9 +121,10 @@ Proof. all: monad. Defined.
 Definition fail_ListT
   {M : Type -> Type} {inst : Monad M} {A : Type} : ListT M A := [[]].
 
-Global Hint Unfold fail_ListT : CoqMTL.
+#[global] Hint Unfold fail_ListT : CoqMTL.
 
 #[refine]
+#[export]
 Instance MonadFail_ListT
   (M : Type -> Type) (inst : Monad M)
   : MonadFail (ListT M) (Monad_ListT M inst) :=
@@ -128,6 +134,7 @@ Instance MonadFail_ListT
 Proof. reflexivity. Defined.
 
 #[refine]
+#[export]
 Instance MonadAlt_ListT
   (M : Type -> Type) (inst : Monad M)
   : MonadAlt (ListT M) (Monad_ListT M inst) :=
@@ -137,6 +144,7 @@ Instance MonadAlt_ListT
 Proof. all: reflexivity. Defined.
 
 #[refine]
+#[export]
 Instance MonadNondet_ListT
   (M : Type -> Type) (inst : Monad M)
   : MonadNondet (ListT M) (Monad_ListT M inst) :=
@@ -149,6 +157,7 @@ Proof. all: reflexivity. Defined.
 (** [ListT] doesn't preserve [MonadExcept], just as the other transformers
     implemented using Church encoding. *)
 #[refine]
+#[export]
 Instance MonadExcept_ListT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ListT M) (Monad_ListT M inst) :=
@@ -166,6 +175,7 @@ Abort.
 (** [ListT] preserves [MonadReader], [MonadWriter] and [MonadState]. *)
 
 #[refine]
+#[export]
 Instance MonadReader_ListT
   (E : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -181,6 +191,7 @@ Proof.
 Defined.
 
 #[refine]
+#[export]
 Instance MonadWriter_ListT
   (W : Monoid) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadWriter W M inst)
@@ -194,6 +205,7 @@ Instance MonadWriter_ListT
 Proof. all: hs. Defined.
 
 #[refine]
+#[export]
 Instance MonadState_ListT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -222,6 +234,7 @@ Defined.
 (** [ListT] doesn't implement [MonadStateNondet], because we lack the
     ability to do induction. *)
 #[refine]
+#[export]
 Instance MonadStateNondet_ListT
   (S : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -238,6 +251,7 @@ Abort.
 
 (** If [M] is the free monad of [F], so is [ListT M]. *)
 #[refine]
+#[export]
 Instance MonadFree_ListT
   (F : Type -> Type) (instF : Functor F)
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)

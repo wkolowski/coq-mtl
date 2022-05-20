@@ -26,7 +26,7 @@ end.
 Ltac simplify :=
   cbn; intros; exts; destr.
 
-Hint Rewrite @id_eq @id_left @id_right : CoqMTL.
+#[global] Hint Rewrite @id_eq @id_left @id_right : CoqMTL.
 
 Ltac hs :=
   cbn; intros;

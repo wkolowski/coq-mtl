@@ -11,9 +11,10 @@ Definition fmap_State
   (S A B : Type) (f : A -> B) (st : State S A) : State S B :=
     fun s : S => let (a, s') := st s in (f a, s').
 
-Global Hint Unfold fmap_State : CoqMTL.
+#[global] Hint Unfold fmap_State : CoqMTL.
 
 #[refine]
+#[export]
 Instance Functor_State (S : Type) : Functor (State S) :=
 {
     fmap := @fmap_State S
@@ -36,9 +37,10 @@ Definition ap_State
       let (f, stf) := sf st in
       let (a, sta) := sa stf in (f a, sta).
 
-Global Hint Unfold pure_State ap_State : CoqMTL.
+#[global] Hint Unfold pure_State ap_State : CoqMTL.
 
 #[refine]
+#[export]
 Instance Applicative_State (S : Type) : Applicative (State S) :=
 {
     is_functor := Functor_State S;
@@ -77,9 +79,10 @@ Definition bind_State
   {S A B : Type} (sa : State S A) (f : A -> State S B)
     : State S B := fun s : S => let (a, s') := sa s in f a s'.
 
-Global Hint Unfold bind_State : CoqMTL.
+#[global] Hint Unfold bind_State : CoqMTL.
 
 #[refine]
+#[export]
 Instance Monad_State (S : Type) : Monad (State S) :=
 {
     is_applicative := Applicative_State S;
@@ -89,6 +92,7 @@ Proof. all: monad. Defined.
 
 (** [State S] is the primordial example of a state monad. *)
 #[refine]
+#[export]
 Instance MonadState_State
   (S : Type) : MonadState S (State S) (Monad_State S) :=
 {

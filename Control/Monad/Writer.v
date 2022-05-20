@@ -14,9 +14,10 @@ Definition fmap_Writer
   {W : Monoid} {A B : Type} (f : A -> B) (wa : Writer W A) : Writer W B :=
     let (a, w) := wa in (f a, w).
 
-Global Hint Unfold fmap_Writer : CoqMTL.
+#[global] Hint Unfold fmap_Writer : CoqMTL.
 
 #[refine]
+#[export]
 Instance Functor_Writer (W : Monoid) : Functor (Writer W) :=
 {
     fmap := @fmap_Writer W
@@ -38,9 +39,10 @@ Definition ap_Writer
     let (f, w) := wf in
     let (a, w') := wa in (f a, op w w').
 
-Global Hint Unfold pure_Writer ap_Writer : CoqMTL.
+#[global] Hint Unfold pure_Writer ap_Writer : CoqMTL.
 
 #[refine]
+#[export]
 Instance Applicative_Writer (W : Monoid) : Applicative (Writer W) :=
 {
     is_functor := Functor_Writer W;
@@ -61,6 +63,7 @@ Proof.
   compute in ap_comm. congruence.
 Qed.
 
+#[export]
 Instance CommutativeApplicative_Writer
   (W : Monoid) (H : forall x y : W, op x y = op y x)
   : CommutativeApplicative (Writer W) (Applicative_Writer W).
@@ -86,9 +89,10 @@ Definition bind_Writer
       let (a, w) := wa in
       let (b, w') := f a in (b, op w w').
 
-Global Hint Unfold bind_Writer : CoqMTL.
+#[global] Hint Unfold bind_Writer : CoqMTL.
 
 #[refine]
+#[export]
 Instance Monad_Writer (W : Monoid) : Monad (Writer W) :=
 {
     is_applicative := Applicative_Writer W;
@@ -100,6 +104,7 @@ Proof. all: monad. Defined.
     can [tell] by just putting a message along [tt] and [listen] by
     moving the messages from the log to the result of the computation. *)
 #[refine]
+#[export]
 Instance MonadWriter_Writer (W : Monoid)
   : MonadWriter W (Writer W) (Monad_Writer W) :=
 {

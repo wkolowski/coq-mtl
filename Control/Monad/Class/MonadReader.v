@@ -11,7 +11,7 @@ Class MonadReader
     ask_ask : ask >> ask = ask;
 }.
 
-Hint Rewrite @ask_ask : CoqMTL.
+#[global] Hint Rewrite @ask_ask : CoqMTL.
 
 Section MonadReader_funs.
 
@@ -33,6 +33,7 @@ End MonadReader_funs.
     of [MonadReader], then a monad transformer fed with [M] also has an
     instance of [MonadReader]. This is impossible with the other classes. *)
 #[refine]
+#[export]
 Instance MonadReader_MonadTrans
   (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
   (M : Type -> Type) (instM : Monad M)

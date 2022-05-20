@@ -25,6 +25,7 @@ Definition fmap_ContT
     fun y : B -> M R => x (fun a : A => y (f a)).
 
 #[refine]
+#[export]
 Instance FunctorContT : Functor (ContT R M) :=
 {
     fmap := fmap_ContT
@@ -39,6 +40,7 @@ Definition ap_ContT
     fun y : B -> M R => mf (fun f : A -> B => ma (fun a : A => y (f a))).
 
 #[refine]
+#[export]
 Instance ApplicativeContT : Applicative (ContT R M) :=
 {
     is_functor := FunctorContT;
@@ -52,6 +54,7 @@ Definition bind_ContT
     fun y : B -> M R => x (fun a : A => f a y).
 
 #[refine]
+#[export]
 Instance Monad_ContT : Monad (ContT R M) :=
 {
     is_applicative := ApplicativeContT;
@@ -67,10 +70,11 @@ Definition lift_ContT
 
 End ContT_instances.
 
-Global Hint Unfold
+#[global] Hint Unfold
   fmap_ContT pure_ContT ap_ContT bind_ContT lift_ContT : CoqMTL.
 
 #[refine]
+#[export]
 Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
 {
     is_monad := fun M _ => @Monad_ContT R M;
@@ -82,6 +86,7 @@ Proof. all: monad. Defined.
     nondeterministic monad. *)
 
 #[refine]
+#[export]
 Instance MonadAlt_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (ContT R M) (Monad_ContT R M) :=
@@ -92,6 +97,7 @@ Instance MonadAlt_ContT
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadFail_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (ContT R M) (Monad_ContT R M) :=
@@ -101,6 +107,7 @@ Instance MonadFail_ContT
 Proof. reflexivity. Defined.
 
 #[refine]
+#[export]
 Instance MonadNondet_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (ContT R M) (Monad_ContT R M) :=
@@ -116,6 +123,7 @@ Proof. all: monad. Defined.
     and everything breaks. I am not sure whether this is a real problem
     or me not being able to figure it out. *)
 #[refine]
+#[export]
 Instance MonadExcept_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ContT R M) (Monad_ContT R M) :=
@@ -132,6 +140,7 @@ Abort.
     monad. *)
 
 #[refine]
+#[export]
 Instance MonadReader_ContT
   (E R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadReader E M inst)
@@ -147,6 +156,7 @@ Defined.
 (** This instance is dubious, because [listen] doesn't refer to [M]'s
     [listen]. *)
 #[refine]
+#[export]
 Instance MonadWriter_ContT
   (R : Type) (W : Monoid) (M : Type -> Type)
   (instM : Monad M) (instMW : MonadWriter W M instM)
@@ -158,6 +168,7 @@ Instance MonadWriter_ContT
 Proof. all: monad. Defined.
 
 #[refine]
+#[export]
 Instance MonadState_ContT
   (S R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadState S M inst)
@@ -180,6 +191,7 @@ Defined.
     the continuation, which doesn't necessarily get called - it can
     be thrown away. *)
 #[refine]
+#[export]
 Instance MonadStateNondet_ContT
   (S R : Type) (M : Type -> Type)
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
@@ -196,6 +208,7 @@ Abort.
 
 (** If [M] is the free monad of [F], so is [ContT R M]. *)
 #[refine]
+#[export]
 Instance MonadFree_ContT
   (F : Type -> Type) (instF : Functor F)
   (R : Type) (M : Type -> Type)

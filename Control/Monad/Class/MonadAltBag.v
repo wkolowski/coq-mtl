@@ -14,4 +14,4 @@ Class MonadAltBag (M : Type -> Type) (inst : Monad M) : Type :=
         choose x y = choose y x
 }.
 
-Hint Rewrite @choose_assoc @choose_comm : CoqMTL.
+#[global] Hint Rewrite @choose_assoc @choose_comm : CoqMTL.

@@ -39,7 +39,7 @@ Class Monoidal (F : Type -> Type) : Type :=
           fmap (f *** g) (pairF a b) = pairF (fmap f a) (fmap g b);
 }.
 
-Hint Rewrite @pairF_default_l @pairF_default_r @pairF_assoc : monoidal.
+#[global] Hint Rewrite @pairF_default_l @pairF_default_r @pairF_assoc : monoidal.
 
 (** Basic lemmas about monoidal functors. Some of them are needed in
     the tactic [monoidal] - see below. *)

@@ -21,6 +21,7 @@ Class Foldable (T : Type -> Type) : Type :=
 (** A monoid instance for functions with composition and identity. It is
     needed to define [foldr] and [foldl] using [foldMap]. *)
 #[refine]
+#[export]
 Instance Endo (A : Type) : Monoid :=
 {
     carr := A -> A;

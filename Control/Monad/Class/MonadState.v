@@ -28,7 +28,7 @@ Class MonadState
         get >>= fun s : S => k s s
 }.
 
-Hint Rewrite @put_put @put_get @get_put @get_get : CoqMTL.
+#[global] Hint Rewrite @put_put @put_get @get_put @get_get : CoqMTL.
 
 Section MonadStateLaws_bind.
 
@@ -63,7 +63,7 @@ Qed.
 
 End MonadStateLaws_bind.
 
-Hint Rewrite put_put' put_put'' put_get' : CoqMTL.
+#[global] Hint Rewrite put_put' put_put'' put_get' : CoqMTL.
 
 Set Implicit Arguments.
 
@@ -130,6 +130,7 @@ Arguments modify_put {S M instM instMS}.
 Require Import Control.Monad.Trans.
 
 #[refine]
+#[export]
 Instance MonadState_MonadTrans
   (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
   (M : Type -> Type) (instM : Monad M)

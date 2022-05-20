@@ -25,6 +25,7 @@ Definition ap_Monoidal
     long enough, you could probably have proved this all by yourself,
     but thanks to me you don't need to... *)
 #[refine]
+#[export]
 Instance Monoidal_Applicative
   (F : Type -> Type) (inst : Monoidal F) : Applicative F :=
 {
@@ -55,7 +56,7 @@ Definition pairF_Applicative
   {F : Type -> Type} {inst : Applicative F} {A B : Type}
   (x : F A) (y : F B) : F (A * B)%type := pair <$> x <*> y.
 
-Global Hint Unfold default_Applicative pairF_Applicative : CoqMTL.
+#[global] Hint Unfold default_Applicative pairF_Applicative : CoqMTL.
 
 (*Hint Remove fmap_pure_ap : CoqMTL.*)
 
@@ -64,6 +65,7 @@ Global Hint Unfold default_Applicative pairF_Applicative : CoqMTL.
     alternative ||, but the tactic [hs] uses it, so it's necessary
     to prove the equivalence. *)
 #[refine]
+#[export]
 Instance Applicative_Monoidal
   (F : Type -> Type) (inst : Applicative F) : Monoidal F :=
 {

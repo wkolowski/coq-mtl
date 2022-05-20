@@ -11,7 +11,7 @@ Class MonadFail (M : Type -> Type) (inst : Monad M) : Type :=
         fail >>= f = fail;
 }.
 
-Hint Rewrite @bind_fail_l : CoqMTL.
+#[global] Hint Rewrite @bind_fail_l : CoqMTL.
 
 Set Implicit Arguments.
 
@@ -84,6 +84,7 @@ Arguments mcatOptions {M instM instMF A} _.
 Require Import Control.Monad.Trans.
 
 #[refine]
+#[export]
 Instance MonadFail_MonadTrans
   (T : (Type -> Type) -> Type -> Type) (instT : MonadTrans T)
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFail M instM)
