@@ -2,7 +2,7 @@ Require Import List.
 Import ListNotations.
 
 (** Monoids, represented as a class without any parameters. They are used
-    by [Writer] and [Writert]. *)
+    by [Writer] and [WriterT]. *)
 Class Monoid : Type :=
 {
     carr : Type;
