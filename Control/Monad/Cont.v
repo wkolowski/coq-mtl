@@ -1,4 +1,4 @@
-Require Import Control.All.
+From CoqMTL Require Import Control.All.
 
 (** A monad that models computations which have access to their control
     context. This makes it possible for them to use complicated control

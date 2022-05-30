@@ -1,4 +1,4 @@
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.
 
 (** A monad which models computations that can fail. If a computation
     fails, any later computation that depends on it also fails, as
@@ -81,7 +81,7 @@ Arguments mpartition {M instM instMF A} _ _.
 Arguments mcatOptions {M instM instMF A} _.
 
 (*
-Require Import Control.Monad.Trans.
+From CoqMTL Require Import Control.Monad.Trans.
 
 #[refine]
 #[export]

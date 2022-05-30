@@ -1,6 +1,6 @@
-Require Import Control.All.
-Require Import Control.Monad.Identity.
-Require Import Control.Monad.Class.MonadFree.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Identity.
+From CoqMTL Require Import Control.Monad.Class.MonadFree.
 
 (** The codensity monad. Not very developed, as I don't know too much
     about it. In particular, I didn't check if it really improves

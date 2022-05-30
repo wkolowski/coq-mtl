@@ -1,4 +1,4 @@
-Require Import Control.Monad.
+From CoqMTL Require Import Control.Monad.
 
 (** This looks identical to MonadBind. *)
 Class KleisliTriple (M : Type -> Type) : Type :=

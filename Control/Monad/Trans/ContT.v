@@ -1,8 +1,8 @@
-Require Import Control.All.
-Require Import Control.Monad.Trans.
-Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Trans.
+From CoqMTL Require Import Control.Monad.Class.All.
 
-Require Import Misc.Monoid.
+From CoqMTL Require Import Misc.Monoid.
 
 (** A monad transformer that adds a layer of the continuation monad on
     top of the monad stack [M]. *)

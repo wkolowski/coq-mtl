@@ -1,4 +1,4 @@
-Require Export Control.Functor.
+From CoqMTL Require Export Control.Functor.
 
 (** This file contains an alternative characterization of [Applicative]
     functors as lax monoidal functors (or rather, strong monoidal functors,

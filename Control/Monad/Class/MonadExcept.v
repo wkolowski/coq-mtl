@@ -1,5 +1,5 @@
-Require Export Control.Monad.
-Require Export Control.Monad.Class.MonadFail.
+From CoqMTL Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.Class.MonadFail.
 
 (** An exception monad. [catch] is an associative operation that models
     catching exceptions. The first argument is the computation to be

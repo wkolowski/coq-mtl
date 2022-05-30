@@ -13,7 +13,7 @@ end.
 
 Require Import Arith.
 
-Require Import Control.Monad.Class.MonadState.
+From CoqMTL Require Import Control.Monad.Class.MonadState.
 
 Fixpoint label
   {M : Type -> Type} {inst : Monad M} {instS : MonadState nat M inst}
@@ -29,7 +29,7 @@ match t with
         pure $ Node l' r'
 end.
 
-Require Import Control.Monad.State.
+From CoqMTL Require Import Control.Monad.State.
 
 Definition lbl {A : Type} (t : Tree A) : Tree (A * nat) :=
   fst (@label (State nat) _ _ _ t 0).

@@ -1,4 +1,4 @@
-Require Import Applicative.
+From CoqMTL Require Import Control.Applicative.
 
 Class Monad (M : Type -> Type) : Type :=
 {
@@ -38,7 +38,7 @@ Abort.
 
 #[global] Hint Unfold bindM : CoqMTL.
 
-Require MonadBind.
+From CoqMTL Require MonadBind.
 
 (*
 #[refine]

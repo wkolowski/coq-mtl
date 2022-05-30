@@ -1,4 +1,4 @@
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.
 
 (** A class that represents a free monad of a functor [F]. *)
 Class MonadFree

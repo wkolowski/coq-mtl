@@ -1,7 +1,7 @@
-Require Import Control.All.
-Require Import Control.Monad.Trans.
-Require Import Control.Monad.Class.All.
-Require Import Control.Monad.Option.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Trans.
+From CoqMTL Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.Monad.Option.
 
 (** A transformer that adds a layer of the partiality monad on top of
     any other monad. *)

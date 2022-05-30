@@ -1,7 +1,7 @@
-Require Import Control.All.
-Require Import Control.Monad.Trans.
-Require Import Control.Monad.Class.All.
-Require Import Control.Monad.Identity.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Trans.
+From CoqMTL Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.Monad.Identity.
 
 (** A transformer which puts a layer of the free monad for the functor [F]
     on top of the monad [M]. It is implemented using Church encoding. *)

@@ -1,5 +1,5 @@
-Require Import Control.All.
-Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Class.All.
 
 (** [State S A] models a computation which returns a result of type [A]
     and has read and write access to a single cell of state of type [S]. *)

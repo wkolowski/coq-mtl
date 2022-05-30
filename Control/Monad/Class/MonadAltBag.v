@@ -1,4 +1,4 @@
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.
 
 (** A nondeterminism monad whose initial model are finite bags
     (which probably means finite multisets). This is guaranteed

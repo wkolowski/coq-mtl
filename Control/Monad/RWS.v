@@ -1,7 +1,7 @@
-Require Import Control.All.
-Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Class.All.
 
-Require Import Misc.Monoid.
+From CoqMTL Require Import Misc.Monoid.
 
 (** [RWS W R S] is a monad which models a computation that can access
     a read-only environment, a write-only log and a single cell of

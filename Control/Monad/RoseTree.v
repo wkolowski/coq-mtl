@@ -1,7 +1,7 @@
-Require Import Control.All.
-Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Class.All.
 
-Require Import Misc.Monoid.
+From CoqMTL Require Import Misc.Monoid.
 
 (** Rose Trees are trees which hold values only in their leaves. This
     type has a monad structure, but I don't know what kind of effect

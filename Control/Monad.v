@@ -1,4 +1,4 @@
-Require Export Control.Applicative.
+From CoqMTL Require Export Control.Applicative.
 
 (** A [bind]-based definition of monads — the basic one in the library (see
     Theory.Equivs.MonadJoin and Theory.Equivs.KleisliTriple for

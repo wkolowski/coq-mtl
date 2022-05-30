@@ -1,15 +1,15 @@
 (** This modules exports all monad instances. *)
 
-Require Export Control.Monad.Codensity.
-Require Export Control.Monad.Cont.
-Require Export Control.Monad.Free.
-Require Export Control.Monad.Identity.
-Require Export Control.Monad.Lazy.
-Require Export Control.Monad.ListInst.
-Require Export Control.Monad.Option.
-Require Export Control.Monad.Reader.
-Require Export Control.Monad.RoseTree.
-Require Export Control.Monad.RWS.
-Require Export Control.Monad.State.
-Require Export Control.Monad.Sum.
-Require Export Control.Monad.Writer.
+From CoqMTL Require Export Control.Monad.Codensity.
+From CoqMTL Require Export Control.Monad.Cont.
+From CoqMTL Require Export Control.Monad.Free.
+From CoqMTL Require Export Control.Monad.Identity.
+From CoqMTL Require Export Control.Monad.Lazy.
+From CoqMTL Require Export Control.Monad.ListInst.
+From CoqMTL Require Export Control.Monad.Option.
+From CoqMTL Require Export Control.Monad.Reader.
+From CoqMTL Require Export Control.Monad.RoseTree.
+From CoqMTL Require Export Control.Monad.RWS.
+From CoqMTL Require Export Control.Monad.State.
+From CoqMTL Require Export Control.Monad.Sum.
+From CoqMTL Require Export Control.Monad.Writer.

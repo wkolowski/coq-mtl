@@ -1,5 +1,5 @@
-Require Export Control.Applicative.
-Require Export Control.Foldable.
+From CoqMTL Require Export Control.Applicative.
+From CoqMTL Require Export Control.Foldable.
 
 (** A Haskell-style alternative functor. The intended categorical semantics
     is not yet entirely clear to me. Intuitively it looks like a strong

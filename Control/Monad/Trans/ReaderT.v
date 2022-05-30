@@ -1,7 +1,7 @@
-Require Import Control.All.
-Require Import Control.Monad.Trans.
-Require Import Control.Monad.Class.All.
-Require Export Control.Monad.Identity.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Trans.
+From CoqMTL Require Import Control.Monad.Class.All.
+From CoqMTL Require Export Control.Monad.Identity.
 
 (** A transformer which adds a layer of the reader monad on top of a
     monad [M]. *)

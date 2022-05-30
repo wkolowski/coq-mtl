@@ -1,9 +1,9 @@
 (** This module can be used to import/export everything from the directory
     Control/. *)
 
-Require Export Control.Alternative.
-Require Export Control.Applicative.
-Require Export Control.CommutativeApplicative.
-Require Export Control.Foldable.
-Require Export Control.Functor.
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Alternative.
+From CoqMTL Require Export Control.Applicative.
+From CoqMTL Require Export Control.CommutativeApplicative.
+From CoqMTL Require Export Control.Foldable.
+From CoqMTL Require Export Control.Functor.
+From CoqMTL Require Export Control.Monad.

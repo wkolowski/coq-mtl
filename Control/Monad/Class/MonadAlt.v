@@ -1,4 +1,4 @@
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.
 
 (** A monad that models computations which can perform some kind of choice.
     It may be thought of as nondeterministic choice, which is quite intuitive

@@ -1,4 +1,4 @@
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.
 
 (** Another monad for nondeterministic choice, but it satisfies a different
     law than [MonadAlt]. *)

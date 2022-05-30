@@ -1,6 +1,6 @@
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.
 
-Require Export Misc.Monoid.
+From CoqMTL Require Export Misc.Monoid.
 
 (** For now [pass] is not present because I can't think of a law for it. *)
 Class MonadWriter (W : Monoid) (M : Type -> Type) (inst : Monad M) : Type :=

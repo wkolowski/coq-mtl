@@ -1,5 +1,5 @@
-Require Import Control.All.
-Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Class.All.
 
 (** A monad which represents a computation that has access to an immutable,
     read-only environment (a single cell of memory of type [R]). *)

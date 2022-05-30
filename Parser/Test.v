@@ -1,5 +1,7 @@
-Require Export Control.Monad.
-Require Export Control.Monad.All.
+Require Import Arith.
+
+From CoqMTL Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.All.
 
 (** Helper functions which produce lists of natural numbers. *)
 
@@ -12,7 +14,7 @@ end.
 Definition I (a b : nat) : list nat := aux (b - a) a.
 
 (** Tests for [Applicative]. *)
-Require Export Control.Applicative.
+From CoqMTL Require Export Control.Applicative.
 
 (*
 Compute zipWithA
@@ -20,9 +22,7 @@ Compute zipWithA
 *)
 
 (** Tests for [Alternative]: compute some Pythagorean triples. *)
-Require Export Control.Alternative.
-
-Require Import Arith.
+From CoqMTL Require Export Control.Alternative.
 
 (*
 Compute do
@@ -34,7 +34,7 @@ Compute do
 *)
 
 (** Tests for [Foldable]. TODO: commented out. *)
-Require Import Control.Foldable.
+From CoqMTL Require Import Control.Foldable.
 
 (*
 Compute isEmpty (None).
@@ -52,8 +52,8 @@ Compute count (leb 10) [1; 3; 5; 7; 11; 42].
 (** Tests for parsers. Toggle between imports for Parser.Parser and
     Parser.Parser_ListT to test one of these. *)
 
-Require Import Parser.Parser.
-(*Require Import Parser.Parser_ListT.*)
+From CoqMTL Require Import Parser.Parser.
+(* From CoqMTL Require Import Parser.Parser_ListT. *)
 
 (**
     expr    ::= expr addop factor | factor

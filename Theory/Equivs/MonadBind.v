@@ -1,4 +1,4 @@
-Require Import Control.Applicative.
+From CoqMTL Require Import Control.Applicative.
 
 (** This is a minimal [bind]-based definition of a monad. It says that a
     monad is something that can turn a value into a computation ([pure])

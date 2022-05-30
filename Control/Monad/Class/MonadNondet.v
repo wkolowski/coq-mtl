@@ -1,5 +1,5 @@
-Require Export Control.Monad.Class.MonadFail.
-Require Export Control.Monad.Class.MonadAlt.
+From CoqMTL Require Export Control.Monad.Class.MonadFail.
+From CoqMTL Require Export Control.Monad.Class.MonadAlt.
 
 (** A monad that represents nondeterministic computations, i.e. ones that can
     [fail] and make choices. The laws can be summarized by saying that if we

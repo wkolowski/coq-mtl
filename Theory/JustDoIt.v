@@ -1,4 +1,7 @@
-Require Import Control.Monad.
+Require Import Arith Nat Lia.
+
+From CoqMTL Require Import Control.Monad.
+From CoqMTL Require Import Control.Monad.All.
 
 (** * Just do It: Simple Monadic Equational Reasoning *)
 
@@ -8,12 +11,7 @@ Require Import Control.Monad.
 
 (** ** 3. A counter example: Towers of Hanoi *)
 
-(*Set Universe Polymorphism.*)
 Set Implicit Arguments.
-
-Require Import Arith.
-Require Import Nat.
-Require Import Lia.
 
 Section S0.
 
@@ -127,8 +125,6 @@ Coercion instF : MonadNondet >-> MonadFail.
 Coercion instA : MonadNondet >-> MonadAlt.
 
 End S0.
-
-Require Import Control.Monad.All.
 
 #[refine]
 #[export]

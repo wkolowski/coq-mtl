@@ -1,4 +1,4 @@
-Require Import Control.
+From CoqMTL Require Import Control.
 
 (** This module contains proofs that various definitions of monads are
     equivalent. More precisely, we prove that these definitions are
@@ -25,9 +25,9 @@ Require Import Control.
 (** First we require all the necessary modules and repack them so as to
     refer to them by nonconflicting names. *)
 
-Require MonadJoin.
-Require MonadBind.
-Require MonadComp.
+From CoqMTL Require MonadJoin.
+From CoqMTL Require MonadBind.
+From CoqMTL Require MonadComp.
 
 Module Join.
 Include MonadJoin.
@@ -101,7 +101,7 @@ Proof. all: monad. Defined.
 
 (** * Kleisli triple *)
 
-Require Import KleisliTriple.
+From CoqMTL Require Import KleisliTriple.
 
 #[refine]
 #[export]

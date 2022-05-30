@@ -1,7 +1,7 @@
-Require Import Control.All.
-Require Import Control.Monad.Trans.
-Require Import Control.Monad.Class.All.
-Require Import Control.Monad.Identity.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Trans.
+From CoqMTL Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.Monad.Identity.
 
 (** A transformer which adds some effect to the base monad [M], but I
     don't yet know what effect it is. It's completely analogous to

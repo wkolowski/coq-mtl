@@ -1,7 +1,7 @@
-Require Import Control.All.
-Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Class.All.
 
-Require Import Misc.Monoid.
+From CoqMTL Require Import Misc.Monoid.
 
 (** A monad which models a computation that can result in an error. *)
 Definition Sum (E A : Type) : Type := sum E A.

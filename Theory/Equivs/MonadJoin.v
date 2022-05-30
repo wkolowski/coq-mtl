@@ -1,4 +1,4 @@
-Require Export Control.Applicative.
+From CoqMTL Require Export Control.Applicative.
 
 Class Monad (M : Type -> Type) : Type :=
 {

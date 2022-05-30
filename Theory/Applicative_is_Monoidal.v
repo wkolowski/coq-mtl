@@ -1,8 +1,8 @@
 (** A proof of the fact the [Applicative] functors are the same thing
     as [Monoidal] functors. *)
 
-Require Export Control.Applicative.
-Require Export Control.Monoidal.
+From CoqMTL Require Export Control.Applicative.
+From CoqMTL Require Export Control.Monoidal.
 
 (** We cat define [pure] by mapping a constant function over the default
     computation. *)

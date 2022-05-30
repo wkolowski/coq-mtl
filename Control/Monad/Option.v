@@ -1,7 +1,7 @@
-Require Import Control.All.
-Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Class.All.
 
-Require Import Misc.Monoid.
+From CoqMTL Require Import Misc.Monoid.
 
 (** A monad that models computations that can fail. *)
 Definition Option (A : Type) : Type := option A.

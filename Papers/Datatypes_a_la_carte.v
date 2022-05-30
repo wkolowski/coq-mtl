@@ -1,4 +1,6 @@
-Require Import Control.
+Require Import String.
+
+From CoqMTL Require Import Control.
 
 (** * Datat types à la carte *)
 
@@ -199,7 +201,6 @@ Eval cbn in
       add (val 1000) (mul (val 33) (val 7))
   in eval x.
 
-Require Import String.
 Open Scope string.
 
 (* Problem! *)

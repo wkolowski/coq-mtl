@@ -1,9 +1,9 @@
-Require Import Control.All.
-Require Import Control.Monad.Trans.
-Require Import Control.Monad.Class.All.
-Require Import Control.Monad.Identity.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Trans.
+From CoqMTL Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.Monad.Identity.
 
-Require Import Misc.Monoid.
+From CoqMTL Require Import Misc.Monoid.
 
 (** A transformer which to any base monad [M] adds a layer that can read
     the environment, perform logging and read a single cell of state. *)

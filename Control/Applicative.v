@@ -1,4 +1,4 @@
-Require Export Control.Functor.
+From CoqMTL Require Export Control.Functor.
 
 (** Haskell-style applicative functors. The intended categorical semantics
     is a (strong) monoidal functor in the category of Coq's types and

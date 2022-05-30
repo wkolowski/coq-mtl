@@ -1,7 +1,7 @@
-Require Export Base.
-Require Import Misc.Monoid.
-
 Require Import Arith.
+
+From CoqMTL Require Export Base.
+From CoqMTL Require Import Misc.Monoid.
 
 (** Haskell-style [Foldable]. I have no idea about the intended categorical
     semantics. The definition is based on [foldMap] while [foldr] and [foldl]

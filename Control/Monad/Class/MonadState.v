@@ -1,4 +1,4 @@
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.
 
 (** A monad which has access to some kind of state. It supports two
     operations: [put] and [get], which satisfy the following laws:
@@ -127,7 +127,7 @@ Arguments put_gets {S M instM instMS A}.
 Arguments modify_put {S M instM instMS}.
 
 (*
-Require Import Control.Monad.Trans.
+From CoqMTL Require Import Control.Monad.Trans.
 
 #[refine]
 #[export]

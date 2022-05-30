@@ -1,4 +1,4 @@
-Require Export Base.
+From CoqMTL Require Export Base.
 
 (** This module aims to check whether [Applicative]'s laws are orthogonal,
     i.e. independent from each other. We take an axiomatic approach.

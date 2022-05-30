@@ -1,4 +1,4 @@
-Require Import Control.All.
+From CoqMTL Require Import Control.All.
 
 (** The Identity monad, mainly for use with monad transformers. It models
     the trivial effect, or rather, a lack of any computation effect

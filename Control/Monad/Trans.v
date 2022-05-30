@@ -1,4 +1,4 @@
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.
 
 (** Haskell-style monad transformers. The categorical semantics is not yet
     clear to me (a monad morphism?, a natural transformation preserving the

@@ -8,7 +8,7 @@
 (*
 From Equations Require Import Equations.
 
-Require Export Control.Functor.
+From CoqMTL Require Export Control.Functor.
 
 Variables
   (F : Type -> Type)

@@ -1,4 +1,4 @@
-Require Export Control.Monad.
+From CoqMTL Require Export Control.Monad.
 
 (** A nondeterministic choice monad whose initial model are finite sets.
     This is guaranteed by the laws [choose_comm] and [choose_idempotent]. *)

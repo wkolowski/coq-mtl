@@ -4,7 +4,7 @@
 
 (** ** 2 Odd and even, with ease and difficulty *)
 
-Require Import Control.Monad.Lazy.
+From CoqMTL Require Import Control.Monad.Lazy.
 
 (** *** 2.1 The odd style, with ease *)
 

@@ -1,5 +1,5 @@
-Require Export Control.Monad.Class.MonadNondet.
-Require Export Control.Monad.Class.MonadState.
+From CoqMTL Require Export Control.Monad.Class.MonadNondet.
+From CoqMTL Require Export Control.Monad.Class.MonadState.
 
 (** A monad that models both nondeterministic and stateful computations.
     The law [seq_fail_r] says that eventual failure makes the whole

@@ -8,9 +8,9 @@ Require Export String.
 Require Export Bool.
 Require Export Arith.
 
-Require Import Control.All.
-Require Export Control.Monad.ListInst.
-Require Export Control.Monad.Trans.StateT.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Export Control.Monad.ListInst.
+From CoqMTL Require Export Control.Monad.Trans.StateT.
 
 (** This module contains parsers based on the [StateT] transformer
     applied to [list], which can parse only [string]s. *)

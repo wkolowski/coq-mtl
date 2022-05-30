@@ -1,6 +1,6 @@
-Require Import Control.All.
-Require Import Control.Monad.Trans.
-Require Import Control.Monad.Class.All.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Trans.
+From CoqMTL Require Import Control.Monad.Class.All.
 
 (** A transformer which puts a layer of a list monad on top of the base
     monad [M], implemented using Church encoding.

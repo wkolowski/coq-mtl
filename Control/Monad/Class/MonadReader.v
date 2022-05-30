@@ -1,5 +1,5 @@
-Require Export Control.Monad.
-Require Import Control.Monad.Trans.
+From CoqMTL Require Export Control.Monad.
+From CoqMTL Require Import Control.Monad.Trans.
 
 (** Reader monad that provides access to some kind of environment.
     We can ask for the contents of the environment and if we ask

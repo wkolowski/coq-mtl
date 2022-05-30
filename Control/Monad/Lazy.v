@@ -1,4 +1,4 @@
-Require Import Control.All.
+From CoqMTL Require Import Control.All.
 
 (** An attempt at monad that models a computation that has no side effects,
     but is evaluated lazily. According to my experiments, it doesn't really

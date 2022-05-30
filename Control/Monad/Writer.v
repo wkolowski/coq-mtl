@@ -1,7 +1,7 @@
-Require Import Control.All.
-Require Import Control.Monad.Class.MonadWriter.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Class.MonadWriter.
 
-Require Import Misc.Monoid.
+From CoqMTL Require Import Misc.Monoid.
 
 (** [Writer W A] represents a computation that returns a result of type [A]
     and has access to a log of messages of type [W]. [W] is a monoid whose

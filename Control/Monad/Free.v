@@ -1,6 +1,6 @@
-Require Import Control.All.
-Require Import Control.Monad.Identity.
-Require Import Control.Monad.Class.MonadFree.
+From CoqMTL Require Import Control.All.
+From CoqMTL Require Import Control.Monad.Identity.
+From CoqMTL Require Import Control.Monad.Class.MonadFree.
 
 (** The free monad of a functor F. It models a computation whose effects
     are described by the functor F. Contrary to Haskell, it is implemented
