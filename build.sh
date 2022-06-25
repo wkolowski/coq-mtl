@@ -4,7 +4,7 @@
 coq_makefile -R "." CoqMTL -o makefile Base.v Control.v $(find Control Misc Papers Parser Theory -name "*v")
 
 # Build the library.
-make
+make -j `nproc`
 
 # Delete the makefile and related files.
 rm makefile makefile.conf
