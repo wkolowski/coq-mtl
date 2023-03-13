@@ -59,9 +59,10 @@ Theorem hanoi_rep :
 Proof.
   induction n as [| n']; cbn; try reflexivity.
   rewrite IHn'. rewrite <- (rep1 tick) at 2.
-  rewrite <- !rep_constrA, <- plus_n_O, <- !pred_of_minus. f_equal.
+  rewrite <- !rep_constrA, <- plus_n_O. rewrite !Nat.sub_1_r. f_equal.
   induction n' as [| n'']; cbn.
-    reflexivity. erewrite (Nat.lt_succ_pred 0).
+    reflexivity.
+    erewrite (Nat.lt_succ_pred 0).
       lia.
       clear. induction n'' as [| n''']; cbn; lia.
 Qed.
@@ -254,7 +255,7 @@ end.
 Fixpoint has (n : nat) (l : list nat) : bool :=
 match l with
     | [] => false
-    | h :: t => beq_nat n h || has n t
+    | h :: t => Nat.eqb n h || has n t
 end.
 
 Lemma product_has_0 :
@@ -292,7 +293,7 @@ Qed.
 
 Definition next
   {inst' : MonadFail inst} (n : nat) (ml : M nat) : M nat :=
-    if beq_nat 0 n then fail else fmap (mult n) ml.
+    if Nat.eqb 0 n then fail else fmap (mult n) ml.
 
 Theorem work_foldr :
   forall (inst' : MonadFail inst),
@@ -313,7 +314,7 @@ Fixpoint hasE
   (n : nat) (l : list nat) : M unit :=
 match l with
     | [] => pure tt
-    | h :: t => if beq_nat n h then fail else hasE n t
+    | h :: t => if Nat.eqb n h then fail else hasE n t
 end.
 
 Definition fastprod'

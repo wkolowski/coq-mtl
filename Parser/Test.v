@@ -29,7 +29,7 @@ Compute do
   a <- I 1 25;
   b <- I 1 25;
   c <- I 1 25;
-  guard (beq_nat (a * a + b * b) (c * c));;
+  guard (Nat.eqb (a * a + b * b) (c * c));;
   pure (a, b, c).
 *)
 
@@ -40,12 +40,12 @@ From CoqMTL Require Import Control.Foldable.
 Compute isEmpty (None).
 Compute size (Some 42).
 Compute toListF (Some 5).
-Compute elem beq_nat 2 (Some 2).
+Compute elem Nat.eqb 2 (Some 2).
 Compute maxF (Some 42).
 
 Compute size (inr 5).
 Compute maxF [1; 2; 3].
-Compute findFirst (beq_nat 42) [1; 3; 5; 7; 11; 42].
+Compute findFirst (Nat.eqb 42) [1; 3; 5; 7; 11; 42].
 Compute count (leb 10) [1; 3; 5; 7; 11; 42].
 *)
 

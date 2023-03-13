@@ -1,5 +1,9 @@
 # TODO
 
+## Newest
+
+- Applicative Laws: https://www.reddit.com/r/haskell/comments/s97ue9/has_anyone_seen_these_applicative_laws/
+
 ## General
 
 * Investigate concepts:
