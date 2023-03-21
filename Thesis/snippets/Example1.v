@@ -1,14 +1,14 @@
 Inductive Tree (A : Type) : Type :=
-    | Leaf : A -> Tree A
-    | Node : Tree A -> Tree A -> Tree A.
+| Leaf : A -> Tree A
+| Node : Tree A -> Tree A -> Tree A.
 
 Arguments Leaf {A} _.
 Arguments Node {A} _ _.
 
 Fixpoint size {A : Type} (t : Tree A) : nat :=
 match t with
-    | Leaf _ => 1
-    | Node l r => size l + size r
+| Leaf _ => 1
+| Node l r => size l + size r
 end.
 
 Require Import Arith.
@@ -19,14 +19,14 @@ Fixpoint label
   {M : Type -> Type} {inst : Monad M} {instS : MonadState nat M inst}
   {A : Type} (t : Tree A) : M (Tree (A * nat)) :=
 match t with
-    | Leaf x => do
-        n <- get;
-        pure $ Leaf (x, n)
-    | Node l r => do
-        l' <- label l;
-        modify S;;
-        r' <- label r;
-        pure $ Node l' r'
+| Leaf x => do
+    n <- get;
+    pure $ Leaf (x, n)
+| Node l r => do
+    l' <- label l;
+    modify S;;
+    r' <- label r;
+    pure $ Node l' r'
 end.
 
 From CoqMTL Require Import Control.Monad.State.

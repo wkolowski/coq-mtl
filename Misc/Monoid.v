@@ -47,7 +47,7 @@ Instance Monoid_bool_andb : Monoid :=
 Proof.
   all: intros; repeat
   match goal with
-      | b : bool |- _ => destruct b
+  | b : bool |- _ => destruct b
   end; cbn; reflexivity.
 Defined.
 

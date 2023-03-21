@@ -123,32 +123,32 @@ Definition liftA4
 
 Fixpoint filterA (p : A -> F bool) (la : list A) : F (list A) :=
 match la with
-    | [] => pure []
-    | h :: t =>
-        let f :=
-          fmap (fun b : bool => if b then (cons h) else id) (p h)
-        in f <*> filterA p t
+| [] => pure []
+| h :: t =>
+    let f :=
+      fmap (fun b : bool => if b then (cons h) else id) (p h)
+    in f <*> filterA p t
 end.
 
 Fixpoint sequenceA (lma : list (F A)) : F (list A) :=
 match lma with
-    | [] => pure []
-    | h :: t => cons <$> h <*> sequenceA t
+| [] => pure []
+| h :: t => cons <$> h <*> sequenceA t
 end.
 
 Fixpoint replicateA (n : nat) (x : F A) : F (list A) :=
 match n with
-    | 0 => pure []
-    | S n' => cons <$> x <*> replicateA n' x
+| 0 => pure []
+| S n' => cons <$> x <*> replicateA n' x
 end.
 
 Fixpoint zipWithA (f : A -> B -> F C) (la : list A) (lb : list B)
     : F (list C) :=
 match la, lb with
-    | [], _ => pure []
-    | _, [] => pure []
-    | ha :: ta, hb :: tb =>
-        cons <$> f ha hb <*> zipWithA f ta tb
+| [], _ => pure []
+| _, [] => pure []
+| ha :: ta, hb :: tb =>
+    cons <$> f ha hb <*> zipWithA f ta tb
 end.
 
 Definition when (cond : bool) (a : F unit) : F unit :=

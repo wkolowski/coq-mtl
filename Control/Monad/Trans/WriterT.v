@@ -218,9 +218,9 @@ Proof.
     rewrite <- get_put at 1. rewrite fmap_bind. f_equal. monad.
   intros. cbn. unfold bind_WriterT. rewrite !bind_assoc.
     do 2 match goal with
-        | |- context [fun s : S => pure (s, ?x) >>= ?f] =>
-            replace (fun s : S => pure (s, x) >>= f)
-               with (fun s : S => f (s, x)) by monad
+    | |- context [fun s : S => pure (s, ?x) >>= ?f] =>
+        replace (fun s : S => pure (s, x) >>= f)
+           with (fun s : S => f (s, x)) by monad
     end.
     rewrite <- !bind_assoc, <- get_get, !bind_assoc.
     f_equal. ext s. monad.

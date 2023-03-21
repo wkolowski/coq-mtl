@@ -1,13 +1,13 @@
 Print nat.
 (*
 Inductive nat : Set :=
-    | O : nat
-    | S : nat -> nat.
+| O : nat
+| S : nat -> nat.
 *)
 
 Inductive Tree (A : Type) : Type :=
-    | Leaf : A -> Tree A
-    | Node : Tree A -> Tree A -> Tree A.
+| Leaf : A -> Tree A
+| Node : Tree A -> Tree A -> Tree A.
 
 Arguments Leaf {A} _.
 Arguments Node {A} _ _.
@@ -15,11 +15,11 @@ Arguments Node {A} _ _.
 Fixpoint label
   {A : Type} (t : Tree A) (n : nat) : nat * Tree (A * nat) :=
 match t with
-    | Leaf x => (n, Leaf (x, n))
-    | Node l r =>
-        let (n', l') := label l n in
-        let (n'', r') := label r (S n') in
-          (n'', Node  l' r')
+| Leaf x => (n, Leaf (x, n))
+| Node l r =>
+    let (n', l') := label l n in
+    let (n'', r') := label r (S n') in
+      (n'', Node  l' r')
 end.
 
 Definition lbl {A : Type} (t : Tree A) : Tree (A * nat) :=
@@ -31,8 +31,8 @@ Compute lbl (Node (Node (Leaf true) (Leaf true)) (Leaf false)).
 
 Fixpoint size {A : Type} (t : Tree A) : nat :=
 match t with
-    | Leaf _ => 1
-    | Node l r => size l + size r
+| Leaf _ => 1
+| Node l r => size l + size r
 end.
 
 Require Import Arith.

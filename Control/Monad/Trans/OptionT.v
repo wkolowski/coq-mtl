@@ -36,13 +36,13 @@ Definition ap_OptionT
   (mof : OptionT M (A -> B)) (moa : OptionT M A) : OptionT M B :=
     @bind M inst _ _ mof (fun of =>
     match of with
-        | Some f =>
-            @bind M inst _ _ moa (fun oa =>
-            match oa with
-                | Some a => pure (Some (f a))
-                | None => pure None
-            end)
-        | _ => pure None
+    | Some f =>
+        @bind M inst _ _ moa (fun oa =>
+        match oa with
+            | Some a => pure (Some (f a))
+            | None => pure None
+        end)
+    | _ => pure None
     end).
 
 #[global] Hint Unfold pure_OptionT ap_OptionT : CoqMTL.
@@ -68,9 +68,9 @@ Definition aplus_OptionT
     @bind M inst _ _ mox (fun ox =>
     @bind M inst _ _ moy (fun oy =>
     match ox, oy with
-        | Some x, _ => pure (Some x)
-        | _, Some y => pure (Some y)
-        | _, _ => pure None
+    | Some x, _ => pure (Some x)
+    | _, Some y => pure (Some y)
+    | _, _ => pure None
     end)).
 
 #[global] Hint Unfold aempty_OptionT aplus_OptionT : CoqMTL.
@@ -91,8 +91,8 @@ Definition bind_OptionT
   (moa : OptionT M A) (f : A -> OptionT M B) : OptionT M B :=
     @bind M inst (option A) (option B) moa (fun oa : option A =>
     match oa with
-        | None => pure None
-        | Some a => f a
+    | None => pure None
+    | Some a => f a
     end).
 
 #[global] Hint Unfold bind_OptionT : CoqMTL.
@@ -183,8 +183,8 @@ Instance MonadExcept_OptionT
       fun A x y =>
         @bind M inst _ _ x (fun x' : option A =>
         match x' with
-            | None => y
-            | Some a => pure (Some a)
+        | None => y
+        | Some a => pure (Some a)
         end)
 }.
 Proof. all: monad. Defined.
@@ -215,8 +215,8 @@ Instance MonadWriter_OptionT
     listen := fun A x =>
       @listen W M inst inst' _ x >>= (fun '(oa, w) =>
       match oa with
-          | None => pure None
-          | Some a => pure (Some (a, w))
+      | None => pure None
+      | Some a => pure (Some (a, w))
       end)
 }.
 Proof.

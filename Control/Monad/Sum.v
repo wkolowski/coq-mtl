@@ -11,8 +11,8 @@ Definition Sum (E A : Type) : Type := sum E A.
 Definition fmap_Sum
   {E A B : Type} (f : A -> B) (x : sum E A) : sum E B :=
 match x with
-    | inl a => inl a
-    | inr b => inr (f b)
+| inl a => inl a
+| inr b => inr (f b)
 end.
 
 #[global] Hint Unfold fmap_Sum : CoqMTL.
@@ -36,9 +36,9 @@ Definition pure_Sum {E A : Type} (x : A) : sum E A := inr x.
 Definition ap_Sum
   {E A B : Type} (sf : sum E (A -> B)) (sa : sum E A) : sum E B :=
 match sf, sa with
-    | inl a, _ => inl a
-    | _, inl a => inl a
-    | inr f, inr x => inr (f x)
+| inl a, _ => inl a
+| _, inl a => inl a
+| inr f, inr x => inr (f x)
 end.
 
 #[global] Hint Unfold pure_Sum ap_Sum : CoqMTL.
@@ -77,8 +77,8 @@ Qed.
 Definition bind_Sum
   {E A B : Type} (sa : sum E A) (f : A -> sum E B) : sum E B :=
 match sa with
-    | inl e => inl e
-    | inr a => f a
+| inl e => inl e
+| inr a => f a
 end.
 
 #[global] Hint Unfold bind_Sum : CoqMTL.
@@ -115,8 +115,8 @@ Instance MonadExcept_Sum
     catch :=
       fun A x y =>
         match x with
-            | inl e => y
-            | inr a => inr a
+        | inl e => y
+        | inr a => inr a
         end
 
 }.
@@ -127,8 +127,8 @@ Abort.
 Definition foldMap_Sum
   {E A : Type} {M : Monoid} (f : A -> M) (x : sum E A) : M :=
 match x with
-    | inl _ => neutr
-    | inr a => f a
+| inl _ => neutr
+| inr a => f a
 end.
 
 #[global] Hint Unfold foldMap_Sum : CoqMTL.

@@ -34,8 +34,8 @@ Definition pure_List {A : Type} (x : A) : list A := [x].
     most difficult of all [Applicative]s from this library. *)
 Fixpoint ap_list {A B : Type} (lf : list (A -> B)) (la : list A) : list B :=
 match lf with
-    | [] => []
-    | f :: fs => map f la ++ ap_list fs la
+| [] => []
+| f :: fs => map f la ++ ap_list fs la
 end.
 
 Lemma ap_list_nil_l :
@@ -115,8 +115,8 @@ Defined.
     arguments to [f] and then flattening the resulting list. *)
 Fixpoint bind_List {A B : Type} (la : list A) (f : A -> list B) : list B :=
 match la with
-    | [] => []
-    | h :: t => f h ++ bind_List t f
+| [] => []
+| h :: t => f h ++ bind_List t f
 end.
 
 Lemma bind_List_app :
@@ -194,8 +194,8 @@ Proof. all: hs. Defined.
 Fixpoint foldMap_List
   {A : Type} {M : Monoid} (f : A -> M) (l : list A) : M :=
 match l with
-    | [] => neutr
-    | h :: t => op (f h) (foldMap_List f t)
+| [] => neutr
+| h :: t => op (f h) (foldMap_List f t)
 end.
 
 #[refine]

@@ -28,14 +28,14 @@ Definition skip : M unit := pure tt.
 
 Fixpoint hanoi {inst' : MonadCount} (n : nat) : M unit :=
 match n with
-    | 0 => skip
-    | S n' => hanoi n' >> tick >> hanoi n'
+| 0 => skip
+| S n' => hanoi n' >> tick >> hanoi n'
 end.
 
 Fixpoint rep (n : nat) (x : M unit) : M unit :=
 match n with
-    | 0 => skip
-    | S n' => x >> rep n' x
+| 0 => skip
+| S n' => x >> rep n' x
 end.
 
 Lemma rep_constrA :
@@ -173,24 +173,24 @@ Variable inst : Monad M.
 Fixpoint select
   {inst' : MonadNondet inst} {A : Type} (l : list A) : M (A * list A) :=
 match l with
-    | [] => fail
-    | x :: xs => 
-        choose (pure (x, xs)) $ do
-          p <- select xs;
-          let '(y, ys) := p in
-            pure (y, x :: ys)
+| [] => fail
+| x :: xs =>
+    choose (pure (x, xs)) $ do
+      p <- select xs;
+      let '(y, ys) := p in
+        pure (y, x :: ys)
 end.
 
 Fixpoint perms' (n : nat)
   {inst' : MonadNondet inst} {A : Type} (l : list A) : M (list A) :=
 match n, l with
-    | 0, _ => fail
-    | _, [] => pure []
-    | S n', _ => do
-        p <- select l;
-        let '(h, t) := p in
-        rest <- perms' n' t;
-        pure (h :: rest)
+| 0, _ => fail
+| _, [] => pure []
+| S n', _ => do
+    p <- select l;
+    let '(h, t) := p in
+    rest <- perms' n' t;
+    pure (h :: rest)
 end.
 
 Definition perms 
@@ -248,14 +248,14 @@ Qed.
 
 Fixpoint product (l : list nat) : nat :=
 match l with
-    | [] => 1
-    | h :: t => h * product t
+| [] => 1
+| h :: t => h * product t
 end.
 
 Fixpoint has (n : nat) (l : list nat) : bool :=
 match l with
-    | [] => false
-    | h :: t => Nat.eqb n h || has n t
+| [] => false
+| h :: t => Nat.eqb n h || has n t
 end.
 
 Lemma product_has_0 :
@@ -313,8 +313,8 @@ Fixpoint hasE
   {inst' : MonadFail inst} (*{inst'' : MonadExcept inst'}*)
   (n : nat) (l : list nat) : M unit :=
 match l with
-    | [] => pure tt
-    | h :: t => if Nat.eqb n h then fail else hasE n t
+| [] => pure tt
+| h :: t => if Nat.eqb n h then fail else hasE n t
 end.
 
 Definition fastprod'

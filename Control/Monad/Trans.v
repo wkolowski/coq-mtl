@@ -25,17 +25,17 @@ Class MonadTrans (T : (Type -> Type) -> Type -> Type) : Type :=
     transformers. *)
 Ltac mtrans := hs; try
 match goal with
-    | |- fmap (fun x : ?A => ?e) = _ =>
-          let x := fresh "x" in
-          replace (fun x : A => e) with (@id A);
-          [rewrite fmap_id | ext x; destruct x]; try reflexivity
-    | |- context [fmap ?f = fmap ?g .> fmap ?h] =>
-          let x := fresh "x" in
-          replace f with (g .> h);
-          [rewrite fmap_comp | ext x; destruct x]; try reflexivity
-    | |- context [fmap ?f = fun _ => fmap ?g (fmap ?h _)] =>
-          let x := fresh "x" in ext x;
-          rewrite <- fmap_comp'; f_equal
+| |- fmap (fun x : ?A => ?e) = _ =>
+      let x := fresh "x" in
+      replace (fun x : A => e) with (@id A);
+      [rewrite fmap_id | ext x; destruct x]; try reflexivity
+| |- context [fmap ?f = fmap ?g .> fmap ?h] =>
+      let x := fresh "x" in
+      replace f with (g .> h);
+      [rewrite fmap_comp | ext x; destruct x]; try reflexivity
+| |- context [fmap ?f = fun _ => fmap ?g (fmap ?h _)] =>
+      let x := fresh "x" in ext x;
+      rewrite <- fmap_comp'; f_equal
 end.
 
 Lemma lift_constrA :

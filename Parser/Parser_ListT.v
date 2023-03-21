@@ -36,8 +36,8 @@ Definition fail {A : Type} : Parser A :=
 Definition item : Parser ascii :=
   fun input : string =>
   match input with
-      | EmptyString => [[]]
-      | String c cs => pure (c, cs)
+  | EmptyString => [[]]
+  | String c cs => pure (c, cs)
   end.
 
 (** *** 2.3 Parser combinators *)
@@ -89,8 +89,8 @@ Open Scope string_scope.
 (** Parse a word of length less than or equal to [n]. *)
 Fixpoint words (n : nat) : Parser string :=
 match n with
-    | 0 => pure ""
-    | S n' => (String <$> letter <*> words n') <|> pure ""
+| 0 => pure ""
+| S n' => (String <$> letter <*> words n') <|> pure ""
 end.
 
 (** Parse a word of any length. Note that this may in theory not work,
@@ -102,8 +102,8 @@ Definition word : Parser string :=
 (** Parse precisely the given string. *)
 Fixpoint str (s : string) : Parser string :=
 match s with
-    | "" => pure ""
-    | String c cs => String <$> char c <*> str cs
+| "" => pure ""
+| String c cs => String <$> char c <*> str cs
 end.
 
 (** Run the parser [p] zero or more times. Fail if the input is longer than
@@ -111,8 +111,8 @@ end.
 Fixpoint many'
   {A : Type} (n : nat) (p : Parser A) : Parser (list A) :=
 match n with
-    | 0 => pure []
-    | S n' => (cons <$> p <*> many' n' p) <|> pure []
+| 0 => pure []
+| S n' => (cons <$> p <*> many' n' p) <|> pure []
 end.
 
 (** Run [p] zero or more times. The same remark as for [word] applies. *)
@@ -121,8 +121,8 @@ Definition many {A : Type} (p : Parser A) : Parser (list A) :=
 
 Fixpoint toString (l : list ascii) : string :=
 match l with
-    | [] => ""
-    | c :: cs => String c (toString cs)
+| [] => ""
+| c :: cs => String c (toString cs)
 end.
 
 (** An alternate definition of the parser for words. Note that it can still
@@ -145,8 +145,8 @@ Definition many1
 
 Fixpoint eval (cs : list ascii) : nat :=
 match cs with
-    | [] => 0
-    | c :: cs' => nat_of_ascii c - 48 + 10 * eval cs'
+| [] => 0
+| c :: cs' => nat_of_ascii c - 48 + 10 * eval cs'
 end.
 
 (** Parse a natural number written in decimal. *)
@@ -177,8 +177,8 @@ Definition parseSign : Parser (Z -> Z) :=
 Definition parsePositive : Parser positive :=
   parseNat >>= fun n : nat =>
   match n with
-      | 0 => fail
-      | _ => pure $ Pos.of_nat n
+  | 0 => fail
+  | _ => pure $ Pos.of_nat n
   end.
 
 (** Another way of paring the sign. *)
@@ -237,8 +237,8 @@ Fixpoint chainr1_aux
   {A : Type} (arg : Parser A) (op : Parser (A -> A -> A)) (n : nat)
   : Parser A :=
 match n with
-    | 0 => fail
-    | S n' => op <*> arg <*> chainr1_aux arg op n' <|> arg
+| 0 => fail
+| S n' => op <*> arg <*> chainr1_aux arg op n' <|> arg
 end.
 
 (** Like [chainl1], but right-associative. *)
@@ -256,11 +256,11 @@ Definition parseNat_chainr : Parser nat :=
 Definition ops
   {A B : Type} (start : Parser A * B) (l : list (Parser A * B)) : Parser B :=
 match l with
-    | [] => let '(p, op) := start in p >> pure op
-    | h :: t =>
-        let '(p, op) := start in
-          fold_right aplus (p >> pure op)
-            (map (fun '(p, op) => p >> pure op) l)
+| [] => let '(p, op) := start in p >> pure op
+| h :: t =>
+    let '(p, op) := start in
+      fold_right aplus (p >> pure op)
+        (map (fun '(p, op) => p >> pure op) l)
 end.
 
 (** Like [chainl1], but with a default value. *)
@@ -373,45 +373,45 @@ Compute comment "-- haskellowy komentarz polityczny".
 
 (*
 Inductive Expr : Type :=
-    | App : Expr -> Expr -> Expr
-    | Lam : string -> Expr -> Expr
-    | Let : string -> Expr -> Expr -> Expr
-    | Var : string -> Expr.
+| App : Expr -> Expr -> Expr
+| Lam : string -> Expr -> Expr
+| Let : string -> Expr -> Expr -> Expr
+| Var : string -> Expr.
 
 (* Lambda calculus parser for Coq-like syntax. *)
 Time Fixpoint parseExprn (n : nat) : Parser Expr :=
 match n with
-    | 0 => fail
-    | S n' =>
-        let
-          id := identifier ["let"; "fun"; "in"]%string
-        in let
-          app := do
-            token $ char "(";;
-            e1 <- parseExprn n';
-            e2 <- parseExprn n';
-            token $ char ")";;
-            pure $ App e1 e2
-        in let
-          lam := do
-            token $ str "fun";;
-            var <- id;
-            token $ str "=>";;
-            body <- parseExprn n';
-            pure $ Lam var body
-        in let
-          parseLet := do
-            token $ str "let";;
-            var <- id;
-            token $ str ":=";;
-            body <- parseExprn n';
-            token $ str "in";;
-            let_body <- parseExprn n';
-            pure $ Let var body let_body
-        in let
-          var := fmap Var id
-        in
-          app +++ lam +++ parseLet +++ var
+| 0 => fail
+| S n' =>
+    let
+      id := identifier ["let"; "fun"; "in"]%string
+    in let
+      app := do
+        token $ char "(";;
+        e1 <- parseExprn n';
+        e2 <- parseExprn n';
+        token $ char ")";;
+        pure $ App e1 e2
+    in let
+      lam := do
+        token $ str "fun";;
+        var <- id;
+        token $ str "=>";;
+        body <- parseExprn n';
+        pure $ Lam var body
+    in let
+      parseLet := do
+        token $ str "let";;
+        var <- id;
+        token $ str ":=";;
+        body <- parseExprn n';
+        token $ str "in";;
+        let_body <- parseExprn n';
+        pure $ Let var body let_body
+    in let
+      var := fmap Var id
+    in
+      app +++ lam +++ parseLet +++ var
 end.
 
 Definition parseExpr : Parser Expr :=
@@ -427,34 +427,34 @@ Time Compute parseExpr "let x := (x x) in x".
     from the paper. *)
 Time Fixpoint parseExprn' (n : nat) : Parser Expr :=
 match n with
-    | 0 => fail
-    | S n' =>
-        let
-          variable := identifier ["let"; "in"]%string
-        in let
-          paren := bracket (char "(") (parseExprn' n') (char ")")
-        in let
-          var := fmap Var variable
-        in let
-          local := do
-            symbol "let";;
-            x <- variable;
-            symbol "=";;
-            e <- parseExprn' n';
-            symbol "in";;
-            e' <- parseExprn' n';
-            pure $ Let x e e'
-        in let
-          lam := do
-            symbol "\";;
-            x <- variable;
-            symbol "->";;
-            e <- parseExprn' n';
-            pure $ Lam x e
-        in let
-          atom := token (lam +++ local +++ var +++ paren)
-        in
-          chainl1 atom (pure App)
+| 0 => fail
+| S n' =>
+    let
+      variable := identifier ["let"; "in"]%string
+    in let
+      paren := bracket (char "(") (parseExprn' n') (char ")")
+    in let
+      var := fmap Var variable
+    in let
+      local := do
+        symbol "let";;
+        x <- variable;
+        symbol "=";;
+        e <- parseExprn' n';
+        symbol "in";;
+        e' <- parseExprn' n';
+        pure $ Let x e e'
+    in let
+      lam := do
+        symbol "\";;
+        x <- variable;
+        symbol "->";;
+        e <- parseExprn' n';
+        pure $ Lam x e
+    in let
+      atom := token (lam +++ local +++ var +++ paren)
+    in
+      chainl1 atom (pure App)
 end.
 
 Definition parseExpr' : Parser Expr :=

@@ -53,8 +53,8 @@ Definition asum : T (F A) -> F A := foldr aplus aempty.
 
 Fixpoint aFromList (la : list A) : F A :=
 match la with
-    | [] => aempty
-    | h :: t => pure h <|> aFromList t
+| [] => aempty
+| h :: t => pure h <|> aFromList t
 end.
 
 Definition afold (ta : T A) : F A :=
@@ -62,14 +62,14 @@ Definition afold (ta : T A) : F A :=
 
 Definition aFromOption (oa : option A) : F A :=
 match oa with
-    | None => aempty
-    | Some a => pure a
+| None => aempty
+| Some a => pure a
 end.
 
 Definition areturn (f : A -> option B) (a : A) : F B :=
 match f a with
-    | None => aempty
-    | Some b => pure b
+| None => aempty
+| Some b => pure b
 end.
 
 Definition optional (x : F A) : F (option A) :=

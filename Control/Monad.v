@@ -83,12 +83,12 @@ Export MonadNotations.
 *)
 Ltac monad := repeat (simplify; try (hs; fail);
 match goal with
-    | |- ?x >>= _ = ?x =>
-        rewrite <- bind_pure_r; f_equal
-    | |- ?x = ?x >>= _ =>
-        rewrite <- bind_pure_r at 1; f_equal
-    | |- ?x >>= _ = ?x >>= _ => f_equal
-    | _ => hs
+| |- ?x >>= _ = ?x =>
+    rewrite <- bind_pure_r; f_equal
+| |- ?x = ?x >>= _ =>
+    rewrite <- bind_pure_r at 1; f_equal
+| |- ?x >>= _ = ?x >>= _ => f_equal
+| _ => hs
 end).
 
 (** All functions that in Haskell are doubled between [Applicative] and
@@ -103,8 +103,8 @@ Variables A B C D E F : Type.
 
 Fixpoint foldM (f : A -> B -> M A) (dflt : A) (l : list B) : M A :=
 match l with
-    | [] => pure dflt
-    | h :: t => f dflt h >>= fun a : A => foldM f a t
+| [] => pure dflt
+| h :: t => f dflt h >>= fun a : A => foldM f a t
 end.
 
 End MonadicFuns.

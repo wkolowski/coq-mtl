@@ -7,8 +7,8 @@ From CoqMTL Require Import Misc.Monoid.
     type has a monad structure, but I don't know what kind of effect
     it models. As we will see below, it is not nondeterminism. *)
 Inductive RT (A : Type) : Type :=
-    | Leaf : A -> RT A
-    | Node : RT A -> RT A -> RT A.
+| Leaf : A -> RT A
+| Node : RT A -> RT A -> RT A.
 
 Arguments Leaf {A} _.
 Arguments Node {A} _ _.
@@ -17,8 +17,8 @@ Arguments Node {A} _ _.
     function to each leaf. *)
 Fixpoint fmap_RT {A B : Type} (f : A -> B) (t : RT A) : RT B :=
 match t with
-    | Leaf x => Leaf (f x)
-    | Node l r => Node (fmap_RT f l) (fmap_RT f r)
+| Leaf x => Leaf (f x)
+| Node l r => Node (fmap_RT f l) (fmap_RT f r)
 end.
 
 #[refine]
@@ -40,8 +40,8 @@ Definition pure_RT {A : Type} (x : A) : RT A := Leaf x.
     the result of mapping it over the tree of arguments. *)
 Fixpoint ap_RT {A B : Type} (tf : RT (A -> B)) (ta : RT A) : RT B :=
 match tf with
-    | Leaf f => fmap f ta
-    | Node l r => Node (ap_RT l ta) (ap_RT r ta)
+| Leaf f => fmap f ta
+| Node l r => Node (ap_RT l ta) (ap_RT r ta)
 end.
 
 #[refine]
@@ -87,8 +87,8 @@ Qed.
     by the reuslt of applying [tf] to the value it contains. *)
 Fixpoint bind_RT {A B : Type} (ta : RT A) (tf : A -> RT B) : RT B :=
 match ta with
-    | Leaf x => tf x
-    | Node l r => Node (bind_RT l tf) (bind_RT r tf)
+| Leaf x => tf x
+| Node l r => Node (bind_RT l tf) (bind_RT r tf)
 end.
 
 #[refine]
@@ -130,8 +130,8 @@ Qed.
 Fixpoint foldMap_RT
   {A : Type} {M : Monoid} (f : A -> M) (t : RT A) : M :=
 match t with
-    | Leaf x => f x
-    | Node l r => op (foldMap_RT f l) (foldMap_RT f r)
+| Leaf x => f x
+| Node l r => op (foldMap_RT f l) (foldMap_RT f r)
 end.
 
 #[refine]

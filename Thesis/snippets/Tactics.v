@@ -11,16 +11,16 @@ Ltac exts := repeat ext.
 
 Ltac unmatch x :=
 match x with
-    | context [match ?y with _ => _ end] => unmatch y
-    | _ => destruct x
+| context [match ?y with _ => _ end] => unmatch y
+| _ => destruct x
 end.
 
 Ltac destr := repeat
 match goal with
-    | x : _ * _ |- _ => destruct x
-    | x : _ + _ |- _ => destruct x
-    | x : unit |- _ => destruct x
-    | |- context [match ?x with _ => _ end] => unmatch x
+| x : _ * _ |- _ => destruct x
+| x : _ + _ |- _ => destruct x
+| x : unit |- _ => destruct x
+| |- context [match ?x with _ => _ end] => unmatch x
 end.
 
 Ltac simplify :=
@@ -35,10 +35,10 @@ Ltac hs :=
 
 Ltac monad := repeat (simplify; try (hs; fail);
 match goal with
-    | |- ?x >>= _ = ?x =>
-        rewrite <- bind_pure_r; f_equal
-    | |- ?x = ?x >>= _ =>
-        rewrite <- bind_pure_r at 1; f_equal
-    | |- ?x >>= _ = ?x >>= _ => f_equal
-    | _ => hs
+| |- ?x >>= _ = ?x =>
+    rewrite <- bind_pure_r; f_equal
+| |- ?x = ?x >>= _ =>
+    rewrite <- bind_pure_r at 1; f_equal
+| |- ?x >>= _ = ?x >>= _ => f_equal
+| _ => hs
 end).

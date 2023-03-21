@@ -3,7 +3,7 @@ From CoqMTL Require Import Control.All.
 Definition fmap_Prod
   {A B C : Type} (f : B -> C) (x : A * B) : A * C :=
 match x with
-    | pair a b => pair a (f b)
+| pair a b => pair a (f b)
 end.
 
 #[global] Hint Unfold fmap_Prod : core.

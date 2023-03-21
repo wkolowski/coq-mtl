@@ -78,20 +78,20 @@ Qed.
     Theory.Applicative_is_Monoidal.v *)
 Ltac monoidal := repeat (
 multimatch goal with
-    | |- ?x = ?x => reflexivity
-    | |- context [fmap snd (pairF _ _)] => rewrite pairF_default_l
-    | |- context [fmap fst (pairF _ _)] => rewrite pairF_default_r
-    | |- context [fmap id _] => rewrite !fmap_id
-    | |- context [id _] => rewrite !id_eq
-    | |- context [id .> _] => rewrite !id_left
-    | |- context [_ .> id] => rewrite !id_right
-    | |- context [fmap (fst .> _)] => rewrite !fmap_comp'
-    | |- context [fmap (snd .> _)] => rewrite !fmap_comp'
-    | _ => rewrite ?aux
-    | |- context [pairF (fmap ?f ?a) ?x] =>
-          replace x with (fmap id x) by hs;
-          rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
-    | |- context [pairF ?x (fmap ?f ?a)] =>
-            replace x with (fmap id x) by hs;
-            rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
+| |- ?x = ?x => reflexivity
+| |- context [fmap snd (pairF _ _)] => rewrite pairF_default_l
+| |- context [fmap fst (pairF _ _)] => rewrite pairF_default_r
+| |- context [fmap id _] => rewrite !fmap_id
+| |- context [id _] => rewrite !id_eq
+| |- context [id .> _] => rewrite !id_left
+| |- context [_ .> id] => rewrite !id_right
+| |- context [fmap (fst .> _)] => rewrite !fmap_comp'
+| |- context [fmap (snd .> _)] => rewrite !fmap_comp'
+| _ => rewrite ?aux
+| |- context [pairF (fmap ?f ?a) ?x] =>
+      replace x with (fmap id x) by hs;
+      rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
+| |- context [pairF ?x (fmap ?f ?a)] =>
+        replace x with (fmap id x) by hs;
+        rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
 end).

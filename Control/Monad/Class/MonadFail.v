@@ -40,8 +40,8 @@ Definition mpartition {A : Type} (p : A -> bool) (ma : M A) : M A * M A :=
 
 Definition fromOption {A : Type} (oa : option A) : M A :=
 match oa with
-    | None => fail
-    | Some a => pure a
+| None => fail
+| Some a => pure a
 end.
 
 Definition mcatOptions {A : Type} (x : M (option A)) : M A :=
@@ -55,14 +55,14 @@ Definition mmapOption {A B : Type} (f : A -> option B) (x : M A) : M B :=
 
 Definition sum_left {A B : Type} (x : A + B) : option A :=
 match x with
-    | inl a => Some a
-    | _ => None
+| inl a => Some a
+| _ => None
 end.
 
 Definition sum_right {A B : Type} (x : A + B) : option B :=
 match x with
-    | inr b => Some b
-    | _ => None
+| inr b => Some b
+| _ => None
 end.
 
 Definition mlefts {A B : Type} (x : M (A + B)) : M A :=

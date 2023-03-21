@@ -17,8 +17,8 @@ Definition fmap_SumT
   : SumT E M A -> SumT E M B :=
     fmap (fun sa : sum E A =>
     match sa with
-        | inl e => inl e
-        | inr a => inr (f a)
+    | inl e => inl e
+    | inr a => inr (f a)
     end).
 
 #[global] Hint Unfold SumT fmap_SumT : CoqMTL.
@@ -41,13 +41,13 @@ Definition ap_SumT
   (msf : SumT E M (A -> B)) (msx : SumT E M A) : SumT E M B :=
     @bind M inst _ _ msf (fun sf =>
       match sf with
-          | inl e => pure (inl e)
-          | inr f =>
-              @bind M inst _ _ msx (fun sx =>
-              match sx with
-                  | inl e => pure (inl e)
-                  | inr x => pure (inr (f x))
-              end)
+      | inl e => pure (inl e)
+      | inr f =>
+          @bind M inst _ _ msx (fun sx =>
+          match sx with
+              | inl e => pure (inl e)
+              | inr x => pure (inr (f x))
+          end)
       end).
 
 #[global] Hint Unfold pure_SumT ap_SumT : CoqMTL.
@@ -104,8 +104,8 @@ Definition bind_SumT
   (ma : SumT E M A) (f : A -> SumT E M B) : SumT E M B :=
     @bind M inst _ _ ma (fun sa : E + A =>
     match sa with
-        | inl e => pure (inl e)
-        | inr a => f a
+    | inl e => pure (inl e)
+    | inr a => f a
     end).
 
 #[global] Hint Unfold bind_SumT : CoqMTL.
@@ -174,8 +174,8 @@ Instance MonadExcept_SumT
       fun A x y =>
       @bind M inst _ _ x (fun ea =>
       match ea with
-          | inl e => y
-          | inr a => pure (inr a)
+      | inl e => y
+      | inr a => pure (inr a)
       end)
 }.
 Proof.
@@ -260,8 +260,8 @@ Instance MonadWriter_SumT
       listen m >>=
         fun '(ea, w) => pure
         match ea with
-            | inl e => inl e
-            | inr a => inr (a, w)
+        | inl e => inl e
+        | inr a => inr (a, w)
         end
 }.
 Proof.
@@ -297,8 +297,8 @@ Proof.
           pure (inr x) >>=
             fun sa : E + S =>
             match sa with
-                | inl e => pure (inl e)
-                | inr a => k a a
+            | inl e => pure (inl e)
+            | inr a => k a a
             end)
       with
         (fun s : S => k s s).

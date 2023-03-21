@@ -22,8 +22,8 @@ Definition Parser (A : Type) : Type :=
 Definition item : Parser ascii :=
   fun input : string =>
   match input with
-      | EmptyString => []
-      | String c cs => pure (c, cs)
+  | EmptyString => []
+  | String c cs => pure (c, cs)
   end.
 
 (** Parse a character that satisfies a boolean predicate. *)
@@ -76,8 +76,8 @@ Open Scope string_scope.
 (** Parse a word of length less than or equal to [n]. *)
 Fixpoint words (n : nat) : Parser string :=
 match n with
-    | 0 => pure ""
-    | S n' => (String <$> letter <*> words n') <|> pure ""
+| 0 => pure ""
+| S n' => (String <$> letter <*> words n') <|> pure ""
 end.
 
 (** Parse a word of any length. Note that this may in theory not work,
@@ -89,8 +89,8 @@ Definition word : Parser string :=
 (** Parse precisely the given string. *)
 Fixpoint str (s : string) : Parser string :=
 match s with
-    | "" => pure ""
-    | String c cs => String <$> char c <*> str cs
+| "" => pure ""
+| String c cs => String <$> char c <*> str cs
 end.
 
 (** Run the parser [p] zero or more times. Fail if the input is longer than
@@ -98,8 +98,8 @@ end.
 Fixpoint many'
   {A : Type} (n : nat) (p : Parser A) : Parser (list A) :=
 match n with
-    | 0 => pure []
-    | S n' => (cons <$> p <*> many' n' p) <|> pure []
+| 0 => pure []
+| S n' => (cons <$> p <*> many' n' p) <|> pure []
 end.
 
 (** Run [p] zero or more times. The same remark as for [word] applies. *)
@@ -108,8 +108,8 @@ Definition many {A : Type} (p : Parser A) : Parser (list A) :=
 
 Fixpoint toString (l : list ascii) : string :=
 match l with
-    | [] => ""
-    | c :: cs => String c (toString cs)
+| [] => ""
+| c :: cs => String c (toString cs)
 end.
 
 (** An alternate definition of the parser for words. Note that it can still
@@ -132,8 +132,8 @@ Definition many1
 
 Fixpoint eval (cs : list ascii) : nat :=
 match cs with
-    | [] => 0
-    | c :: cs' => nat_of_ascii c - 48 + 10 * eval cs'
+| [] => 0
+| c :: cs' => nat_of_ascii c - 48 + 10 * eval cs'
 end.
 
 (** Parse a natural number written in decimal. *)
@@ -164,8 +164,8 @@ Definition parseSign : Parser (Z -> Z) :=
 Definition parsePositive : Parser positive :=
   parseNat >>= fun n : nat =>
   match n with
-      | 0 => aempty
-      | _ => pure $ Pos.of_nat n
+  | 0 => aempty
+  | _ => pure $ Pos.of_nat n
   end.
 
 (** Another way of paring the sign. *)
@@ -224,8 +224,8 @@ Fixpoint chainr1_aux
   {A : Type} (arg : Parser A) (op : Parser (A -> A -> A)) (n : nat)
   : Parser A :=
 match n with
-    | 0 => aempty
-    | S n' => op <*> arg <*> chainr1_aux arg op n' <|> arg
+| 0 => aempty
+| S n' => op <*> arg <*> chainr1_aux arg op n' <|> arg
 end.
 
 (** Like [chainl1], but right-associative. *)
@@ -243,11 +243,11 @@ Definition parseNat_chainr : Parser nat :=
 Definition ops
   {A B : Type} (start : Parser A * B) (l : list (Parser A * B)) : Parser B :=
 match l with
-    | [] => let '(p, op) := start in p >> pure op
-    | h :: t =>
-        let '(p, op) := start in
-          fold_right aplus (p >> pure op)
-            (map (fun '(p, op) => p >> pure op) l)
+| [] => let '(p, op) := start in p >> pure op
+| h :: t =>
+    let '(p, op) := start in
+      fold_right aplus (p >> pure op)
+        (map (fun '(p, op) => p >> pure op) l)
 end.
 
 (** Like [chainl1], but with a default value. *)
@@ -265,8 +265,8 @@ Definition first
   {A : Type} (p : Parser A) : Parser A :=
     fun input : string =>
 match p input with
-    | [] => []
-    | h :: _ => [h]
+| [] => []
+| h :: _ => [h]
 end.
 
 (** A deterministic version of [aplus]. *)

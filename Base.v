@@ -87,18 +87,18 @@ Definition the_ultimate_answer := 42.
     matches. *)
 Ltac unmatch x :=
 match x with
-    | context [match ?y with _ => _ end] => unmatch y
-    | _ => destruct x
+| context [match ?y with _ => _ end] => unmatch y
+| _ => destruct x
 end.
 
 (** Destruct products and get rid of [unit]s, reason by cases on sums and
     any (possibly nested) pattern matches *)
 Ltac destr := repeat
 match goal with
-    | x : _ * _ |- _ => destruct x
-    | x : _ + _ |- _ => destruct x
-    | x : unit |- _ => destruct x
-    | |- context [match ?x with _ => _ end] => unmatch x
+| x : _ * _ |- _ => destruct x
+| x : _ + _ |- _ => destruct x
+| x : unit |- _ => destruct x
+| |- context [match ?x with _ => _ end] => unmatch x
 end.
 
 (** A basic simplification tactic that goes like this:

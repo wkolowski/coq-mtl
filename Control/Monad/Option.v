@@ -11,8 +11,8 @@ Definition Option (A : Type) : Type := option A.
 Definition fmap_Option
   {A B : Type} (f : A -> B) (oa : option A) : option B :=
 match oa with
-    | None => None
-    | Some a => Some (f a)
+| None => None
+| Some a => Some (f a)
 end.
 
 #[global] Hint Unfold fmap_Option : CoqMTL.
@@ -38,8 +38,8 @@ Definition pure_Option := @Some.
 Definition ap_Option
   {A B : Type} (of : option (A -> B)) (oa : option A) : option B :=
 match of, oa with
-    | Some f, Some a => Some (f a)
-    | _, _ => None
+| Some f, Some a => Some (f a)
+| _, _ => None
 end.
 
 #[global] Hint Unfold pure_Option ap_Option : CoqMTL.
@@ -61,8 +61,8 @@ Definition aempty_Option {A : Type} : option A := None.
     a result, return it. Otherwise return the second computation. *)
 Definition aplus_Option {A : Type} (x y : option A) : option A :=
 match x, y with
-    | None, y => y
-    | Some a, _ => Some a
+| None, y => y
+| Some a, _ => Some a
 end.
 
 #[global] Hint Unfold aempty_Option aplus_Option : CoqMTL.
@@ -82,8 +82,8 @@ Proof. all: monad. Defined.
 Definition bind_Option 
   {A B : Type} (oa : option A) (f : A -> option B) : option B :=
 match oa with
-    | None => None
-    | Some a => f a
+| None => None
+| Some a => f a
 end.
 
 #[global] Hint Unfold bind_Option : CoqMTL.
@@ -117,8 +117,8 @@ Proof. intros. compute. reflexivity. Defined.
 Definition foldMap_Option
   {A : Type} {M : Monoid} (f : A -> M) (oa : option A) : M :=
 match oa with
-    | None => neutr
-    | Some a => f a
+| None => neutr
+| Some a => f a
 end.
 
 #[global] Hint Unfold foldMap_Option : CoqMTL.
