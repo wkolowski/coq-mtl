@@ -11,7 +11,7 @@ end.
 #[refine, export]
 Instance FunctorProd (A : Type) : Functor (prod A) :=
 {
-    fmap := @fmap_Prod A
+  fmap := @fmap_Prod A;
 }.
 Proof. all: monad. Defined.
 

@@ -7,7 +7,7 @@ From CoqMTL Require Export Control.Applicative.
 Class CommutativeApplicative
   (F : Type -> Type) (inst : Applicative F) : Prop :=
 {
-    ap_comm :
-      forall (A B C : Type) (f : A -> B -> C) (u : F A) (v : F B),
-        f <$> u <*> v = flip f <$> v <*> u
+  ap_comm :
+    forall (A B C : Type) (f : A -> B -> C) (u : F A) (v : F B),
+      f <$> u <*> v = flip f <$> v <*> u
 }.

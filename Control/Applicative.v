@@ -10,25 +10,25 @@ From CoqMTL Require Export Control.Functor.
     These laws are redundant: [identity] follows from [fmap_pure_ap]. *)
 Class Applicative (F : Type -> Type) : Type :=
 {
-    is_functor :> Functor F;
-    pure : forall {A : Type}, A -> F A;
-    ap : forall {A B : Type}, F (A -> B) -> F A -> F B;
-    identity :
-      forall (A : Type) (ax : F A), ap (pure id) ax = ax;
-    composition :
-      forall
-        (A B C : Type)
-        (f : F (A -> B)) (g : F (B  -> C)) (x : F A),
-          ap (ap (ap (pure compose) g) f) x = ap g (ap f x);
-    homomorphism :
-      forall (A B : Type) (f : A -> B) (x : A),
-        ap (pure f) (pure x) = pure (f x);
-    interchange :
-      forall (A B : Type) (f : F (A -> B)) (x : A),
-        ap f (pure x) = ap (pure (fun f => f x)) f;
-    fmap_pure_ap :
-      forall (A B : Type) (f : A -> B) (x : F A),
-        fmap f x = ap (pure f) x;
+  is_functor :> Functor F;
+  pure : forall {A : Type}, A -> F A;
+  ap : forall {A B : Type}, F (A -> B) -> F A -> F B;
+  identity :
+    forall (A : Type) (ax : F A), ap (pure id) ax = ax;
+  composition :
+    forall
+      (A B C : Type)
+      (f : F (A -> B)) (g : F (B  -> C)) (x : F A),
+        ap (ap (ap (pure compose) g) f) x = ap g (ap f x);
+  homomorphism :
+    forall (A B : Type) (f : A -> B) (x : A),
+      ap (pure f) (pure x) = pure (f x);
+  interchange :
+    forall (A B : Type) (f : F (A -> B)) (x : A),
+      ap f (pure x) = ap (pure (fun f => f x)) f;
+  fmap_pure_ap :
+    forall (A B : Type) (f : A -> B) (x : F A),
+      fmap f x = ap (pure f) x;
 }.
 
 Coercion is_functor : Applicative >-> Functor.

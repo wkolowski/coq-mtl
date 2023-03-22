@@ -15,7 +15,7 @@ Definition fmap_Cont
 #[export]
 Instance Functor_Cont (R : Type) : Functor (Cont R) :=
 {
-    fmap := @fmap_Cont R
+  fmap := @fmap_Cont R;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -33,9 +33,9 @@ Definition ap_Cont
 #[export]
 Instance Applicative_Cont (R : Type) : Applicative (Cont R) :=
 {
-    is_functor := Functor_Cont R;
-    pure := @pure_Cont R;
-    ap := @ap_Cont R
+  is_functor := Functor_Cont R;
+  pure := @pure_Cont R;
+  ap := @ap_Cont R;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -71,8 +71,8 @@ Qed.
 #[export]
 Instance Monad_Cont (R : Type) : Monad (Cont R) :=
 {
-    is_applicative := Applicative_Cont R;
-    bind := @bind_Cont R
+  is_applicative := Applicative_Cont R;
+  bind := @bind_Cont R;
 }.
 Proof. all: reflexivity. Defined.
 

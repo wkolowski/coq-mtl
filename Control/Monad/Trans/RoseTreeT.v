@@ -25,7 +25,7 @@ Definition fmap_RoseTreeT
 #[export]
 Instance Functor_RoseTreeT : Functor (RoseTreeT M) :=
 {
-    fmap := @fmap_RoseTreeT
+  fmap := @fmap_RoseTreeT
 }.
 Proof. all: reflexivity. Defined.
 
@@ -42,8 +42,8 @@ Definition ap_RoseTreeT
 #[export]
 Instance Applicative_RoseTreeT : Applicative (RoseTreeT M) :=
 {
-    pure := @pure_RoseTreeT;
-    ap := @ap_RoseTreeT;
+  pure := @pure_RoseTreeT;
+  ap := @ap_RoseTreeT;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -56,7 +56,7 @@ Definition bind_RoseTreeT
 #[export]
 Instance Monad_RoseTreeT : Monad (RoseTreeT M) :=
 {
-    bind := @bind_RoseTreeT
+  bind := @bind_RoseTreeT
 }.
 Proof. all: reflexivity. Defined.
 
@@ -85,9 +85,9 @@ Instance Alternative_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : Alternative M)
   : Alternative (RoseTreeT M) :=
 {
-    is_applicative := @Monad_RoseTreeT M;
-    aempty A := fun X leaf node => aempty >>= leaf;
-    aplus A x y := fun X leaf node => aplus (x X leaf node) (y X leaf node)
+  is_applicative := @Monad_RoseTreeT M;
+  aempty A := fun X leaf node => aempty >>= leaf;
+  aplus A x y := fun X leaf node => aplus (x X leaf node) (y X leaf node)
 }.
 Proof.
   all: monad.
@@ -101,9 +101,9 @@ Instance MonadAlt_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (RoseTreeT M) (Monad_RoseTreeT M) :=
 {
-    choose :=
-      fun A x y =>
-        fun X empty node => choose (x X empty node) (y X empty node)
+  choose :=
+    fun A x y =>
+      fun X empty node => choose (x X empty node) (y X empty node)
 }.
 Proof. all: monad. Defined.
 
@@ -113,7 +113,7 @@ Instance MonadFail_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (RoseTreeT M) (Monad_RoseTreeT M) :=
 {
-    fail := fun A => fun X empty node => fail
+  fail := fun A => fun X empty node => fail
 }.
 Proof. reflexivity. Defined.
 
@@ -123,8 +123,8 @@ Instance MonadNondet_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (RoseTreeT M) (Monad_RoseTreeT M) :=
 {
-    instF := @MonadFail_RoseTreeT M inst (@instF _ _ inst');
-    instA := @MonadAlt_RoseTreeT M inst (@instA _ _ inst');
+  instF := @MonadFail_RoseTreeT M inst (@instF _ _ inst');
+  instA := @MonadAlt_RoseTreeT M inst (@instA _ _ inst');
 }.
 Proof. all: monad. Defined.
 
@@ -136,10 +136,10 @@ Instance MonadExcept_RoseTreeT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (RoseTreeT M) (Monad_RoseTreeT M) :=
 {
-    instF := @MonadFail_RoseTreeT M inst inst';
-    catch :=
-      fun A x y =>
-        fun X empty node => catch (x X empty node) (y X empty node)
+  instF := @MonadFail_RoseTreeT M inst inst';
+  catch :=
+    fun A x y =>
+      fun X empty node => catch (x X empty node) (y X empty node)
 }.
 Proof.
   1-3: monad.
@@ -155,7 +155,7 @@ Instance MonadReader_RoseTreeT
   (inst : Monad M) (inst' : MonadReader E M inst)
   : MonadReader E (RoseTreeT M) (Monad_RoseTreeT M) :=
 {
-    ask := fun X empty node => ask >>= empty
+  ask := fun X empty node => ask >>= empty
 }.
 Proof.
   ext3 X empty node. hs.
@@ -171,8 +171,8 @@ Instance MonadWriter_RoseTreeT
   (inst : Monad M) (inst' : MonadWriter W M inst)
   : MonadWriter W (RoseTreeT M) (Monad_RoseTreeT M) :=
 {
-    tell w := fun X leaf node => tell w >>= leaf;
-    listen A x := fun X leaf node => x X (fun a => leaf (a, neutr)) node
+  tell w := fun X leaf node => tell w >>= leaf;
+  listen A x := fun X leaf node => x X (fun a => leaf (a, neutr)) node
 }.
 Proof. all: hs. Defined.
 
@@ -186,8 +186,8 @@ Instance MonadState_RoseTreeT
   (inst : Monad M) (inst' : MonadState S M inst)
   : MonadState S (RoseTreeT M) (Monad_RoseTreeT M) :=
 {
-    get := fun X empty node => get >>= empty;
-    put := fun s X empty node => put s >> empty tt;
+  get := fun X empty node => get >>= empty;
+  put := fun s X empty node => put s >> empty tt;
 }.
 Proof.
   4: intros; cbn; unfold bind_RoseTreeT; ext3 X leaf node; monad.
@@ -210,8 +210,8 @@ Instance MonadStateNondet_RoseTreeT
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (RoseTreeT M) (Monad_RoseTreeT M) :=
 {
-    instS := MonadState_RoseTreeT S M inst inst';
-    instN := MonadNondet_RoseTreeT M inst inst';
+  instS := MonadState_RoseTreeT S M inst inst';
+  instN := MonadNondet_RoseTreeT M inst inst';
 }.
 Proof.
   intros. rewrite constrA_spec. cbn.
@@ -226,9 +226,9 @@ Instance MonadFree_RoseTreeT
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (RoseTreeT M) instF (Monad_RoseTreeT M) :=
 {
-    wrap :=
-      fun A fma X empty node =>
-        wrap (fmap (fun l => l X empty node) fma)
+  wrap :=
+    fun A fma X empty node =>
+      wrap (fmap (fun l => l X empty node) fma)
 }.
 Proof.
   intros A B f x. ext3 X empty node.

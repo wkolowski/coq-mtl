@@ -20,7 +20,7 @@ Definition fmap_Writer
 #[export]
 Instance Functor_Writer (W : Monoid) : Functor (Writer W) :=
 {
-    fmap := @fmap_Writer W
+  fmap := @fmap_Writer W;
 }.
 Proof. all: monad. Defined.
 
@@ -45,9 +45,9 @@ Definition ap_Writer
 #[export]
 Instance Applicative_Writer (W : Monoid) : Applicative (Writer W) :=
 {
-    is_functor := Functor_Writer W;
-    pure := @pure_Writer W;
-    ap := @ap_Writer W
+  is_functor := Functor_Writer W;
+  pure := @pure_Writer W;
+  ap := @ap_Writer W;
 }.
 Proof. all: monad. Defined.
 
@@ -95,8 +95,8 @@ Definition bind_Writer
 #[export]
 Instance Monad_Writer (W : Monoid) : Monad (Writer W) :=
 {
-    is_applicative := Applicative_Writer W;
-    bind := @bind_Writer W
+  is_applicative := Applicative_Writer W;
+  bind := @bind_Writer W;
 }.
 Proof. all: monad. Defined.
 
@@ -108,9 +108,9 @@ Proof. all: monad. Defined.
 Instance MonadWriter_Writer (W : Monoid)
   : MonadWriter W (Writer W) (Monad_Writer W) :=
 {
-    tell := fun w => (tt, w);
-    listen := fun A '(a, w) => ((a, w), neutr);
-(*    pass := fun A '((a, f), w) => (a, f w);*)
+  tell := fun w => (tt, w);
+  listen := fun A '(a, w) => ((a, w), neutr);
+  (* pass := fun A '((a, f), w) => (a, f w); *)
 }.
 Proof.
   1-2: try reflexivity.

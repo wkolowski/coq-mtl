@@ -23,7 +23,7 @@ end.
 #[export]
 Instance Functor_Option : Functor option :=
 {
-    fmap := @fmap_Option
+  fmap := @fmap_Option;
 }.
 Proof. all: monad. Defined.
 
@@ -48,9 +48,9 @@ end.
 #[export]
 Instance Applicative_Option : Applicative option :=
 {
-    is_functor := Functor_Option;
-    pure := pure_Option;
-    ap := @ap_Option
+  is_functor := Functor_Option;
+  pure := pure_Option;
+  ap := @ap_Option;
 }.
 Proof. all: monad. Defined.
 
@@ -71,9 +71,9 @@ end.
 #[export]
 Instance Alternative_Option : Alternative option :=
 {
-    is_applicative := Applicative_Option;
-    aempty := @aempty_Option;
-    aplus := @aplus_Option
+  is_applicative := Applicative_Option;
+  aempty := @aempty_Option;
+  aplus := @aplus_Option;
 }.
 Proof. all: monad. Defined.
 
@@ -101,8 +101,8 @@ Defined.
 #[export]
 Instance Monad_Option : Monad option :=
 {
-    is_applicative := Applicative_Option;
-    bind := @bind_Option
+  is_applicative := Applicative_Option;
+  bind := @bind_Option;
 }.
 Proof. all: monad. Defined.
 
@@ -110,7 +110,7 @@ Proof. all: monad. Defined.
 #[export]
 Instance MonadFail_Option : MonadFail option Monad_Option :=
 {
-    fail := @None;
+  fail := @None;
 }.
 Proof. intros. compute. reflexivity. Defined.
 
@@ -127,6 +127,6 @@ end.
 #[export]
 Instance Foldable_Option : Foldable option :=
 {
-    foldMap := @foldMap_Option
+  foldMap := @foldMap_Option;
 }.
 Proof. monad. Defined.

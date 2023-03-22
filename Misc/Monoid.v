@@ -5,16 +5,16 @@ Import ListNotations.
     by [Writer] and [WriterT]. *)
 Class Monoid : Type :=
 {
-    carr : Type;
-    neutr : carr;
-    op : carr -> carr -> carr;
-    id_left :
-      forall x : carr, op neutr x = x;
-    id_right :
-      forall x : carr, op x neutr = x;
-    op_assoc :
-      forall x y z : carr,
-        op x (op y z) = op (op x y) z
+  carr : Type;
+  neutr : carr;
+  op : carr -> carr -> carr;
+  id_left :
+    forall x : carr, op neutr x = x;
+  id_right :
+    forall x : carr, op x neutr = x;
+  op_assoc :
+    forall x y z : carr,
+      op x (op y z) = op (op x y) z
 }.
 
 Coercion carr : Monoid >-> Sortclass.
@@ -28,9 +28,9 @@ Coercion carr : Monoid >-> Sortclass.
 #[export]
 Instance Monoid_unit : Monoid :=
 {
-    carr := unit;
-    neutr := tt;
-    op _ _ := tt
+  carr := unit;
+  neutr := tt;
+  op _ _ := tt
 }.
 Proof.
   all: try destruct x; reflexivity.
@@ -40,9 +40,9 @@ Defined.
 #[export]
 Instance Monoid_bool_andb : Monoid :=
 {
-    carr := bool;
-    neutr := true;
-    op := andb;
+  carr := bool;
+  neutr := true;
+  op := andb;
 }.
 Proof.
   all: intros; repeat
@@ -55,9 +55,9 @@ Defined.
 #[export]
 Instance Monoid_list_app (A : Type) : Monoid :=
 {
-    carr := list A;
-    neutr := [];
-    op := @app A;
+  carr := list A;
+  neutr := [];
+  op := @app A;
 }.
 Proof.
   all: intros.

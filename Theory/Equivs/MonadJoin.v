@@ -2,23 +2,23 @@ From CoqMTL Require Export Control.Applicative.
 
 Class Monad (M : Type -> Type) : Type :=
 {
-    is_applicative :> Applicative M;
-    join : forall {A : Type}, M (M A) -> M A;
-    join_fmap_join :
-      forall (A : Type) (x : M (M (M A))),
-        join (fmap join x) = join (join x);
-    join_pure :
-      forall (A : Type) (ma : M A), join (pure ma) = ma;
-    join_fmap_pure :
-      forall (A : Type) (x : M A),
-        join (fmap pure x) = x;
-    join_fmap_fmap :
-      forall (A B : Type) (f : A -> B) (x : M (M A)),
-        join (fmap (fmap f) x) = fmap f (join x);
-    join_ap :
-      forall (A B : Type) (mf : M (A -> B)) (ma : M A),
-        mf <*> ma =
-        join (pure (fun f : A -> B => join (fmap (f .> pure) ma)) <*> mf)
+  is_applicative :> Applicative M;
+  join : forall {A : Type}, M (M A) -> M A;
+  join_fmap_join :
+    forall (A : Type) (x : M (M (M A))),
+      join (fmap join x) = join (join x);
+  join_pure :
+    forall (A : Type) (ma : M A), join (pure ma) = ma;
+  join_fmap_pure :
+    forall (A : Type) (x : M A),
+      join (fmap pure x) = x;
+  join_fmap_fmap :
+    forall (A B : Type) (f : A -> B) (x : M (M A)),
+      join (fmap (fmap f) x) = fmap f (join x);
+  join_ap :
+    forall (A B : Type) (mf : M (A -> B)) (ma : M A),
+      mf <*> ma =
+      join (pure (fun f : A -> B => join (fmap (f .> pure) ma)) <*> mf)
 }.
 
 Coercion is_applicative : Monad >-> Applicative.

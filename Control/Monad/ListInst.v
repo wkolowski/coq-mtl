@@ -15,7 +15,7 @@ Definition fmap_List := map.
 #[export]
 Instance Functor_List : Functor list :=
 {
-    fmap := fmap_List
+  fmap := fmap_List;
 }.
 Proof.
   all: cbn; unfold fmap_List, id, compose; intros; ext l.
@@ -79,9 +79,9 @@ Qed.
 #[export]
 Instance Applicative_List : Applicative list :=
 {
-    is_functor := Functor_List;
-    pure := @pure_List;
-    ap := @ap_list
+  is_functor := Functor_List;
+  pure := @pure_List;
+  ap := @ap_list;
 }.
 Proof.
   cbn. intros. rewrite map_id, app_nil_r. reflexivity.
@@ -101,9 +101,9 @@ Definition aplus_List {A : Type} (x y : list A) : list A := app x y.
 #[export]
 Instance Alternative_List : Alternative list :=
 {
-    is_applicative := Applicative_List;
-    aempty := @aempty_List;
-    aplus := @aplus_List
+  is_applicative := Applicative_List;
+  aempty := @aempty_List;
+  aplus := @aplus_List;
 }.
 Proof.
   apply app_nil_l.
@@ -141,8 +141,8 @@ Qed.
 #[export]
 Instance Monad_List : Monad list :=
 {
-    is_applicative := Applicative_List;
-    bind := @bind_List
+  is_applicative := Applicative_List;
+  bind := @bind_List;
 }.
 Proof.
   hs.
@@ -165,7 +165,7 @@ Defined.
 #[export]
 Instance MonadFail_List : MonadFail list Monad_List :=
 {
-    fail := fun A => []
+  fail := fun A => [];
 }.
 Proof. intros. cbn. reflexivity. Defined.
 
@@ -173,7 +173,7 @@ Proof. intros. cbn. reflexivity. Defined.
 #[export]
 Instance MonadAlt_List : MonadAlt list Monad_List :=
 {
-    choose := @app;
+  choose := @app;
 }.
 Proof.
   intros. rewrite app_assoc. reflexivity.
@@ -186,8 +186,8 @@ Defined.
 #[export]
 Instance MonadNondet_List : MonadNondet list Monad_List :=
 {
-    instF := MonadFail_List;
-    instA := MonadAlt_List;
+  instF := MonadFail_List;
+  instA := MonadAlt_List;
 }.
 Proof. all: hs. Defined.
 
@@ -202,7 +202,7 @@ end.
 #[export]
 Instance FoldableList : Foldable list :=
 {
-    foldMap := @foldMap_List
+  foldMap := @foldMap_List;
 }.
 Proof.
   intros. ext l.

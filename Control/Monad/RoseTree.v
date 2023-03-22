@@ -25,7 +25,7 @@ end.
 #[export]
 Instance Functor_RT : Functor RT :=
 {
-    fmap := @fmap_RT
+  fmap := @fmap_RT;
 }.
 Proof.
   all: intros; ext t;
@@ -48,8 +48,8 @@ end.
 #[export]
 Instance Applicative_RT : Applicative RT :=
 {
-    pure := @pure_RT;
-    ap := @ap_RT;
+  pure := @pure_RT;
+  ap := @ap_RT;
 }.
 Proof.
   all: cbn; intros.
@@ -95,7 +95,7 @@ end.
 #[export]
 Instance Monad_RT : Monad RT :=
 {
-    bind := @bind_RT
+  bind := @bind_RT;
 }.
 Proof.
   all: cbn; intros.
@@ -138,7 +138,7 @@ end.
 #[export]
 Instance Foldable_RT : Foldable RT :=
 {
-    foldMap := @foldMap_RT
+  foldMap := @foldMap_RT;
 }.
 Proof.
   intros. ext t.

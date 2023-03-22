@@ -23,7 +23,7 @@ Definition fmap_OptionT
 Instance Functor_OptionT (M : Type -> Type) {inst : Functor M}
     : Functor (OptionT M) :=
 {
-    fmap := fmap_OptionT
+  fmap := fmap_OptionT
 }.
 Proof. all: hs; mtrans; monad. Defined.
 
@@ -52,9 +52,9 @@ Definition ap_OptionT
 Instance Applicative_OptionT
   (M : Type -> Type) (inst : Monad M) : Applicative (OptionT M) :=
 {
-    is_functor := @Functor_OptionT M inst;
-    pure := @pure_OptionT M inst;
-    ap := @ap_OptionT M inst;
+  is_functor := @Functor_OptionT M inst;
+  pure := @pure_OptionT M inst;
+  ap := @ap_OptionT M inst;
 }.
 Proof. all: monad. Defined.
 
@@ -80,9 +80,9 @@ Definition aplus_OptionT
 Instance Alternative_OptionT
   (M : Type -> Type) (inst : Monad M) : Alternative (OptionT M) :=
 {
-    is_applicative := Applicative_OptionT M inst;
-    aempty := aempty_OptionT M inst;
-    aplus := aplus_OptionT M inst;
+  is_applicative := Applicative_OptionT M inst;
+  aempty := aempty_OptionT M inst;
+  aplus := aplus_OptionT M inst;
 }.
 Proof. all: monad. Defined.
 
@@ -102,8 +102,8 @@ Definition bind_OptionT
 Instance Monad_OptionT
   (M : Type -> Type) (inst : Monad M) : Monad (OptionT M) :=
 {
-    is_applicative := Applicative_OptionT M inst;
-    bind := @bind_OptionT M inst
+  is_applicative := Applicative_OptionT M inst;
+  bind := @bind_OptionT M inst
 }.
 Proof. all: monad. Defined.
 
@@ -119,8 +119,8 @@ Definition lift_OptionT
 #[export]
 Instance MonadTrans_OptionT : MonadTrans OptionT :=
 {
-    is_monad := @Monad_OptionT;
-    lift := @lift_OptionT;
+  is_monad := @Monad_OptionT;
+  lift := @lift_OptionT;
 }.
 Proof. all: monad. Defined.
 
@@ -138,7 +138,7 @@ Instance MonadFail_OptionT
   (M : Type -> Type) (inst : Monad M)
   : MonadFail (OptionT M) (Monad_OptionT M inst) :=
 {
-    fail := @fail_OptionT M inst
+  fail := @fail_OptionT M inst
 }.
 Proof. monad. Defined.
 
@@ -153,8 +153,8 @@ Instance MonadAlt_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (OptionT M) (Monad_OptionT M inst) :=
 {
-    choose :=
-      fun A x y => @choose M inst inst' _ x y
+  choose :=
+    fun A x y => @choose M inst inst' _ x y
 }.
 Proof. all: monad. Defined.
 
@@ -164,8 +164,8 @@ Instance MonadNondet_OptionT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (OptionT M) (Monad_OptionT M inst) :=
 {
-    instF := @MonadFail_OptionT M inst;
-    instA := @MonadAlt_OptionT M inst (@instA _ _ inst');
+  instF := @MonadFail_OptionT M inst;
+  instA := @MonadAlt_OptionT M inst (@instA _ _ inst');
 }.
 Proof.
 Abort.
@@ -178,14 +178,14 @@ Instance MonadExcept_OptionT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (OptionT M) (Monad_OptionT M inst) :=
 {
-    instF := @MonadFail_OptionT M inst;
-    catch :=
-      fun A x y =>
-        @bind M inst _ _ x (fun x' : option A =>
-        match x' with
-        | None => y
-        | Some a => pure (Some a)
-        end)
+  instF := @MonadFail_OptionT M inst;
+  catch :=
+    fun A x y =>
+      @bind M inst _ _ x (fun x' : option A =>
+      match x' with
+      | None => y
+      | Some a => pure (Some a)
+      end);
 }.
 Proof. all: monad. Defined.
 
@@ -198,7 +198,7 @@ Instance MonadReader_OptionT
   (inst : Monad M) (inst' : MonadReader E M inst)
   : MonadReader E (OptionT M) (Monad_OptionT M inst) :=
 {
-    ask := ask >>= fun e => pure (Some e)
+  ask := ask >>= fun e => pure (Some e);
 }.
 Proof.
   rewrite <- ask_ask at 3. rewrite <- constrA_bind_assoc. monad.
@@ -211,13 +211,13 @@ Instance MonadWriter_OptionT
   (inst : Monad M) (inst' : MonadWriter W M inst)
   : MonadWriter W (OptionT M) (Monad_OptionT M inst) :=
 {
-    tell w := fmap Some (tell w);
-    listen := fun A x =>
-      @listen W M inst inst' _ x >>= (fun '(oa, w) =>
-      match oa with
-      | None => pure None
-      | Some a => pure (Some (a, w))
-      end)
+  tell w := fmap Some (tell w);
+  listen := fun A x =>
+    @listen W M inst inst' _ x >>= (fun '(oa, w) =>
+    match oa with
+    | None => pure None
+    | Some a => pure (Some (a, w))
+    end);
 }.
 Proof.
   intros. cbn. unfold pure_OptionT. rewrite listen_pure.
@@ -232,8 +232,8 @@ Instance MonadState_OptionT
   (inst : Monad M) (inst' : MonadState S M inst)
   : MonadState S (OptionT M) (Monad_OptionT M inst) :=
 {
-    get := fmap Some get;
-    put s := put s >> pure (Some tt);
+  get := fmap Some get;
+  put s := put s >> pure (Some tt);
 }.
 Proof.
   monad.
@@ -257,8 +257,8 @@ Instance MonadStateNondet_OptionT
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (OptionT M) (Monad_OptionT M inst) :=
 {
-    instS := MonadState_OptionT S M inst inst';
-    instN := MonadNondet_OptionT S M inst inst';
+  instS := MonadState_OptionT S M inst inst';
+  instN := MonadNondet_OptionT S M inst inst';
 }.
 *)
 
@@ -270,7 +270,7 @@ Instance MonadFree_OptionT
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (OptionT M) instF (Monad_OptionT M instM) :=
 {
-    wrap := fun A m => @wrap F M instF instM instMF _ m
+  wrap := fun A m => @wrap F M instF instM instMF _ m;
 }.
 Proof.
   hs.

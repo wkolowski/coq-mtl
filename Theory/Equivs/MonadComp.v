@@ -2,19 +2,19 @@ From CoqMTL Require Import Control.Applicative.
 
 Class Monad (M : Type -> Type) : Type :=
 {
-    is_applicative :> Applicative M;
-    compM : forall {A B C : Type}, (A -> M B) -> (B -> M C) -> (A -> M C);
-    compM_pure_l :
-      forall (A B : Type) (f : A -> M B), compM pure f = f;
-    compM_pure_r :
-      forall (A B : Type) (f : A -> M B), compM f pure = f;
-    compM_assoc :
-      forall (A B C D : Type) (f : A -> M B) (g : B -> M C) (h : C -> M D),
-        compM f (compM g h) = compM (compM f g) h;
+  is_applicative :> Applicative M;
+  compM : forall {A B C : Type}, (A -> M B) -> (B -> M C) -> (A -> M C);
+  compM_pure_l :
+    forall (A B : Type) (f : A -> M B), compM pure f = f;
+  compM_pure_r :
+    forall (A B : Type) (f : A -> M B), compM f pure = f;
+  compM_assoc :
+    forall (A B C D : Type) (f : A -> M B) (g : B -> M C) (h : C -> M D),
+      compM f (compM g h) = compM (compM f g) h;
 (*
-    compM_const :
-      forall (A B C : Type) (f : B -> M C) (a : A) (b : B),
-        (compM (fun _ : A => pure b) f) a = f b;
+  compM_const :
+    forall (A B C : Type) (f : B -> M C) (a : A) (b : B),
+      (compM (fun _ : A => pure b) f) a = f b;
 *)
 }.
 
@@ -46,8 +46,8 @@ From CoqMTL Require MonadBind.
 Instance Comp_to_Bind
   (M : Type -> Type) (inst : Monad M) : MonadBind.Monad M :=
 {
-    bind := @bindM M inst;
-    pure := @pure M inst
+  bind := @bindM M inst;
+  pure := @pure M inst
 }.
 Proof.
   all: unfold bindM; cbn; intros.

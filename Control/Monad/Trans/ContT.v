@@ -28,7 +28,7 @@ Definition fmap_ContT
 #[export]
 Instance FunctorContT : Functor (ContT R M) :=
 {
-    fmap := fmap_ContT
+  fmap := fmap_ContT;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -43,9 +43,9 @@ Definition ap_ContT
 #[export]
 Instance ApplicativeContT : Applicative (ContT R M) :=
 {
-    is_functor := FunctorContT;
-    pure := pure_ContT;
-    ap := ap_ContT;
+  is_functor := FunctorContT;
+  pure := pure_ContT;
+  ap := ap_ContT;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -57,8 +57,8 @@ Definition bind_ContT
 #[export]
 Instance Monad_ContT : Monad (ContT R M) :=
 {
-    is_applicative := ApplicativeContT;
-    bind := bind_ContT;
+  is_applicative := ApplicativeContT;
+  bind := bind_ContT;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -77,8 +77,8 @@ End ContT_instances.
 #[export]
 Instance MonadTrans_ContT (R : Type) : MonadTrans (ContT R) :=
 {
-    is_monad := fun M _ => @Monad_ContT R M;
-    lift := @lift_ContT R;
+  is_monad := fun M _ => @Monad_ContT R M;
+  lift := @lift_ContT R;
 }.
 Proof. all: monad. Defined.
 
@@ -91,8 +91,8 @@ Instance MonadAlt_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (ContT R M) (Monad_ContT R M) :=
 {
-    choose :=
-      fun A x y k => choose (x k) (y k)
+  choose :=
+    fun A x y k => choose (x k) (y k);
 }.
 Proof. all: monad. Defined.
 
@@ -102,7 +102,7 @@ Instance MonadFail_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (ContT R M) (Monad_ContT R M) :=
 {
-    fail := fun A k => fail
+  fail := fun A k => fail;
 }.
 Proof. reflexivity. Defined.
 
@@ -112,8 +112,8 @@ Instance MonadNondet_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (ContT R M) (Monad_ContT R M) :=
 {
-    instF := @MonadFail_ContT R M inst (@instF _ _ inst');
-    instA := @MonadAlt_ContT R M inst (@instA _ _ inst');
+  instF := @MonadFail_ContT R M inst (@instF _ _ inst');
+  instA := @MonadAlt_ContT R M inst (@instA _ _ inst');
 }.
 Proof. all: monad. Defined.
 
@@ -128,8 +128,8 @@ Instance MonadExcept_ContT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ContT R M) (Monad_ContT R M) :=
 {
-    instF := @MonadFail_ContT R M inst inst';
-    catch := fun A x y k => catch (x k) (y k);
+  instF := @MonadFail_ContT R M inst inst';
+  catch := fun A x y k => catch (x k) (y k);
 }.
 Proof.
   1-3: monad.
@@ -146,7 +146,7 @@ Instance MonadReader_ContT
   (inst : Monad M) (inst' : MonadReader E M inst)
   : MonadReader E (ContT R M) (Monad_ContT R M) :=
 {
-    ask := fun k => ask >>= k
+  ask := fun k => ask >>= k;
 }.
 Proof.
   hs. ext k. unfold const, id.
@@ -162,8 +162,8 @@ Instance MonadWriter_ContT
   (instM : Monad M) (instMW : MonadWriter W M instM)
   : MonadWriter W (ContT R M) (Monad_ContT R M) :=
 {
-    tell w := fun k => tell w >>= k;
-    listen := fun A x k => x (fun a => k (a, neutr));
+  tell w := fun k => tell w >>= k;
+  listen := fun A x k => x (fun a => k (a, neutr));
 }.
 Proof. all: monad. Defined.
 
@@ -174,8 +174,8 @@ Instance MonadState_ContT
   (inst : Monad M) (inst' : MonadState S M inst)
   : MonadState S (ContT R M) (Monad_ContT R M) :=
 {
-    get := fun k => get >>= k;
-    put := fun s k => put s >> k tt;
+  get := fun k => get >>= k;
+  put := fun s k => put s >> k tt;
 }.
 Proof.
   all: hs.
@@ -197,8 +197,8 @@ Instance MonadStateNondet_ContT
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (ContT R M) (Monad_ContT R M) :=
 {
-    instS := MonadState_ContT S R M inst inst';
-    instN := MonadNondet_ContT R M inst inst';
+  instS := MonadState_ContT S R M inst inst';
+  instN := MonadNondet_ContT R M inst inst';
 }.
 Proof.
   intros. rewrite constrA_spec. cbn. unfold bind_ContT.
@@ -215,7 +215,7 @@ Instance MonadFree_ContT
   (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (ContT R M) instF (Monad_ContT R M) :=
 {
-    wrap := fun A m k => wrap (fmap (fun x => x k) m)
+  wrap := fun A m k => wrap (fmap (fun x => x k) m);
 }.
 Proof.
   monad. rewrite <- !fmap_comp'.

@@ -39,7 +39,7 @@ Proof. monad. Qed.
 Instance Functor_StateT
   {S : Type} {M : Type -> Type} {inst : Monad M} : Functor (StateT S M) :=
 {
-    fmap := @fmap_StateT S M inst
+  fmap := @fmap_StateT S M inst;
 }.
 Proof.
   apply f1.
@@ -97,9 +97,9 @@ Proof. monad. Qed.
 Instance Applicative_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) : Applicative (StateT S M) :=
 {
-    is_functor := @Functor_StateT S M inst;
-    pure := @pure_StateT S M inst;
-    ap := @ap_StateT S M inst;
+  is_functor := @Functor_StateT S M inst;
+  pure := @pure_StateT S M inst;
+  ap := @ap_StateT S M inst;
 }.
 Proof.
   apply p1.
@@ -137,9 +137,9 @@ Instance Alternative_StateT
   (S : Type) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
   : Alternative (StateT S M) :=
 {
-    is_applicative := Applicative_StateT S M instM;
-    aempty := @aempty_StateT S M instM instA;
-    aplus := @aplus_StateT S M instM instA;
+  is_applicative := Applicative_StateT S M instM;
+  aempty := @aempty_StateT S M instM instA;
+  aplus := @aplus_StateT S M instM instA;
 }.
 Proof. all: monad. Defined.
 
@@ -188,8 +188,8 @@ Proof. monad. Qed.
 Instance Monad_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) : Monad (StateT S M) :=
 {
-    is_applicative := @Applicative_StateT S M inst;
-    bind := @bind_StateT S M inst;
+  is_applicative := @Applicative_StateT S M inst;
+  bind := @bind_StateT S M inst;
 }.
 Proof.
   apply m1.
@@ -210,8 +210,8 @@ Definition lift_StateT
 #[export]
 Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
 {
-    is_monad := @Monad_StateT S;
-    lift := @lift_StateT S;
+  is_monad := @Monad_StateT S;
+  lift := @lift_StateT S;
 }.
 Proof. all: monad. Defined.
 
@@ -222,8 +222,8 @@ Instance MonadState_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (StateT S M) (Monad_StateT S M inst) :=
 {
-    get := fun s : S => pure (s, s);
-    put := fun s : S => fun _ => pure (tt, s)
+  get := fun s : S => pure (s, s);
+  put := fun s : S => fun _ => pure (tt, s);
 }.
 Proof.
   1-3: monad.
@@ -238,8 +238,8 @@ Instance MonadAlt_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (StateT S M) (Monad_StateT S M inst) :=
 {
-    choose :=
-      fun A x y s => choose (x s) (y s)
+  choose :=
+    fun A x y s => choose (x s) (y s);
 }.
 Proof. all: monad. Defined.
 
@@ -249,7 +249,7 @@ Instance MonadFail_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (StateT S M) (Monad_StateT S M inst) :=
 {
-    fail := fun A s => fail
+  fail := fun A s => fail;
 }.
 Proof. monad. Defined.
 
@@ -259,8 +259,8 @@ Instance MonadNondet_StateT
   (S : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (StateT S M) (Monad_StateT S M inst) :=
 {
-    instF := @MonadFail_StateT S M inst (@instF _ _ inst');
-    instA := @MonadAlt_StateT S M inst (@instA _ _ inst');
+  instF := @MonadFail_StateT S M inst (@instF _ _ inst');
+  instA := @MonadAlt_StateT S M inst (@instA _ _ inst');
 }.
 Proof. all: monad. Defined.
 
@@ -271,9 +271,9 @@ Instance MonadExcept_StateT
   (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (StateT S M) (Monad_StateT S M inst) :=
 {
-    instF := @MonadFail_StateT S M inst inst';
-    catch :=
-      fun A x y => fun s => catch (x s) (y s);
+  instF := @MonadFail_StateT S M inst inst';
+  catch :=
+    fun A x y => fun s => catch (x s) (y s);
 }.
 Proof. all: monad. Defined.
 
@@ -284,7 +284,7 @@ Instance MonadReader_StateT
   (inst : Monad M) (inst' : MonadReader E M inst)
   : MonadReader E (StateT S M) (Monad_StateT S M inst) :=
 {
-    ask := fun s => ask >>= fun e => pure (e, s);
+  ask := fun s => ask >>= fun e => pure (e, s);
 }.
 Proof.
   rewrite constrA_spec. cbn. unfold bind_StateT.
@@ -299,11 +299,11 @@ Instance MonadWriter_StateT
   (W : Monoid) (S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadWriter W (StateT S M) (Monad_StateT S M inst) :=
 {
-    tell := fun w => fun s => pure (tt, s);
-    listen :=
-      fun A (m : S -> M (A * S)%type) =>
-        fun s =>
-          m s >>= fun '(a, s) => pure (a, neutr, s);
+  tell := fun w => fun s => pure (tt, s);
+  listen :=
+    fun A (m : S -> M (A * S)%type) =>
+      fun s =>
+        m s >>= fun '(a, s) => pure (a, neutr, s);
 }.
 Proof. all: monad. Defined.
 
@@ -314,8 +314,8 @@ Instance MonadStateNondet_StateT
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (StateT S M) (Monad_StateT S M inst) :=
 {
-    instS := MonadState_StateT S M inst;
-    instN := MonadNondet_StateT S M inst inst';
+  instS := MonadState_StateT S M inst;
+  instN := MonadNondet_StateT S M inst inst';
 }.
 Proof.
   intros. rewrite constrA_spec. cbn. unfold bind_StateT.
@@ -335,8 +335,8 @@ Instance MonadFree_StateT
   (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (StateT S M) instF (Monad_StateT S M instM) :=
 {
-    wrap :=
-      fun A m s => wrap (fmap (fun x => x s) m)
+  wrap :=
+    fun A m s => wrap (fmap (fun x => x s) m);
 }.
 Proof.
   intros. ext s. cbn.

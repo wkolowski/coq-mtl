@@ -26,7 +26,7 @@ Definition fmap_WriterT
 Instance Functor_WriterT
   (W : Monoid) {M : Type -> Type} {inst : Monad M} : Functor (WriterT W M) :=
 {
-    fmap := @fmap_WriterT W M inst
+  fmap := @fmap_WriterT W M inst;
 }.
 Proof. all: unfold compose; monad. Defined.
 
@@ -49,9 +49,9 @@ Instance Applicative_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M)
   : Applicative (WriterT W M) :=
 {
-    is_functor := @Functor_WriterT W M inst;
-    pure := @pure_WriterT W M inst;
-    ap := @ap_WriterT W M inst;
+  is_functor := @Functor_WriterT W M inst;
+  pure := @pure_WriterT W M inst;
+  ap := @ap_WriterT W M inst;
 }.
 Proof. all: monad. Defined.
 
@@ -75,9 +75,9 @@ Instance Alternative_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : Alternative M)
   : Alternative (WriterT W M) :=
 {
-    is_applicative := Applicative_WriterT W M inst;
-    aempty A := fmap (fun a => (a, neutr)) aempty;
-    aplus A x y := @aplus M inst' _ x y;
+  is_applicative := Applicative_WriterT W M inst;
+  aempty A := fmap (fun a => (a, neutr)) aempty;
+  aplus A x y := @aplus M inst' _ x y;
 }.
 Proof. all: monad. Abort.
 
@@ -95,8 +95,8 @@ Definition bind_WriterT
 Instance Monad_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) : Monad (WriterT W M) :=
 {
-    is_applicative := @Applicative_WriterT W M inst;
-    bind := @bind_WriterT W M inst;
+  is_applicative := @Applicative_WriterT W M inst;
+  bind := @bind_WriterT W M inst;
 }.
 Proof. all: monad. Defined.
 
@@ -112,8 +112,8 @@ Definition lift_WriterT
 #[export]
 Instance MonadTrans_WriterT (W : Monoid) : MonadTrans (WriterT W) :=
 {
-    is_monad := @Monad_WriterT W;
-    lift := @lift_WriterT W;
+  is_monad := @Monad_WriterT W;
+  lift := @lift_WriterT W;
 }.
 Proof. all: unfold compose; monad. Defined.
 
@@ -124,10 +124,10 @@ Instance MonadWriter_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M)
   : MonadWriter W (WriterT W M) (Monad_WriterT W M inst) :=
 {
-    tell := fun w => pure (tt, w);
-    listen :=
-      fun A (ma : M (A * W)%type) =>
-        ma >>= fun '(a, w) => pure ((a, w), neutr);
+  tell := fun w => pure (tt, w);
+  listen :=
+    fun A (ma : M (A * W)%type) =>
+      ma >>= fun '(a, w) => pure ((a, w), neutr);
 }.
 Proof. all: monad. Defined.
 
@@ -139,7 +139,7 @@ Instance MonadAlt_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (WriterT W M) (Monad_WriterT W M inst) :=
 {
-    choose := fun A x y => @choose M inst inst' (A * W) x y
+  choose := fun A x y => @choose M inst inst' (A * W) x y;
 }.
 Proof. all: monad. Defined.
 
@@ -149,7 +149,7 @@ Instance MonadFail_WriterT
   (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (WriterT W M) (Monad_WriterT W M inst) :=
 {
-    fail := fun A => @fail M inst inst' (A * W)
+  fail := fun A => @fail M inst inst' (A * W);
 }.
 Proof. monad. Defined.
 
@@ -160,8 +160,8 @@ Instance MonadNondet_WriterT
   (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (WriterT W M) (Monad_WriterT W M inst) :=
 {
-    instF := @MonadFail_WriterT W M inst (@instF _ _ inst');
-    instA := @MonadAlt_WriterT W M inst (@instA _ _ inst');
+  instF := @MonadFail_WriterT W M inst (@instF _ _ inst');
+  instA := @MonadAlt_WriterT W M inst (@instA _ _ inst');
 }.
 Proof. all: monad. Defined.
 
@@ -172,8 +172,8 @@ Instance MonadExcept_WriterT
   (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (WriterT W M) (Monad_WriterT W M inst) :=
 {
-    instF := @MonadFail_WriterT W M inst inst';
-    catch := fun A x y => @catch M inst _ _ x y;
+  instF := @MonadFail_WriterT W M inst inst';
+  catch := fun A x y => @catch M inst _ _ x y;
 }.
 Proof. all: monad. Defined.
 
@@ -184,7 +184,7 @@ Instance MonadReader_WriterT
   (inst : Monad M) (inst' : MonadReader E M inst)
   : MonadReader E (WriterT W M) (Monad_WriterT W M inst) :=
 {
-    ask := ask >>= fun e => pure (e, neutr)
+  ask := ask >>= fun e => pure (e, neutr);
 }.
 Proof.
   rewrite <- ask_ask at 3.
@@ -199,8 +199,8 @@ Instance MonadState_WriterT
   (inst : Monad M) (inst' : MonadState S M inst)
   : MonadState S (WriterT W M) (Monad_WriterT W M inst) :=
 {
-    get := get >>= fun s => pure (s, neutr);
-    put := fun s => put s >> pure (tt, neutr);
+  get := get >>= fun s => pure (s, neutr);
+  put := fun s => put s >> pure (tt, neutr);
 }.
 Proof.
   intros. cbn. unfold ap_WriterT, fmap_WriterT. monad.
@@ -233,8 +233,8 @@ Instance MonadStateNondet_WriterT
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (WriterT W M) (Monad_WriterT W M inst) :=
 {
-    instS := MonadState_WriterT W S M inst inst';
-    instN := MonadNondet_WriterT W M inst inst';
+  instS := MonadState_WriterT W S M inst inst';
+  instN := MonadNondet_WriterT W M inst inst';
 }.
 Proof.
   intros. rewrite constrA_spec. cbn.
@@ -255,7 +255,7 @@ Instance MonadFree_WriterT
   (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (WriterT W M) instF (Monad_WriterT W M instM) :=
 {
-    wrap := fun A m => @wrap F M instF instM instMF _ m
+  wrap := fun A m => @wrap F M instF instM instMF _ m;
 }.
 Proof.
   intros. cbn. unfold bind_WriterT, pure_WriterT, WriterT in *.

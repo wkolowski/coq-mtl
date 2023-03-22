@@ -20,7 +20,7 @@ Definition fmap_Codensity
 Instance Functor_Codensity
   (F : Type -> Type) : Functor (Codensity F) :=
 {
-    fmap := @fmap_Codensity F
+  fmap := @fmap_Codensity F;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -39,9 +39,9 @@ Definition ap_Codensity
 Instance Applicative_Codensity
   (F : Type -> Type) : Applicative (Codensity F) :=
 {
-    is_functor := Functor_Codensity F;
-    pure := @pure_Codensity F;
-    ap := @ap_Codensity F;
+  is_functor := Functor_Codensity F;
+  pure := @pure_Codensity F;
+  ap := @ap_Codensity F;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -63,8 +63,8 @@ Qed.
 Instance Monad_Codensity
   (F : Type -> Type) : Monad (Codensity F) :=
 {
-    is_applicative := @Applicative_Codensity F;
-    bind := @bind_Codensity F;
+  is_applicative := @Applicative_Codensity F;
+  bind := @bind_Codensity F;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -148,7 +148,7 @@ Instance MonadFree_Codensity
   {instMF : MonadFree F M instF instM}
   : MonadFree F (Codensity M) instF (Monad_Codensity M) :=
 {
-    wrap := @wrap_Codensity F M instF instM instMF
+  wrap := @wrap_Codensity F M instF instM instMF;
 }.
 Proof.
   hs. ext2 R g. rewrite <- !fmap_comp'. unfold compose. reflexivity.

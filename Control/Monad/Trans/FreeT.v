@@ -26,7 +26,7 @@ Definition fmap_FreeT
 #[export]
 Instance Functor_FreeT : Functor (FreeT F M) :=
 {
-    fmap := @fmap_FreeT
+  fmap := @fmap_FreeT;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -42,8 +42,8 @@ Definition ap_FreeT
 #[export]
 Instance Applicative_FreeT : Applicative (FreeT F M) :=
 {
-    pure := @pure_FreeT;
-    ap := @ap_FreeT;
+  pure := @pure_FreeT;
+  ap := @ap_FreeT;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -55,7 +55,7 @@ Definition bind_FreeT
 #[export]
 Instance Monad_FreeT : Monad (FreeT F M) :=
 {
-    bind := @bind_FreeT
+  bind := @bind_FreeT;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -86,8 +86,8 @@ Definition lift_FreeT
 Instance MonadTrans_FreeT
   {F : Type -> Type} : MonadTrans (FreeT F) :=
 {
-    is_monad := fun M _ => @Monad_FreeT F M;
-    lift := @lift_FreeT F;
+  is_monad := fun M _ => @Monad_FreeT F M;
+  lift := @lift_FreeT F;
 }.
 Proof. all: monad. Defined.
 
@@ -99,9 +99,9 @@ Instance MonadFree_FreeT
   (M : Type -> Type) (instM : Monad M)
   : MonadFree F (FreeT F M) instF (Monad_FreeT F M) :=
 {
-    wrap :=
-      fun A x =>
-        fun X pure wrap => wrap (fmap (fun x => x X pure wrap) x)
+  wrap :=
+    fun A x =>
+      fun X pure wrap => wrap (fmap (fun x => x X pure wrap) x);
 }.
 Proof.
   monad. rewrite <- !fmap_comp'. unfold compose. reflexivity.
@@ -120,8 +120,8 @@ Instance MonadAlt_FreeT
   (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (FreeT F M) (Monad_FreeT F M) :=
 {
-    choose :=
-      fun A x y => fun X pure wrap => choose (x X pure wrap) (y X pure wrap)
+  choose :=
+    fun A x y => fun X pure wrap => choose (x X pure wrap) (y X pure wrap);
 }.
 Proof. all: monad. Defined.
 
@@ -132,7 +132,7 @@ Instance MonadFail_FreeT
   (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (FreeT F M) (Monad_FreeT F M) :=
 {
-    fail := fun A => fun X pure wrap => fail
+  fail := fun A => fun X pure wrap => fail;
 }.
 Proof. reflexivity. Defined.
 
@@ -143,8 +143,8 @@ Instance MonadNondet_FreeT
   (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (FreeT F M) (Monad_FreeT F M) :=
 {
-    instF := @MonadFail_FreeT F M inst (@instF _ _ inst');
-    instA := @MonadAlt_FreeT F M inst (@instA _ _ inst');
+  instF := @MonadFail_FreeT F M inst (@instF _ _ inst');
+  instA := @MonadAlt_FreeT F M inst (@instA _ _ inst');
 }.
 Proof. all: monad. Defined.
 
@@ -155,10 +155,10 @@ Instance MonadExcept_FreeT
   (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (FreeT F M) (Monad_FreeT F M) :=
 {
-    instF := @MonadFail_FreeT F M inst inst';
-    catch :=
-      fun A x y =>
-        fun X pure wrap => catch (x X pure wrap) (y X pure wrap)
+  instF := @MonadFail_FreeT F M inst inst';
+  catch :=
+    fun A x y =>
+      fun X pure wrap => catch (x X pure wrap) (y X pure wrap);
 }.
 Proof.
   all: monad.
@@ -171,7 +171,7 @@ Instance MonadReader_FreeT
   (inst : Monad M) (inst' : MonadReader E M inst)
   : MonadReader E (FreeT F M) (Monad_FreeT F M) :=
 {
-    ask := fun X pure wrap => ask >>= pure
+  ask := fun X pure wrap => ask >>= pure;
 }.
 Proof.
   ext3 X pure wrap. cbn.
@@ -187,10 +187,10 @@ Instance MonadWriter_FreeT
   (inst : Monad M) (inst' : MonadWriter W M inst)
   : MonadWriter W (FreeT F M) (Monad_FreeT F M) :=
 {
-    tell w := fun X pure wrap => tell w >>= pure;
-    listen :=
-      fun A x =>
-        fun X pure wrap => x X (fun a => pure (a, neutr)) wrap
+  tell w := fun X pure wrap => tell w >>= pure;
+  listen :=
+    fun A x =>
+      fun X pure wrap => x X (fun a => pure (a, neutr)) wrap;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -201,8 +201,8 @@ Instance MonadState_FreeT
   (inst : Monad M) (inst' : MonadState S M inst)
   : MonadState S (FreeT F M) (Monad_FreeT F M) :=
 {
-    get := fun X pure wrap => get >>= pure;
-    put := fun s => fun X pure wrap => put s >>= pure;
+  get := fun X pure wrap => get >>= pure;
+  put := fun s => fun X pure wrap => put s >>= pure;
 }.
 Proof.
   monad;
@@ -223,8 +223,8 @@ Instance MonadStateNondet_FreeT
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (FreeT F M) (Monad_FreeT F M) :=
 {
-    instS := MonadState_FreeT S F M inst inst';
-    instN := MonadNondet_FreeT F M inst inst';
+  instS := MonadState_FreeT S F M inst inst';
+  instN := MonadNondet_FreeT F M inst inst';
 }.
 Proof.
   all: monad.

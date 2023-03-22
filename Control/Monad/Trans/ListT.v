@@ -37,7 +37,7 @@ Definition fmap_ListT
 Instance Functor_ListT
   (M : Type -> Type) (inst : Functor M) : Functor (ListT M) :=
 {
-    fmap := @fmap_ListT M inst
+  fmap := @fmap_ListT M inst;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -59,9 +59,9 @@ Definition ap_ListT
 Instance Applicative_ListT
   (M : Type -> Type) (inst : Monad M) : Applicative (ListT M) :=
 {
-    is_functor := Functor_ListT M inst;
-    pure := @pure_ListT M inst;
-    ap := @ap_ListT M inst;
+  is_functor := Functor_ListT M inst;
+  pure := @pure_ListT M inst;
+  ap := @ap_ListT M inst;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -78,9 +78,9 @@ Definition aplus_ListT
 Instance Alternative_ListT
   (M : Type -> Type) (inst : Monad M) : Alternative (ListT M) :=
 {
-    is_applicative := Applicative_ListT M inst;
-    aempty := aempty_ListT M inst;
-    aplus := aplus_ListT M inst;
+  is_applicative := Applicative_ListT M inst;
+  aempty := aempty_ListT M inst;
+  aplus := aplus_ListT M inst;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -94,8 +94,8 @@ Definition bind_ListT
 Instance Monad_ListT
   (M : Type -> Type) (inst : Monad M) : Monad (ListT M) :=
 {
-    is_applicative := Applicative_ListT M inst;
-    bind := @bind_ListT M inst
+  is_applicative := Applicative_ListT M inst;
+  bind := @bind_ListT M inst;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -111,8 +111,8 @@ Definition lift_ListT
 #[export]
 Instance MonadTrans_ListT : MonadTrans ListT :=
 {
-    is_monad := @Monad_ListT;
-    lift := @lift_ListT;
+  is_monad := @Monad_ListT;
+  lift := @lift_ListT;
 }.
 Proof. all: monad. Defined.
 
@@ -129,7 +129,7 @@ Instance MonadFail_ListT
   (M : Type -> Type) (inst : Monad M)
   : MonadFail (ListT M) (Monad_ListT M inst) :=
 {
-    fail := @fail_ListT M inst
+  fail := @fail_ListT M inst;
 }.
 Proof. reflexivity. Defined.
 
@@ -139,7 +139,7 @@ Instance MonadAlt_ListT
   (M : Type -> Type) (inst : Monad M)
   : MonadAlt (ListT M) (Monad_ListT M inst) :=
 {
-    choose := @aplus_ListT M inst
+  choose := @aplus_ListT M inst;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -149,8 +149,8 @@ Instance MonadNondet_ListT
   (M : Type -> Type) (inst : Monad M)
   : MonadNondet (ListT M) (Monad_ListT M inst) :=
 {
-    instF := MonadFail_ListT M inst;
-    instA := MonadAlt_ListT M inst;
+  instF := MonadFail_ListT M inst;
+  instA := MonadAlt_ListT M inst;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -162,10 +162,10 @@ Instance MonadExcept_ListT
   (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ListT M) (Monad_ListT M inst) :=
 {
-    instF := @MonadFail_ListT M inst;
-    catch :=
-      fun A x y =>
-        fun X nil cons => catch (x X nil cons) (y X nil cons)
+  instF := @MonadFail_ListT M inst;
+  catch :=
+    fun A x y =>
+      fun X nil cons => catch (x X nil cons) (y X nil cons);
 }.
 Proof.
   all: intros; ext X; ext nil; ext cons; cbn.
@@ -181,8 +181,8 @@ Instance MonadReader_ListT
   (inst : Monad M) (inst' : MonadReader E M inst)
   : MonadReader E (ListT M) (Monad_ListT M inst) :=
 {
-    ask :=
-      fun X nil cons => ask >>= (fun e => cons e nil)
+  ask :=
+    fun X nil cons => ask >>= (fun e => cons e nil);
 }.
 Proof.
   ext X. ext nil. ext cons. cbn. unfold fmap_ListT, const, id.
@@ -197,10 +197,10 @@ Instance MonadWriter_ListT
   (inst : Monad M) (inst' : MonadWriter W M inst)
   : MonadWriter W (ListT M) (Monad_ListT M inst) :=
 {
-    tell w := fun X nil cons => tell w >>= fun u => cons u nil;
-    listen := fun A l =>
-      fun X nil cons =>
-        l X nil (fun h t => cons (h, neutr) t)
+  tell w := fun X nil cons => tell w >>= fun u => cons u nil;
+  listen := fun A l =>
+    fun X nil cons =>
+      l X nil (fun h t => cons (h, neutr) t);
 }.
 Proof. all: hs. Defined.
 
@@ -211,8 +211,8 @@ Instance MonadState_ListT
   (inst : Monad M) (inst' : MonadState S M inst)
   : MonadState S (ListT M) (Monad_ListT M inst) :=
 {
-    get := fun X nil cons => get >>= (fun s => cons s nil);
-    put := fun s X nil cons => put s >> cons tt nil;
+  get := fun X nil cons => get >>= (fun s => cons s nil);
+  put := fun s X nil cons => put s >> cons tt nil;
 }.
 Proof.
   all: intros; ext3 X nil cons; cbn.
@@ -240,8 +240,8 @@ Instance MonadStateNondet_ListT
   (inst : Monad M) (inst' : MonadState S M inst)
   : MonadStateNondet S (ListT M) (Monad_ListT M inst) :=
 {
-    instS := MonadState_ListT S M inst inst';
-    instN := MonadNondet_ListT M inst;
+  instS := MonadState_ListT S M inst inst';
+  instN := MonadNondet_ListT M inst;
 }.
 Proof.
   intros. rewrite constrA_spec. cbn. compute.
@@ -257,9 +257,9 @@ Instance MonadFree_ListT
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (ListT M) instF (Monad_ListT M instM) :=
 {
-    wrap :=
-      fun A fma X nil cons =>
-        wrap (fmap (fun l => l X nil cons) fma)
+  wrap :=
+    fun A fma X nil cons =>
+      wrap (fmap (fun l => l X nil cons) fma);
 }.
 Proof.
   intros A B f x. ext3 X nil cons.

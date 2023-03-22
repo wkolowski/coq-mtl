@@ -17,7 +17,7 @@ Definition fmap_State
 #[export]
 Instance Functor_State (S : Type) : Functor (State S) :=
 {
-    fmap := @fmap_State S
+  fmap := @fmap_State S;
 }.
 Proof. all: unfold compose; monad. Defined.
 
@@ -43,9 +43,9 @@ Definition ap_State
 #[export]
 Instance Applicative_State (S : Type) : Applicative (State S) :=
 {
-    is_functor := Functor_State S;
-    pure := @pure_State S;
-    ap := @ap_State S
+  is_functor := Functor_State S;
+  pure := @pure_State S;
+  ap := @ap_State S;
 }.
 Proof. all: unfold compose; monad. Defined.
 
@@ -85,8 +85,8 @@ Definition bind_State
 #[export]
 Instance Monad_State (S : Type) : Monad (State S) :=
 {
-    is_applicative := Applicative_State S;
-    bind := @bind_State S
+  is_applicative := Applicative_State S;
+  bind := @bind_State S;
 }.
 Proof. all: monad. Defined.
 
@@ -96,7 +96,7 @@ Proof. all: monad. Defined.
 Instance MonadState_State
   (S : Type) : MonadState S (State S) (Monad_State S) :=
 {
-    get := fun s : S => (s, s);
-    put := fun s : S => fun _ => (tt, s)
+  get := fun s : S => (s, s);
+  put := fun s : S => fun _ => (tt, s);
 }.
 Proof. all: hs. Defined.

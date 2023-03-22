@@ -4,10 +4,10 @@ From CoqMTL Require Export Control.Monad.
 Class MonadFree
   (F M : Type -> Type) (instF : Functor F) (instM : Monad M) : Type :=
 {
-    wrap : forall {A : Type}, F (M A) -> M A;
-    wrap_law :
-      forall (A B : Type) (f : A -> M B) (x : F A),
-        wrap (fmap f x) = wrap (@fmap F instF _ _ pure x) >>= f
+  wrap : forall {A : Type}, F (M A) -> M A;
+  wrap_law :
+    forall (A B : Type) (f : A -> M B) (x : F A),
+      wrap (fmap f x) = wrap (@fmap F instF _ _ pure x) >>= f
 }.
 
 (** There's no rewrite hint for [wrap_law], because it can be rewritten

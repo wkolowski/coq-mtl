@@ -15,7 +15,7 @@ Definition fmap_Reader
 #[export]
 Instance Functor_Reader (R : Type) : Functor (Reader R) :=
 {
-    fmap := @fmap_Reader R
+  fmap := @fmap_Reader R;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -35,9 +35,9 @@ Definition ap_Reader
 #[export]
 Instance ApplicativeReader (R : Type) : Applicative (Reader R) :=
 {
-    is_functor := Functor_Reader R;
-    pure := @pure_Reader R;
-    ap := @ap_Reader R
+  is_functor := Functor_Reader R;
+  pure := @pure_Reader R;
+  ap := @ap_Reader R;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -69,8 +69,8 @@ Definition bind_Reader
 #[export]
 Instance Monad_Reader (R : Type) : Monad (Reader R) :=
 {
-    is_applicative := ApplicativeReader R;
-    bind := @bind_Reader R
+  is_applicative := ApplicativeReader R;
+  bind := @bind_Reader R;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -81,7 +81,7 @@ Proof. all: reflexivity. Defined.
 Instance MonadReader_Reader
   (R : Type) : MonadReader R (Reader R) (Monad_Reader R) :=
 {
-    ask := id
+  ask := id;
 }.
 Proof. reflexivity. Defined.
 

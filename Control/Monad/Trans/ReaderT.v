@@ -25,7 +25,7 @@ Definition fmap_ReaderT
 Instance Functor_ReaderT
   {M : Type -> Type} {inst : Monad M} {E : Type} : Functor (ReaderT E M) :=
 {
-    fmap := @fmap_ReaderT M inst E
+  fmap := @fmap_ReaderT M inst E;
 }.
 Proof. all: unfold compose; monad. Defined.
 
@@ -46,9 +46,9 @@ Instance Applicative_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M)
   : Applicative (ReaderT E M) :=
 {
-    is_functor := @Functor_ReaderT M inst E;
-    pure := @pure_ReaderT M inst E;
-    ap := @ap_ReaderT E M inst;
+  is_functor := @Functor_ReaderT M inst E;
+  pure := @pure_ReaderT M inst E;
+  ap := @ap_ReaderT E M inst;
 }.
 Proof. all: monad. Defined.
 
@@ -69,8 +69,8 @@ Instance Alternative_ReaderT
   (E : Type) (M : Type -> Type) {inst : Monad M} {instA : Alternative M}
   : Alternative (ReaderT E M) :=
 {
-    aempty := fun A => fun _ => aempty;
-    aplus := fun A x y => fun e => aplus (x e) (y e);
+  aempty := fun A => fun _ => aempty;
+  aplus := fun A x y => fun e => aplus (x e) (y e);
 }.
 Proof. all: monad. Defined.
 
@@ -86,8 +86,8 @@ Definition bind_ReaderT
 Instance Monad_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Monad (ReaderT E M) :=
 {
-    is_applicative := @Applicative_ReaderT E M inst;
-    bind := @bind_ReaderT M inst E;
+  is_applicative := @Applicative_ReaderT E M inst;
+  bind := @bind_ReaderT M inst E;
 }.
 Proof. all: monad. Defined.
 
@@ -101,8 +101,8 @@ Definition lift_ReaderT
 #[export]
 Instance MonadTrans_ReaderT (E : Type) : MonadTrans (ReaderT E) :=
 {
-    is_monad := @Monad_ReaderT E;
-    lift := @lift_ReaderT E;
+  is_monad := @Monad_ReaderT E;
+  lift := @lift_ReaderT E;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -113,7 +113,7 @@ Instance MonadReader_Reader
   (M : Type -> Type) (inst : Monad M) (R : Type)
   : MonadReader R (ReaderT R M) (Monad_ReaderT R M inst) :=
 {
-    ask := pure
+  ask := pure;
 }.
 Proof. monad. Defined.
 
@@ -126,8 +126,8 @@ Instance MonadAlt_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (ReaderT R M) (Monad_ReaderT R M inst) :=
 {
-    choose :=
-      fun A x y r => choose (x r) (y r)
+  choose :=
+    fun A x y r => choose (x r) (y r);
 }.
 Proof. all: monad. Defined.
 
@@ -137,7 +137,7 @@ Instance MonadFail_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (ReaderT R M) (Monad_ReaderT R M inst) :=
 {
-    fail := fun A r => fail
+  fail := fun A r => fail;
 }.
 Proof. monad. Defined.
 
@@ -147,8 +147,8 @@ Instance MonadNondet_ReaderT
   (R : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (ReaderT R M) (Monad_ReaderT R M inst) :=
 {
-    instF := @MonadFail_ReaderT R M inst (@instF _ _ inst');
-    instA := @MonadAlt_ReaderT R M inst (@instA _ _ inst');
+  instF := @MonadFail_ReaderT R M inst (@instF _ _ inst');
+  instA := @MonadAlt_ReaderT R M inst (@instA _ _ inst');
 }.
 Proof. all: monad. Defined.
 
@@ -158,9 +158,9 @@ Instance MonadExcept_ReaderT
   (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (ReaderT E M) (Monad_ReaderT E M inst) :=
 {
-    instF := @MonadFail_ReaderT E M inst inst';
-    catch :=
-      fun A x y => fun e => catch (x e) (y e);
+  instF := @MonadFail_ReaderT E M inst inst';
+  catch :=
+    fun A x y => fun e => catch (x e) (y e);
 }.
 Proof. all: monad. Defined.
 
@@ -171,8 +171,8 @@ Instance MonadState_ReaderT
   (inst : Monad M) (inst' : MonadState S M inst)
   : MonadState S (ReaderT R M) (Monad_ReaderT R M inst) :=
 {
-    get := fun r => get;
-    put := fun s r => put s;
+  get := fun r => get;
+  put := fun s r => put s;
 }.
 Proof.
   intros. ext r. cbn. unfold ap_ReaderT, fmap_ReaderT, const, id. monad.
@@ -188,8 +188,8 @@ Instance MonadWriter_ReaderT
   (inst : Monad M) (inst' : MonadWriter W M inst)
   : MonadWriter W (ReaderT E M) (Monad_ReaderT E M inst) :=
 {
-    tell := fun w e => tell w;
-    listen := fun A x e => listen (x e);
+  tell := fun w e => tell w;
+  listen := fun A x e => listen (x e);
 }.
 Proof. all: monad. Defined.
 
@@ -200,8 +200,8 @@ Instance MonadStateNondet_ReaderT
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (ReaderT E M) (Monad_ReaderT E M inst) :=
 {
-    instS := MonadState_ReaderT S E M inst inst';
-    instN := MonadNondet_ReaderT E M inst inst';
+  instS := MonadState_ReaderT S E M inst inst';
+  instN := MonadNondet_ReaderT E M inst inst';
 }.
 Proof.
   intros. rewrite constrA_spec. cbn. unfold bind_ReaderT.
@@ -218,8 +218,8 @@ Instance MonadFree_ReaderT
   (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (ReaderT E M) instF (Monad_ReaderT E M instM) :=
 {
-    wrap :=
-      fun A m e => wrap (fmap (fun x => x e) m)
+  wrap :=
+    fun A m e => wrap (fmap (fun x => x e) m);
 }.
 Proof.
   intros. ext e. cbn.

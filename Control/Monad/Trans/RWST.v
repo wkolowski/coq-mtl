@@ -29,7 +29,7 @@ Instance Functor_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
     : Functor (RWST W R S M) :=
 {
-    fmap := @fmap_RWST W R S M inst
+  fmap := @fmap_RWST W R S M inst;
 }.
 Proof. all: unfold compose; monad. Defined.
 
@@ -53,9 +53,9 @@ Instance Applicative_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
     : Applicative (RWST W R S M) :=
 {
-    is_functor := Functor_RWST W R S M inst;
-    pure := @pure_RWST W R S M inst;
-    ap := @ap_RWST W R S M inst;
+  is_functor := Functor_RWST W R S M inst;
+  pure := @pure_RWST W R S M inst;
+  ap := @ap_RWST W R S M inst;
 }.
 Proof. all: monad. Defined.
 
@@ -97,8 +97,8 @@ Instance Monad_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
     : Monad (RWST W R S M) :=
 {
-    is_applicative := Applicative_RWST W R S M inst;
-    bind := @bind_RWST W R S M inst
+  is_applicative := Applicative_RWST W R S M inst;
+  bind := @bind_RWST W R S M inst;
 }.
 Proof. all: monad. Defined.
 
@@ -118,7 +118,7 @@ Definition lift_RWST
 Instance MonadTrans_RWST
   {W : Monoid} {R S : Type} : MonadTrans (RWST W R S) :=
 {
-    lift := @lift_RWST W R S
+  lift := @lift_RWST W R S;
 }.
 Proof. all: unfold compose; monad. Defined.
 
@@ -131,7 +131,7 @@ Instance MonadReader_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadReader R (RWST W R S M) (Monad_RWST W R S M inst) :=
 {
-    ask := fun r s => pure (r, s, neutr);
+  ask := fun r s => pure (r, s, neutr);
 }.
 Proof. monad. Defined.
 
@@ -141,11 +141,11 @@ Instance MonadWriter_RWST
   (R S : Type) (W : Monoid) (M : Type -> Type) (inst : Monad M)
   : MonadWriter W (RWST W R S M) (Monad_RWST W R S M inst) :=
 {
-    tell := fun w => fun _ s => pure (tt, s, w);
-    listen :=
-      fun A (m : R -> S -> M (A * S * W)%type) =>
-        fun r s =>
-          m r s >>= fun '(a, s, w) => pure (a, w, s, neutr);
+  tell := fun w => fun _ s => pure (tt, s, w);
+  listen :=
+    fun A (m : R -> S -> M (A * S * W)%type) =>
+      fun r s =>
+        m r s >>= fun '(a, s, w) => pure (a, w, s, neutr);
 }.
 Proof. all: monad. Defined.
 
@@ -155,8 +155,8 @@ Instance MonadState_RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
   : MonadState S (RWST W R S M) (Monad_RWST W R S M inst) :=
 {
-    get := fun _ (s : S) => pure (s, s, neutr);
-    put := fun s : S => fun _ _ => pure (tt, s, neutr);
+  get := fun _ (s : S) => pure (s, s, neutr);
+  put := fun s : S => fun _ _ => pure (tt, s, neutr);
 }.
 Proof.
   1-3: monad.
@@ -173,8 +173,8 @@ Instance MonadAlt_RWST
   (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (RWST W R S M) (Monad_RWST W R S M inst) :=
 {
-    choose :=
-      fun A x y => fun r s => choose (x r s) (y r s )
+  choose :=
+    fun A x y => fun r s => choose (x r s) (y r s );
 }.
 Proof. all: monad. Defined.
 
@@ -185,7 +185,7 @@ Instance MonadFail_RWST
   (inst : Monad M) (inst' : MonadFail M inst)
   : MonadFail (RWST W R S M) (Monad_RWST W R S M inst) :=
 {
-    fail := fun A _ _ => @fail M inst inst' (A * S * W)
+  fail := fun A _ _ => @fail M inst inst' (A * S * W);
 }.
 Proof. monad. Defined.
 
@@ -196,8 +196,8 @@ Instance MonadNondet_RWST
   (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (RWST W R S M) (Monad_RWST W R S M inst) :=
 {
-    instF := @MonadFail_RWST W R S M inst (@instF _ _ inst');
-    instA := @MonadAlt_RWST W R S M inst (@instA _ _ inst');
+  instF := @MonadFail_RWST W R S M inst (@instF _ _ inst');
+  instA := @MonadAlt_RWST W R S M inst (@instA _ _ inst');
 }.
 Proof. all: monad. Defined.
 
@@ -208,8 +208,8 @@ Instance MonadStateNondet_RWST
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (RWST W R S M) (Monad_RWST W R S M inst) :=
 {
-    instS := MonadState_RWST W R S M inst;
-    instN := MonadNondet_RWST W R S M inst inst';
+  instS := MonadState_RWST W R S M inst;
+  instN := MonadNondet_RWST W R S M inst inst';
 }.
 Proof.
   intros. rewrite constrA_spec. cbn. hs. ext2 r s.
@@ -228,9 +228,9 @@ Instance MonadExcept_RWST
   (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (RWST W R S M) (Monad_RWST W R S M inst) :=
 {
-    instF := @MonadFail_RWST W R S M inst inst';
-    catch :=
-      fun A x y => fun r s => catch (x r s) (y r s);
+  instF := @MonadFail_RWST W R S M inst inst';
+  catch :=
+    fun A x y => fun r s => catch (x r s) (y r s);
 }.
 Proof. all: monad. Defined.
 
@@ -243,8 +243,8 @@ Instance MonadFree_RWST
   (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (RWST W R S M) instF (Monad_RWST W R S M instM) :=
 {
-    wrap :=
-      fun A m r s => wrap (fmap (fun x => x r s) m)
+  wrap :=
+    fun A m r s => wrap (fmap (fun x => x r s) m);
 }.
 Proof.
   intros. ext2 r s. cbn.

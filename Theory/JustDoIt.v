@@ -21,7 +21,7 @@ Variable inst : Monad M.
 
 Class MonadCount : Type :=
 {
-    tick : M unit;
+  tick : M unit;
 }.
 
 Definition skip : M unit := pure tt.
@@ -73,14 +73,14 @@ Qed.
 
 Class MonadFail : Type :=
 {
-    fail : forall {A :  Type}, M A;
-    constrA_fail_l :
-      forall (A B : Type) (mb : M B),
-        @fail A >> mb = @fail B;
-(** BEWARE! This law is custom, not from the paper. *)
-    bind_fail_l :
-      forall (A B : Type) (f : A -> M B),
-        fail >>= f = fail
+  fail : forall {A :  Type}, M A;
+  constrA_fail_l :
+    forall (A B : Type) (mb : M B),
+      @fail A >> mb = @fail B;
+  (** BEWARE! This law is custom, not from the paper. *)
+  bind_fail_l :
+    forall (A B : Type) (f : A -> M B),
+      fail >>= f = fail
 }.
 
 Hint Rewrite @constrA_fail_l : CoqMTL.
@@ -99,27 +99,27 @@ Definition assert
 
 Class MonadAlt : Type :=
 {
-    choose : forall {A : Type}, M A -> M A -> M A;
-    choose_assoc :
-      forall {X : Type} (a b c : M X),
-        choose (choose a b) c = choose a (choose b c);
-    choose_bind :
-      forall (A B : Type) (x y : M A) (f : A -> M B),
-        choose x y >>= f = choose (x >>= f) (y >>= f);
+  choose : forall {A : Type}, M A -> M A -> M A;
+  choose_assoc :
+    forall {X : Type} (a b c : M X),
+      choose (choose a b) c = choose a (choose b c);
+  choose_bind :
+    forall (A B : Type) (x y : M A) (f : A -> M B),
+      choose x y >>= f = choose (x >>= f) (y >>= f);
 }.
 
 (** *** 4.3 Nondeterminism *)
 
 Class MonadNondet : Type :=
 {
-    instF :> MonadFail;
-    instA :> MonadAlt;
-    choose_fail_l :
-      forall (A : Type) (x : M A),
-        choose fail x = x;
-    choose_fail_r :
-      forall (A : Type) (x : M A),
-        choose x fail = x;
+  instF :> MonadFail;
+  instA :> MonadAlt;
+  choose_fail_l :
+    forall (A : Type) (x : M A),
+      choose fail x = x;
+  choose_fail_r :
+    forall (A : Type) (x : M A),
+      choose x fail = x;
 }.
 
 Coercion instF : MonadNondet >-> MonadFail.
@@ -131,7 +131,7 @@ End S0.
 #[export]
 Instance MonadFail_List : MonadFail Monad_List :=
 {
-    fail := @nil
+  fail := @nil
 }.
 Proof.
   all: compute; reflexivity.
@@ -141,7 +141,7 @@ Defined.
 #[export]
 Instance MonadAlt_List : MonadAlt Monad_List :=
 {
-    choose := @app;
+  choose := @app;
 }.
 Proof.
   all: intros.
@@ -153,8 +153,8 @@ Defined.
 #[export]
 Instance MonadNondet_List : MonadNondet Monad_List :=
 {
-    instF := MonadFail_List;
-    instA := MonadAlt_List;
+  instF := MonadFail_List;
+  instA := MonadAlt_List;
 }.
 Proof.
   all: cbn; intros.
@@ -218,19 +218,19 @@ Variable inst : Monad M.
 Class MonadExcept
   (inst' : MonadFail inst) : Type :=
 {
-    catch : forall {A : Type}, M A -> M A -> M A;
-    catch_fail_l :
-      forall (A : Type) (x : M A),
-        catch fail x = x;
-    catch_fail_r :
-      forall (A : Type) (x : M A),
-        catch x fail = x;
-    catch_assoc :
-      forall (A : Type) (x y z : M A),
-        catch (catch x y) z = catch x (catch y z);
-    catch_pure :
-      forall (A : Type) (x : A) (h : M A),
-        catch (pure x) h = pure x;
+  catch : forall {A : Type}, M A -> M A -> M A;
+  catch_fail_l :
+    forall (A : Type) (x : M A),
+      catch fail x = x;
+  catch_fail_r :
+    forall (A : Type) (x : M A),
+      catch x fail = x;
+  catch_assoc :
+    forall (A : Type) (x y z : M A),
+      catch (catch x y) z = catch x (catch y z);
+  catch_pure :
+    forall (A : Type) (x : A) (h : M A),
+      catch (pure x) h = pure x;
 }.
 
 Hint Rewrite @catch_fail_l @catch_fail_r @catch_assoc @catch_pure : CoqMTL.
@@ -354,20 +354,20 @@ Arguments skip {M inst}.
 Class MonadState
   (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
-    get : M S;
-    put : S -> M unit;
-    put_put :
-      forall s s' : S,
-        put s >> put s' = put s';
-    put_get :
-      forall s : S,
-        put s >> get = put s >> pure s;
-    get_put :
-      get >>= put = skip; (* skip = pure tt *)
-    get_get :
-      forall (A : Type) (f : S -> S -> M A),
-        get >>= (fun s : S => get >>= f s) =
-        get >>= (fun s : S => f s s);
+  get : M S;
+  put : S -> M unit;
+  put_put :
+    forall s s' : S,
+      put s >> put s' = put s';
+  put_get :
+    forall s : S,
+      put s >> get = put s >> pure s;
+  get_put :
+    get >>= put = skip; (* skip = pure tt *)
+  get_get :
+    forall (A : Type) (f : S -> S -> M A),
+      get >>= (fun s : S => get >>= f s) =
+      get >>= (fun s : S => f s s);
 }.
 
 (** ** 7. Combining effects *)
@@ -375,15 +375,15 @@ Class MonadState
 Class MonadStateNondet
   (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
-    instS :> MonadState S inst;
-    instN :> MonadNondet inst;
-    seq_fail_r :
-      forall (A B : Type) (x : M A),
-        x >> fail = @fail M inst instN B;
-    bind_choose_distr :
-      forall (A B : Type) (f g : A -> M B) (ma : M A),
-        ma >>= (fun x : A => choose (f x) (g x)) =
-        choose (ma >>= f) (ma >>= g)
+  instS :> MonadState S inst;
+  instN :> MonadNondet inst;
+  seq_fail_r :
+    forall (A B : Type) (x : M A),
+      x >> fail = @fail M inst instN B;
+  bind_choose_distr :
+    forall (A B : Type) (f g : A -> M B) (ma : M A),
+      ma >>= (fun x : A => choose (f x) (g x)) =
+      choose (ma >>= f) (ma >>= g)
 }.
 
 Section S3.
@@ -418,7 +418,7 @@ Axiom mul : Prob -> Prob -> Prob.
 Class MonadProb_no_laws
   (M : Type -> Type) (inst : Monad M) : Type :=
 {
-    choice : forall {A : Type}, Prob -> M A -> M A -> M A;
+  choice : forall {A : Type}, Prob -> M A -> M A -> M A;
 }.
 
 Notation "x <| p |> y" := (choice p x y)
@@ -427,31 +427,31 @@ Notation "x <| p |> y" := (choice p x y)
 Class MonadProb
   (M : Type -> Type) (inst : Monad M) : Type :=
 {
-    instP :> MonadProb_no_laws inst;
-    choice_p0 :
-      forall (A : Type) (x y : M A),
-        x <| p0 |> y = x;
-    choice_p1 :
-      forall (A : Type) (x y : M A),
-        x <| p1 |> y = y;
-    choice_qcomm :
-      forall (A : Type) (x y : M A) (p : Prob),
-        x <| p |> y = y <| neg p |> x;
-    choice_idempotent :
-      forall (A : Type) (x : M A) (p : Prob),
-        x <| p |> x = x;
-    choice_qassoc :
-      forall (A : Type) (x y z : M A) (p q r s : Prob),
-        p = mul r s -> neg s = mul (neg p) (neg q) ->
-          x <| p |> (y <| q |> z) =
-          (x <| r |> y) <| s |> z;
-    bind_choice :
-      forall (A B : Type) (p : Prob) (x y : M A) (f : A -> M B),
-        (x <| p |> y) >>= f = (x >>= f) <| p |> (y >>= f);
-    choice_bind :
-      forall (A B : Type) (p : Prob) (ma : M A) (f g : A -> M B),
-        ma >>= (fun x : A => (f x) <| p |> (g x)) =
-        (ma >>= f) <| p |> (ma >>= g)
+  instP :> MonadProb_no_laws inst;
+  choice_p0 :
+    forall (A : Type) (x y : M A),
+      x <| p0 |> y = x;
+  choice_p1 :
+    forall (A : Type) (x y : M A),
+      x <| p1 |> y = y;
+  choice_qcomm :
+    forall (A : Type) (x y : M A) (p : Prob),
+      x <| p |> y = y <| neg p |> x;
+  choice_idempotent :
+    forall (A : Type) (x : M A) (p : Prob),
+      x <| p |> x = x;
+  choice_qassoc :
+    forall (A : Type) (x y z : M A) (p q r s : Prob),
+      p = mul r s -> neg s = mul (neg p) (neg q) ->
+        x <| p |> (y <| q |> z) =
+        (x <| r |> y) <| s |> z;
+  bind_choice :
+    forall (A B : Type) (p : Prob) (x y : M A) (f : A -> M B),
+      (x <| p |> y) >>= f = (x >>= f) <| p |> (y >>= f);
+  choice_bind :
+    forall (A B : Type) (p : Prob) (ma : M A) (f g : A -> M B),
+      ma >>= (fun x : A => (f x) <| p |> (g x)) =
+      (ma >>= f) <| p |> (ma >>= g)
 }.
 
 End S4.

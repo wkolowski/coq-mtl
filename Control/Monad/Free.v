@@ -25,7 +25,7 @@ Definition fmap_Free
 #[export]
 Instance Functor_Free : Functor (Free F) :=
 {
-    fmap := @fmap_Free
+  fmap := @fmap_Free
 }.
 Proof. all: reflexivity. Defined.
 
@@ -41,8 +41,8 @@ Definition ap_Free
 #[export]
 Instance Applicative_Free : Applicative (Free F) :=
 {
-    pure := @pure_Free;
-    ap := @ap_Free;
+  pure := @pure_Free;
+  ap := @ap_Free;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -54,7 +54,7 @@ Definition bind_Free
 #[export]
 Instance Monad_Free : Monad (Free F) :=
 {
-    bind := @bind_Free
+  bind := @bind_Free
 }.
 Proof. all: reflexivity. Defined.
 
@@ -84,7 +84,7 @@ Instance MonadFree_Free
   (F : Type -> Type) (instF : Functor F)
   : MonadFree F (Free F) instF (Monad_Free F) :=
 {
-    wrap := @wrap_Free F instF
+  wrap := @wrap_Free F instF
 }.
 Proof.
   monad. rewrite <- !fmap_comp'. unfold compose. reflexivity.

@@ -5,10 +5,10 @@ From CoqMTL Require Export Control.Monad.
     exhibited by the law [bind_fail_l]. *)
 Class MonadFail (M : Type -> Type) (inst : Monad M) : Type :=
 {
-    fail : forall {A :  Type}, M A;
-    bind_fail_l :
-      forall (A B : Type) (f : A -> M B),
-        fail >>= f = fail;
+  fail : forall {A :  Type}, M A;
+  bind_fail_l :
+    forall (A B : Type) (f : A -> M B),
+      fail >>= f = fail;
 }.
 
 #[global] Hint Rewrite @bind_fail_l : CoqMTL.
@@ -90,7 +90,7 @@ Instance MonadFail_MonadTrans
   (M : Type -> Type) (instM : Monad M) (instMF : MonadFail M instM)
   : MonadFail (T M) (is_monad _ instM) :=
 {
-    fail := fun A => lift (@fail M instM instMF A);
+  fail := fun A => lift (@fail M instM instMF A);
 }.
 Proof.
   intros. Print MonadTrans. rewrite <- lift_bind. rewrite lift_bind.

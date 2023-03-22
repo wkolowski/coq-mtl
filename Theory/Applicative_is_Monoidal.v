@@ -29,9 +29,9 @@ Definition ap_Monoidal
 Instance Monoidal_Applicative
   (F : Type -> Type) (inst : Monoidal F) : Applicative F :=
 {
-    is_functor := @is_functor F inst;
-    pure := @pure_Monoidal F inst;
-    ap := @ap_Monoidal F inst
+  is_functor := @is_functor F inst;
+  pure := @pure_Monoidal F inst;
+  ap := @ap_Monoidal F inst
 }.
 Proof.
   all: unfold pure_Monoidal, ap_Monoidal; intros; monoidal.
@@ -69,9 +69,9 @@ Definition pairF_Applicative
 Instance Applicative_Monoidal
   (F : Type -> Type) (inst : Applicative F) : Monoidal F :=
 {
-    is_functor := inst;
-    default := default_Applicative;
-    pairF := @pairF_Applicative F inst;
+  is_functor := inst;
+  default := default_Applicative;
+  pairF := @pairF_Applicative F inst;
 }.
 Proof.
   all: hs;

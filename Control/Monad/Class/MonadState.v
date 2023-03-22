@@ -14,18 +14,18 @@ From CoqMTL Require Export Control.Monad.
 Class MonadState
   (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
-    get : M S;
-    put : S -> M unit;
-    put_put :
-      forall s1 s2 : S, put s1 >> put s2 = put s2;
-    put_get :
-      forall s : S, put s >> get = put s >> pure s;
-    get_put :
-      get >>= put = pure tt;
-    get_get :
-      forall (A : Type) (k : S -> S -> M A),
-        get >>= (fun s : S => get >>= k s) =
-        get >>= fun s : S => k s s
+  get : M S;
+  put : S -> M unit;
+  put_put :
+    forall s1 s2 : S, put s1 >> put s2 = put s2;
+  put_get :
+    forall s : S, put s >> get = put s >> pure s;
+  get_put :
+    get >>= put = pure tt;
+  get_get :
+    forall (A : Type) (k : S -> S -> M A),
+      get >>= (fun s : S => get >>= k s) =
+      get >>= fun s : S => k s s
 }.
 
 #[global] Hint Rewrite @put_put @put_get @get_put @get_get : CoqMTL.
@@ -137,8 +137,8 @@ Instance MonadState_MonadTrans
   (S : Type) (instMS : MonadState S M instM)
   : MonadState S (T M) (is_monad _ instM) :=
 {
-    get := lift get;
-    put := put .> lift;
+  get := lift get;
+  put := put .> lift;
 }.
 Proof.
   Focus 4. intros. Print MonadTrans.

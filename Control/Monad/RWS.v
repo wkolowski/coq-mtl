@@ -30,7 +30,7 @@ Definition fmap_RWS
 #[export]
 Instance Functor_RWS (W : Monoid) (R S : Type) : Functor (RWS W R S) :=
 {
-    fmap := @fmap_RWS W R S
+  fmap := @fmap_RWS W R S;
 }.
 Proof. all: unfold compose; monad. Defined.
 
@@ -56,9 +56,9 @@ Definition ap_RWS
 Instance Applicative_RWS
   (W : Monoid) (R S : Type) : Applicative (RWS W R S) :=
 {
-    is_functor := Functor_RWS W R S;
-    pure := @pure_RWS W R S;
-    ap := @ap_RWS W R S;
+  is_functor := Functor_RWS W R S;
+  pure := @pure_RWS W R S;
+  ap := @ap_RWS W R S;
 }.
 Proof. all: monad. Defined.
 
@@ -102,8 +102,8 @@ Definition bind_RWS
 Instance Monad_RWS
   (W : Monoid) (R S : Type) : Monad (RWS W R S) :=
 {
-    is_applicative := Applicative_RWS W R S;
-    bind := @bind_RWS W R S
+  is_applicative := Applicative_RWS W R S;
+  bind := @bind_RWS W R S;
 }.
 Proof. all: monad. Defined.
 
@@ -115,7 +115,7 @@ Instance MonadReader_RWS
   (W : Monoid) (R S : Type)
   : MonadReader R (RWS W R S) (Monad_RWS W R S) :=
 {
-    ask := fun r s => (r, s, neutr);
+  ask := fun r s => (r, s, neutr);
 }.
 Proof. hs. Defined.
 
@@ -124,10 +124,10 @@ Proof. hs. Defined.
 Instance MonadWriter_RWS
   (W : Monoid) (R S : Type) : MonadWriter W (RWS W R S) (Monad_RWS W R S) :=
 {
-    tell := fun w => fun r s => (tt, s, w);
-    listen :=
-      fun A m => fun r s =>
-        let '(a, s, w) := m r s in (a, w, s, neutr);
+  tell := fun w => fun r s => (tt, s, w);
+  listen :=
+    fun A m => fun r s =>
+      let '(a, s, w) := m r s in (a, w, s, neutr);
 }.
 Proof. all: hs; monad. Defined.
 
@@ -136,7 +136,7 @@ Proof. all: hs; monad. Defined.
 Instance MonadState_RWS
   (W : Monoid) (R S : Type) : MonadState S (RWS W R S) (Monad_RWS W R S) :=
 {
-    get := fun _ (s : S) => (s, s, neutr);
-    put := fun s : S => fun _ _ => (tt, s, neutr)
+  get := fun _ (s : S) => (s, s, neutr);
+  put := fun s : S => fun _ _ => (tt, s, neutr);
 }.
 Proof. all: monad. Defined.

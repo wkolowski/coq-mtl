@@ -28,7 +28,7 @@ Definition fmap_SumT
 Instance Functor_SumT
   {M : Type -> Type} {inst : Monad M} {E : Type} : Functor (SumT E M) :=
 {
-    fmap := @fmap_SumT M inst E
+  fmap := @fmap_SumT M inst E;
 }.
 Proof. all: hs; mtrans; monad. Defined.
 
@@ -57,9 +57,9 @@ Definition ap_SumT
 Instance Applicative_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Applicative (SumT E M) :=
 {
-    is_functor := @Functor_SumT M inst E;
-    pure := @pure_SumT M inst E;
-    ap := @ap_SumT M inst E;
+  is_functor := @Functor_SumT M inst E;
+  pure := @pure_SumT M inst E;
+  ap := @ap_SumT M inst E;
 }.
 Proof. all: monad. Defined.
 
@@ -93,9 +93,9 @@ Instance Alternative_SumT
   (E : Type) (M : Type -> Type) (instM : Monad M) (instA : Alternative M)
   : Alternative (SumT E M) :=
 {
-    is_applicative := Applicative_SumT E M instM;
-    aempty := @aempty_SumT E M instA;
-    aplus := @aplus_SumT E M instA;
+  is_applicative := Applicative_SumT E M instM;
+  aempty := @aempty_SumT E M instA;
+  aplus := @aplus_SumT E M instA;
 }.
 Proof. all: monad. Abort.
 
@@ -115,8 +115,8 @@ Definition bind_SumT
 Instance Monad_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) : Monad (SumT E M) :=
 {
-    is_applicative := @Applicative_SumT E M inst;
-    bind := @bind_SumT M inst E;
+  is_applicative := @Applicative_SumT E M inst;
+  bind := @bind_SumT M inst E;
 }.
 Proof. all: hs; monad. Defined.
 
@@ -131,8 +131,8 @@ Definition lift_SumT
 #[export]
 Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
 {
-    is_monad := @Monad_SumT E;
-    lift := @lift_SumT E;
+  is_monad := @Monad_SumT E;
+  lift := @lift_SumT E;
 }.
 Proof. all: monad. Defined.
 
@@ -153,7 +153,7 @@ Instance MonadFail_SumT
   (E : Type) (M : Type -> Type) {inst : Monad M} (e : E)
   : MonadFail (SumT E M) (Monad_SumT E M inst) :=
 {
-    fail := @fail_SumT E e M inst
+  fail := @fail_SumT E e M inst;
 }.
 Proof. intros. unfold fail_SumT. hs. Defined.
 
@@ -169,14 +169,14 @@ Instance MonadExcept_SumT
   (inst : Monad M) (inst' : MonadExcept M inst)
   : MonadExcept (SumT E M) (Monad_SumT E M inst) :=
 {
-    instF := @MonadFail_SumT E M inst e;
-    catch :=
-      fun A x y =>
-      @bind M inst _ _ x (fun ea =>
-      match ea with
-      | inl e => y
-      | inr a => pure (inr a)
-      end)
+  instF := @MonadFail_SumT E M inst e;
+  catch :=
+    fun A x y =>
+    @bind M inst _ _ x (fun ea =>
+    match ea with
+    | inl e => y
+    | inr a => pure (inr a)
+    end);
 }.
 Proof.
 (*
@@ -204,8 +204,8 @@ Instance MonadAlt_SumT
   (E : Type) (M : Type -> Type) (inst : Monad M) (inst' : MonadAlt M inst)
   : MonadAlt (SumT E M) (Monad_SumT E M inst) :=
 {
-    choose :=
-      fun A x y => @choose M inst inst' _ x y
+  choose :=
+    fun A x y => @choose M inst inst' _ x y;
 }.
 Proof.
   intros. rewrite choose_assoc. reflexivity.
@@ -219,8 +219,8 @@ Instance MonadNondet_SumT
   (inst : Monad M) (inst' : MonadNondet M inst)
   : MonadNondet (SumT E M) (Monad_SumT E M inst) :=
 {
-    instF := @MonadFail_SumT E M inst e;
-    instA := @MonadAlt_SumT E M inst (@instA _ _ inst');
+  instF := @MonadFail_SumT E M inst e;
+  instA := @MonadAlt_SumT E M inst (@instA _ _ inst');
 }.
 Proof.
   intros. cbn. unfold fail_SumT. admit.
@@ -237,7 +237,7 @@ Instance MonadReader_SumT
   (inst : Monad M) (inst' : MonadReader R M inst)
   : MonadReader R (SumT E M) (Monad_SumT E M inst) :=
 {
-    ask := ask >>= fun x => pure (inr x)
+  ask := ask >>= fun x => pure (inr x);
 }.
 Proof.
   rewrite <- ask_ask at 3. rewrite !constrA_spec. monad.
@@ -254,15 +254,15 @@ Instance MonadWriter_SumT
   (inst : Monad M) (inst' : MonadWriter W M inst)
   : MonadWriter W (SumT E M) (Monad_SumT E M inst) :=
 {
-    tell w := fmap inr (tell w);
-    listen :=
-      fun A (m : M (E + A)%type) =>
-      listen m >>=
-        fun '(ea, w) => pure
-        match ea with
-        | inl e => inl e
-        | inr a => inr (a, w)
-        end
+  tell w := fmap inr (tell w);
+  listen :=
+    fun A (m : M (E + A)%type) =>
+    listen m >>=
+      fun '(ea, w) => pure
+      match ea with
+      | inl e => inl e
+      | inr a => inr (a, w)
+      end;
 }.
 Proof.
   intros. cbn. unfold pure_SumT.
@@ -277,8 +277,8 @@ Instance MonadState_SumT
   (inst : Monad M) (inst' : MonadState S M inst)
   : MonadState S (SumT E M) (Monad_SumT E M inst) :=
 {
-    get := get >>= fun x => pure (inr x);
-    put := fun s => put s >> pure (inr tt);
+  get := get >>= fun x => pure (inr x);
+  put := fun s => put s >> pure (inr tt);
 }.
 Proof.
   all: intros.
@@ -314,8 +314,8 @@ Instance MonadStateNondet_SumT
   (inst : Monad M) (inst' : MonadStateNondet S M inst)
   : MonadStateNondet S (SumT E M) (Monad_SumT E M inst) :=
 {
-    instS := MonadState_SumT E S M inst inst';
-    instN := MonadNondet_SumT E e M inst inst';
+  instS := MonadState_SumT E S M inst inst';
+  instN := MonadNondet_SumT E e M inst inst';
 }.
 Proof.
 Abort.
@@ -329,7 +329,7 @@ Instance MonadFree_SumT
   (instM : Monad M) (instMF : MonadFree F M instF instM)
   : MonadFree F (SumT E M) instF (Monad_SumT E M instM) :=
 {
-    wrap := fun A m => @wrap F M instF instM instMF _ m
+  wrap := fun A m => @wrap F M instF instM instMF _ m;
 }.
 Proof.
   intros. cbn. unfold bind_SumT, pure_SumT,SumT in *.

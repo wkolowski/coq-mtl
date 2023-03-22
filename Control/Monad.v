@@ -20,20 +20,20 @@ From CoqMTL Require Export Control.Applicative.
       from the other laws combined with [Applicative] laws *)
 Class Monad (M : Type -> Type) : Type :=
 {
-    is_applicative :> Applicative M;
-    bind : forall {A B : Type}, M A -> (A -> M B) -> M B;
-    bind_pure_l :
-      forall (A B : Type) (f : A -> M B) (a : A),
-        bind (pure a) f = f a;
-    bind_pure_r :
-      forall (A : Type) (ma : M A),
-        bind ma pure = ma;
-    bind_assoc :
-      forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
-        bind (bind ma f) g = bind ma (fun x => bind (f x) g);
-    bind_ap :
-      forall (A B : Type) (mf : M (A -> B)) (mx : M A),
-        mf <*> mx = bind mf (fun f => bind mx (fun x => pure (f x)));
+  is_applicative :> Applicative M;
+  bind : forall {A B : Type}, M A -> (A -> M B) -> M B;
+  bind_pure_l :
+    forall (A B : Type) (f : A -> M B) (a : A),
+      bind (pure a) f = f a;
+  bind_pure_r :
+    forall (A : Type) (ma : M A),
+      bind ma pure = ma;
+  bind_assoc :
+    forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
+      bind (bind ma f) g = bind ma (fun x => bind (f x) g);
+  bind_ap :
+    forall (A B : Type) (mf : M (A -> B)) (mx : M A),
+      mf <*> mx = bind mf (fun f => bind mx (fun x => pure (f x)));
 }.
 
 Coercion is_applicative : Monad >-> Applicative.

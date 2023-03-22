@@ -7,8 +7,8 @@ From CoqMTL Require Import Control.Monad.Trans.
 Class MonadReader
   (R : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
-    ask : M R;
-    ask_ask : ask >> ask = ask;
+  ask : M R;
+  ask_ask : ask >> ask = ask;
 }.
 
 #[global] Hint Rewrite @ask_ask : CoqMTL.
@@ -40,7 +40,7 @@ Instance MonadReader_MonadTrans
   (R : Type) (instMR : MonadReader R M instM)
   : MonadReader R (T M) (is_monad _ instM) :=
 {
-    ask := lift ask
+  ask := lift ask;
 }.
 Proof.
   rewrite lift_constrA, ask_ask. reflexivity.

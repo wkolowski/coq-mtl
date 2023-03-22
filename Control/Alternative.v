@@ -14,18 +14,18 @@ From CoqMTL Require Export Control.Foldable.
     annihilating element. *)
 Class Alternative (F : Type -> Type) : Type :=
 {
-    is_applicative :> Applicative F;
-    aempty : forall {A : Type}, F A;
-    aplus : forall {A : Type}, F A -> F A -> F A;
-    aplus_aempty_l :
-      forall (A : Type) (fa : F A),
-        aplus aempty fa = fa;
-    aplus_aempty_r :
-      forall (A : Type) (fa : F A),
-        aplus fa aempty = fa;
-    aplus_assoc :
-      forall (A : Type) (x y z : F A),
-        aplus x (aplus y z) = aplus (aplus x y) z;
+  is_applicative :> Applicative F;
+  aempty : forall {A : Type}, F A;
+  aplus : forall {A : Type}, F A -> F A -> F A;
+  aplus_aempty_l :
+    forall (A : Type) (fa : F A),
+      aplus aempty fa = fa;
+  aplus_aempty_r :
+    forall (A : Type) (fa : F A),
+      aplus fa aempty = fa;
+  aplus_assoc :
+    forall (A : Type) (x y z : F A),
+      aplus x (aplus y z) = aplus (aplus x y) z;
 }.
 
 Coercion is_applicative : Alternative >-> Applicative.

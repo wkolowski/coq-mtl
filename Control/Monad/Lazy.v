@@ -20,7 +20,7 @@ Definition fmap_Lazy {A B : Type} (f : A -> B) (la : Lazy A) : Lazy B :=
 #[export]
 Instance Functor_Lazy : Functor Lazy :=
 {
-    fmap := @fmap_Lazy;
+  fmap := @fmap_Lazy;
 }.
 Proof. all: monad. Defined.
 
@@ -35,9 +35,9 @@ Definition ap_Lazy
 #[export]
 Instance Applicative_Lazy : Applicative Lazy :=
 {
-    is_functor := Functor_Lazy;
-    pure := @pure_Lazy;
-    ap := @ap_Lazy;
+  is_functor := Functor_Lazy;
+  pure := @pure_Lazy;
+  ap := @ap_Lazy;
 }.
 Proof.
   monad.
@@ -52,8 +52,8 @@ Definition bind_Lazy
 #[export]
 Instance Monad_Lazy : Monad Lazy :=
 {
-    is_applicative := Applicative_Lazy;
-    bind := @bind_Lazy
+  is_applicative := Applicative_Lazy;
+  bind := @bind_Lazy
 }.
 Proof. all: monad. Defined.
 

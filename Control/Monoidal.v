@@ -19,24 +19,24 @@ Notation "f *** g" := (par f g) (at level 40).
 
 Class Monoidal (F : Type -> Type) : Type :=
 {
-    is_functor :> Functor F;
-    default : F unit;
-    pairF : forall {A B : Type}, F A -> F B -> F (A * B)%type;
-    pairF_default_l :
-      forall (A : Type) (v : F A),
-        fmap snd (pairF default v) = v;
-    pairF_default_r :
-      forall (A : Type) (v : F A),
-        fmap fst (pairF v default) = v;
-    pairF_assoc :
-      forall (A B C : Type) (a : F A) (b : F B) (c : F C),
-        fmap reassoc (pairF (pairF a b) c) = pairF a (pairF b c);
-    natural :
-      forall
-        (A A' B B' : Type)
-        (f : A -> A') (g : B -> B')
-        (a : F A) (b : F B),
-          fmap (f *** g) (pairF a b) = pairF (fmap f a) (fmap g b);
+  is_functor :> Functor F;
+  default : F unit;
+  pairF : forall {A B : Type}, F A -> F B -> F (A * B)%type;
+  pairF_default_l :
+    forall (A : Type) (v : F A),
+      fmap snd (pairF default v) = v;
+  pairF_default_r :
+    forall (A : Type) (v : F A),
+      fmap fst (pairF v default) = v;
+  pairF_assoc :
+    forall (A B C : Type) (a : F A) (b : F B) (c : F C),
+      fmap reassoc (pairF (pairF a b) c) = pairF a (pairF b c);
+  natural :
+    forall
+      (A A' B B' : Type)
+      (f : A -> A') (g : B -> B')
+      (a : F A) (b : F B),
+        fmap (f *** g) (pairF a b) = pairF (fmap f a) (fmap g b);
 }.
 
 #[global] Hint Rewrite @pairF_default_l @pairF_default_r @pairF_assoc : monoidal.

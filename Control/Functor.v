@@ -7,12 +7,12 @@ From CoqMTL Require Export Base.
     functors (see below). *)
 Class Functor (F : Type -> Type) : Type :=
 {
-    fmap : forall {A B : Type}, (A -> B) -> (F A -> F B);
-    fmap_id :
-      forall A : Type, fmap (@id A) = id;
-    fmap_comp :
-      forall (A B C : Type) (f : A -> B) (g : B -> C),
-        fmap (f .> g) = fmap f .> fmap g;
+  fmap : forall {A B : Type}, (A -> B) -> (F A -> F B);
+  fmap_id :
+    forall A : Type, fmap (@id A) = id;
+  fmap_comp :
+    forall (A B C : Type) (f : A -> B) (g : B -> C),
+      fmap (f .> g) = fmap f .> fmap g;
 }.
 
 Section DerivedFunctorLaws.

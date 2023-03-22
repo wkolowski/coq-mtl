@@ -7,17 +7,17 @@ From CoqMTL Require Import Control.Applicative.
     usual laws. *)
 Class Monad (M : Type -> Type) : Type :=
 {
-    pure : forall {A : Type}, A -> M A;
-    bind : forall {A B : Type}, M A -> (A -> M B) -> M B;
-    bind_pure_l :
-      forall (A B : Type) (f : A -> M B) (a : A),
-        bind (pure a) f = f a;
-    bind_pure_r :
-      forall (A : Type) (ma : M A),
-        bind ma pure = ma;
-    bind_assoc :
-      forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
-        bind (bind ma f) g = bind ma (fun x => bind (f x) g);
+  pure : forall {A : Type}, A -> M A;
+  bind : forall {A B : Type}, M A -> (A -> M B) -> M B;
+  bind_pure_l :
+    forall (A B : Type) (f : A -> M B) (a : A),
+      bind (pure a) f = f a;
+  bind_pure_r :
+    forall (A : Type) (ma : M A),
+      bind ma pure = ma;
+  bind_assoc :
+    forall (A B C : Type) (ma : M A) (f : A -> M B) (g : B -> M C),
+      bind (bind ma f) g = bind ma (fun x => bind (f x) g);
 }.
 
 Notation "mx >>= f" := (bind mx f) (at level 40).
@@ -46,7 +46,7 @@ Definition fmap_MonadBind
 Instance Functor_MonadBind
   (M : Type -> Type) (inst : Monad M) : Functor M :=
 {
-    fmap := @fmap_MonadBind M inst;
+  fmap := @fmap_MonadBind M inst;
 }.
 Proof. all: mbind. Defined.
 
@@ -64,7 +64,7 @@ Definition ap_MonadBind
 Instance Applicative_MonadBind
   (M : Type -> Type) (inst : Monad M) : Applicative M :=
 {
-    pure := @pure M inst;
-    ap := @ap_MonadBind M inst;
+  pure := @pure M inst;
+  ap := @ap_MonadBind M inst;
 }.
 Proof. all: mbind. Defined.

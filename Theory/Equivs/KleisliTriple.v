@@ -3,17 +3,17 @@ From CoqMTL Require Import Control.Monad.
 (** This looks identical to MonadBind. *)
 Class KleisliTriple (M : Type -> Type) : Type :=
 {
-    eta : forall {A : Type}, A -> M A;
-    star : forall {A B : Type}, (A -> M B) -> M A -> M B;
-    eta_star :
-      forall (A B : Type) (f : A -> M B) (x : A),
-        star f (eta x) = f x;
-    star_eta :
-      forall (A : Type) (x : M A),
-        star eta x = x;
-    star_comp :
-      forall (A B C : Type) (f : A -> M B) (g : B -> M C) (x : M A),
-        star (f .> star g) x = star g (star f x)
+  eta : forall {A : Type}, A -> M A;
+  star : forall {A B : Type}, (A -> M B) -> M A -> M B;
+  eta_star :
+    forall (A B : Type) (f : A -> M B) (x : A),
+      star f (eta x) = f x;
+  star_eta :
+    forall (A : Type) (x : M A),
+      star eta x = x;
+  star_comp :
+    forall (A B C : Type) (f : A -> M B) (g : B -> M C) (x : M A),
+      star (f .> star g) x = star g (star f x)
 }.
 
 #[global] Hint Rewrite @eta_star @star_eta : Kleisli.
@@ -40,7 +40,7 @@ Hint Unfold fmap_Kleisli compose : Kleisli.
 #[export]
 Instance Functor_Kleisli : Functor M :=
 {
-    fmap := @fmap_Kleisli
+  fmap := @fmap_Kleisli
 }.
 Proof. all: kleisli. Defined.
 
@@ -60,8 +60,8 @@ Hint Unfold pure_Kleisli bind_Kleisli ap_Kleisli flip : Kleisli.
 #[export]
 Instance Applicative_Kleisli : Applicative M :=
 {
-    pure := @pure_Kleisli;
-    ap := @ap_Kleisli;
+  pure := @pure_Kleisli;
+  ap := @ap_Kleisli;
 }.
 Proof. all: kleisli. Defined.
 

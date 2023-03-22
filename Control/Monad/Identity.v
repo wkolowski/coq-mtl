@@ -13,7 +13,7 @@ Definition fmap_Identity
 #[export]
 Instance FunctorIdentity : Functor Identity :=
 {
-    fmap := @fmap_Identity
+  fmap := @fmap_Identity;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -28,9 +28,9 @@ Definition ap_Identity
 #[export]
 Instance Applicative_Identity : Applicative Identity :=
 {
-    is_functor := FunctorIdentity;
-    pure := @pure_Identity;
-    ap := @ap_Identity
+  is_functor := FunctorIdentity;
+  pure := @pure_Identity;
+  ap := @ap_Identity;
 }.
 Proof. all: reflexivity. Defined.
 
@@ -56,8 +56,8 @@ Proof. split. reflexivity. Defined.
 #[export]
 Instance Monad_Identity : Monad Identity :=
 {
-    is_applicative := Applicative_Identity;
-    bind := @bind_Identity
+  is_applicative := Applicative_Identity;
+  bind := @bind_Identity;
 }.
 Proof. all: reflexivity. Defined.
 

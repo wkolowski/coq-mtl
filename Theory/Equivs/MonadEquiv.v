@@ -52,8 +52,8 @@ End Comp.
 Instance Join_to_Monad
   (M : Type -> Type) (inst : Join.Monad M) : Monad M :=
 {
-    is_applicative := @Join.is_applicative M inst;
-    bind := @Join.bind M inst
+  is_applicative := @Join.is_applicative M inst;
+  bind := @Join.bind M inst
 }.
 Proof.
   1, 2, 4: MonadJoin.mjoin.
@@ -65,8 +65,8 @@ Defined.
 Instance Monad_to_Join (M : Type -> Type) (inst : Monad M)
   : Join.Monad M :=
 {
-    is_applicative := @is_applicative M inst;
-    join := @join M inst
+  is_applicative := @is_applicative M inst;
+  join := @join M inst
 }.
 Proof.
   all: intros; unfold join, compose; try ext x.
@@ -84,8 +84,8 @@ Defined.
 Instance MonadBind_to_Monad
   (M : Type -> Type) (inst : Bind.Monad M) : Monad M :=
 {
-    is_applicative := @MonadBind.Applicative_MonadBind M inst;
-    bind := @MonadBind.bind M inst;
+  is_applicative := @MonadBind.Applicative_MonadBind M inst;
+  bind := @MonadBind.bind M inst;
 }.
 Proof. all: MonadBind.mbind. Defined.
 
@@ -94,8 +94,8 @@ Proof. all: MonadBind.mbind. Defined.
 Instance Monad_to_MonadBind
   (M : Type -> Type) (inst : Monad M) : MonadBind.Monad M :=
 {
-    pure := @pure M inst;
-    bind := @bind M inst;
+  pure := @pure M inst;
+  bind := @bind M inst;
 }.
 Proof. all: monad. Defined.
 
@@ -108,8 +108,8 @@ From CoqMTL Require Import KleisliTriple.
 Instance Monad_to_KleisliTriple
   (M : Type -> Type) (inst : Monad M) : KleisliTriple M :=
 {
-    eta := @pure M inst;
-    star := fun A B => flip (@bind M inst A B);
+  eta := @pure M inst;
+  star := fun A B => flip (@bind M inst A B);
 }.
 Proof.
   all: unfold flip; monad.
@@ -120,8 +120,8 @@ Defined.
 Instance KleisliTriple_to_Monad
   (M : Type -> Type) (inst : KleisliTriple M) : Monad M :=
 {
-    is_applicative := Applicative_Kleisli M inst;
-    bind := @bind_Kleisli M inst;
+  is_applicative := Applicative_Kleisli M inst;
+  bind := @bind_Kleisli M inst;
 }.
 Proof. all: kleisli. Defined.
 
@@ -132,8 +132,8 @@ Proof. all: kleisli. Defined.
 Instance Monad_to_MonadComp
   (M : Type -> Type) (inst : Monad M) : MonadComp.Monad M :=
 {
-    is_applicative := is_applicative;
-    compM := @compM M inst;
+  is_applicative := is_applicative;
+  compM := @compM M inst;
 }.
 Proof. all: unfold compM; monad. Defined.
 

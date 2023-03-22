@@ -21,7 +21,7 @@ end.
 #[export]
 Instance Functor_Sum (E : Type) : Functor (sum E) :=
 {
-    fmap := @fmap_Sum E
+  fmap := @fmap_Sum E;
 }.
 Proof. all: monad. Defined.
 
@@ -47,9 +47,9 @@ end.
 #[export]
 Instance Applicative_Sum (E : Type) : Applicative (sum E) :=
 {
-    is_functor := Functor_Sum E;
-    pure := @pure_Sum E;
-    ap := @ap_Sum E
+  is_functor := Functor_Sum E;
+  pure := @pure_Sum E;
+  ap := @ap_Sum E;
 }.
 Proof. all: monad. Defined.
 
@@ -87,8 +87,8 @@ end.
 #[export]
 Instance Monad_Sum (A : Type) : Monad (sum A) :=
 {
-    is_applicative := Applicative_Sum A;
-    bind := @bind_Sum A
+  is_applicative := Applicative_Sum A;
+  bind := @bind_Sum A;
 }.
 Proof. all: monad. Defined.
 
@@ -102,7 +102,7 @@ Instance MonadFail_Sum
   (E : Type) (e : E)
   : MonadFail (Sum E) (Monad_Sum E) :=
 {
-    fail := @fail_Sum E e
+  fail := @fail_Sum E e;
 }.
 Proof. reflexivity. Defined.
 
@@ -111,14 +111,13 @@ Proof. reflexivity. Defined.
 Instance MonadExcept_Sum
   (E : Type) (e : E) : MonadExcept (sum E) (Monad_Sum E) :=
 {
-    instF := MonadFail_Sum E e;
-    catch :=
-      fun A x y =>
-        match x with
-        | inl e => y
-        | inr a => inr a
-        end
-
+  instF := MonadFail_Sum E e;
+  catch :=
+    fun A x y =>
+      match x with
+      | inl e => y
+      | inr a => inr a
+      end;
 }.
 Proof.
   all: monad. unfold fail_Sum.
@@ -137,6 +136,6 @@ end.
 #[export]
 Instance FoldableSum (E : Type) : Foldable (sum E) :=
 {
-    foldMap := @foldMap_Sum E
+  foldMap := @foldMap_Sum E;
 }.
 Proof. monad. Defined.

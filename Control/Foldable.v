@@ -11,11 +11,11 @@ From CoqMTL Require Import Misc.Monoid.
     (a definition of monoid homomorphisms would help a lot). *)
 Class Foldable (T : Type -> Type) : Type :=
 {
-    foldMap : forall {A : Type} {M : Monoid}, (A -> M) -> T A -> M;
-    foldMap_law :
-      forall (A : Type) (B C : Monoid) (f : A -> B) (g : B -> C),
-        g neutr = neutr -> (forall x y : B, g (op x y) = op (g x) (g y)) ->
-          foldMap (f .> g) = foldMap f .> g
+  foldMap : forall {A : Type} {M : Monoid}, (A -> M) -> T A -> M;
+  foldMap_law :
+    forall (A : Type) (B C : Monoid) (f : A -> B) (g : B -> C),
+      g neutr = neutr -> (forall x y : B, g (op x y) = op (g x) (g y)) ->
+        foldMap (f .> g) = foldMap f .> g
 }.
 
 (** A monoid instance for functions with composition and identity. It is
@@ -24,9 +24,9 @@ Class Foldable (T : Type -> Type) : Type :=
 #[export]
 Instance Endo (A : Type) : Monoid :=
 {
-    carr := A -> A;
-    op := @compose A A A;
-    neutr := id;
+  carr := A -> A;
+  op := @compose A A A;
+  neutr := id;
 }.
 Proof. all: hs. Defined.
 
