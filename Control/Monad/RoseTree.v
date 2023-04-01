@@ -53,15 +53,15 @@ Instance Applicative_RT : Applicative RT :=
 }.
 Proof.
   all: cbn; intros.
-    cbn. rewrite (@fmap_id _ Functor_RT). reflexivity.
-    induction g as [g | gl IHgl gr IHgr]; cbn.
-      induction f as [f | fl IHfl fr IHfr]; cbn.
-        rewrite (@fmap_comp' _ Functor_RT). reflexivity.
-        rewrite IHfl, IHfr. reflexivity.
-      rewrite IHgl, IHgr. reflexivity.
-    reflexivity.
-    induction f as [f | l IHl r IHr]; cbn; rewrite ?IHl, ?IHr; reflexivity.
-    reflexivity.
+  - cbn. rewrite (@fmap_id _ Functor_RT). reflexivity.
+  - induction g as [g | gl IHgl gr IHgr]; cbn.
+    + induction f as [f | fl IHfl fr IHfr]; cbn.
+      * rewrite (@fmap_comp' _ Functor_RT). reflexivity.
+      * rewrite IHfl, IHfr. reflexivity.
+    + rewrite IHgl, IHgr. reflexivity.
+  - reflexivity.
+  - induction f as [f | l IHl r IHr]; cbn; rewrite ?IHl, ?IHr; reflexivity.
+  - reflexivity.
 Defined.
 
 (** Constructors are injective, so [RoseTree] can't be a commutative
@@ -99,14 +99,14 @@ Instance Monad_RT : Monad RT :=
 }.
 Proof.
   all: cbn; intros.
-    reflexivity.
-    induction ma as [a | l IHl r IHr]; cbn; rewrite ?IHl, ?IHr; reflexivity.
-    induction ma as [a | l IHl r IHr]; cbn; rewrite ?IHl, ?IHr; reflexivity.
-    induction mf as [f | fl IHfl fr IHfr]; cbn.
-      induction mx as [x | xl IHxl xr IHxr]; cbn.
-        reflexivity.
-        rewrite IHxl, IHxr. reflexivity.
-      rewrite IHfl, IHfr. reflexivity.
+  - reflexivity.
+  - induction ma as [a | l IHl r IHr]; cbn; rewrite ?IHl, ?IHr; reflexivity.
+  - induction ma as [a | l IHl r IHr]; cbn; rewrite ?IHl, ?IHr; reflexivity.
+  - induction mf as [f | fl IHfl fr IHfr]; cbn.
+    + induction mx as [x | xl IHxl xr IHxr]; cbn.
+      * reflexivity.
+      * rewrite IHxl, IHxr. reflexivity.
+    + rewrite IHfl, IHfr. reflexivity.
 Defined.
 
 (** Rose trees can't have a [fail] function, because they are nonempty

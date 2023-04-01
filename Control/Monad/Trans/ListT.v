@@ -216,18 +216,18 @@ Instance MonadState_ListT
 }.
 Proof.
   all: intros; ext3 X nil cons; cbn.
-    unfold fmap_ListT, const, id.
-      rewrite <- constrA_assoc, put_put. reflexivity.
-    unfold fmap_ListT, pure_ListT.
-      rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
+  - unfold fmap_ListT, const, id.
+    rewrite <- constrA_assoc, put_put. reflexivity.
+  - unfold fmap_ListT, pure_ListT.
+    rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
+    reflexivity.
+  - unfold bind_ListT, pure_ListT.
+    replace (fun s : S => put s >> cons tt nil)
+       with (fun s : S => put s >>= fun _ => cons tt nil).
+    + rewrite <- (bind_assoc _ _ _ get put), get_put, bind_pure_l.
       reflexivity.
-    unfold bind_ListT, pure_ListT.
-      replace (fun s : S => put s >> cons tt nil)
-         with (fun s : S => put s >>= fun _ => cons tt nil).
-        rewrite <- (bind_assoc _ _ _ get put), get_put, bind_pure_l.
-        reflexivity.
-      ext s. rewrite constrA_spec. reflexivity.
-    unfold bind_ListT, pure_ListT.
+    + ext s. rewrite constrA_spec. reflexivity.
+  - unfold bind_ListT, pure_ListT.
       rewrite get_get. reflexivity.
 Defined.
 
@@ -244,9 +244,9 @@ Instance MonadStateNondet_ListT
   instN := MonadNondet_ListT M inst;
 }.
 Proof.
-  intros. rewrite constrA_spec. cbn. compute.
+  - intros. rewrite constrA_spec. cbn. compute.
     ext X. ext nil. ext cons. admit. (* Induction would do *)
-  intros. compute. ext3 X nil cons.
+  - intros. compute. ext3 X nil cons.
 Abort.
 
 (** If [M] is the free monad of [F], so is [ListT M]. *)

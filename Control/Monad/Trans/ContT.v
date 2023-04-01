@@ -179,10 +179,10 @@ Instance MonadState_ContT
 }.
 Proof.
   all: hs.
-    ext k. hs.
-    ext k. rewrite constrA_spec, <- bind_assoc, put_get'. hs.
-    ext k. rewrite <- bind_constrA_assoc. hs.
-    ext k'. rewrite get_get. reflexivity.
+  - ext k. hs.
+  - ext k. rewrite constrA_spec, <- bind_assoc, put_get'. hs.
+  - ext k. rewrite <- bind_constrA_assoc. hs.
+  - ext k'. rewrite get_get. reflexivity.
 Defined.
 
 (** Even though [ContT] preserves [MonadNondet] and [MonadState], it

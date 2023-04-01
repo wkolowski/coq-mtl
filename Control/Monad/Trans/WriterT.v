@@ -61,12 +61,15 @@ Lemma WriterT_not_Alternative :
   (forall (W : Monoid) (M : Type -> Type) (inst : Monad M),
     Alternative (WriterT W M)) -> False.
 Proof.
-  intros. assert (W : Monoid).
-    refine {| carr := unit; neutr := tt; op := fun _ _ => tt |}.
-      1-3: try destruct x; reflexivity.
-    destruct (X W Identity Monad_Identity).
-    clear -aempty. specialize (aempty False).
-    compute in aempty. destruct aempty. assumption.
+  intros.
+  assert (W : Monoid).
+  {
+    refine {| carr := unit; neutr := tt; op := fun _ _ => tt |};
+      intros []; easy.
+  }
+  destruct (X W Identity Monad_Identity).
+  clear -aempty. specialize (aempty False).
+  compute in aempty. destruct aempty. assumption.
 Qed.
 
 #[refine]
@@ -203,20 +206,20 @@ Instance MonadState_WriterT
   put := fun s => put s >> pure (tt, neutr);
 }.
 Proof.
-  intros. cbn. unfold ap_WriterT, fmap_WriterT. monad.
-  intro. cbn. unfold ap_WriterT, fmap_WriterT, pure_WriterT, const, id.
+  - intros. cbn. unfold ap_WriterT, fmap_WriterT. monad.
+  - intro. cbn. unfold ap_WriterT, fmap_WriterT, pure_WriterT, const, id.
     rewrite !bind_fmap. unfold compose.
     rewrite <- !constrA_bind_assoc, !bind_pure_l.
     rewrite 2!constrA_bind_assoc. rewrite put_get.
     rewrite <- 2!constrA_bind_assoc. rewrite !bind_pure_l.
     reflexivity.
-  cbn. unfold bind_WriterT, pure_WriterT.
+  - cbn. unfold bind_WriterT, pure_WriterT.
     rewrite bind_assoc.
     replace (pure (tt, @neutr W))
        with (fmap (fun u => (u, @neutr W)) (@pure M inst _ tt))
     by hs.
     rewrite <- get_put at 1. rewrite fmap_bind. f_equal. monad.
-  intros. cbn. unfold bind_WriterT. rewrite !bind_assoc.
+  - intros. cbn. unfold bind_WriterT. rewrite !bind_assoc.
     do 2 match goal with
     | |- context [fun s : S => pure (s, ?x) >>= ?f] =>
         replace (fun s : S => pure (s, x) >>= f)
@@ -237,11 +240,11 @@ Instance MonadStateNondet_WriterT
   instN := MonadNondet_WriterT W M inst inst';
 }.
 Proof.
-  intros. rewrite constrA_spec. cbn.
+  - intros. rewrite constrA_spec. cbn.
     unfold bind_WriterT.
     rewrite <- (@seq_fail_r S M inst inst' _ _ x) at 1.
     rewrite constrA_spec. f_equal. monad.
-  intros. cbn. unfold bind_WriterT.
+  - intros. cbn. unfold bind_WriterT.
     rewrite <- bind_choose_r. f_equal.
     ext aw. destruct aw as [a w]. apply bind_choose_l.
 Defined.

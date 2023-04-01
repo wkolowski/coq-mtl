@@ -205,15 +205,14 @@ Instance MonadState_FreeT
   put := fun s => fun X pure wrap => put s >>= pure;
 }.
 Proof.
-  monad;
-    unfold const, id, compose; monad.
-  intros. ext3 X pure wrap. cbn.
+  - monad; unfold const, id, compose; monad.
+  - intros. ext3 X pure wrap. cbn.
     hs. unfold const, id, compose. rewrite <- bind_assoc.
     rewrite put_get'. monad.
-  intros. ext3 X pure wrap. cbn.
+  - intros. ext3 X pure wrap. cbn.
     unfold bind_FreeT, pure_FreeT.
     rewrite <- bind_assoc, get_put. hs.
-  monad.
+  - monad.
 Defined.
 
 #[refine]

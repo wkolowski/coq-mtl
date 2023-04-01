@@ -43,8 +43,8 @@ Lemma rep_constrA :
     rep (n + m) x = rep n x >> rep m x.
 Proof.
   induction n as [| n']; cbn; intros.
-    unfold skip. rewrite constrA_spec. rewrite bind_pure_l. reflexivity.
-    rewrite IHn'. rewrite constrA_assoc. reflexivity.
+  - unfold skip. rewrite constrA_spec. rewrite bind_pure_l. reflexivity.
+  - rewrite IHn'. rewrite constrA_assoc. reflexivity.
 Qed.
 
 Lemma rep1 :
@@ -61,10 +61,10 @@ Proof.
   rewrite IHn'. rewrite <- (rep1 tick) at 2.
   rewrite <- !rep_constrA, <- plus_n_O. rewrite !Nat.sub_1_r. f_equal.
   induction n' as [| n'']; cbn.
-    reflexivity.
-    erewrite (Nat.lt_succ_pred 0).
-      lia.
-      clear. induction n'' as [| n''']; cbn; lia.
+  - reflexivity.
+  - erewrite (Nat.lt_succ_pred 0).
+    + lia.
+    + clear. induction n'' as [| n''']; cbn; lia.
 Qed.
 
 (** ** 4. Nondeterministic computations *)
@@ -145,8 +145,8 @@ Instance MonadAlt_List : MonadAlt Monad_List :=
 }.
 Proof.
   all: intros.
-    rewrite app_assoc. reflexivity.
-    cbn. apply bind_List_app.
+  - rewrite app_assoc. reflexivity.
+  - cbn. apply bind_List_app.
 Defined.
 
 #[refine]
@@ -158,8 +158,8 @@ Instance MonadNondet_List : MonadNondet Monad_List :=
 }.
 Proof.
   all: cbn; intros.
-    reflexivity.
-    rewrite app_nil_r. reflexivity.
+  - reflexivity.
+  - rewrite app_nil_r. reflexivity.
 Defined.
 
 Arguments fail {M inst MonadFail A}.
@@ -241,8 +241,8 @@ Lemma product_In_0 :
     In 0 l -> product l = 0.
 Proof.
   induction l as [| h t]; cbn; destruct 1; subst.
-    reflexivity.
-    rewrite IHt; auto.
+  - reflexivity.
+  - rewrite IHt; auto.
 Qed.
 *)
 
@@ -263,10 +263,10 @@ Lemma product_has_0 :
     has 0 l = true -> product l = 0.
 Proof.
   induction l as [| h t]; cbn; intros.
-    congruence.
-    destruct h as [| h'].
-      reflexivity.
-      rewrite IHt; auto.
+  - congruence.
+  - destruct h as [| h'].
+    + reflexivity.
+    + rewrite IHt; auto.
 Qed.
 
 Definition work
@@ -285,10 +285,10 @@ Theorem fastprod_spec :
 Proof.
   unfold fastprod, work; intros.
   case_eq (has 0 l); intros.
-    rewrite catch_fail_l, product_has_0.
-      reflexivity.
-      assumption.
-    rewrite catch_pure. reflexivity.
+  - rewrite catch_fail_l, product_has_0.
+    + reflexivity.
+    + assumption.
+  - rewrite catch_pure. reflexivity.
 Qed.
 
 Definition next
@@ -300,13 +300,13 @@ Theorem work_foldr :
     work = fold_right next (pure 1).
 Proof.
   intros. ext l. induction l as [| h t]; cbn.
-    reflexivity.
-    unfold work in *. cbn. destruct h as [| h']; cbn.
-      reflexivity.
-      case_eq (has 0 t); intros.
-        rewrite H in *. rewrite <- IHt. rewrite fmap_bind_pure.
-          rewrite bind_fail_l. reflexivity.
-        rewrite H in *. rewrite <- IHt. rewrite fmap_pure. reflexivity.
+  - reflexivity.
+  - unfold work in *. cbn. destruct h as [| h']; cbn.
+    + reflexivity.
+    + case_eq (has 0 t); intros.
+      * rewrite H in *. rewrite <- IHt. rewrite fmap_bind_pure.
+        rewrite bind_fail_l. reflexivity.
+      * rewrite H in *. rewrite <- IHt. rewrite fmap_pure. reflexivity.
 Qed.
 
 Fixpoint hasE
@@ -329,10 +329,10 @@ Lemma aux :
     if has 0 l then pure m else pure n.
 Proof.
   induction l as [| h t]; cbn in *; intros.
-    rewrite constrA_spec. monad.
-    destruct h as [| h'].
-      rewrite constrA_fail_l, catch_fail_l. cbn. reflexivity.
-      rewrite IHt. cbn. reflexivity.
+  - rewrite constrA_spec. monad.
+  - destruct h as [| h'].
+    + rewrite constrA_fail_l, catch_fail_l. cbn. reflexivity.
+    + rewrite IHt. cbn. reflexivity.
 Qed.
 
 Theorem fastprod'_spec :
@@ -341,8 +341,8 @@ Theorem fastprod'_spec :
 Proof.
   intros. unfold fastprod'. rewrite aux.
   case_eq (has 0 l); intros.
-    rewrite product_has_0; auto.
-    reflexivity.
+  - rewrite product_has_0; auto.
+  - reflexivity.
 Qed.
 
 End S2.
@@ -397,10 +397,10 @@ Lemma guard_seq_bind :
     guard b >> ma = ma >>= fun a : A => guard b >> pure a.
 Proof.
   intros. unfold guard. destruct b.
-    unfold skip, constrA. unfold compose. monad.
-    rewrite constrA_fail_l. rewrite <- (seq_fail_r _ _ ma).
-      rewrite constrA_spec. f_equal. ext a. rewrite constrA_fail_l.
-        reflexivity.
+  - unfold skip, constrA. unfold compose. monad.
+  - rewrite constrA_fail_l. rewrite <- (seq_fail_r _ _ ma).
+    rewrite constrA_spec. f_equal. ext a. rewrite constrA_fail_l.
+    reflexivity.
 Qed.
 
 End S3.

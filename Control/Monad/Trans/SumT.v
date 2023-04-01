@@ -179,18 +179,16 @@ Instance MonadExcept_SumT
     end);
 }.
 Proof.
-(*
   all: cbn; intros.
-    unfold fail_SumT. rewrite bind_pure_l. reflexivity.
-    Focus 2. rewrite bind_assoc. f_equal. ext ea. destruct ea.
-      reflexivity.
-      rewrite bind_pure_l. reflexivity.
-    Focus 2. unfold pure_SumT. rewrite bind_pure_l. reflexivity.
-    rewrite <- (@bind_pure_r M inst _ x) at 2. f_equal.
-      ext ea. destruct ea.
-        Focus 2. reflexivity.
-        unfold fail_SumT.
-*)
+  - unfold fail_SumT. rewrite bind_pure_l. reflexivity.
+  - rewrite <- (@bind_pure_r M inst _ x) at 2. f_equal.
+    ext ea. destruct ea; [| reflexivity].
+    unfold fail_SumT.
+    admit.
+  - rewrite bind_assoc. f_equal. ext ea. destruct ea.
+    + reflexivity.
+    + rewrite bind_pure_l. reflexivity.
+  - unfold pure_SumT. rewrite bind_pure_l. reflexivity.
 Abort.
 
 (** [SumT] preserves [MonadAlt] but not [MonadNondet] (and thus not
@@ -208,8 +206,8 @@ Instance MonadAlt_SumT
     fun A x y => @choose M inst inst' _ x y;
 }.
 Proof.
-  intros. rewrite choose_assoc. reflexivity.
-  intros. cbn. unfold bind_SumT. rewrite bind_choose_l. reflexivity.
+  - intros. rewrite choose_assoc. reflexivity.
+  - intros. cbn. unfold bind_SumT. rewrite bind_choose_l. reflexivity.
 Defined.
 
 #[refine]
@@ -223,8 +221,8 @@ Instance MonadNondet_SumT
   instA := @MonadAlt_SumT E M inst (@instA _ _ inst');
 }.
 Proof.
-  intros. cbn. unfold fail_SumT. admit.
-  intros. cbn. unfold fail_SumT. admit.
+  - intros. cbn. unfold fail_SumT. admit.
+  - intros. cbn. unfold fail_SumT. admit.
 Admitted.
 
 (** [SumT] preserves [MonadReader] and [MonadState], but not (yet)
@@ -265,9 +263,9 @@ Instance MonadWriter_SumT
       end;
 }.
 Proof.
-  intros. cbn. unfold pure_SumT.
+  - intros. cbn. unfold pure_SumT.
     rewrite listen_pure, bind_pure_l. reflexivity.
-  intros. cbn. unfold fmap_SumT.
+  - intros. cbn. unfold fmap_SumT.
 Abort.
 
 #[refine]
@@ -282,28 +280,28 @@ Instance MonadState_SumT
 }.
 Proof.
   all: intros.
-    monad.
-    rewrite !constrA_spec. cbn. unfold bind_SumT, pure_SumT.
-      rewrite !bind_assoc. rewrite !bind_pure_l.
-      rewrite <- constrA_spec, constrA_bind_assoc, put_get.
-      rewrite <- constrA_bind_assoc, bind_pure_l, <- constrA_spec.
-      reflexivity.
-    cbn. unfold bind_SumT, pure_SumT.
-      rewrite bind_assoc, <- fmap_pure at 1.
-      rewrite <- get_put, fmap_bind. f_equal. monad.
-    cbn. unfold bind_SumT. rewrite !bind_assoc.
-      replace
-        (fun x : S =>
-          pure (inr x) >>=
-            fun sa : E + S =>
-            match sa with
-            | inl e => pure (inl e)
-            | inr a => k a a
-            end)
-      with
-        (fun s : S => k s s).
-      rewrite <- get_get. f_equal. monad.
-      ext s. rewrite bind_pure_l. reflexivity.
+  - monad.
+  - rewrite !constrA_spec. cbn. unfold bind_SumT, pure_SumT.
+    rewrite !bind_assoc. rewrite !bind_pure_l.
+    rewrite <- constrA_spec, constrA_bind_assoc, put_get.
+    rewrite <- constrA_bind_assoc, bind_pure_l, <- constrA_spec.
+    reflexivity.
+  - cbn. unfold bind_SumT, pure_SumT.
+    rewrite bind_assoc, <- fmap_pure at 1.
+    rewrite <- get_put, fmap_bind. f_equal. monad.
+  - cbn. unfold bind_SumT. rewrite !bind_assoc.
+    replace
+      (fun x : S =>
+        pure (inr x) >>=
+          fun sa : E + S =>
+          match sa with
+          | inl e => pure (inl e)
+          | inr a => k a a
+          end)
+    with
+      (fun s : S => k s s).
+    + rewrite <- get_get. f_equal. monad.
+    + ext s. rewrite bind_pure_l. reflexivity.
 Defined.
 
 (* TODO *)

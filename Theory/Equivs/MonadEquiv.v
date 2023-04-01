@@ -70,11 +70,11 @@ Instance Monad_to_Join (M : Type -> Type) (inst : Monad M)
 }.
 Proof.
   all: intros; unfold join, compose; try ext x.
-    rewrite bind_assoc, bind_fmap. unfold compose, id. reflexivity.
-    rewrite bind_pure_l. reflexivity.
-    rewrite bind_fmap, <- bind_pure_r. f_equal.
-    rewrite bind_fmap, fmap_bind. f_equal.
-    rewrite !bind_ap. monad.
+  - rewrite bind_assoc, bind_fmap. unfold compose, id. reflexivity.
+  - rewrite bind_pure_l. reflexivity.
+  - rewrite bind_fmap, <- bind_pure_r. f_equal.
+  - rewrite bind_fmap, fmap_bind. f_equal.
+  - rewrite !bind_ap. monad.
 Defined.
 
 (** * bind-based definition *)

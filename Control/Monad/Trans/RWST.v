@@ -212,11 +212,11 @@ Instance MonadStateNondet_RWST
   instN := MonadNondet_RWST W R S M inst inst';
 }.
 Proof.
-  intros. rewrite constrA_spec. cbn. hs. ext2 r s.
+  - intros. rewrite constrA_spec. cbn. hs. ext2 r s.
     rewrite <- (seq_fail_r _ _ (x r s)) at 1.
     rewrite constrA_spec. f_equal. ext y.
     destruct y as [[a s'] w]. apply bind_fail_l.
-  intros. cbn. unfold bind_RWST. ext r. ext s.
+  - intros. cbn. unfold bind_RWST. ext r. ext s.
     rewrite <- bind_choose_r. f_equal.
     ext asw. destruct asw as [[a sa] wa]. apply bind_choose_l.
 Defined.

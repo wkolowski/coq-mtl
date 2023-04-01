@@ -42,10 +42,10 @@ Theorem label_size :
     label t n = (n', t') -> S n' = n + size t.
 Proof.
   induction t as [| l IHl r IHr]; intros.
-    rewrite <- plus_comm. cbn. inversion H. reflexivity.
-    cbn. intros.
-      case_eq (label l n); intros m1 t1 H1.
-      case_eq (label r (S m1)); intros m2 t2 H2.
-      cbn in H. rewrite H1, H2 in H. inversion H; subst.
-      rewrite (IHr _ _ _ H2), (IHl _ _ _ H1), plus_assoc. reflexivity.
+  - rewrite <- plus_comm. cbn. inversion H. reflexivity.
+  - cbn. intros.
+    case_eq (label l n); intros m1 t1 H1.
+    case_eq (label r (S m1)); intros m2 t2 H2.
+    cbn in H. rewrite H1, H2 in H. inversion H; subst.
+    rewrite (IHr _ _ _ H2), (IHl _ _ _ H1), plus_assoc. reflexivity.
 Qed.

@@ -180,10 +180,10 @@ Lemma calCC_classic :
 Proof.
   unfold callCC_Type. intros LEM F A B H.
   destruct (LEM (Codensity F A)).
-    assumption.
-    apply H. intro. cut False.
-      inversion 1.
-      apply f. red. intros. apply X0. assumption.
+  - assumption.
+  - apply H. intro. cut False.
+    + inversion 1.
+    + apply f. red. intros. apply X0. assumption.
 Qed.
 
 Lemma calCC'_classic :
@@ -191,8 +191,8 @@ Lemma calCC'_classic :
 Proof.
   unfold callCC'_Type. intros LEM F A H.
   destruct (LEM (Codensity F A)).
-    assumption.
-    apply H. intros B a. cut False.
-      inversion 1.
-      apply f. red. intros. apply X. assumption.
+  - assumption.
+  - apply H. intros B a. cut False.
+    + inversion 1.
+    + apply f. red. intros. apply X. assumption.
 Qed.

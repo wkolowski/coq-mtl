@@ -19,8 +19,8 @@ Instance Functor_List : Functor list :=
 }.
 Proof.
   all: cbn; unfold fmap_List, id, compose; intros; ext l.
-    apply map_id.
-    rewrite <- map_map. reflexivity.
+  - apply map_id.
+  - rewrite <- map_map. reflexivity.
 Defined.
 
 (** We can inject a value into the monad, because determinism is a
@@ -55,8 +55,8 @@ Lemma ap_list_app :
       ap_list (lf ++ lf') la = ap_list lf la ++ ap_list lf' la.
 Proof.
   induction lf as [| f fs]; intros; cbn.
-    reflexivity.
-    rewrite <- app_assoc. rewrite IHfs. reflexivity.
+   - reflexivity.
+   - rewrite <- app_assoc. rewrite IHfs. reflexivity.
 Qed.
 
 Lemma ap_list_map :
@@ -71,8 +71,8 @@ Lemma ap_list_exchange2 :
       ap_list (map (compose g) fs) xs = map g (ap_list fs xs).
 Proof.
   induction fs as [| f fs]; cbn; intros.
-    reflexivity.
-    rewrite map_app, map_map. f_equal. apply IHfs.
+  - reflexivity.
+  - rewrite map_app, map_map. f_equal. apply IHfs.
 Qed.
 
 #[refine]
@@ -84,13 +84,13 @@ Instance Applicative_List : Applicative list :=
   ap := @ap_list;
 }.
 Proof.
-  cbn. intros. rewrite map_id, app_nil_r. reflexivity.
-  induction g as [| g gs]; cbn; intros.
-    reflexivity.
-    rewrite ap_list_app, IHgs, ap_list_exchange2. reflexivity.
-  reflexivity.
-  induction f as [| f fs]; cbn in *; intros; rewrite ?IHfs; reflexivity.
-  hs.
+  - cbn. intros. rewrite map_id, app_nil_r. reflexivity.
+  - induction g as [| g gs]; cbn; intros.
+    + reflexivity.
+    + rewrite ap_list_app, IHgs, ap_list_exchange2. reflexivity.
+  - reflexivity.
+  - induction f as [| f fs]; cbn in *; intros; rewrite ?IHfs; reflexivity.
+  - hs.
 Defined.
 
 Definition aempty_List {A : Type} : list A := [].
@@ -106,9 +106,9 @@ Instance Alternative_List : Alternative list :=
   aplus := @aplus_List;
 }.
 Proof.
-  apply app_nil_l.
-  apply app_nil_r.
-  apply app_assoc.
+  - apply app_nil_l.
+  - apply app_nil_r.
+  - apply app_assoc.
 Defined.
 
 (** We can sequence nondeterministic computations by feeding all possible
@@ -124,8 +124,8 @@ Lemma bind_List_app :
     bind_List (l1 ++ l2) f = bind_List l1 f ++ bind_List l2 f.
 Proof.
   induction l1 as [| h1 t1]; cbn; intros.
-    reflexivity.
-    rewrite IHt1, app_assoc. reflexivity.
+  - reflexivity.
+  - rewrite IHt1, app_assoc. reflexivity.
 Qed.
 
 (** [list]'s nondeterminism is not commutative, because [app] isn't. *)
@@ -145,16 +145,16 @@ Instance Monad_List : Monad list :=
   bind := @bind_List;
 }.
 Proof.
-  hs.
-  induction ma as [| h t]; cbn in *; rewrite ?IHt; reflexivity.
-  induction ma as [| h t]; cbn; intros.
-    reflexivity.
-    rewrite bind_List_app, <- IHt. reflexivity.
-  induction mf as [| hf tf]; cbn; intros.
-    reflexivity.
-    rewrite <- IHtf. f_equal. induction mx as [| h t]; cbn.
-      reflexivity.
-      rewrite IHt. reflexivity.
+  - hs.
+  - induction ma as [| h t]; cbn in *; rewrite ?IHt; reflexivity.
+  - induction ma as [| h t]; cbn; intros.
+    + reflexivity.
+    + rewrite bind_List_app, <- IHt. reflexivity.
+  - induction mf as [| hf tf]; cbn; intros.
+    + reflexivity.
+    + rewrite <- IHtf. f_equal. induction mx as [| h t]; cbn.
+      * reflexivity.
+      * rewrite IHt. reflexivity.
 Defined.
 
 (** [list] is the primordial example of a nondeterminism monad. A
@@ -176,10 +176,10 @@ Instance MonadAlt_List : MonadAlt list Monad_List :=
   choose := @app;
 }.
 Proof.
-  intros. rewrite app_assoc. reflexivity.
-  induction x as [| h t]; cbn in *; intros.
-    reflexivity.
-    rewrite IHt, app_assoc. reflexivity.
+  - intros. rewrite app_assoc. reflexivity.
+  - induction x as [| h t]; cbn in *; intros.
+    + reflexivity.
+    + rewrite IHt, app_assoc. reflexivity.
 Defined.
 
 #[refine]

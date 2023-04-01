@@ -190,15 +190,15 @@ Instance MonadState_RoseTreeT
   put := fun s X empty node => put s >> empty tt;
 }.
 Proof.
-  4: intros; cbn; unfold bind_RoseTreeT; ext3 X leaf node; monad.
   monad.
-  intros. ext3 X empty node. cbn.
+  - intros. ext3 X empty node. cbn.
     unfold fmap_RoseTreeT, const, id, compose, pure_RoseTreeT.
     rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
     reflexivity.
-  intros. ext3 X empty node. cbn. hs.
+  - intros. ext3 X empty node. cbn. hs.
     unfold bind_RoseTreeT, pure_RoseTreeT.
     rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
+  - intros; cbn; unfold bind_RoseTreeT; ext3 X leaf node; monad.
 Defined.
 
 (** Even though [RoseTreeT] preserves both [MonadState] and [MonadNondet],

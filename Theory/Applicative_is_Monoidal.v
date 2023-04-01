@@ -35,16 +35,16 @@ Instance Monoidal_Applicative
 }.
 Proof.
   all: unfold pure_Monoidal, ap_Monoidal; intros; monoidal.
-    rewrite !par_comp. cbn. unfold apply.
-      rewrite <- (pairF_default_l _ (pairF g (pairF f x))).
+  - rewrite !par_comp. cbn. unfold apply.
+    + rewrite <- (pairF_default_l _ (pairF g (pairF f x))).
       rewrite <- ?pairF_assoc, <- ?fmap_comp'. repeat f_equal.
       ext p. destruct p as [[[u g'] f'] x']. cbn. reflexivity.
-    rewrite <- fmap_comp'. reflexivity.
-    rewrite <- fmap_comp', par_comp. cbn.
-      replace (fun p : (A -> B) * unit => id (fst p) x)
+  - rewrite <- fmap_comp'. reflexivity.
+  - rewrite <- fmap_comp', par_comp. cbn.
+    replace (fun p : (A -> B) * unit => id (fst p) x)
       with (@fst (A -> B) unit .> flip apply x).
-        monoidal. unfold flip, apply, id, compose. reflexivity.
-        ext p. destruct p. cbn. reflexivity.
+    + monoidal. unfold flip, apply, id, compose. reflexivity.
+    + ext p. destruct p. cbn. reflexivity.
 Defined.
 
 (** We can define [default] by injecting [tt] into the functor. *)

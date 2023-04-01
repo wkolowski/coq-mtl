@@ -37,7 +37,8 @@ Definition ascii_eqb (x y : ascii) : bool :=
 Lemma ascii_eqb_spec :
   forall x y : ascii, reflect (x = y) (ascii_eqb x y).
 Proof.
-  intros. unfold ascii_eqb.
+  intros.
+  unfold ascii_eqb.
   destruct (ascii_dec x y); constructor; assumption.
 Qed.
 
@@ -282,7 +283,9 @@ Lemma aplus_det_spec :
     (exists x : A * string, p <|> q = fun _ => [x]) ->
       p +++ q = p <|> q.
 Proof.
-  intros. extensionality input. unfold aplus_det, first.
+  intros.
+  extensionality input.
+  unfold aplus_det, first.
   destruct H as [H | [x H]]; rewrite H; reflexivity.
 Qed.
 

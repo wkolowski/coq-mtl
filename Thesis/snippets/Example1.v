@@ -43,10 +43,10 @@ Theorem label_size :
     1 + snd (@label (State nat) _ _ _ t n) = n + size t.
 Proof.
   induction t as [| l IHl r IHr]; hs.
-    rewrite <- plus_comm. reflexivity.
-    case_eq (label l n); intros t1 m1 H1.
-      case_eq (label r (S m1)); intros t2 m2 H2.
-      specialize (IHl n). specialize (IHr (S m1)).
-      rewrite H1, H2 in *. cbn in *.
-      rewrite IHr, <- plus_Sn_m, IHl, !plus_assoc. reflexivity.
+  - rewrite <- plus_comm. reflexivity.
+  - case_eq (label l n); intros t1 m1 H1.
+    case_eq (label r (S m1)); intros t2 m2 H2.
+    specialize (IHl n). specialize (IHr (S m1)).
+    rewrite H1, H2 in *. cbn in *.
+    rewrite IHr, <- plus_Sn_m, IHl, !plus_assoc. reflexivity.
 Qed.

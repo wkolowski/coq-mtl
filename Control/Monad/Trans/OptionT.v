@@ -220,9 +220,9 @@ Instance MonadWriter_OptionT
     end);
 }.
 Proof.
-  intros. cbn. unfold pure_OptionT. rewrite listen_pure.
+  - intros. cbn. unfold pure_OptionT. rewrite listen_pure.
     rewrite bind_pure_l. reflexivity.
-  intros. cbn. unfold pure_OptionT, fmap_OptionT, fmap_Option.
+  - intros. cbn. unfold pure_OptionT, fmap_OptionT, fmap_Option.
 Abort.
 
 #[refine]
@@ -236,12 +236,12 @@ Instance MonadState_OptionT
   put s := put s >> pure (Some tt);
 }.
 Proof.
-  monad.
-  hs. rewrite <- !bind_assoc. monad.
-  cbn. unfold bind_OptionT, pure_OptionT. rewrite bind_fmap.
+  - monad.
+  - hs. rewrite <- !bind_assoc. monad.
+  - cbn. unfold bind_OptionT, pure_OptionT. rewrite bind_fmap.
     unfold compose. rewrite bind_constrA_comm, get_put, constrA_pure_l.
     reflexivity.
-  intros. cbn. unfold bind_OptionT.
+  - intros. cbn. unfold bind_OptionT.
     rewrite !bind_fmap. unfold compose.
     rewrite <- get_get. monad.
 Defined.

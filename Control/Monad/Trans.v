@@ -47,6 +47,6 @@ Lemma lift_constrA :
       @lift T instT M instM B (x >> y).
 Proof.
   intros.
-    rewrite !constrA_spec.
-    rewrite lift_bind. unfold compose. reflexivity.
+  rewrite !constrA_spec.
+  rewrite lift_bind. unfold compose. reflexivity.
 Defined.

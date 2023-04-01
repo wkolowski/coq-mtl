@@ -51,12 +51,11 @@ Instance Comp_to_Bind
 }.
 Proof.
   all: unfold bindM; cbn; intros.
-    rewrite compM_const. reflexivity.
-    rewrite compM_pure_r. reflexivity.
-    replace (fun x : A => ((fun _ : unit => f x) >=> g) tt)
-       with (f >=> g).
-      Focus 2. ext x. rewrite compM_const.
-      rewrite compM_assoc.
-
+  - rewrite compM_const. reflexivity.
+  - rewrite compM_pure_r. reflexivity.
+  - replace (fun x : A => ((fun _ : unit => f x) >=> g) tt)
+      with (f >=> g); cycle 1.
+    + ext x. rewrite compM_const.
+    + rewrite compM_assoc.
 Abort.
 *)

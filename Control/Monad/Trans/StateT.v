@@ -102,11 +102,11 @@ Instance Applicative_StateT
   ap := @ap_StateT S M inst;
 }.
 Proof.
-  apply p1.
-  apply p2.
-  apply p3.
-  apply p4.
-  apply p5.
+  - apply p1.
+  - apply p2.
+  - apply p3.
+  - apply p4.
+  - apply p5.
 Defined.
 
 (** [StateT M] is [Alternative] only when [M] is. *)
@@ -192,10 +192,10 @@ Instance Monad_StateT
   bind := @bind_StateT S M inst;
 }.
 Proof.
-  apply m1.
-  apply m2.
-  apply m3.
-  apply m5.
+  - apply m1.
+  - apply m2.
+  - apply m3.
+  - apply m5.
 Defined.
 
 (** We can lift a computation into the monad by binding it to a function
@@ -318,10 +318,10 @@ Instance MonadStateNondet_StateT
   instN := MonadNondet_StateT S M inst inst';
 }.
 Proof.
-  intros. rewrite constrA_spec. cbn. unfold bind_StateT.
+  - intros. rewrite constrA_spec. cbn. unfold bind_StateT.
     ext s. rewrite <- (seq_fail_r _ _ (x s)) at 1.
     rewrite constrA_spec. f_equal. ext y. destruct y. reflexivity.
-  intros. cbn. unfold bind_StateT.
+  - intros. cbn. unfold bind_StateT.
     ext s. rewrite <- bind_choose_r. f_equal. ext x. destruct x.
     reflexivity.
 Defined.

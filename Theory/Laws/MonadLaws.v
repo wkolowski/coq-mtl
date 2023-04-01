@@ -44,8 +44,8 @@ Proof.
   compute. intros ap_pure_fmap bind_ap bind_pure_l A B f x.
   replace (x >>= fun a : A => pure (f a))
     with (pure f >>= fun f => x >>= fun a => pure (f a)).
-    rewrite <- bind_ap, ap_pure_fmap. reflexivity.
-    rewrite bind_pure_l. reflexivity.
+  - rewrite <- bind_ap, ap_pure_fmap. reflexivity.
+  - rewrite bind_pure_l. reflexivity.
 Qed.
 
 Lemma bind_pure_r' :

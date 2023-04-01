@@ -33,7 +33,7 @@ Instance Monoid_unit : Monoid :=
   op _ _ := tt
 }.
 Proof.
-  all: try destruct x; reflexivity.
+  all: now intros [].
 Defined.
 
 #[refine]
@@ -45,10 +45,7 @@ Instance Monoid_bool_andb : Monoid :=
   op := andb;
 }.
 Proof.
-  all: intros; repeat
-  match goal with
-  | b : bool |- _ => destruct b
-  end; cbn; reflexivity.
+  all: now intros []; cbn.
 Defined.
 
 #[refine]
@@ -60,8 +57,7 @@ Instance Monoid_list_app (A : Type) : Monoid :=
   op := @app A;
 }.
 Proof.
-  all: intros.
-    reflexivity.
-    rewrite app_nil_r. reflexivity.
-    rewrite app_assoc. reflexivity.
+  - reflexivity.
+  - now intros; rewrite app_nil_r.
+  - now intros; rewrite app_assoc.
 Defined.

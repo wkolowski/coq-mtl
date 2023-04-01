@@ -93,9 +93,9 @@ Lemma flistDenote_fapp :
   forall (A B C : type) (l1 : flist A B) (l2 : flist B C),
     flistDenote (fapp l1 l2) = flistDenote l1 .> flistDenote l2.
 Proof.
-  intros. funelim (fapp l1 l2).
-    simp fapp flistDenote. reflexivity.
-    simp fapp flistDenote. rewrite H. reflexivity.
+  intros A B C l1 l2.
+  funelim (fapp l1 l2); simp fapp flistDenote; [easy |].
+  now rewrite H.
 Qed.
 
 Lemma flistDenote_efmap :
@@ -104,8 +104,8 @@ Lemma flistDenote_efmap :
       flistDenote (efmap (@Fmap) l) = fmap (flistDenote l).
 Proof.
   intros. funelim (efmap (@Fmap) l); simp flistDenote.
-    rewrite fmap_id. reflexivity.
-    simp efmap flistDenote. rewrite fmap_comp, H. reflexivity.
+  - rewrite fmap_id. reflexivity.
+  - simp efmap flistDenote. rewrite fmap_comp, H. reflexivity.
 Qed.
 
 Lemma flistDenote_flatten :
@@ -113,8 +113,8 @@ Lemma flistDenote_flatten :
     flistDenote (flatten e) = denote e.
 Proof.
   intros. funelim (flatten e); simp flistDenote; only 1-2, 4: easy.
-    simp flatten. rewrite flistDenote_fapp, H, H0. reflexivity.
-    simp flatten. rewrite flistDenote_efmap, H. reflexivity.
+  - simp flatten. rewrite flistDenote_fapp, H, H0. reflexivity.
+  - simp flatten. rewrite flistDenote_efmap, H. reflexivity.
 Qed.
 
 Lemma reflect_functor :

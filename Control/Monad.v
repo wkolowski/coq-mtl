@@ -134,9 +134,9 @@ Lemma fmap_bind_pure :
 Proof.
   intros.
   replace (x >>= fun a : A => pure (f a))
-  with (pure f >>= fun f => x >>= fun a => pure (f a)).
-    rewrite <- bind_ap. rewrite fmap_pure_ap. reflexivity.
-    rewrite bind_pure_l. reflexivity.
+     with (pure f >>= fun f => x >>= fun a => pure (f a)).
+  - rewrite <- bind_ap. rewrite fmap_pure_ap. reflexivity.
+  - rewrite bind_pure_l. reflexivity.
 Qed.
 
 End DerivedMonadLaws.

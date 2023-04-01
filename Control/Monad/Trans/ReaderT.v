@@ -175,10 +175,10 @@ Instance MonadState_ReaderT
   put := fun s r => put s;
 }.
 Proof.
-  intros. ext r. cbn. unfold ap_ReaderT, fmap_ReaderT, const, id. monad.
-  intros. rewrite constrA_spec. cbn. monad.
-  monad.
-  intros. ext r. cbn. monad.
+  - intros. ext r. cbn. unfold ap_ReaderT, fmap_ReaderT, const, id. monad.
+  - intros. rewrite constrA_spec. cbn. monad.
+  - monad.
+  - intros. ext r. cbn. monad.
 Defined.
 
 #[refine]
@@ -204,9 +204,9 @@ Instance MonadStateNondet_ReaderT
   instN := MonadNondet_ReaderT E M inst inst';
 }.
 Proof.
-  intros. rewrite constrA_spec. cbn. unfold bind_ReaderT.
+  - intros. rewrite constrA_spec. cbn. unfold bind_ReaderT.
     ext e. rewrite <- constrA_spec. rewrite seq_fail_r. reflexivity.
-  monad.
+  - monad.
 Defined.
 
 (** If [M] is the free monad of [F], so is [ReaderT E M]. *)
