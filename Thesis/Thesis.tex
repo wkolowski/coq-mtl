@@ -230,8 +230,8 @@ To better see these differences, let's look at a piece of code that loops before
     \begin{minted}{C}
         void f()
         {
-            f();
-            printf("Effectful\n");
+          f();
+          printf("Effectful\n");
         }
     \end{minted}
     \caption{C}
@@ -241,8 +241,8 @@ To better see these differences, let's look at a piece of code that loops before
     \begin{minted}{Java}
         public void f()
         {
-            f();
-            System.out.println("Effectful");
+          f();
+          System.out.println("Effectful");
         }
     \end{minted}
     \caption{Java}
@@ -252,8 +252,8 @@ To better see these differences, let's look at a piece of code that loops before
     \begin{minted}{Haskell}
         f :: IO ()
         f = do
-            f
-            putStrLn "Effectful"
+          f
+          putStrLn "Effectful"
     \end{minted}
     \caption{Haskell}
 \end{listing}
@@ -262,8 +262,8 @@ To better see these differences, let's look at a piece of code that loops before
     \begin{minted}{Koka}
         function f() : <div, io> ()
         {
-            f()
-            println("Effectful")
+          f()
+          println("Effectful")
         }
     \end{minted}
     \caption{Koka}
@@ -377,8 +377,8 @@ In Coq, typeclasses are basically parametrized dependent records (collections of
     
 Class Semigroup (A : Type) : Type :=
 {
-    op : A -> A -> A;
-    assoc : forall x y z : A, op (op x y) z = op x (op y z);
+  op : A -> A -> A;
+  assoc : forall x y z : A, op (op x y) z = op x (op y z);
 }.
 
 \end{minted}
@@ -403,23 +403,23 @@ They also lack native handling of overlapping instances and backtracking, but th
 
 Module Semigroup.
 
-    Record class (A : Type) := Class
-    {
-        op' : A -> A -> A;
-        assoc : forall x y z : A, op' (op' x y) z = op' x (op' y z);
-    }.
+Record class (A : Type) := Class
+{
+  op' : A -> A -> A;
+  assoc : forall x y z : A, op' (op' x y) z = op' x (op' y z);
+}.
 
-    Structure type := Pack
-    {
-        obj : Type;
-        class_of : class obj;
-    }.
+Structure type := Pack
+{
+  obj : Type;
+  class_of : class obj;
+}.
 
-    Definition op (e : type) : obj e -> obj e -> obj e :=
-    let 'Pack _ (Class _ op' _) := e in op'.
+Definition op (e : type) : obj e -> obj e -> obj e :=
+let 'Pack _ (Class _ op' _) := e in op'.
 
-    Arguments op {e} x y : simpl never.
-    Arguments Class {A} op'.
+Arguments op {e} x y : simpl never.
+Arguments Class {A} op'.
 
 End Semigroup.
 
@@ -445,10 +445,9 @@ It is precisely these inductive type definitions that forbid Coq modules from be
 
 Module Type Semigroup.
 
-    Parameter A : Type.
-    Parameter op : A -> A -> A.
-    Axiom assoc :
-        forall x y z : A, op (op x y) z = op x (op y z).
+Parameter A : Type.
+Parameter op : A -> A -> A.
+Axiom assoc : forall x y z : A, op (op x y) z = op x (op y z).
 
 End Semigroup.
 
@@ -478,9 +477,9 @@ Choosing typeclasses as our abstraction mechanism doesn't exhaust the design spa
 
 Class Semigroup : Type :=
 {
-    A : Type;
-    op : A -> A -> A;
-    assoc : forall x y z : A, op (op x y) z = op x (op y z);
+  A : Type;
+  op : A -> A -> A;
+  assoc : forall x y z : A, op (op x y) z = op x (op y z);
 }.
 
 \end{minted}
@@ -501,8 +500,8 @@ Class Semigroup : Type :=
 
 Class Semigroup (A : Type) : Type :=
 {
-    op : A -> A -> A;
-    assoc : forall x y z : A, op (op x y) z = op x (op y z);
+  op : A -> A -> A;
+  assoc : forall x y z : A, op (op x y) z = op x (op y z);
 }.
 
 \end{minted}
@@ -527,21 +526,21 @@ The bundled approach is better when we are interested in treating our concepts a
 
 Class Semigroup : Type :=
 {
-    A : Type;
-    op : A -> A -> Type;
+  A : Type;
+  op : A -> A -> Type;
 }.
 
 Coercion A : Semigroup >-> Sortclass.
 
 Class SemigroupLaws (S : Semigroup) : Prop :=
 {
-    assoc : forall x y z : S, op (op x y) z = op x (op y z);
+  assoc : forall x y z : S, op (op x y) z = op x (op y z);
 }.
 
 Class LawfulSemigroup : Type :=
 {
-    sgr : Semigroup;
-    laws : SemigroupLaws sgr;
+  sgr : Semigroup;
+  laws : SemigroupLaws sgr;
 }.
 
 \end{minted}
@@ -568,22 +567,22 @@ For \libname\ we adopt the lawful approach because we are interested not in prog
 
 Class Setoid : Type :=
 {
-    carrier : Type;
-    eqv : carrier -> carrier -> Prop;
-    refl : forall x : carrier, eqv x x;
-    sym : forall x y : carrier, eqv x y -> eqv y x;
-    trans : forall x y z : carrier, eqv x y -> eqv y z -> eqv x z;
+  carrier : Type;
+  eqv : carrier -> carrier -> Prop;
+  refl : forall x : carrier, eqv x x;
+  sym : forall x y : carrier, eqv x y -> eqv y x;
+  trans : forall x y z : carrier, eqv x y -> eqv y z -> eqv x z;
 }.
 
 Coercion carrier : Setoid >-> Sortclass.
 
 Class Semigroup : Type :=
 {
-    A : Setoid;
-    op : A -> A -> A;
-    assoc : forall x y z : A, eqv (op (op x y) z) (op x (op y z));
-    op_eqv : forall x x' y y' : A,
-                eqv x x' -> eqv y y' -> eqv (op x y) (op x' y');
+  A : Setoid;
+  op : A -> A -> A;
+  assoc : forall x y z : A, eqv (op (op x y) z) (op x (op y z));
+  op_eqv : forall x x' y y' : A,
+             eqv x x' -> eqv y y' -> eqv (op x y) (op x' y');
 }.
 
 \end{minted}
@@ -933,7 +932,7 @@ A great strength of typeclass-based effects is that we can easily create new eff
         bgcolor=CoqIDE,
         linenos,
         firstline=35,
-        lastline=46
+        lastline=47
     ]
     {Coq}{../Control/Monad/Class/MonadReader.v}
 
