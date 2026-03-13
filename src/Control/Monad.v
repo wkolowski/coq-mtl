@@ -20,7 +20,7 @@ From CoqMTL Require Export Control.Applicative.
       from the other laws combined with [Applicative] laws *)
 Class Monad (M : Type -> Type) : Type :=
 {
-  is_applicative :> Applicative M;
+  is_applicative :: Applicative M;
   bind : forall {A B : Type}, M A -> (A -> M B) -> M B;
   bind_pure_l :
     forall (A B : Type) (f : A -> M B) (a : A),

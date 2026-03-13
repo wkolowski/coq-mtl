@@ -14,7 +14,7 @@ From CoqMTL Require Export Control.Monad.Class.MonadFail.
 Class MonadExcept
   (M : Type -> Type) (inst : Monad M)  : Type :=
 {
-  instF :> MonadFail M inst;
+  instF :: MonadFail M inst;
   catch : forall {A : Type}, M A -> M A -> M A;
   catch_fail_l :
     forall (A : Type) (x : M A),

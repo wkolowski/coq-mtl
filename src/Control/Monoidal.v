@@ -19,7 +19,7 @@ Notation "f *** g" := (par f g) (at level 40).
 
 Class Monoidal (F : Type -> Type) : Type :=
 {
-  is_functor :> Functor F;
+  is_functor :: Functor F;
   default : F unit;
   pairF : forall {A B : Type}, F A -> F B -> F (A * B)%type;
   pairF_default_l :

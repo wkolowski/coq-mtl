@@ -2,7 +2,7 @@ From CoqMTL Require Import Control.Applicative.
 
 Class Monad (M : Type -> Type) : Type :=
 {
-  is_applicative :> Applicative M;
+  is_applicative :: Applicative M;
   compM : forall {A B C : Type}, (A -> M B) -> (B -> M C) -> (A -> M C);
   compM_pure_l :
     forall (A B : Type) (f : A -> M B), compM pure f = f;

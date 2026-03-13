@@ -112,8 +112,8 @@ Class MonadAlt : Type :=
 
 Class MonadNondet : Type :=
 {
-  instF :> MonadFail;
-  instA :> MonadAlt;
+  instF :: MonadFail;
+  instA :: MonadAlt;
   choose_fail_l :
     forall (A : Type) (x : M A),
       choose fail x = x;
@@ -375,8 +375,8 @@ Class MonadState
 Class MonadStateNondet
   (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
-  instS :> MonadState S inst;
-  instN :> MonadNondet inst;
+  instS :: MonadState S inst;
+  instN :: MonadNondet inst;
   seq_fail_r :
     forall (A B : Type) (x : M A),
       x >> fail = @fail M inst instN B;
@@ -427,7 +427,7 @@ Notation "x <| p |> y" := (choice p x y)
 Class MonadProb
   (M : Type -> Type) (inst : Monad M) : Type :=
 {
-  instP :> MonadProb_no_laws inst;
+  instP :: MonadProb_no_laws inst;
   choice_p0 :
     forall (A : Type) (x y : M A),
       x <| p0 |> y = x;

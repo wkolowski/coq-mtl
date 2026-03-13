@@ -11,8 +11,8 @@ From CoqMTL Require Export Control.Monad.Class.MonadState.
 Class MonadStateNondet
   (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=
 {
-  instS :> MonadState S M inst;
-  instN :> MonadNondet M inst;
+  instS :: MonadState S M inst;
+  instN :: MonadNondet M inst;
   seq_fail_r :
     forall (A B : Type) (x : M A),
       x >> fail = @fail M inst instN B;

@@ -23,3 +23,5 @@ makefile
 
 .vscode
 _minted*
+
+result

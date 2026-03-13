@@ -2,7 +2,7 @@ From CoqMTL Require Export Control.Applicative.
 
 Class Monad (M : Type -> Type) : Type :=
 {
-  is_applicative :> Applicative M;
+  is_applicative :: Applicative M;
   join : forall {A : Type}, M (M A) -> M A;
   join_fmap_join :
     forall (A : Type) (x : M (M (M A))),

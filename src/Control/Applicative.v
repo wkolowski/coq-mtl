@@ -10,7 +10,7 @@ From CoqMTL Require Export Control.Functor.
     These laws are redundant: [identity] follows from [fmap_pure_ap]. *)
 Class Applicative (F : Type -> Type) : Type :=
 {
-  is_functor :> Functor F;
+  is_functor :: Functor F;
   pure : forall {A : Type}, A -> F A;
   ap : forall {A B : Type}, F (A -> B) -> F A -> F B;
   identity :
