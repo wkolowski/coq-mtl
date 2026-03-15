@@ -1,11 +1,21 @@
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  coq = import ./src/default.nix { inherit pkgs; };
+  coq = import ./src/default.nix    { inherit pkgs; };
+  tex = import ./Thesis/default.nix { inherit pkgs; };
 in
 
 {
-  inherit coq;
+  inherit coq tex;
 
-  default = coq;
+  default = pkgs.symlinkJoin
+  {
+    name = "CoqMTL";
+
+    paths =
+    [
+      coq
+      tex
+    ];
+  };
 }

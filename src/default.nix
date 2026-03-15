@@ -22,7 +22,7 @@ pkgs.stdenv.mkDerivation
 
   installPhase =
   ''
-    INSTALLPATH=$out/lib/coq/${pkgs.coq_8_20.coq-version}/user-contrib/CoqMTL
+    INSTALLPATH=$out/lib/coq/${pkgs.coq_8_20.coq-version}/user-contrib/coq-mtl
 
     mkdir -p $INSTALLPATH
     find . -name "*.v" -o -name "*.vo" -o -name "*.glob" | xargs cp --parents -t $INSTALLPATH/

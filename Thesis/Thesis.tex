@@ -650,7 +650,7 @@ In this chapter we describe the implementation of our library, including some su
         firstline=8,
         lastline=16
     ]
-    {Coq}{../Control/Functor.v}
+    {Coq}{../src/Control/Functor.v}
 
     \caption{The \m{Functor} typeclass}
     \label{Functor}
@@ -669,7 +669,7 @@ A few category-theoretical remarks: unlike Haskell types and functions, which do
         firstline=11,
         lastline=34
     ]
-    {Coq}{../Control/Applicative.v}
+    {Coq}{../src/Control/Applicative.v}
 
     \caption{The \m{Applicative} typeclass}
     \label{Applicative}
@@ -692,7 +692,7 @@ This, however, leads to some further troubles, because it turns out that this se
         firstline=10,
         lastline=40
     ]
-    {Coq}{../Control/Monoidal.v}
+    {Coq}{../src/Control/Monoidal.v}
 
     \caption{The \m{Monoidal} typeclass}
     \label{Monoidal}
@@ -715,7 +715,7 @@ But there is yet another perk of this proof, which shows that proving is not onl
         firstline=21,
         lastline=39
     ]
-    {Coq}{../Control/Monad.v}
+    {Coq}{../src/Control/Monad.v}
 
     \caption{The \m{Monad} typeclass}
     \label{Monad}
@@ -740,7 +740,7 @@ Another interesting fact is that we also tried to prove this definition equivale
         firstline=60,
         lastline=73
     ]
-    {Coq}{../Control/Monad.v}
+    {Coq}{../src/Control/Monad.v}
 
     \caption{Monad notations}
     \label{MonadNotations}
@@ -759,7 +759,7 @@ It is also worth mentioning that our library contains all the usual utility func
         firstline=13,
         lastline=29
     ]
-    {Coq}{../Control/Monad/Free.v}
+    {Coq}{../src/Control/Monad/Free.v}
 
     \caption{The \m{Free} monad}
     \label{Free}
@@ -795,7 +795,7 @@ Of course \m{Free} is not the only \m{Monad} instance. We provide all the standa
         firstline=8,
         lastline=22
     ]
-    {Coq}{../Control/Monad/Trans.v}
+    {Coq}{../src/Control/Monad/Trans.v}
 
     \caption{The \m{MonadTrans} typeclass}
     \label{MonadTrans}
@@ -814,7 +814,7 @@ Luckily, monad transformers are just as unproblematic as \m{Functor}s were. The 
         firstline=12,
         lastline=25
     ]
-    {Coq}{../Control/Monad/Trans/ListT.v}
+    {Coq}{../src/Control/Monad/Trans/ListT.v}
 
     \caption{ListT monad transformer}
     \label{ListT}
@@ -847,7 +847,7 @@ Of course, these automation tactics are not enough to deal with all instances of
         firstline=3,
         lastline=49
     ]
-    {Coq}{../Thesis/snippets/Tactics.v}
+    {Coq}{snippets/Tactics.v}
 
     \caption{The automation tactics}
     \label{Tactics}
@@ -866,7 +866,7 @@ We now describe ``typeclass-based effects'' (note that this is not a widely used
         firstline=6,
         lastline=12
     ]
-    {Coq}{../Control/Monad/Class/MonadFail.v}
+    {Coq}{../src/Control/Monad/Class/MonadFail.v}
 
     \caption{The \m{MonadFail} typeclass}
     \label{MonadFail}
@@ -885,7 +885,7 @@ An example is shown in listing \ref{MonadFail}. This is one of the simplest poss
         firstline=6,
         lastline=15
     ]
-    {Coq}{../Control/Monad/Class/MonadAlt.v}
+    {Coq}{../src/Control/Monad/Class/MonadAlt.v}
 
     \caption{The \m{MonadAlt} typeclass}
     \label{MonadAlt}
@@ -902,7 +902,7 @@ Another example, shown in listing \ref{MonadAlt}, is the \m{MonadAlt} typeclass,
         firstline=7,
         lastline=20
     ]
-    {Coq}{../Control/Monad/Class/MonadNondet.v}
+    {Coq}{../src/Control/Monad/Class/MonadNondet.v}
 
     \caption{The \m{MonadNondet} typeclass}
     \label{MonadNondet}
@@ -919,7 +919,7 @@ A great strength of typeclass-based effects is that we can easily create new eff
         firstline=7,
         lastline=12
     ]
-    {Coq}{../Control/Monad/Class/MonadReader.v}
+    {Coq}{../src/Control/Monad/Class/MonadReader.v}
 
     \caption{The \m{MonadReader} typeclass}
     \label{MonadReader}
@@ -934,7 +934,7 @@ A great strength of typeclass-based effects is that we can easily create new eff
         firstline=35,
         lastline=47
     ]
-    {Coq}{../Control/Monad/Class/MonadReader.v}
+    {Coq}{../src/Control/Monad/Class/MonadReader.v}
 
     \caption{The \m{MonadReader} instance for all monad transformers can be defined at once}
     \label{MonadReaderMonadTrans}
@@ -957,7 +957,7 @@ We have also implemented a few effect typeclasses that should be familiar from \
         firstline=14,
         lastline=29
     ]
-    {Coq}{../Control/Monad/Class/MonadState.v}
+    {Coq}{../src/Control/Monad/Class/MonadState.v}
 
     \caption{The \m{MonadState} typeclass}
     \label{MonadState}
@@ -990,7 +990,7 @@ The overall result is that the \m{label} function is more general, its definitio
         firstline=16,
         lastline=53
     ]
-    {Coq}{../Thesis/snippets/Example1.v}
+    {Coq}{snippets/Example1.v}
 
     \caption{The tree labeling example from \hyperref[ch1]{Chapter 1}, generalized with the \m{MonadState} typeclass and improved with do-notation}
     \label{Example1}
@@ -1009,7 +1009,7 @@ A fast product is a procedure for calculating the product of a list that returns
         firstline=14,
         lastline=31
     ]
-    {Coq}{../Control/Monad/Class/MonadExcept.v}
+    {Coq}{../src/Control/Monad/Class/MonadExcept.v}
 
     \caption{The \m{MonadExcept} typeclass}
     \label{MonadExcept}
@@ -1028,7 +1028,7 @@ Note that the operations supported by \m{MonadExcept} (\m{fail} and \m{catch}) h
         firstline=272,
         lastline=310
     ]
-    {Coq}{../Theory/JustDoIt.v}
+    {Coq}{../src/Theory/JustDoIt.v}
 
     \caption{The fast product example}
     \label{Example2}

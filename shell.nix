@@ -1,11 +1,19 @@
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  coq = import ./src/shell.nix { inherit pkgs; };
+  coq = import ./src/shell.nix    { inherit pkgs; };
+  tex = import ./Thesis/shell.nix { inherit pkgs; };
 in
 
 {
-  inherit coq;
+  inherit coq tex;
 
-  default = coq;
+  default = pkgs.mkShell
+  {
+    inputsFrom =
+    [
+      coq
+      tex
+    ];
+  };
 }
