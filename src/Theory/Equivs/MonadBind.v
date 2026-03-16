@@ -1,10 +1,12 @@
 From CoqMTL Require Import Control.Applicative.
 
-(** This is a minimal [bind]-based definition of a monad. It says that a
-    monad is something that can turn a value into a computation ([pure])
-    and feed a computation into a function which expects a value and
-    returns a computation ([bind]). These two are related by the three
-    usual laws. *)
+(**
+  This is a minimal [bind]-based definition of a monad. It says that a
+  monad is something that can turn a value into a computation ([pure])
+  and feed a computation into a function which expects a value and
+  returns a computation ([bind]). These two are related by the three
+  usual laws.
+*)
 Class Monad (M : Type -> Type) : Type :=
 {
   pure : forall {A : Type}, A -> M A;
@@ -20,20 +22,27 @@ Class Monad (M : Type -> Type) : Type :=
       bind (bind ma f) g = bind ma (fun x => bind (f x) g);
 }.
 
+Module MonadNotations.
+
 Notation "mx >>= f" := (bind mx f) (at level 40).
+
+End MonadNotations.
+
+Import MonadNotations.
 
 #[global] Hint Rewrite @bind_pure_l @bind_pure_r @bind_assoc : MonadBind.
 
 (** A simple tactic for proving things about this definition. *)
 Ltac mbind :=
-  repeat (
+  repeat
+  (
     cbn; intros;
     autounfold with MonadBind;
     autorewrite with MonadBind;
-    f_equal; exts; try reflexivity).
+    f_equal; exts; try reflexivity
+  ).
 
-(** We can map [f] over a computation by binding it to [f] followed by
-    [pure]. *)
+(** We can map [f] over a computation by binding it to [f] followed by [pure]. *)
 Definition fmap_MonadBind
   {M : Type -> Type} {inst : Monad M}
   {A B : Type} (f : A -> B) (ma : M A) : M B :=
@@ -48,10 +57,14 @@ Instance Functor_MonadBind
 {
   fmap := @fmap_MonadBind M inst;
 }.
-Proof. all: mbind. Defined.
+Proof.
+  all: now mbind.
+Defined.
 
-(** We can perform [ap] by running both computations, applying the function
-    to the argument and then turning this into a computation with [pure]. *)
+(**
+  We can perform [ap] by running both computations, applying the function
+  to the argument and then turning this into a computation with [pure].
+*)
 Definition ap_MonadBind
   (M : Type -> Type) (inst : Monad M)
   (A B : Type) (mf : M (A -> B)) (ma : M A) : M B :=
@@ -67,4 +80,6 @@ Instance Applicative_MonadBind
   pure := @pure M inst;
   ap := @ap_MonadBind M inst;
 }.
-Proof. all: mbind. Defined.
+Proof.
+  all: now mbind.
+Defined.

@@ -20,7 +20,13 @@ Class Monad (M : Type -> Type) : Type :=
 
 Coercion is_applicative : Monad >-> Applicative.
 
+Module MonadNotations.
+
 Notation "f >=> g" := (compM f g) (at level 40).
+
+End MonadNotations.
+
+Import MonadNotations.
 
 Definition bindM
   {M : Type -> Type} {inst : Monad M}
@@ -28,12 +34,11 @@ Definition bindM
     compM (fun _ : unit => x) f tt.
 
 Lemma bind_ap :
-  forall
-    (M : Type -> Type) (inst : Monad M) (A B : Type)
-    (mf : M (A -> B)) (mx : M A),
-        mf <*> mx = bindM mf (fun f => bindM mx (fun x => pure (f x))).
+  forall (M : Type -> Type) (inst : Monad M) (A B : Type) (mf : M (A -> B)) (mx : M A),
+    mf <*> mx = bindM mf (fun f => bindM mx (fun x => pure (f x))).
 Proof.
-  intros. unfold bindM.
+  intros.
+  unfold bindM.
 Abort.
 
 #[global] Hint Unfold bindM : CoqMTL.
@@ -51,11 +56,11 @@ Instance Comp_to_Bind
 }.
 Proof.
   all: unfold bindM; cbn; intros.
-  - rewrite compM_const. reflexivity.
-  - rewrite compM_pure_r. reflexivity.
+  - now rewrite compM_const.
+  - now rewrite compM_pure_r.
   - replace (fun x : A => ((fun _ : unit => f x) >=> g) tt)
-      with (f >=> g); cycle 1.
-    + ext x. rewrite compM_const.
+       with (f >=> g).
     + rewrite compM_assoc.
+    + ext x. rewrite compM_const.
 Abort.
 *)
