@@ -227,46 +227,46 @@ At last, Koka \cite{Koka} is one of the purest languages in existence. It clearl
 To better see these differences, let's look at a piece of code that loops before trying to print something to the screen in each of these four languages.
 
 \begin{listing}[H]
-    \begin{minted}{C}
-        void f()
-        {
-          f();
-          printf("Effectful\n");
-        }
-    \end{minted}
-    \caption{C}
+  \begin{minted}{C}
+      void f()
+      {
+        f();
+        printf("Effectful\n");
+      }
+  \end{minted}
+  \caption{C}
 \end{listing}
 
 \begin{listing}[H]
-    \begin{minted}{Java}
-        public void f()
-        {
-          f();
-          System.out.println("Effectful");
-        }
-    \end{minted}
-    \caption{Java}
+  \begin{minted}{Java}
+      public void f()
+      {
+        f();
+        System.out.println("Effectful");
+      }
+  \end{minted}
+  \caption{Java}
 \end{listing}
 
 \begin{listing}[H]
-    \begin{minted}{Haskell}
-        f :: IO ()
-        f = do
-          f
-          putStrLn "Effectful"
-    \end{minted}
-    \caption{Haskell}
+  \begin{minted}{Haskell}
+      f :: IO ()
+      f = do
+        f
+        putStrLn "Effectful"
+  \end{minted}
+  \caption{Haskell}
 \end{listing}
 
 \begin{listing}[H]
-    \begin{minted}{Koka}
-        function f() : <div, io> ()
-        {
-          f()
-          println("Effectful")
-        }
-    \end{minted}
-    \caption{Koka}
+  \begin{minted}{Koka}
+      function f() : <div, io> ()
+      {
+        f()
+        println("Effectful")
+      }
+  \end{minted}
+  \caption{Koka}
 \end{listing}
 
 We see that in C and Java the return type is just \m{void}, which in these languages represents a type with only one value. There is no type-level indication whatsoever that these programs perform any kind of side effects.
@@ -581,8 +581,9 @@ Class Semigroup : Type :=
   A : Setoid;
   op : A -> A -> A;
   assoc : forall x y z : A, eqv (op (op x y) z) (op x (op y z));
-  op_eqv : forall x x' y y' : A,
-             eqv x x' -> eqv y y' -> eqv (op x y) (op x' y');
+  op_eqv :
+    forall x x' y y' : A,
+      eqv x x' -> eqv y y' -> eqv (op x y) (op x' y');
 }.
 
 \end{minted}
@@ -647,8 +648,8 @@ In this chapter we describe the implementation of our library, including some su
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=8,
-        lastline=16
+        firstline=10,
+        lastline=18
     ]
     {Coq}{../src/Control/Functor.v}
 
@@ -666,7 +667,7 @@ A few category-theoretical remarks: unlike Haskell types and functions, which do
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=11,
+        firstline=13,
         lastline=34
     ]
     {Coq}{../src/Control/Applicative.v}
@@ -689,8 +690,8 @@ This, however, leads to some further troubles, because it turns out that this se
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=10,
-        lastline=40
+        firstline=12,
+        lastline=38
     ]
     {Coq}{../src/Control/Monoidal.v}
 
@@ -712,8 +713,8 @@ But there is yet another perk of this proof, which shows that proving is not onl
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=21,
-        lastline=39
+        firstline=23,
+        lastline=41
     ]
     {Coq}{../src/Control/Monad.v}
 
@@ -737,8 +738,8 @@ Another interesting fact is that we also tried to prove this definition equivale
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=60,
-        lastline=73
+        firstline=69,
+        lastline=79
     ]
     {Coq}{../src/Control/Monad.v}
 
@@ -756,8 +757,8 @@ It is also worth mentioning that our library contains all the usual utility func
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=13,
-        lastline=29
+        firstline=15,
+        lastline=31
     ]
     {Coq}{../src/Control/Monad/Free.v}
 
@@ -792,8 +793,8 @@ Of course \m{Free} is not the only \m{Monad} instance. We provide all the standa
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=8,
-        lastline=22
+        firstline=10,
+        lastline=24
     ]
     {Coq}{../src/Control/Monad/Trans.v}
 
@@ -811,8 +812,8 @@ Luckily, monad transformers are just as unproblematic as \m{Functor}s were. The 
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=12,
-        lastline=25
+        firstline=14,
+        lastline=27
     ]
     {Coq}{../src/Control/Monad/Trans/ListT.v}
 
@@ -863,8 +864,8 @@ We now describe ``typeclass-based effects'' (note that this is not a widely used
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=6,
-        lastline=12
+        firstline=8,
+        lastline=14
     ]
     {Coq}{../src/Control/Monad/Class/MonadFail.v}
 
@@ -882,8 +883,8 @@ An example is shown in listing \ref{MonadFail}. This is one of the simplest poss
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=6,
-        lastline=15
+        firstline=8,
+        lastline=17
     ]
     {Coq}{../src/Control/Monad/Class/MonadAlt.v}
 
@@ -899,8 +900,8 @@ Another example, shown in listing \ref{MonadAlt}, is the \m{MonadAlt} typeclass,
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=7,
-        lastline=20
+        firstline=9,
+        lastline=22
     ]
     {Coq}{../src/Control/Monad/Class/MonadNondet.v}
 
@@ -916,8 +917,8 @@ A great strength of typeclass-based effects is that we can easily create new eff
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=7,
-        lastline=12
+        firstline=9,
+        lastline=14
     ]
     {Coq}{../src/Control/Monad/Class/MonadReader.v}
 
@@ -931,8 +932,8 @@ A great strength of typeclass-based effects is that we can easily create new eff
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=35,
-        lastline=47
+        firstline=38,
+        lastline=50
     ]
     {Coq}{../src/Control/Monad/Class/MonadReader.v}
 
@@ -954,8 +955,8 @@ We have also implemented a few effect typeclasses that should be familiar from \
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=14,
-        lastline=29
+        firstline=15,
+        lastline=30
     ]
     {Coq}{../src/Control/Monad/Class/MonadState.v}
 
@@ -1006,8 +1007,8 @@ A fast product is a procedure for calculating the product of a list that returns
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=14,
-        lastline=31
+        firstline=15,
+        lastline=32
     ]
     {Coq}{../src/Control/Monad/Class/MonadExcept.v}
 
@@ -1025,7 +1026,7 @@ Note that the operations supported by \m{MonadExcept} (\m{fail} and \m{catch}) h
         frame=lines,
         bgcolor=CoqIDE,
         linenos,
-        firstline=272,
+        firstline=274,
         lastline=310
     ]
     {Coq}{../src/Theory/JustDoIt.v}

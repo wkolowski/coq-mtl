@@ -1,5 +1,7 @@
-(** A module that can be used to important all monadic classes except the
-    alternative ones for nondeterminism. *)
+(**
+  A module that can be used to important all monadic classes except the
+  alternative ones for nondeterminism.
+*)
 
 From CoqMTL Require Export Control.Monad.Class.MonadAlt.
 From CoqMTL Require Export Control.Monad.Class.MonadExcept.

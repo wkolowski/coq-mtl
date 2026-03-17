@@ -3,13 +3,17 @@ From CoqMTL Require Import Control.Monad.Trans.
 From CoqMTL Require Import Control.Monad.Class.All.
 From CoqMTL Require Import Control.Monad.Option.
 
-(** A transformer that adds a layer of the partiality monad on top of
-    any other monad. *)
+(**
+  A transformer that adds a layer of the partiality monad on top of
+  any other monad.
+*)
 Definition OptionT (M : Type -> Type) (A : Type) : Type := M (option A).
 
-(** [fmap], [pure], [ap], [aempty], [aplus] and [bind] are defined just
-    like for [option], but with [bind]s of the base monad inserted where
-    necessary. *)
+(**
+  [fmap], [pure], [ap], [aempty], [aplus] and [bind] are defined just
+  like for [option], but with [bind]s of the base monad inserted where
+  necessary.
+*)
 
 Definition fmap_OptionT
   {M : Type -> Type} {inst : Functor M}
@@ -25,7 +29,9 @@ Instance Functor_OptionT (M : Type -> Type) {inst : Functor M}
 {
   fmap := fmap_OptionT
 }.
-Proof. all: hs; mtrans; monad. Defined.
+Proof.
+  all: now hs; mtrans; monad.
+Defined.
 
 Definition pure_OptionT
   {M : Type -> Type} {inst : Monad M} {A : Type} (x : A) : OptionT M A :=
@@ -36,13 +42,13 @@ Definition ap_OptionT
   (mof : OptionT M (A -> B)) (moa : OptionT M A) : OptionT M B :=
     @bind M inst _ _ mof (fun of =>
     match of with
+    | None => pure None
     | Some f =>
         @bind M inst _ _ moa (fun oa =>
-        match oa with
-            | Some a => pure (Some (f a))
-            | None => pure None
-        end)
-    | _ => pure None
+          match oa with
+          | Some a => pure (Some (f a))
+          | None => pure None
+          end)
     end).
 
 #[global] Hint Unfold pure_OptionT ap_OptionT : CoqMTL.
@@ -56,22 +62,23 @@ Instance Applicative_OptionT
   pure := @pure_OptionT M inst;
   ap := @ap_OptionT M inst;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 Definition aempty_OptionT
   (M : Type -> Type) (inst : Monad M) (A : Type) : OptionT M A :=
     pure None.
 
 Definition aplus_OptionT
-  (M : Type -> Type) (inst : Monad M) (A : Type) (mox moy : OptionT M A)
-    : OptionT M A :=
+  (M : Type -> Type) (inst : Monad M) (A : Type) (mox moy : OptionT M A) : OptionT M A :=
     @bind M inst _ _ mox (fun ox =>
     @bind M inst _ _ moy (fun oy =>
-    match ox, oy with
-    | Some x, _ => pure (Some x)
-    | _, Some y => pure (Some y)
-    | _, _ => pure None
-    end)).
+      match ox, oy with
+      | Some x, _      => pure (Some x)
+      | _     , Some y => pure (Some y)
+      | _     , _      => pure None
+      end)).
 
 #[global] Hint Unfold aempty_OptionT aplus_OptionT : CoqMTL.
 
@@ -84,16 +91,18 @@ Instance Alternative_OptionT
   aempty := aempty_OptionT M inst;
   aplus := aplus_OptionT M inst;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 Definition bind_OptionT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
   (moa : OptionT M A) (f : A -> OptionT M B) : OptionT M B :=
     @bind M inst (option A) (option B) moa (fun oa : option A =>
-    match oa with
-    | None => pure None
-    | Some a => f a
-    end).
+      match oa with
+      | None   => pure None
+      | Some a => f a
+      end).
 
 #[global] Hint Unfold bind_OptionT : CoqMTL.
 
@@ -105,13 +114,17 @@ Instance Monad_OptionT
   is_applicative := Applicative_OptionT M inst;
   bind := @bind_OptionT M inst
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
-(** We can lift a computation into the monad by wrapping it in the [Some]
-    constructor. *)
+(**
+  We can lift a computation into the monad by wrapping it in the [Some]
+  constructor.
+*)
 Definition lift_OptionT
-  {M : Type -> Type} {_inst : Monad M} {A : Type} (ma : M A)
-    : OptionT M A := fmap Some ma.
+  {M : Type -> Type} {_inst : Monad M} {A : Type} (ma : M A) : OptionT M A :=
+    fmap Some ma.
 
 #[global] Hint Unfold lift_OptionT : CoqMTL.
 
@@ -122,13 +135,15 @@ Instance MonadTrans_OptionT : MonadTrans OptionT :=
   is_monad := @Monad_OptionT;
   lift := @lift_OptionT;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 (** [OptionT] adds the ability to [fail] to any monad [M]. *)
 
 Definition fail_OptionT
-  {M : Type -> Type} {inst : Monad M} {A : Type}
-    : OptionT M A := pure None.
+  {M : Type -> Type} {inst : Monad M} {A : Type} : OptionT M A :=
+    pure None.
 
 #[global] Hint Unfold fail_OptionT : CoqMTL.
 
@@ -140,12 +155,16 @@ Instance MonadFail_OptionT
 {
   fail := @fail_OptionT M inst
 }.
-Proof. monad. Defined.
+Proof.
+  now monad.
+Defined.
 
-(** [OptionT] preserves [MonadAlt], giving us a monad with choice and
-    failure, but the choice is very retarded: we perform it first, so
-    that our chosen computation can later fail. This is also the reason
-    why [OptionT] doesn't have [MonadNondet]. *)
+(**
+  [OptionT] preserves [MonadAlt], giving us a monad with choice and
+  failure, but the choice is very retarded: we perform it first, so
+  that our chosen computation can later fail. This is also the reason
+  why [OptionT] doesn't have [MonadNondet].
+*)
 
 #[refine]
 #[export]
@@ -156,7 +175,9 @@ Instance MonadAlt_OptionT
   choose :=
     fun A x y => @choose M inst inst' _ x y
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -170,8 +191,10 @@ Instance MonadNondet_OptionT
 Proof.
 Abort.
 
-(** Besides failing, [OptionT] adds to any monad the ability to catch the
-    failure. *)
+(**
+  Besides failing, [OptionT] adds to any monad the ability to catch the
+  failure.
+*)
 #[refine]
 #[export]
 Instance MonadExcept_OptionT
@@ -182,12 +205,14 @@ Instance MonadExcept_OptionT
   catch :=
     fun A x y =>
       @bind M inst _ _ x (fun x' : option A =>
-      match x' with
-      | None => y
-      | Some a => pure (Some a)
-      end);
+        match x' with
+        | None => y
+        | Some a => pure (Some a)
+        end);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 (** [OptionT] preserves reading and state, but not (yet) writing. *)
 
@@ -201,7 +226,9 @@ Instance MonadReader_OptionT
   ask := ask >>= fun e => pure (Some e);
 }.
 Proof.
-  rewrite <- ask_ask at 3. rewrite <- constrA_bind_assoc. monad.
+  rewrite <- ask_ask at 3.
+  rewrite <- constrA_bind_assoc.
+  now monad.
 Defined.
 
 #[refine]
@@ -214,15 +241,17 @@ Instance MonadWriter_OptionT
   tell w := fmap Some (tell w);
   listen := fun A x =>
     @listen W M inst inst' _ x >>= (fun '(oa, w) =>
-    match oa with
-    | None => pure None
-    | Some a => pure (Some (a, w))
-    end);
+      match oa with
+      | None => pure None
+      | Some a => pure (Some (a, w))
+      end);
 }.
 Proof.
-  - intros. cbn. unfold pure_OptionT. rewrite listen_pure.
-    rewrite bind_pure_l. reflexivity.
-  - intros. cbn. unfold pure_OptionT, fmap_OptionT, fmap_Option.
+  - intros.
+    cbn; unfold pure_OptionT.
+    now rewrite listen_pure, bind_pure_l.
+  - intros.
+    cbn; unfold pure_OptionT, fmap_OptionT, fmap_Option.
 Abort.
 
 #[refine]
@@ -236,14 +265,20 @@ Instance MonadState_OptionT
   put s := put s >> pure (Some tt);
 }.
 Proof.
-  - monad.
-  - hs. rewrite <- !bind_assoc. monad.
-  - cbn. unfold bind_OptionT, pure_OptionT. rewrite bind_fmap.
-    unfold compose. rewrite bind_constrA_comm, get_put, constrA_pure_l.
-    reflexivity.
-  - intros. cbn. unfold bind_OptionT.
-    rewrite !bind_fmap. unfold compose.
-    rewrite <- get_get. monad.
+  - now monad.
+  - hs.
+    rewrite <- !bind_assoc.
+    now monad.
+  - cbn; unfold bind_OptionT, pure_OptionT.
+    rewrite bind_fmap.
+    unfold compose.
+    now rewrite bind_constrA_comm, get_put, constrA_pure_l.
+  - intros.
+    cbn; unfold bind_OptionT.
+    rewrite !bind_fmap.
+    unfold compose.
+    rewrite <- get_get.
+    now monad.
 Defined.
 
 (** [MonadStateNondet] is problematic, because [OptionT] has its own 
@@ -274,7 +309,7 @@ Instance MonadFree_OptionT
 }.
 Proof.
   hs.
-  rewrite
-    (wrap_law _ _ (fun x0 : A => @pure M instM (option A) (@Some A x0)) x).
-  rewrite wrap_law, bind_assoc. monad.
+  rewrite (wrap_law _ _ (fun x0 : A => @pure M instM (option A) (@Some A x0)) x).
+  rewrite wrap_law, bind_assoc.
+  now monad.
 Defined.

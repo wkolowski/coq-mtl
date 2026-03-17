@@ -11,7 +11,7 @@ Definition Option (A : Type) : Type := option A.
 Definition fmap_Option
   {A B : Type} (f : A -> B) (oa : option A) : option B :=
 match oa with
-| None => None
+| None   => None
 | Some a => Some (f a)
 end.
 
@@ -25,21 +25,27 @@ Instance Functor_Option : Functor option :=
 {
   fmap := @fmap_Option;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
-(** The constructor [Some] represents a total computation that has a
-    result. *)
+(**
+  The constructor [Some] represents a total computation that has a
+  result.
+*)
 Definition pure_Option := @Some.
 
-(** We can apply a partial function to a partial value by running the
-    computations and checking if the results are present. If both are
-    there, just apply the function to the argument. Otherwise there's
-    no result. *)
+(**
+  We can apply a partial function to a partial value by running the
+  computations and checking if the results are present. If both are
+  there, just apply the function to the argument. Otherwise there's
+  no result.
+*)
 Definition ap_Option
   {A B : Type} (of : option (A -> B)) (oa : option A) : option B :=
 match of, oa with
 | Some f, Some a => Some (f a)
-| _, _ => None
+| _     , _      => None
 end.
 
 #[global] Hint Unfold pure_Option ap_Option : CoqMTL.
@@ -52,17 +58,21 @@ Instance Applicative_Option : Applicative option :=
   pure := pure_Option;
   ap := @ap_Option;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 (** [None] represents a computation whose value is missing. *)
 Definition aempty_Option {A : Type} : option A := None.
 
-(** We can "sum" partial computations by running the first one. If it has
-    a result, return it. Otherwise return the second computation. *)
+(**
+  We can "sum" partial computations by running the first one. If it has
+  a result, return it. Otherwise return the second computation.
+*)
 Definition aplus_Option {A : Type} (x y : option A) : option A :=
-match x, y with
-| None, y => y
-| Some a, _ => Some a
+match x with
+| None   => y
+| Some a => Some a
 end.
 
 #[global] Hint Unfold aempty_Option aplus_Option : CoqMTL.
@@ -75,26 +85,32 @@ Instance Alternative_Option : Alternative option :=
   aempty := @aempty_Option;
   aplus := @aplus_Option;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
-(** To sequence computations, we run both and return a result if both
-    succeeded or fail if either of them failed. *)
+(**
+  To sequence computations, we run both and return a result if both
+  succeeded or fail if either of them failed.
+*)
 Definition bind_Option 
   {A B : Type} (oa : option A) (f : A -> option B) : option B :=
 match oa with
-| None => None
+| None   => None
 | Some a => f a
 end.
 
 #[global] Hint Unfold bind_Option : CoqMTL.
 
-(** Failing is commutative, because it doesn't matter what fails nor in
-    what order - only the presence of failure is important. *)
+(**
+  Failing is commutative, because it doesn't matter what fails nor in
+  what order — only the presence of failure is important.
+*)
 #[export]
 Instance CommutativeApplicative_Option :
   CommutativeApplicative _ Applicative_Option.
 Proof.
-  split. monad.
+  now split; monad.
 Defined.
 
 #[refine]
@@ -104,7 +120,9 @@ Instance Monad_Option : Monad option :=
   is_applicative := Applicative_Option;
   bind := @bind_Option;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -112,12 +130,14 @@ Instance MonadFail_Option : MonadFail option Monad_Option :=
 {
   fail := @None;
 }.
-Proof. intros. compute. reflexivity. Defined.
+Proof.
+  now cbn.
+Defined.
 
 Definition foldMap_Option
   {A : Type} {M : Monoid} (f : A -> M) (oa : option A) : M :=
 match oa with
-| None => neutr
+| None   => neutr
 | Some a => f a
 end.
 
@@ -129,4 +149,6 @@ Instance Foldable_Option : Foldable option :=
 {
   foldMap := @foldMap_Option;
 }.
-Proof. monad. Defined.
+Proof.
+  now monad.
+Defined.

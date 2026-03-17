@@ -3,23 +3,26 @@ From CoqMTL Require Import Control.Monad.Trans.
 From CoqMTL Require Import Control.Monad.Class.All.
 From CoqMTL Require Import Control.Monad.Identity.
 
-(** A transformer which adds a layer of error handling monad on top of the
-    base monad [M]. *)
-Definition SumT (E : Type) (M : Type -> Type) (A : Type)
-  : Type := M (sum E A).
+(**
+  A transformer which adds a layer of error handling monad on top of the
+  base monad [M].
+*)
+Definition SumT (E : Type) (M : Type -> Type) (A : Type) : Type :=
+  M (sum E A).
 
-(** Definitions of [fmap], [pure], [ap], [bind] and so on are similar to
-    these for the ordinary [sum] monad, but we need to insert [M]'s
-    [pure] and [bind] in appropriate places. *)
+(**
+  Definitions of [fmap], [pure], [ap], [bind] and so on are similar to
+  these for the ordinary [sum] monad, but we need to insert [M]'s
+  [pure] and [bind] in appropriate places.
+*)
 
 Definition fmap_SumT
-  {M : Type -> Type} {inst : Monad M} {E A B : Type} (f : A -> B)
-  : SumT E M A -> SumT E M B :=
+  {M : Type -> Type} {inst : Monad M} {E A B : Type} (f : A -> B) : SumT E M A -> SumT E M B :=
     fmap (fun sa : sum E A =>
-    match sa with
-    | inl e => inl e
-    | inr a => inr (f a)
-    end).
+      match sa with
+      | inl e => inl e
+      | inr a => inr (f a)
+      end).
 
 #[global] Hint Unfold SumT fmap_SumT : CoqMTL.
 
@@ -30,11 +33,13 @@ Instance Functor_SumT
 {
   fmap := @fmap_SumT M inst E;
 }.
-Proof. all: hs; mtrans; monad. Defined.
+Proof.
+  all: now hs; mtrans; monad.
+Defined.
 
 Definition pure_SumT
-  {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A)
-  : SumT E M A := pure (inr x).
+  {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A) : SumT E M A :=
+    pure (inr x).
 
 Definition ap_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
@@ -44,10 +49,10 @@ Definition ap_SumT
       | inl e => pure (inl e)
       | inr f =>
           @bind M inst _ _ msx (fun sx =>
-          match sx with
-              | inl e => pure (inl e)
-              | inr x => pure (inr (f x))
-          end)
+            match sx with
+            | inl e => pure (inl e)
+            | inr x => pure (inr (f x))
+            end)
       end).
 
 #[global] Hint Unfold pure_SumT ap_SumT : CoqMTL.
@@ -61,7 +66,9 @@ Instance Applicative_SumT
   pure := @pure_SumT M inst E;
   ap := @ap_SumT M inst E;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 (** [SumT] is not [Alternative], just as the ordinary [sum]. *)
 
@@ -69,16 +76,18 @@ Lemma SumT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (SumT E M)) -> False.
 Proof.
-  intros. destruct (X False Identity Monad_Identity).
-  clear -aempty. specialize (aempty False).
-  compute in aempty. destruct aempty; assumption.
+  intros X.
+  destruct (X False Identity Monad_Identity).
+  clear -aempty.
+  specialize (aempty False); compute in aempty.
+  now destruct aempty.
 Qed.
 
 (** If the base monad [M] is [Alternative], it doesn't help much. *)
 
 Definition aempty_SumT
-  (E : Type) {M : Type -> Type} {instA : Alternative M}
-  {A : Type} : SumT E M A := fmap inr aempty.
+  (E : Type) {M : Type -> Type} {instA : Alternative M} {A : Type} : SumT E M A :=
+    fmap inr aempty.
 
 Definition aplus_SumT
   {E : Type} {M : Type -> Type} {instA : Alternative M}
@@ -97,16 +106,18 @@ Instance Alternative_SumT
   aempty := @aempty_SumT E M instA;
   aplus := @aplus_SumT E M instA;
 }.
-Proof. all: monad. Abort.
+Proof.
+  3: now monad.
+Abort.
 
 Definition bind_SumT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
   (ma : SumT E M A) (f : A -> SumT E M B) : SumT E M B :=
     @bind M inst _ _ ma (fun sa : E + A =>
-    match sa with
-    | inl e => pure (inl e)
-    | inr a => f a
-    end).
+      match sa with
+      | inl e => pure (inl e)
+      | inr a => f a
+      end).
 
 #[global] Hint Unfold bind_SumT : CoqMTL.
 
@@ -118,12 +129,14 @@ Instance Monad_SumT
   is_applicative := @Applicative_SumT E M inst;
   bind := @bind_SumT M inst E;
 }.
-Proof. all: hs; monad. Defined.
+Proof.
+  all: now hs; monad.
+Defined.
 
 (** We can lift a computation by wrapping it in the [inr] constructor. *)
 Definition lift_SumT
-  (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
-  : SumT E M A := fmap inr ma.
+  (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A) : SumT E M A :=
+    fmap inr ma.
 
 #[global] Hint Unfold lift_SumT : CoqMTL.
 
@@ -134,18 +147,24 @@ Instance MonadTrans_SumT (E : Type) : MonadTrans (SumT E) :=
   is_monad := @Monad_SumT E;
   lift := @lift_SumT E;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
-(** [SumT M] is supposed to enrich [M] with error handling capabilities,
-    but there is a lot of problems. *)
+(**
+  [SumT M] is supposed to enrich [M] with error handling capabilities,
+  but there is a lot of problems.
+*)
 
-(** The first problem is that [SumT M] can fail only if the error type
-    [E] is inhabited. We use this inhabitant to represent failure, but
-    this means there are as many instances of [MonadFail] as there are
-    inhabitants of [E]. *)
+(**
+  The first problem is that [SumT M] can fail only if the error type
+  [E] is inhabited. We use this inhabitant to represent failure, but
+  this means there are as many instances of [MonadFail] as there are
+  inhabitants of [E].
+*)
 Definition fail_SumT
-  {E : Type} (e : E) {M : Type -> Type} {inst : Monad M} {A : Type}
-    : SumT E M A := pure (inl e).
+  {E : Type} (e : E) {M : Type -> Type} {inst : Monad M} {A : Type} : SumT E M A :=
+    pure (inl e).
 
 #[refine]
 #[export]
@@ -155,13 +174,19 @@ Instance MonadFail_SumT
 {
   fail := @fail_SumT E e M inst;
 }.
-Proof. intros. unfold fail_SumT. hs. Defined.
+Proof.
+  intros.
+  unfold fail_SumT.
+  now hs.
+Defined.
 
-(** The problem with [MonadExcept] is lies in the law [catch_fail_r]. It
-    boils down to the fact that there are various ways of failing. One
-    of them is [fail], but there are others, like [inl e] for any [e : E].
-    Since [E] may have more than one inhabitant, there may be more than one
-    way to fail and the law [catch_fail_r] doesn't hold. *)
+(**
+  The problem with [MonadExcept] is lies in the law [catch_fail_r]. It
+  boils down to the fact that there are various ways of failing. One
+  of them is [fail], but there are others, like [inl e] for any [e : E].
+  Since [E] may have more than one inhabitant, there may be more than one
+  way to fail and the law [catch_fail_r] doesn't hold.
+*)
 #[refine]
 #[export]
 Instance MonadExcept_SumT
@@ -180,21 +205,27 @@ Instance MonadExcept_SumT
 }.
 Proof.
   all: cbn; intros.
-  - unfold fail_SumT. rewrite bind_pure_l. reflexivity.
-  - rewrite <- (@bind_pure_r M inst _ x) at 2. f_equal.
-    ext ea. destruct ea; [| reflexivity].
+  - unfold fail_SumT.
+    now rewrite bind_pure_l.
+  - rewrite <- (@bind_pure_r M inst _ x) at 2.
+    f_equal.
+    ext ea; destruct ea; [| easy].
     unfold fail_SumT.
     admit.
-  - rewrite bind_assoc. f_equal. ext ea. destruct ea.
-    + reflexivity.
-    + rewrite bind_pure_l. reflexivity.
-  - unfold pure_SumT. rewrite bind_pure_l. reflexivity.
+  - rewrite bind_assoc.
+    f_equal.
+    ext ea; destruct ea; [easy |].
+    now rewrite bind_pure_l.
+  - unfold pure_SumT.
+    now rewrite bind_pure_l.
 Abort.
 
-(** [SumT] preserves [MonadAlt] but not [MonadNondet] (and thus not
-    [MonadStateNondet]). The problem is that [SumT] has its own [fail],
-    but only inherits [choose] from [M]'s [MonadAlt] and these two may
-    be incompatible. *)
+(**
+  [SumT] preserves [MonadAlt] but not [MonadNondet] (and thus not
+  [MonadStateNondet]). The problem is that [SumT] has its own [fail],
+  but only inherits [choose] from [M]'s [MonadAlt] and these two may
+  be incompatible.
+*)
 
 #[refine]
 #[export]
@@ -206,8 +237,11 @@ Instance MonadAlt_SumT
     fun A x y => @choose M inst inst' _ x y;
 }.
 Proof.
-  - intros. rewrite choose_assoc. reflexivity.
-  - intros. cbn. unfold bind_SumT. rewrite bind_choose_l. reflexivity.
+  - intros.
+    now rewrite choose_assoc.
+  - intros.
+    cbn; unfold bind_SumT.
+    now rewrite bind_choose_l.
 Defined.
 
 #[refine]
@@ -221,12 +255,12 @@ Instance MonadNondet_SumT
   instA := @MonadAlt_SumT E M inst (@instA _ _ inst');
 }.
 Proof.
-  - intros. cbn. unfold fail_SumT. admit.
-  - intros. cbn. unfold fail_SumT. admit.
-Admitted.
+Abort.
 
-(** [SumT] preserves [MonadReader] and [MonadState], but not (yet)
-    [MonadWriter]. *)
+(**
+  [SumT] preserves [MonadReader] and [MonadState], but not (yet)
+  [MonadWriter].
+*)
 
 #[refine]
 #[export]
@@ -238,12 +272,16 @@ Instance MonadReader_SumT
   ask := ask >>= fun x => pure (inr x);
 }.
 Proof.
-  rewrite <- ask_ask at 3. rewrite !constrA_spec. monad.
+  rewrite <- ask_ask at 3.
+  rewrite !constrA_spec.
+  now monad.
 Defined.
 
-(** The problem with [MonadWriter] lies in the fact that we use [bind]
-    in the definition of [listen], which prevents us from proving the
-    law [listen_listen]. *)
+(**
+  The problem with [MonadWriter] lies in the fact that we use [bind]
+  in the definition of [listen], which prevents us from proving the
+  law [listen_listen].
+*)
 
 #[refine]
 #[export]
@@ -263,9 +301,6 @@ Instance MonadWriter_SumT
       end;
 }.
 Proof.
-  - intros. cbn. unfold pure_SumT.
-    rewrite listen_pure, bind_pure_l. reflexivity.
-  - intros. cbn. unfold fmap_SumT.
 Abort.
 
 #[refine]
@@ -280,16 +315,19 @@ Instance MonadState_SumT
 }.
 Proof.
   all: intros.
-  - monad.
-  - rewrite !constrA_spec. cbn. unfold bind_SumT, pure_SumT.
-    rewrite !bind_assoc. rewrite !bind_pure_l.
+  - now monad.
+  - rewrite !constrA_spec.
+    cbn; unfold bind_SumT, pure_SumT.
+    rewrite !bind_assoc, !bind_pure_l.
     rewrite <- constrA_spec, constrA_bind_assoc, put_get.
-    rewrite <- constrA_bind_assoc, bind_pure_l, <- constrA_spec.
-    reflexivity.
-  - cbn. unfold bind_SumT, pure_SumT.
+    now rewrite <- constrA_bind_assoc, bind_pure_l, <- constrA_spec.
+  - cbn; unfold bind_SumT, pure_SumT.
     rewrite bind_assoc, <- fmap_pure at 1.
-    rewrite <- get_put, fmap_bind. f_equal. monad.
-  - cbn. unfold bind_SumT. rewrite !bind_assoc.
+    rewrite <- get_put, fmap_bind.
+    f_equal.
+    now monad.
+  - cbn; unfold bind_SumT.
+    rewrite !bind_assoc.
     replace
       (fun x : S =>
         pure (inr x) >>=
@@ -300,11 +338,15 @@ Proof.
           end)
     with
       (fun s : S => k s s).
-    + rewrite <- get_get. f_equal. monad.
-    + ext s. rewrite bind_pure_l. reflexivity.
+    + rewrite <- get_get.
+      f_equal.
+      now monad.
+    + ext s.
+      now rewrite bind_pure_l.
 Defined.
 
 (* TODO *)
+(*
 #[refine]
 #[export]
 Instance MonadStateNondet_SumT
@@ -317,6 +359,7 @@ Instance MonadStateNondet_SumT
 }.
 Proof.
 Abort.
+*)
 
 (** If [M] is the free monad of [F], so is [SumT E M]. *)
 #[refine]
@@ -330,8 +373,8 @@ Instance MonadFree_SumT
   wrap := fun A m => @wrap F M instF instM instMF _ m;
 }.
 Proof.
-  intros. cbn. unfold bind_SumT, pure_SumT,SumT in *.
-  rewrite wrap_law.
-  rewrite (wrap_law _ _ (fun a : A => pure (inr a)) x).
-  monad.
+  intros.
+  cbn; unfold bind_SumT, pure_SumT, SumT in *.
+  rewrite wrap_law, (wrap_law _ _ (fun a : A => pure (inr a)) x).
+  now monad.
 Defined.

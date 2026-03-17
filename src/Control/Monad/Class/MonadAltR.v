@@ -1,7 +1,9 @@
 From CoqMTL Require Export Control.Monad.
 
-(** Another monad for nondeterministic choice, but it satisfies a different
-    law than [MonadAlt]. *)
+(**
+  Another monad for nondeterministic choice, but it satisfies a different
+  law than [MonadAlt].
+*)
 Class MonadAltR (M : Type -> Type) (inst : Monad M) : Type :=
 {
   choose : forall {A : Type}, M A -> M A -> M A;

@@ -3,14 +3,18 @@ From CoqMTL Require Import Control.Monad.Trans.
 From CoqMTL Require Import Control.Monad.Class.All.
 From CoqMTL Require Import Control.Monad.Identity.
 
-(** A transformer which adds a layer of the state monad on top of any
-    monad [M]. *)
-Definition StateT (S : Type) (M : Type -> Type) (A : Type)
-  : Type := S -> M (A * S)%type.
+(**
+  A transformer which adds a layer of the state monad on top of any
+  monad [M].
+*)
+Definition StateT (S : Type) (M : Type -> Type) (A : Type) : Type :=
+  S -> M (A * S)%type.
 
-(** Definitions of [fmap], [pure], [ap], [bind], [aplus], [aempty] etc.
-    are quite similar to these for [State], but we have to insert [M]'s
-    [bind] and [pure] in appropriate places. *)
+(**
+  Definitions of [fmap], [pure], [ap], [bind], [aplus], [aempty] etc.
+  are quite similar to these for [State], but we have to insert [M]'s
+  [bind] and [pure] in appropriate places.
+*)
 
 Definition fmap_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A B : Type} (f : A -> B)
@@ -20,19 +24,25 @@ Definition fmap_StateT
 
 #[global] Hint Unfold StateT fmap_StateT compose : CoqMTL.
 
-(** These lemmas are there so that the parsers are fast. I don't know why
-    this helps with performance... *)
+(**
+  These lemmas are there so that the parsers are fast. I don't know why
+  this helps with performance...
+*)
 
 Lemma f1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type),
     fmap_StateT S (@id A) = id.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma f2 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B C : Type)
   (f : A -> B) (g : B -> C),
     fmap_StateT S (f .> g) = fmap_StateT S f .> fmap_StateT S g.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 #[refine]
 #[export]
@@ -42,13 +52,13 @@ Instance Functor_StateT
   fmap := @fmap_StateT S M inst;
 }.
 Proof.
-  apply f1.
-  apply f2.
+  - now apply f1.
+  - now apply f2.
 Defined.
 
 Definition pure_StateT
-  (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (x : A)
-    : StateT S M A := fun s => pure (x, s).
+  (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (x : A) : StateT S M A :=
+    fun s => pure (x, s).
 
 Definition ap_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -64,33 +74,43 @@ Lemma p1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type)
   (x : StateT S M A),
     ap_StateT S (pure_StateT S id) x = x.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma p2 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B C : Type)
   (af : StateT S M (A -> B)) (ag : StateT S M (B -> C)) (ax : StateT S M A),
     ap_StateT S (ap_StateT S (ap_StateT S (pure_StateT S compose) ag) af) ax =
     ap_StateT S ag (ap_StateT S af ax).
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma p3 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : A -> B) (x : A),
     ap_StateT S (pure_StateT S f) (pure_StateT S x) = pure_StateT S (f x).
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma p4 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : StateT S M (A -> B)) (x : A),
     ap_StateT S f (pure_StateT S x) =
     ap_StateT S (pure_StateT S (fun f0 : A -> B => f0 x)) f.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma p5 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : A -> B) (x : StateT S M A),
     fmap f x = ap_StateT S (pure_StateT S f) x.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 #[refine]
 #[export]
@@ -102,11 +122,11 @@ Instance Applicative_StateT
   ap := @ap_StateT S M inst;
 }.
 Proof.
-  - apply p1.
-  - apply p2.
-  - apply p3.
-  - apply p4.
-  - apply p5.
+  - now apply p1.
+  - now apply p2.
+  - now apply p3.
+  - now apply p4.
+  - now apply p5.
 Defined.
 
 (** [StateT M] is [Alternative] only when [M] is. *)
@@ -115,14 +135,17 @@ Lemma StateT_not_Alternative :
   (forall (S : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (StateT S M)) -> False.
 Proof.
-  intros. destruct (X unit Identity Monad_Identity).
-  clear -aempty. specialize (aempty False).
-  compute in aempty. apply aempty. exact tt.
+  intros X.
+  destruct (X unit Identity Monad_Identity).
+  clear -aempty.
+  specialize (aempty False); compute in aempty.
+  now apply aempty.
 Qed.
 
 Definition aempty_StateT
   (S : Type) {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
-  {A : Type} : StateT S M A :=  fun s : S => aempty.
+  {A : Type} : StateT S M A :=
+    fun s : S => aempty.
 
 Definition aplus_StateT
   {S : Type} {M : Type -> Type} {instM : Monad M} {instA : Alternative M}
@@ -141,7 +164,9 @@ Instance Alternative_StateT
   aempty := @aempty_StateT S M instM instA;
   aplus := @aplus_StateT S M instM instA;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 Definition bind_StateT
   (S : Type) {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -154,26 +179,34 @@ Lemma m1 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : A -> StateT S M B) (a : A),
     bind_StateT S (pure a) f = f a.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma m2 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A : Type)
   (ma : StateT S M A),
     bind_StateT S ma pure = ma.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma m3 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B C : Type)
   (ma : StateT S M A) (f : A -> StateT S M B) (g : B -> StateT S M C),
     bind_StateT S (bind_StateT S ma f) g =
     bind_StateT S ma (fun x : A => bind_StateT S (f x) g).
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma m4 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
   (f : A -> B) (x : StateT S M A),
     fmap f x = bind_StateT S x (fun a : A => pure (f a)).
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma m5 :
   forall (S : Type) (M : Type -> Type) (inst : Monad M) (A B : Type)
@@ -181,7 +214,9 @@ Lemma m5 :
     mf <*> mx =
       bind_StateT S mf (fun f : A -> B =>
       bind_StateT S mx (fun x : A => pure (f x))).
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 #[refine]
 #[export]
@@ -192,17 +227,21 @@ Instance Monad_StateT
   bind := @bind_StateT S M inst;
 }.
 Proof.
-  - apply m1.
-  - apply m2.
-  - apply m3.
-  - apply m5.
+  - now apply m1.
+  - now apply m2.
+  - now apply m3.
+  - now apply m5.
 Defined.
 
-(** We can lift a computation into the monad by binding it to a function
-    which returns its value along the current state. *)
+(**
+  We can lift a computation into the monad by binding it to a function
+  which returns its value along the current state.
+*)
 Definition lift_StateT
-  (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
-    : StateT S M A := fun s : S => ma >>= fun a : A => pure (a, s).
+  (S : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A) : StateT S M A :=
+    fun s : S =>
+      ma >>= fun a : A =>
+        pure (a, s).
 
 #[global] Hint Unfold lift_StateT : CoqMTL.
 
@@ -213,7 +252,9 @@ Instance MonadTrans_StateT (S : Type) : MonadTrans (StateT S) :=
   is_monad := @Monad_StateT S;
   lift := @lift_StateT S;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 (** [StateT] adds a layer of [MonadState] on top of the base monad [M]. *)
 #[refine]
@@ -226,8 +267,7 @@ Instance MonadState_StateT
   put := fun s : S => fun _ => pure (tt, s);
 }.
 Proof.
-  1-3: monad.
-  intros. ext s. hs.
+  all: now monad.
 Defined.
 
 (** [StateT] preserves all other kinds of monads. *)
@@ -241,7 +281,9 @@ Instance MonadAlt_StateT
   choose :=
     fun A x y s => choose (x s) (y s);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -251,7 +293,9 @@ Instance MonadFail_StateT
 {
   fail := fun A s => fail;
 }.
-Proof. monad. Defined.
+Proof.
+  now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -262,7 +306,9 @@ Instance MonadNondet_StateT
   instF := @MonadFail_StateT S M inst (@instF _ _ inst');
   instA := @MonadAlt_StateT S M inst (@instA _ _ inst');
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -275,7 +321,9 @@ Instance MonadExcept_StateT
   catch :=
     fun A x y => fun s => catch (x s) (y s);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -287,10 +335,13 @@ Instance MonadReader_StateT
   ask := fun s => ask >>= fun e => pure (e, s);
 }.
 Proof.
-  rewrite constrA_spec. cbn. unfold bind_StateT.
-  ext s. rewrite bind_assoc.
+  rewrite constrA_spec.
+  cbn; unfold bind_StateT.
+  ext s.
+  rewrite bind_assoc.
   rewrite <- ask_ask at 2.
-  rewrite constrA_spec. monad.
+  rewrite constrA_spec.
+  now monad.
 Defined.
 
 #[refine]
@@ -305,7 +356,9 @@ Instance MonadWriter_StateT
       fun s =>
         m s >>= fun '(a, s) => pure (a, neutr, s);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -318,12 +371,20 @@ Instance MonadStateNondet_StateT
   instN := MonadNondet_StateT S M inst inst';
 }.
 Proof.
-  - intros. rewrite constrA_spec. cbn. unfold bind_StateT.
-    ext s. rewrite <- (seq_fail_r _ _ (x s)) at 1.
-    rewrite constrA_spec. f_equal. ext y. destruct y. reflexivity.
-  - intros. cbn. unfold bind_StateT.
-    ext s. rewrite <- bind_choose_r. f_equal. ext x. destruct x.
-    reflexivity.
+  - intros.
+    rewrite constrA_spec.
+    cbn; unfold bind_StateT.
+    ext s.
+    rewrite <- (seq_fail_r _ _ (x s)) at 1.
+    rewrite constrA_spec.
+    f_equal.
+    now ext y; destruct y.
+  - intros.
+    cbn; unfold bind_StateT.
+    ext s.
+    rewrite <- bind_choose_r.
+    f_equal.
+    now ext x; destruct x.
 Defined.
 
 (** If [M] is the free monad of [F], so is [StateT E M]. *)
@@ -339,11 +400,13 @@ Instance MonadFree_StateT
     fun A m s => wrap (fmap (fun x => x s) m);
 }.
 Proof.
-  intros. ext s. cbn.
-  unfold bind_StateT, pure_StateT, StateT in *.
-  rewrite <- !fmap_comp'. unfold compose.
-  rewrite wrap_law.
-  rewrite (wrap_law _ _ (fun a : A => pure (a, s)) x).
-  rewrite bind_assoc. f_equal. ext a.
-  rewrite bind_pure_l. reflexivity.
+  intros.
+  ext s.
+  cbn; unfold bind_StateT, pure_StateT, StateT in *.
+  rewrite <- !fmap_comp'.
+  unfold compose.
+  rewrite wrap_law, (wrap_law _ _ (fun a : A => pure (a, s)) x), bind_assoc.
+  f_equal.
+  ext a.
+  now rewrite bind_pure_l.
 Defined.

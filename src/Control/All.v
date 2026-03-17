@@ -1,5 +1,7 @@
-(** This module can be used to import/export everything from the directory
-    Control/. *)
+(**
+  This module can be used to import/export everything from the directory
+  Control/.
+*)
 
 From CoqMTL Require Export Control.Alternative.
 From CoqMTL Require Export Control.Applicative.

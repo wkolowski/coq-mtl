@@ -2,18 +2,18 @@ From CoqMTL Require Import Control.All.
 From CoqMTL Require Import Control.Monad.Identity.
 From CoqMTL Require Import Control.Monad.Class.MonadFree.
 
-(** The codensity monad. Not very developed, as I don't know too much
-    about it. In particular, I didn't check if it really improves
-    asymptotic complexity or even performance, as this is quite hard
-    in Coq, where everything is rather slow. *)
-Definition Codensity
-  (F : Type -> Type) (A : Type) : Type :=
-    forall (R : Type), (A -> F R) -> F R.
+(**
+  The codensity monad. Not very developed, as I don't know too much
+  about it. In particular, I didn't check if it really improves
+  asymptotic complexity or even performance, as this is quite hard
+  in Coq, where everything is rather slow.
+*)
+Definition Codensity (F : Type -> Type) (A : Type) : Type :=
+  forall (R : Type), (A -> F R) -> F R.
 
 Definition fmap_Codensity
-  (F : Type -> Type) {A B : Type} (f : A -> B) (x : Codensity F A)
-    : Codensity F B := fun (R : Type) (y : B -> F R) =>
-      x R (fun a : A => y (f a)).
+  (F : Type -> Type) {A B : Type} (f : A -> B) (x : Codensity F A) : Codensity F B :=
+    fun (R : Type) (y : B -> F R) => x R (fun a : A => y (f a)).
 
 #[refine]
 #[export]
@@ -22,7 +22,9 @@ Instance Functor_Codensity
 {
   fmap := @fmap_Codensity F;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition pure_Codensity
   (F : Type -> Type) {A : Type} (a : A) : Codensity F A :=
@@ -43,19 +45,22 @@ Instance Applicative_Codensity
   pure := @pure_Codensity F;
   ap := @ap_Codensity F;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition bind_Codensity
-  (F : Type -> Type) {A B : Type}
-  (ca : Codensity F A) (f : A -> Codensity F B)
-    : Codensity F B := fun (R : Type) (g : B -> F R) =>
-      ca R (fun x : A => f x R g).
+  (F : Type -> Type) {A B : Type} (ca : Codensity F A)
+  (f : A -> Codensity F B) : Codensity F B :=
+    fun (R : Type) (g : B -> F R) => ca R (fun x : A => f x R g).
 
-Theorem Codensity_not_Alternative :
+Lemma Codensity_not_Alternative :
   (forall F : Type -> Type, Alternative (Codensity F)) -> False.
 Proof.
-  intro H. destruct (H id). unfold Codensity in *.
-  apply (aempty False). intro. assumption.
+  intros H.
+  destruct (H id).
+  unfold Codensity in *.
+  now apply (aempty False).
 Qed.
 
 #[refine]
@@ -66,41 +71,39 @@ Instance Monad_Codensity
   is_applicative := @Applicative_Codensity F;
   bind := @bind_Codensity F;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 (** Since [Codensity] is somewhat akin to [Free], we shouldn't expect
     it to be commutative. *)
 Lemma Codensity_not_CommutativeApplicative :
-  (forall F : Type -> Type,
-    CommutativeApplicative _ (Applicative_Codensity F)) -> False.
+  (forall F : Type -> Type, CommutativeApplicative _ (Applicative_Codensity F)) -> False.
 Proof.
-  intros.
+  intros H.
   specialize (H list).
-  destruct H. cbn in *. compute in *.
-  specialize (ap_comm bool bool bool (fun a b => andb a b)). cbn in *.
-  specialize (ap_comm (fun R f => f false ++ f true)
-                      (fun _ f => f true ++ f false)).
-  cbn in *.
+  destruct H; cbn in *; compute in *.
+  specialize (ap_comm bool bool bool (fun a b => andb a b)); cbn in *.
+  specialize (ap_comm (fun R f => f false ++ f true) (fun _ f => f true ++ f false)); cbn in *.
   apply (f_equal (fun f => f bool)) in ap_comm.
-  apply (f_equal (fun f => f (fun b => [b]))) in ap_comm.
-  cbn in ap_comm. inv ap_comm.
+  apply (f_equal (fun f => f (fun b => [b]))) in ap_comm; cbn in ap_comm.
+  now inversion ap_comm.
 Qed.
 
 Section CodensityFuns.
 
-Variable M : Type -> Type.
-Variable inst : Monad M.
+Variables
+  (M : Type -> Type)
+  (inst : Monad M).
 
-Definition inject
-  {A : Type} (x : M A) : Codensity M A :=
-    fun _ c => x >>= c.
+Definition inject {A : Type} (x : M A) : Codensity M A :=
+  fun _ c => x >>= c.
 
-Definition extract
-  {A : Type} (x : Codensity M A) : M A := x _ pure.
+Definition extract {A : Type} (x : Codensity M A) : M A :=
+  x _ pure.
 
-Definition improve
-  {A : Type} (x : M A) : M A :=
-    extract (inject x).
+Definition improve {A : Type} (x : M A) : M A :=
+  extract (inject x).
 
 Hint Unfold
   fmap_Codensity pure_Codensity ap_Codensity bind_Codensity inject extract
@@ -109,23 +112,31 @@ Hint Unfold
 Lemma extract_pure :
   forall (A : Type) (x : A),
     extract (pure x) = pure x.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma extract_pure' :
   forall (A : Type) (x : M A),
     extract (fun _ c => x >>= c) = x.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 (** Does inject (extract x) = x hold? Probably not, but not sure. *)
 Lemma extract_inject :
   forall (A : Type) (x : M A),
     extract (inject x) = x.
-Proof. monad. Qed.
+Proof.
+  now monad.
+Qed.
 
 Lemma improve_spec :
   forall (A : Type) (x : M A),
     improve x = x.
-Proof. apply extract_inject. Qed.
+Proof.
+  now apply extract_inject.
+Qed.
 
 End CodensityFuns.
 
@@ -151,15 +162,20 @@ Instance MonadFree_Codensity
   wrap := @wrap_Codensity F M instF instM instMF;
 }.
 Proof.
-  hs. ext2 R g. rewrite <- !fmap_comp'. unfold compose. reflexivity.
+  hs.
+  ext2 R g.
+  rewrite <- !fmap_comp'.
+  now unfold compose.
 Defined.
 
-(** I was wondering whether [Codensity] could in theory support callCC,
-    because in http://comonad.com/reader/2011/free-monads-for-less/
-    Edawrd Kmett states that it doesn't, so I went on to check this.
-    The first type is of the usual callCC (with [Cont] replaced by
-    [Codensity]) and the second one is taken from Purescript's
-    Pursuit library. *)
+(**
+  I was wondering whether [Codensity] could in theory support callCC,
+  because in http://comonad.com/reader/2011/free-monads-for-less/
+  Edawrd Kmett states that it doesn't, so I went on to check this.
+  The first type is of the usual callCC (with [Cont] replaced by
+  [Codensity]) and the second one is taken from Purescript's
+  Pursuit library.
+*)
 
 Definition callCC_Type : Type :=
   forall (F : Type -> Type) (A B : Type),
@@ -167,32 +183,41 @@ Definition callCC_Type : Type :=
 
 Definition callCC'_Type : Type :=
   forall (F : Type -> Type) (A : Type),
-    ((forall B : Type, A -> Codensity F B) ->
-        Codensity F A) -> Codensity F A.
+    ((forall B : Type, A -> Codensity F B) -> Codensity F A) -> Codensity F A.
 
-(** It turns out that when we use excluded middle for [Type], we can
-    define both versions of callCC. This proves that [Codensity] does
-    not forbid callCC. However, I think that there's no way to define
-    it constructively. *)
+(**
+  It turns out that when we use excluded middle for [Type], we can
+  define both versions of callCC. This proves that [Codensity] does
+  not forbid callCC. However, I think that there's no way to define
+  it constructively.
+*)
 
 Lemma calCC_classic :
-  (forall A : Type, A + (A -> False)) -> callCC_Type.
+  (forall A : Type, A + (A -> False)) ->
+    callCC_Type.
 Proof.
-  unfold callCC_Type. intros LEM F A B H.
-  destruct (LEM (Codensity F A)).
-  - assumption.
-  - apply H. intro. cut False.
-    + inversion 1.
-    + apply f. red. intros. apply X0. assumption.
+  unfold callCC_Type.
+  intros LEM F A B H.
+  destruct (LEM (Codensity F A)); [easy |].
+  apply H.
+  intros a.
+  cut False; [easy |].
+  apply f; red.
+  intros R X.
+  now apply X.
 Qed.
 
 Lemma calCC'_classic :
-  (forall A : Type, A + (A -> False)) -> callCC'_Type.
+  (forall A : Type, A + (A -> False)) ->
+    callCC'_Type.
 Proof.
-  unfold callCC'_Type. intros LEM F A H.
-  destruct (LEM (Codensity F A)).
-  - assumption.
-  - apply H. intros B a. cut False.
-    + inversion 1.
-    + apply f. red. intros. apply X. assumption.
+  unfold callCC'_Type.
+  intros LEM F A H.
+  destruct (LEM (Codensity F A)); [easy |].
+  apply H.
+  intros B a.
+  cut False; [easy |].
+  apply f; red.
+  intros R X.
+  now apply X.
 Qed.

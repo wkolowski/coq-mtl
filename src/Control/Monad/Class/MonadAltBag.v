@@ -1,8 +1,10 @@
 From CoqMTL Require Export Control.Monad.
 
-(** A nondeterminism monad whose initial model are finite bags
-    (which probably means finite multisets). This is guaranteed
-    by the law [choose_comm]. *)
+(**
+  A nondeterminism monad whose initial model are finite bags
+  (which probably means finite multisets). This is guaranteed
+  by the law [choose_comm].
+*)
 Class MonadAltBag (M : Type -> Type) (inst : Monad M) : Type :=
 {
   choose : forall {A : Type}, M A -> M A -> M A;

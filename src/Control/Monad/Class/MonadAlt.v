@@ -1,8 +1,10 @@
 From CoqMTL Require Export Control.Monad.
 
-(** A monad that models computations which can perform some kind of choice.
-    It may be thought of as nondeterministic choice, which is quite intuitive
-    from the law [bind_choose_l]. *)
+(**
+  A monad that models computations which can perform some kind of choice.
+  It may be thought of as nondeterministic choice, which is quite intuitive
+  from the law [bind_choose_l].
+*)
 Class MonadAlt (M : Type -> Type) (inst : Monad M) : Type :=
 {
   choose : forall {A : Type}, M A -> M A -> M A;

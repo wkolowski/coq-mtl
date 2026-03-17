@@ -2,13 +2,15 @@ From CoqMTL Require Import Control.All.
 From CoqMTL Require Import Control.Monad.Trans.
 From CoqMTL Require Import Control.Monad.Class.All.
 
-(** A transformer which puts a layer of a list monad on top of the base
-    monad [M], implemented using Church encoding.
+(**
+  A transformer which puts a layer of a list monad on top of the base
+  monad [M], implemented using Church encoding.
 
-    Notations akin to these for standard lists are provided.
+  Notations akin to these for standard lists are provided.
 
-    All definitions are just like these for the ordinary [list] monad,
-    but expressed using folds instead of structural recursion. *)
+  All definitions are just like these for the ordinary [list] monad,
+  but expressed using folds instead of structural recursion.
+*)
 Definition ListT
   (M : Type -> Type) (A : Type) : Type :=
     forall X : Type, M X -> (A -> M X -> M X) -> M X.
@@ -39,15 +41,19 @@ Instance Functor_ListT
 {
   fmap := @fmap_ListT M inst;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition pure_ListT
   (M : Type -> Type) (inst : Monad M) (A : Type) (x : A) : ListT M A :=
     fun (X : Type) (nil : M X) (cons : A -> M X -> M X) => cons x nil.
 
-(** The definition below says this: for each function [f], [fmap] it over
-    the list of arguments [mxs] and then concatenate all the resulting
-    lists. *)
+(**
+  The definition below says this: for each function [f], [fmap] it over
+  the list of arguments [mxs] and then concatenate all the resulting
+  lists.
+*)
 Definition ap_ListT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
   (mfs : ListT M (A -> B)) (mxs : ListT M A) : ListT M B :=
@@ -63,7 +69,9 @@ Instance Applicative_ListT
   pure := @pure_ListT M inst;
   ap := @ap_ListT M inst;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition aempty_ListT
   (M : Type -> Type) (inst : Monad M) (A : Type) : ListT M A :=
@@ -82,7 +90,9 @@ Instance Alternative_ListT
   aempty := aempty_ListT M inst;
   aplus := aplus_ListT M inst;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition bind_ListT
   {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -97,10 +107,14 @@ Instance Monad_ListT
   is_applicative := Applicative_ListT M inst;
   bind := @bind_ListT M inst;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
-(** We can [lift] a computation into the monad by binding it to a function
-    which puts the result in a singleton list. *)
+(**
+  We can [lift] a computation into the monad by binding it to a function
+  which puts the result in a singleton list.
+*)
 Definition lift_ListT
   {M : Type -> Type} {inst : Monad M} (A : Type) (ma : M A) : ListT M A :=
     fun X nil cons => ma >>= fun a : A => cons a nil.
@@ -114,7 +128,9 @@ Instance MonadTrans_ListT : MonadTrans ListT :=
   is_monad := @Monad_ListT;
   lift := @lift_ListT;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 (** [ListT] adds a layer of [MonadNondet] to its base monad. *)
 
@@ -131,7 +147,9 @@ Instance MonadFail_ListT
 {
   fail := @fail_ListT M inst;
 }.
-Proof. reflexivity. Defined.
+Proof.
+  easy.
+Defined.
 
 #[refine]
 #[export]
@@ -141,7 +159,9 @@ Instance MonadAlt_ListT
 {
   choose := @aplus_ListT M inst;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 #[refine]
 #[export]
@@ -152,10 +172,14 @@ Instance MonadNondet_ListT
   instF := MonadFail_ListT M inst;
   instA := MonadAlt_ListT M inst;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
-(** [ListT] doesn't preserve [MonadExcept], just as the other transformers
-    implemented using Church encoding. *)
+(**
+  [ListT] doesn't preserve [MonadExcept], just as the other transformers
+  implemented using Church encoding.
+*)
 #[refine]
 #[export]
 Instance MonadExcept_ListT
@@ -169,7 +193,6 @@ Instance MonadExcept_ListT
 }.
 Proof.
   all: intros; ext X; ext nil; ext cons; cbn.
-    unfold fail_ListT.
 Abort.
 
 (** [ListT] preserves [MonadReader], [MonadWriter] and [MonadState]. *)
@@ -185,9 +208,9 @@ Instance MonadReader_ListT
     fun X nil cons => ask >>= (fun e => cons e nil);
 }.
 Proof.
-  ext X. ext nil. ext cons. cbn. unfold fmap_ListT, const, id.
-  rewrite <- constrA_spec, constrA_bind_assoc, ask_ask.
-  reflexivity.
+  ext3 X nil cons.
+  cbn; unfold fmap_ListT, const, id.
+  now rewrite <- constrA_spec, constrA_bind_assoc, ask_ask.
 Defined.
 
 #[refine]
@@ -202,7 +225,9 @@ Instance MonadWriter_ListT
     fun X nil cons =>
       l X nil (fun h t => cons (h, neutr) t);
 }.
-Proof. all: hs. Defined.
+Proof.
+  all: now hs.
+Defined.
 
 #[refine]
 #[export]
@@ -217,22 +242,23 @@ Instance MonadState_ListT
 Proof.
   all: intros; ext3 X nil cons; cbn.
   - unfold fmap_ListT, const, id.
-    rewrite <- constrA_assoc, put_put. reflexivity.
+    now rewrite <- constrA_assoc, put_put.
   - unfold fmap_ListT, pure_ListT.
-    rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
-    reflexivity.
+    now rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
   - unfold bind_ListT, pure_ListT.
     replace (fun s : S => put s >> cons tt nil)
        with (fun s : S => put s >>= fun _ => cons tt nil).
-    + rewrite <- (bind_assoc _ _ _ get put), get_put, bind_pure_l.
-      reflexivity.
-    + ext s. rewrite constrA_spec. reflexivity.
+    + now rewrite <- (bind_assoc _ _ _ get put), get_put, bind_pure_l.
+    + ext s.
+      now rewrite constrA_spec.
   - unfold bind_ListT, pure_ListT.
-      rewrite get_get. reflexivity.
+    now rewrite get_get.
 Defined.
 
-(** [ListT] doesn't implement [MonadStateNondet], because we lack the
-    ability to do induction. *)
+(**
+  [ListT] doesn't implement [MonadStateNondet], because we lack the
+  ability to do induction.
+*)
 #[refine]
 #[export]
 Instance MonadStateNondet_ListT
@@ -244,9 +270,12 @@ Instance MonadStateNondet_ListT
   instN := MonadNondet_ListT M inst;
 }.
 Proof.
-  - intros. rewrite constrA_spec. cbn. compute.
-    ext X. ext nil. ext cons. admit. (* Induction would do *)
-  - intros. compute. ext3 X nil cons.
+  - intros.
+    rewrite constrA_spec; compute.
+    ext3 X nil cons.
+    admit. (* Induction would do *)
+  - intros; compute.
+    ext3 X nil cons.
 Abort.
 
 (** If [M] is the free monad of [F], so is [ListT M]. *)
@@ -262,8 +291,9 @@ Instance MonadFree_ListT
       wrap (fmap (fun l => l X nil cons) fma);
 }.
 Proof.
-  intros A B f x. ext3 X nil cons.
-  cbn. unfold bind_ListT, pure_ListT.
-  rewrite <- !fmap_comp'. unfold compose.
-  reflexivity.
+  intros A B f x.
+  ext3 X nil cons.
+  cbn; unfold bind_ListT, pure_ListT.
+  rewrite <- !fmap_comp'.
+  now unfold compose.
 Defined.

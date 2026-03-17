@@ -1,5 +1,7 @@
-(** This file gathers everything that lives inside Control/ and its
-    subdirectories. *)
+(**
+  This file gathers everything that lives inside Control/ and its
+    subdirectories.
+*)
 
 From CoqMTL Require Export Control.All.
 From CoqMTL Require Export Control.Monad.All.

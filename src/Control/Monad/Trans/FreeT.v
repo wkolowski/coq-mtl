@@ -3,14 +3,17 @@ From CoqMTL Require Import Control.Monad.Trans.
 From CoqMTL Require Import Control.Monad.Class.All.
 From CoqMTL Require Import Control.Monad.Identity.
 
-(** A transformer which puts a layer of the free monad for the functor [F]
-    on top of the monad [M]. It is implemented using Church encoding. *)
+(**
+  A transformer which puts a layer of the free monad for the functor [F]
+  on top of the monad [M]. It is implemented using Church encoding.
+*)
 Definition FreeT (F : Type -> Type) (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (F (M X) -> M X) -> M X.
 
-(** To understand a definition of a function, you just have to look at the
-    types. Intuition is harder, however. *)
-
+(**
+  To understand the definition of a function, you just have to look at
+  the types. Intuition is harder, however.
+*)
 Section FreeT.
 
 Variables
@@ -28,7 +31,9 @@ Instance Functor_FreeT : Functor (FreeT F M) :=
 {
   fmap := @fmap_FreeT;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition pure_FreeT
   {A : Type} (x : A) : FreeT F M A :=
@@ -45,7 +50,9 @@ Instance Applicative_FreeT : Applicative (FreeT F M) :=
   pure := @pure_FreeT;
   ap := @ap_FreeT;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition bind_FreeT
   {A B : Type} (x : FreeT F M A) (f : A -> FreeT F M B) : FreeT F M B :=
@@ -57,23 +64,29 @@ Instance Monad_FreeT : Monad (FreeT F M) :=
 {
   bind := @bind_FreeT;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 End FreeT.
 
-(** Free monad isn't [Alternative], because it doesn't have anything more
-    than what is needed to be a monad. *)
+(**
+  The free monad isn't [Alternative], because it doesn't have anything more
+  than what is needed to be a monad. *)
 Lemma FreeT_not_Alternative :
   (forall (F : Type -> Type) (M : Type -> Type) (inst : Monad M),
     Alternative (FreeT F M)) -> False.
 Proof.
-  intro H. destruct (H Identity Identity _).
+  intros H.
+  destruct (H Identity Identity _).
   unfold FreeT, Identity in *.
-  apply (aempty False False); trivial.
+  now apply (aempty False False).
 Qed.
 
-(** We can lift a computation into the monad by binding it to the
-    "constructor" [pure]. *)
+(**
+  We can lift a computation into the monad by binding it to the
+  "constructor" [pure].
+*)
 Definition lift_FreeT
   {F M : Type -> Type} {inst : Monad M} {A : Type}
   (x : M A) : FreeT F M A :=
@@ -89,7 +102,9 @@ Instance MonadTrans_FreeT
   is_monad := fun M _ => @Monad_FreeT F M;
   lift := @lift_FreeT F;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 (** [FreeT F M] adds a layer of the free monad for [F] on top of [M]. *)
 #[refine]
@@ -104,14 +119,18 @@ Instance MonadFree_FreeT
       fun X pure wrap => wrap (fmap (fun x => x X pure wrap) x);
 }.
 Proof.
-  monad. rewrite <- !fmap_comp'. unfold compose. reflexivity.
+  monad.
+  rewrite <- !fmap_comp'.
+  now unfold compose.
 Defined.
 
-(** [FreeT] in respect to classes behaves quite similarly to [ContT] -
-    it preserves [MonadNondet], [MonadReader], [MonadWriter], [MonadState],
-    but doesn't preserve [MonadExcept] nor [MonadStateNondet]. The reasons
-    for this are also quite similar: definitions of some functions don't
-    at all refer to the underlying monad's [pure] or [bind]. *)
+(**
+  [FreeT] in respect to classes behaves quite similarly to [ContT] -
+  it preserves [MonadNondet], [MonadReader], [MonadWriter], [MonadState],
+  but doesn't preserve [MonadExcept] nor [MonadStateNondet]. The reasons
+  for this are also quite similar: definitions of some functions don't
+  at all refer to the underlying monad's [pure] or [bind].
+*)
 
 #[refine]
 #[export]
@@ -123,7 +142,9 @@ Instance MonadAlt_FreeT
   choose :=
     fun A x y => fun X pure wrap => choose (x X pure wrap) (y X pure wrap);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -134,7 +155,9 @@ Instance MonadFail_FreeT
 {
   fail := fun A => fun X pure wrap => fail;
 }.
-Proof. reflexivity. Defined.
+Proof.
+  easy.
+Defined.
 
 #[refine]
 #[export]
@@ -146,7 +169,9 @@ Instance MonadNondet_FreeT
   instF := @MonadFail_FreeT F M inst (@instF _ _ inst');
   instA := @MonadAlt_FreeT F M inst (@instA _ _ inst');
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -161,7 +186,7 @@ Instance MonadExcept_FreeT
       fun X pure wrap => catch (x X pure wrap) (y X pure wrap);
 }.
 Proof.
-  all: monad.
+  1-3: now monad.
 Abort.
 
 #[refine]
@@ -174,10 +199,9 @@ Instance MonadReader_FreeT
   ask := fun X pure wrap => ask >>= pure;
 }.
 Proof.
-  ext3 X pure wrap. cbn.
-  unfold fmap_FreeT, const, id, compose.
-  rewrite <- bind_assoc.
-  rewrite <- constrA_spec, ask_ask. reflexivity.
+  ext3 X pure wrap.
+  cbn; unfold fmap_FreeT, const, id, compose.
+  now rewrite <- bind_assoc, <- constrA_spec, ask_ask.
 Defined.
 
 #[refine]
@@ -192,7 +216,9 @@ Instance MonadWriter_FreeT
     fun A x =>
       fun X pure wrap => x X (fun a => pure (a, neutr)) wrap;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 #[refine]
 #[export]
@@ -205,14 +231,21 @@ Instance MonadState_FreeT
   put := fun s => fun X pure wrap => put s >>= pure;
 }.
 Proof.
-  - monad; unfold const, id, compose; monad.
-  - intros. ext3 X pure wrap. cbn.
-    hs. unfold const, id, compose. rewrite <- bind_assoc.
-    rewrite put_get'. monad.
-  - intros. ext3 X pure wrap. cbn.
-    unfold bind_FreeT, pure_FreeT.
-    rewrite <- bind_assoc, get_put. hs.
   - monad.
+    unfold const, id, compose.
+    now monad.
+  - intros.
+    ext3 X pure wrap.
+    cbn; hs.
+    unfold const, id, compose.
+    rewrite <- bind_assoc, put_get'.
+    now monad.
+  - intros.
+    ext3 X pure wrap.
+    cbn; unfold bind_FreeT, pure_FreeT.
+    rewrite <- bind_assoc, get_put.
+    now hs.
+  - now monad.
 Defined.
 
 #[refine]
@@ -226,5 +259,4 @@ Instance MonadStateNondet_FreeT
   instN := MonadNondet_FreeT F M inst inst';
 }.
 Proof.
-  all: monad.
 Abort.

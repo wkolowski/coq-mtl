@@ -1,8 +1,10 @@
 Require Import List.
 Import ListNotations.
 
-(** Monoids, represented as a class without any parameters. They are used
-    by [Writer] and [WriterT]. *)
+(**
+  Monoids, represented as a class without any parameters. They are used
+  by [Writer] and [WriterT].
+*)
 Class Monoid : Type :=
 {
   carr : Type;
@@ -21,8 +23,10 @@ Coercion carr : Monoid >-> Sortclass.
 
 #[global] Hint Rewrite @id_left @id_right @op_assoc : CoqMTL.
 
-(** Some instances of monoids: the initial monoid, the monoid of boolean
-    values with boolean conjunction and the monoid of lists with append. *)
+(**
+  Some instances of monoids: the initial monoid, the monoid of boolean
+  values with boolean conjunction and the monoid of lists with append.
+*)
 
 #[refine]
 #[export]
@@ -57,7 +61,7 @@ Instance Monoid_list_app (A : Type) : Monoid :=
   op := @app A;
 }.
 Proof.
-  - reflexivity.
+  - easy.
   - now intros; rewrite app_nil_r.
   - now intros; rewrite app_assoc.
 Defined.

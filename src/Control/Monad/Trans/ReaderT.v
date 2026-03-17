@@ -3,15 +3,19 @@ From CoqMTL Require Import Control.Monad.Trans.
 From CoqMTL Require Import Control.Monad.Class.All.
 From CoqMTL Require Export Control.Monad.Identity.
 
-(** A transformer which adds a layer of the reader monad on top of a
-    monad [M]. *)
-Definition ReaderT (E : Type) (M : Type -> Type) (A : Type)
-  : Type := E -> M A.
+(**
+  A transformer which adds a layer of the reader monad on top of a
+  monad [M].
+*)
+Definition ReaderT (E : Type) (M : Type -> Type) (A : Type) : Type :=
+  E -> M A.
 
-(** Definitions of [fmap], [pure], [ap], [aempty], [aplus] and [bind]
-    are easy - we need to use the corresponding functions from [M]
-    and feed their arguments with the environment [e]. For some,
-    like [pure] or [lift], we don't even need to check the environment. *)
+(**
+  Definitions of [fmap], [pure], [ap], [aempty], [aplus] and [bind]
+  are easy - we need to use the corresponding functions from [M]
+  and feed their arguments with the environment [e]. For some,
+  like [pure] or [lift], we don't even need to check the environment.
+*)
 
 Definition fmap_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A B : Type} (f : A -> B)
@@ -27,11 +31,13 @@ Instance Functor_ReaderT
 {
   fmap := @fmap_ReaderT M inst E;
 }.
-Proof. all: unfold compose; monad. Defined.
+Proof.
+  all: now unfold compose; monad.
+Defined.
 
 Definition pure_ReaderT
-  {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A)
-  : ReaderT E M A := fun _ => pure x.
+  {M : Type -> Type} {inst : Monad M} {E A : Type} (x : A) : ReaderT E M A :=
+    fun _ => pure x.
 
 Definition ap_ReaderT
   {E : Type} {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -50,7 +56,9 @@ Instance Applicative_ReaderT
   pure := @pure_ReaderT M inst E;
   ap := @ap_ReaderT E M inst;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 (** [ReaderT M] is [Alternative] only when [M] is. *)
 
@@ -58,9 +66,11 @@ Lemma ReaderT_not_Alternative :
   (forall (E : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (ReaderT E M)) -> False.
 Proof.
-  intros. destruct (X unit Identity Monad_Identity).
-  clear -aempty. specialize (aempty False).
-  compute in aempty. apply aempty. exact tt.
+  intros X.
+  destruct (X unit Identity Monad_Identity).
+  clear -aempty.
+  specialize (aempty False); compute in aempty.
+  now apply aempty.
 Qed.
 
 #[refine]
@@ -72,7 +82,9 @@ Instance Alternative_ReaderT
   aempty := fun A => fun _ => aempty;
   aplus := fun A x y => fun e => aplus (x e) (y e);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 Definition bind_ReaderT
   {M : Type -> Type} {inst : Monad M} {E A B : Type}
@@ -89,11 +101,13 @@ Instance Monad_ReaderT
   is_applicative := @Applicative_ReaderT E M inst;
   bind := @bind_ReaderT M inst E;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 Definition lift_ReaderT
-  (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A)
-    : ReaderT E M A := fun _ => ma.
+  (E : Type) {M : Type -> Type} {inst : Monad M} {A : Type} (ma : M A) : ReaderT E M A :=
+    fun _ => ma.
 
 #[global] Hint Unfold lift_ReaderT : CoqMTL.
 
@@ -104,7 +118,9 @@ Instance MonadTrans_ReaderT (E : Type) : MonadTrans (ReaderT E) :=
   is_monad := @Monad_ReaderT E;
   lift := @lift_ReaderT E;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 (** [ReaderT] adds a layer of [MonadReader] to any monad [M]. *)
 #[refine]
@@ -115,10 +131,13 @@ Instance MonadReader_Reader
 {
   ask := pure;
 }.
-Proof. monad. Defined.
+Proof.
+  now monad.
+Defined.
 
-(** Transforming any other kind of monad results in a monad of the same
-    kind. *)
+(**
+  Transforming any other kind of monad results in a monad of the same kind.
+*)
 
 #[refine]
 #[export]
@@ -129,7 +148,9 @@ Instance MonadAlt_ReaderT
   choose :=
     fun A x y r => choose (x r) (y r);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -139,7 +160,9 @@ Instance MonadFail_ReaderT
 {
   fail := fun A r => fail;
 }.
-Proof. monad. Defined.
+Proof.
+  now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -150,7 +173,9 @@ Instance MonadNondet_ReaderT
   instF := @MonadFail_ReaderT R M inst (@instF _ _ inst');
   instA := @MonadAlt_ReaderT R M inst (@instA _ _ inst');
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -162,7 +187,9 @@ Instance MonadExcept_ReaderT
   catch :=
     fun A x y => fun e => catch (x e) (y e);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -175,10 +202,17 @@ Instance MonadState_ReaderT
   put := fun s r => put s;
 }.
 Proof.
-  - intros. ext r. cbn. unfold ap_ReaderT, fmap_ReaderT, const, id. monad.
-  - intros. rewrite constrA_spec. cbn. monad.
-  - monad.
-  - intros. ext r. cbn. monad.
+  - intros.
+    ext r.
+    cbn; unfold ap_ReaderT, fmap_ReaderT, const, id.
+    now monad.
+  - intros.
+    rewrite constrA_spec; cbn.
+    now monad.
+  - now monad.
+  - intros.
+    ext r; cbn.
+    now monad.
 Defined.
 
 #[refine]
@@ -191,7 +225,9 @@ Instance MonadWriter_ReaderT
   tell := fun w e => tell w;
   listen := fun A x e => listen (x e);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -204,9 +240,12 @@ Instance MonadStateNondet_ReaderT
   instN := MonadNondet_ReaderT E M inst inst';
 }.
 Proof.
-  - intros. rewrite constrA_spec. cbn. unfold bind_ReaderT.
-    ext e. rewrite <- constrA_spec. rewrite seq_fail_r. reflexivity.
-  - monad.
+  - intros.
+    rewrite constrA_spec.
+    cbn; unfold bind_ReaderT.
+    ext e.
+    now rewrite <- constrA_spec, seq_fail_r.
+  - now monad.
 Defined.
 
 (** If [M] is the free monad of [F], so is [ReaderT E M]. *)
@@ -222,8 +261,10 @@ Instance MonadFree_ReaderT
     fun A m e => wrap (fmap (fun x => x e) m);
 }.
 Proof.
-  intros. ext e. cbn.
-  unfold bind_ReaderT, pure_ReaderT, ReaderT in *.
-  rewrite <- !fmap_comp'. unfold compose.
-  apply wrap_law.
+  intros.
+  ext e.
+  cbn; unfold bind_ReaderT, pure_ReaderT, ReaderT in *.
+  rewrite <- !fmap_comp'.
+  unfold compose.
+  now apply wrap_law.
 Defined.

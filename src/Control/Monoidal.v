@@ -1,15 +1,16 @@
 From CoqMTL Require Export Control.Functor.
 
-(** This file contains an alternative characterization of [Applicative]
-    functors as lax monoidal functors (or rather, strong monoidal functors,
-    because in the category of Coq's types and functions all monoidal
-    functors are strong.
+(**
+  This file contains an alternative characterization of [Applicative]
+  functors as lax monoidal functors (or rather, strong monoidal functors,
+  because in the category of Coq's types and functions all monoidal
+  functors are strong.
 
-    Below are some auxiliary functions needed to define [Monoidal]. *)
+  Below are some auxiliary functions needed to define [Monoidal].
+*)
 
-Definition reassoc
-  {A B C : Type} : (A * B) * C -> A * (B * C) :=
-    fun '((a, b), c) => (a, (b, c)).
+Definition reassoc {A B C : Type} : (A * B) * C -> A * (B * C) :=
+  fun '((a, b), c) => (a, (b, c)).
 
 Definition par
   {A A' B B' : Type} (f : A -> B) (g : A' -> B') : A * A' -> B * B' :=
@@ -32,21 +33,23 @@ Class Monoidal (F : Type -> Type) : Type :=
     forall (A B C : Type) (a : F A) (b : F B) (c : F C),
       fmap reassoc (pairF (pairF a b) c) = pairF a (pairF b c);
   natural :
-    forall
-      (A A' B B' : Type)
-      (f : A -> A') (g : B -> B')
-      (a : F A) (b : F B),
-        fmap (f *** g) (pairF a b) = pairF (fmap f a) (fmap g b);
+    forall (A A' B B' : Type) (f : A -> A') (g : B -> B') (a : F A) (b : F B),
+      fmap (f *** g) (pairF a b) = pairF (fmap f a) (fmap g b);
 }.
 
 #[global] Hint Rewrite @pairF_default_l @pairF_default_r @pairF_assoc : monoidal.
 
-(** Basic lemmas about monoidal functors. Some of them are needed in
-    the tactic [monoidal] - see below. *)
+(**
+  Basic lemmas about monoidal functors. Some of them are needed in
+  the tactic [monoidal] — see below.
+*)
 Lemma par_id :
   forall (A B : Type), @id A *** @id B = id.
 Proof.
-  intros. unfold par, id. ext p. destruct p. reflexivity.
+  intros.
+  unfold par, id.
+  ext p.
+  now destruct p.
 Qed.
 
 Lemma comp_par_par :
@@ -54,14 +57,20 @@ Lemma comp_par_par :
   (f1 : A -> B) (f2 : B -> C) (g1 : A' -> B') (g2 : B' -> C'),
     (f1 *** g1) .> (f2 *** g2) = (f1 .> f2) *** (g1 .> g2).
 Proof.
-  intros. unfold compose, par. ext p. destruct p. reflexivity.
+  intros.
+  unfold compose, par.
+  ext p.
+  now destruct p.
 Qed.
 
 Lemma par_comp :
   forall (A B A' B' X : Type) (f : A -> B) (g : A' -> B') (h : B * B' -> X),
     (f *** g) .> h = fun p : A * A' => h (f (fst p), g (snd p)).
 Proof.
-  intros. unfold compose, par. ext p. destruct p. cbn. reflexivity.
+  intros.
+  unfold compose, par.
+  ext p.
+  now destruct p; cbn.
 Qed.
 
 Lemma aux :
@@ -69,13 +78,18 @@ Lemma aux :
     ((fun _ : W => f) *** g) .>
     (fun p : (B -> C) * B => apply (fst p) (snd p)) = snd .> g .> f.
 Proof.
-  intros. unfold compose, par. ext x. destruct x. cbn. reflexivity.
+  intros.
+  unfold compose, par.
+  ext x.
+  now destruct x; cbn.
 Qed.
 
-(** A tactic for solving goals about [Monoidal]. It works by repeatedly
-    performing precise rewrites. The order of these was found experimentally
-    and is best suited in the proofs to come in
-    Theory.Applicative_is_Monoidal.v *)
+(**
+  A tactic for solving goals about [Monoidal]. It works by repeatedly
+  performing precise rewrites. The order of these was found experimentally
+  and is best suited in the proofs to come in
+  Theory.Applicative_is_Monoidal.v
+*)
 Ltac monoidal := repeat (
 multimatch goal with
 | |- ?x = ?x => reflexivity
@@ -89,9 +103,9 @@ multimatch goal with
 | |- context [fmap (snd .> _)] => rewrite !fmap_comp'
 | _ => rewrite ?aux
 | |- context [pairF (fmap ?f ?a) ?x] =>
-      replace x with (fmap id x) by hs;
-      rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
+  replace x with (fmap id x) by hs;
+  rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
 | |- context [pairF ?x (fmap ?f ?a)] =>
-        replace x with (fmap id x) by hs;
-        rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
+  replace x with (fmap id x) by hs;
+  rewrite <- ?natural, <- ?fmap_comp', ?fmap_id
 end).

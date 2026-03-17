@@ -1,8 +1,10 @@
 From CoqMTL Require Import Control.All.
 
-(** An attempt at monad that models a computation that has no side effects,
-    but is evaluated lazily. According to my experiments, it doesn't really
-    work. *)
+(**
+  An attempt at monad that models a computation that has no side effects,
+  but is evaluated lazily. According to my experiments, it doesn't really
+  work.
+*)
 Definition Lazy (A : Type) : Type := unit -> A.
 
 Definition delay {A : Type} (a : A) : Lazy A :=
@@ -10,8 +12,10 @@ Definition delay {A : Type} (a : A) : Lazy A :=
 
 Definition force {A : Type} (la : Lazy A) : A := la tt.
 
-(** All [Functor], [Applicative] and [Monad] operations are just like
-    these for [Identity], but wrapped in [delay] for laziness. *)
+(**
+  All [Functor], [Applicative] and [Monad] operations are just like
+  these for [Identity], but wrapped in [delay] for laziness.
+*)
 
 Definition fmap_Lazy {A B : Type} (f : A -> B) (la : Lazy A) : Lazy B :=
   delay $ f (la tt).
@@ -22,7 +26,9 @@ Instance Functor_Lazy : Functor Lazy :=
 {
   fmap := @fmap_Lazy;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 Definition pure_Lazy {A : Type} (a : A) : Lazy A :=
   fun _ => a.
@@ -40,8 +46,8 @@ Instance Applicative_Lazy : Applicative Lazy :=
   ap := @ap_Lazy;
 }.
 Proof.
-  monad.
-  all: reflexivity.
+  all: only 2-5: easy.
+  now monad.
 Defined.
 
 Definition bind_Lazy
@@ -55,13 +61,17 @@ Instance Monad_Lazy : Monad Lazy :=
   is_applicative := Applicative_Lazy;
   bind := @bind_Lazy
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
-(** Running these computations gives the following times:
-    - [cbn] takes ~9.1 seconds for both [repeat 42 10000] and
-      [delay $ repeat 42 10000]
-    - [lazy] takes ~1.3 seconds in both cases
+(**
+  Running these computations gives the following times:
+  - [cbn] takes ~9.1 seconds for both [repeat 42 10000] and
+    [delay $ repeat 42 10000]
+  - [lazy] takes ~1.3 seconds in both cases
 *)
+
 (*
 Time Eval cbn in repeat 42 10000.
 Time Eval lazy in repeat 42 10000.

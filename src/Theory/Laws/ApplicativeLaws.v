@@ -1,10 +1,12 @@
 From CoqMTL Require Export Base.
 
-(** This module aims to check whether [Applicative]'s laws are orthogonal,
-    i.e. independent from each other. We take an axiomatic approach.
+(**
+  This module aims to check whether [Applicative]'s laws are orthogonal,
+  i.e. independent from each other. We take an axiomatic approach.
 
-    First we postulate the existence of a thing [F] that has some functions
-    named [fmap], [pure] and [ap]. *)
+  First we postulate the existence of a thing [F] that has some functions
+  named [fmap], [pure] and [ap].
+*)
 
 Axiom
   (F : Type -> Type)
@@ -50,34 +52,40 @@ Definition fmap_pure : Prop :=
   forall (A B : Type) (f : A -> B) (x : A),
     fmap f (pure x) = pure (f x).
 
-(** Finally we try to derive some of these laws from others. It turns out
-    that [identity] follows from [fmap_pure_ap] and the functor laws. *)
+(**
+  Finally we try to derive some of these laws from others. It turns out
+  that [identity] follows from [fmap_pure_ap] and the functor laws.
+*)
 
 Lemma identity' :
   fmap_pure_ap -> fmap_id -> identity.
 Proof.
-  compute. intros fmap_pure_ap fmap_id A x.
-  rewrite <- fmap_pure_ap, fmap_id. reflexivity.
+  compute.
+  intros fmap_pure_ap fmap_id A x.
+  now rewrite <- fmap_pure_ap, fmap_id.
 Qed.
 
 Lemma homomorphism' :
   fmap_pure_ap -> fmap_pure -> homomorphism.
 Proof.
-  compute. intros fmap_pure_ap fmap_pure A B f x.
-  rewrite <- fmap_pure_ap, fmap_pure. reflexivity.
+  compute.
+  intros fmap_pure_ap fmap_pure A B f x.
+  now rewrite <- fmap_pure_ap, fmap_pure.
 Qed.
 
 Lemma fmap_id' :
   fmap_pure_ap -> identity -> fmap_id.
 Proof.
-  compute. intros fmap_pure_ap identity A.
-  ext a. rewrite fmap_pure_ap, identity.
-  reflexivity.
+  compute.
+  intros fmap_pure_ap identity A.
+  ext a.
+  now rewrite fmap_pure_ap, identity.
 Qed.
 
 Lemma fmap_pure' :
   fmap_pure_ap -> homomorphism -> fmap_pure.
 Proof.
-  compute. intros fmap_pure_ap homomorphism A B f x.
-  rewrite fmap_pure_ap, homomorphism. reflexivity.
+  compute.
+  intros fmap_pure_ap homomorphism A B f x.
+  now rewrite fmap_pure_ap, homomorphism.
 Qed.

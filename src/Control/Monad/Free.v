@@ -2,13 +2,15 @@ From CoqMTL Require Import Control.All.
 From CoqMTL Require Import Control.Monad.Identity.
 From CoqMTL Require Import Control.Monad.Class.MonadFree.
 
-(** The free monad of a functor F. It models a computation whose effects
-    are described by the functor F. Contrary to Haskell, it is implemented
-    using Church encoding, because the corresponding inductive type is not
-    strictly positive.
+(**
+  The free monad of a functor <<F>>. It models a computation whose effects
+  are described by the functor <<F>>. Contrary to Haskell, it is implemented
+  using Church encoding, because the corresponding inductive type is not
+  strictly positive.
 
-    The implementation is type-driven, so we shouldn't expect to get an
-    intuitive understanding of what the operations really do... *)
+  The implementation is type-driven, so we shouldn't expect to get an
+  intuitive understanding of what the operations really do...
+*)
 
 Definition Free (F : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> X) -> (F X -> X) -> X.
@@ -27,11 +29,12 @@ Instance Functor_Free : Functor (Free F) :=
 {
   fmap := @fmap_Free
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
-Definition pure_Free
-  {A : Type} (x : A) : Free F A :=
-    fun X pure _ => pure x.
+Definition pure_Free {A : Type} (x : A) : Free F A :=
+  fun X pure _ => pure x.
 
 Definition ap_Free
   {A B : Type} (mf : Free F (A -> B)) (ma : Free F A) : Free F B :=
@@ -44,7 +47,9 @@ Instance Applicative_Free : Applicative (Free F) :=
   pure := @pure_Free;
   ap := @ap_Free;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition bind_Free
   {A B : Type} (x : Free F A) (f : A -> Free F B) : Free F B :=
@@ -56,36 +61,41 @@ Instance Monad_Free : Monad (Free F) :=
 {
   bind := @bind_Free
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 End Free.
 
-(** We shouldn't expect free monads to support any structure besides that
-    of a monad, so in particular no [Alternative]. *)
+(**
+  We shouldn't expect free monads to support any structure besides that
+  of a monad, so in particular no [Alternative].
+*)
 Lemma Free_not_Alternative :
   (forall F : Type -> Type, Alternative (Free F)) -> False.
 Proof.
-  unfold Free; intro. destruct (X Identity); unfold Identity in *.
-  apply (aempty False False); trivial.
+  unfold Free.
+  intros X.
+  destruct (X Identity); unfold Identity in *.
+  now apply (aempty False False).
 Qed.
 
 Definition wrap_Free
-  {F : Type -> Type} {instF : Functor F} {A : Type}
-  (x : F (Free F A)) : Free F A :=
+  {F : Type -> Type} {instF : Functor F} {A : Type} (x : F (Free F A)) : Free F A :=
     fun X pure wrap =>
-      wrap (fmap (fun f : forall X : Type, (A -> X) -> (F X -> X) -> X =>
-               f X pure wrap) x).
+      wrap (fmap (fun f : forall X : Type, (A -> X) -> (F X -> X) -> X => f X pure wrap) x).
 
 #[global] Hint Unfold fmap_Free pure_Free ap_Free bind_Free wrap_Free : CoqMTL.
 
 #[refine]
 #[export]
 Instance MonadFree_Free
-  (F : Type -> Type) (instF : Functor F)
-  : MonadFree F (Free F) instF (Monad_Free F) :=
+  (F : Type -> Type) (instF : Functor F) : MonadFree F (Free F) instF (Monad_Free F) :=
 {
   wrap := @wrap_Free F instF
 }.
 Proof.
-  monad. rewrite <- !fmap_comp'. unfold compose. reflexivity.
+  monad.
+  rewrite <- !fmap_comp'.
+  now unfold compose.
 Defined.

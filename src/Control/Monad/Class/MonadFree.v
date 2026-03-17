@@ -10,5 +10,7 @@ Class MonadFree
       wrap (fmap f x) = wrap (@fmap F instF _ _ pure x) >>= f
 }.
 
-(** There's no rewrite hint for [wrap_law], because it can be rewritten
-    ad infinitum, so [autorewrite] would loop. *)
+(**
+  There's no rewrite hint for [wrap_law], because it can be rewritten
+  ad infinitum, so [autorewrite] would loop.
+*)

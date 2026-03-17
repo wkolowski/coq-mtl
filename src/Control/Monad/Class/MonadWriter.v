@@ -23,14 +23,6 @@ Class MonadWriter (W : Monoid) (M : Type -> Type) (inst : Monad M) : Type :=
 
 #[global] Hint Rewrite @listen_pure (*@listen_tell*) @listen_listen : CoqMTL.
 
-(*
-Check
-  forall
-    (W : Monoid) (M : Type -> Type) (inst : Monad M) (inst' : MonadWriter W M inst)
-    (A : Type) (m : M (A * (W -> W))%type),
-    listen (pass m) = @bind M inst _ _ m (fun '(a, f) => fmap f (pure a)).
-*)
-
 Section MonadWriterFuns.
 
 Variables
@@ -41,17 +33,5 @@ Variables
 
 Definition listens {A X : Type} (f : W -> X) (ma : M A) : M (A * X)%type :=
   fmap (fun '(a, w) => (a, f w)) (listen ma).
-
-(*
--- | @'censor' f m@ is an action that executes the action @m@ and
--- applies the function @f@ to its output, leaving the return value
--- unchanged.
---
--- * @'censor' f m = 'pass' ('liftM' (\\x -> (x,f)) m)@
-censor :: MonadWriter w m => (w -> w) -> m a -> m a
-censor f m = pass $ do
-    a <- m
-    return (a, f)
-*)
 
 End MonadWriterFuns.

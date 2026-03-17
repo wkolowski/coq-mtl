@@ -13,10 +13,14 @@ Instance FunctorProd (A : Type) : Functor (prod A) :=
 {
   fmap := @fmap_Prod A;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
-Theorem Prod_not_Applicative :
+Lemma Prod_not_Applicative :
   (forall A : Type, Applicative (prod A)) -> False.
 Proof.
-  intro. destruct (X False). destruct (pure _ tt). assumption.
+  intros HApp.
+  destruct (HApp False).
+  now destruct (pure _ tt).
 Qed.

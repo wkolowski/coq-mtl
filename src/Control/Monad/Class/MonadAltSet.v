@@ -1,7 +1,9 @@
 From CoqMTL Require Export Control.Monad.
 
-(** A nondeterministic choice monad whose initial model are finite sets.
-    This is guaranteed by the laws [choose_comm] and [choose_idempotent]. *)
+(**
+  A nondeterministic choice monad whose initial model are finite sets.
+  This is guaranteed by the laws [choose_comm] and [choose_idempotent].
+*)
 Class MonadAltSet (M : Type -> Type) (inst : Monad M) : Type :=
 {
   choose : forall {A : Type}, M A -> M A -> M A;

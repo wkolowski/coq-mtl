@@ -3,12 +3,14 @@ Require Import Arith.
 From CoqMTL Require Export Base.
 From CoqMTL Require Import Misc.Monoid.
 
-(** Haskell-style [Foldable]. I have no idea about the intended categorical
-    semantics. The definition is based on [foldMap] while [foldr] and [foldl]
-    are moved outside and are implemented in terms of [foldMap].
+(**
+  Haskell-style [Foldable]. I have no idea about the intended categorical
+  semantics. The definition is based on [foldMap] while [foldr] and [foldl]
+  are moved outside and are implemented in terms of [foldMap].
 
-    There's one law I haven't thought much about and it's stated uglily
-    (a definition of monoid homomorphisms would help a lot). *)
+  There's one law I haven't thought much about and it's stated uglily
+  (a definition of monoid homomorphisms would help a lot).
+*)
 Class Foldable (T : Type -> Type) : Type :=
 {
   foldMap : forall {A : Type} {M : Monoid}, (A -> M) -> T A -> M;
@@ -18,8 +20,10 @@ Class Foldable (T : Type -> Type) : Type :=
         foldMap (f .> g) = foldMap f .> g
 }.
 
-(** A monoid instance for functions with composition and identity. It is
-    needed to define [foldr] and [foldl] using [foldMap]. *)
+(**
+  A monoid instance for functions with composition and identity. It is
+  needed to define [foldr] and [foldl] using [foldMap].
+*)
 #[refine]
 #[export]
 Instance Endo (A : Type) : Monoid :=
@@ -28,19 +32,24 @@ Instance Endo (A : Type) : Monoid :=
   op := @compose A A A;
   neutr := id;
 }.
-Proof. all: hs. Defined.
+Proof.
+  all: now hs.
+Defined.
 
 (** Utility functions taken from Haskell's Data.Foldable. *)
 Section FoldableFuns.
 
-Variable A B C : Type.
-Variable T : Type -> Type.
-Variable inst : Foldable T.
-Variable M : Monoid.
+Variables
+  (A B C : Type)
+  (T : Type -> Type)
+  (inst : Foldable T)
+  (M : Monoid).
 
-(** Note that [foldr'], [foldl'] are not present because laziness is not a
-    problem while [foldr1] and [foldl1] are not present because the case
-    of an empty structure just cannot be omitted. *)
+(**
+  Note that [foldr'], [foldl'] are not present because laziness is not a
+  problem while [foldr1] and [foldl1] are not present because the case
+  of an empty structure just cannot be omitted.
+*)
 Definition foldr
   {A B : Type} (f : A -> B -> B) (dflt : B) (t : T A) : B :=
     @foldMap T inst A (Endo B) (fun a : A => f a) t dflt.
@@ -95,20 +104,20 @@ Definition findAll (f : A -> bool) (ta : T A) : list A :=
 
 End FoldableFuns.
 
-Arguments foldr {T inst A B} _ _ _.
-Arguments foldl {T inst A B} _ _ _.
-Arguments isEmpty {A T inst} _.
-Arguments size {A T inst} _.
-Arguments toListF {A T inst} _.
-Arguments elem {A T inst} _ _ _.
-Arguments maxF {T inst} _.
-Arguments maxBy {A T inst} _ _ _.
-Arguments minBy {A T inst} _ _ _.
-Arguments maxBy {A T inst} _ _ _.
+Arguments foldr     {T inst A B} _ _ _.
+Arguments foldl     {T inst A B} _ _ _.
+Arguments isEmpty   {A T inst} _.
+Arguments size      {A T inst} _.
+Arguments toListF   {A T inst} _.
+Arguments elem      {A T inst} _ _ _.
+Arguments maxF      {T inst} _.
+Arguments maxBy     {A T inst} _ _ _.
+Arguments minBy     {A T inst} _ _ _.
+Arguments maxBy     {A T inst} _ _ _.
 Arguments findFirst {A T inst} _ _.
-Arguments count {A T inst} _ _.
-Arguments findAll {A T inst} _ _.
-Arguments andF {T inst} _.
-Arguments orF {T inst} _.
-Arguments allF {A T inst} _ _.
-Arguments anyF {A T inst} _ _.
+Arguments count     {A T inst} _ _.
+Arguments findAll   {A T inst} _ _.
+Arguments andF      {T inst} _.
+Arguments orF       {T inst} _.
+Arguments allF      {A T inst} _ _.
+Arguments anyF      {A T inst} _ _.

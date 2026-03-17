@@ -28,13 +28,13 @@ Definition skip : M unit := pure tt.
 
 Fixpoint hanoi {inst' : MonadCount} (n : nat) : M unit :=
 match n with
-| 0 => skip
+| 0    => skip
 | S n' => hanoi n' >> tick >> hanoi n'
 end.
 
 Fixpoint rep (n : nat) (x : M unit) : M unit :=
 match n with
-| 0 => skip
+| 0    => skip
 | S n' => x >> rep n' x
 end.
 
@@ -43,28 +43,32 @@ Lemma rep_constrA :
     rep (n + m) x = rep n x >> rep m x.
 Proof.
   induction n as [| n']; cbn; intros.
-  - unfold skip. rewrite constrA_spec. rewrite bind_pure_l. reflexivity.
-  - rewrite IHn'. rewrite constrA_assoc. reflexivity.
+  - unfold skip.
+    now rewrite constrA_spec, bind_pure_l.
+  - now rewrite IHn', constrA_assoc.
 Qed.
 
 Lemma rep1 :
   forall x : M unit, rep 1 x = x.
 Proof.
-  intros. cbn. unfold skip, constrA, compose. monad.
+  intros; cbn.
+  unfold skip, constrA, compose.
+  now monad.
 Qed.
 
 Theorem hanoi_rep :
   forall (inst' : MonadCount) (n : nat),
     hanoi n = rep (2 ^ n - 1) tick.
 Proof.
-  induction n as [| n']; cbn; try reflexivity.
-  rewrite IHn'. rewrite <- (rep1 tick) at 2.
-  rewrite <- !rep_constrA, <- plus_n_O. rewrite !Nat.sub_1_r. f_equal.
-  induction n' as [| n'']; cbn.
-  - reflexivity.
-  - erewrite (Nat.lt_succ_pred 0).
-    + lia.
-    + clear. induction n'' as [| n''']; cbn; lia.
+  induction n as [| n']; cbn; [easy |].
+  rewrite IHn'.
+  rewrite <- (rep1 tick) at 2.
+  rewrite <- !rep_constrA, <- plus_n_O, !Nat.sub_1_r.
+  f_equal.
+  induction n' as [| n'']; cbn; [easy |].
+  erewrite (Nat.lt_succ_pred 0); [now lia |].
+  clear.
+  now induction n'' as [| n''']; cbn; lia.
 Qed.
 
 (** ** 4. Nondeterministic computations *)
@@ -88,12 +92,10 @@ Hint Rewrite @constrA_fail_l : CoqMTL.
 Definition guard {inst' : MonadFail} (b : bool) : M unit :=
   if b then skip else fail.
 
-Definition assert
-  {inst' : MonadFail} {A : Type} (p : A -> bool) (ma : M A) : M A :=
-  do
-    a <- ma;
-    guard (p a);;
-    pure a.
+Definition assert {inst' : MonadFail} {A : Type} (p : A -> bool) (ma : M A) : M A := do
+  a <- ma;
+  guard (p a);;
+  pure a.
 
 (** *** 4.2 Choice *)
 
@@ -134,7 +136,7 @@ Instance MonadFail_List : MonadFail Monad_List :=
   fail := @nil
 }.
 Proof.
-  all: compute; reflexivity.
+  all: now compute.
 Defined.
 
 #[refine]
@@ -144,9 +146,9 @@ Instance MonadAlt_List : MonadAlt Monad_List :=
   choose := @app;
 }.
 Proof.
-  all: intros.
-  - rewrite app_assoc. reflexivity.
-  - cbn. apply bind_List_app.
+  all: cbn; intros.
+  - now rewrite app_assoc.
+  - now apply bind_List_app.
 Defined.
 
 #[refine]
@@ -158,33 +160,34 @@ Instance MonadNondet_List : MonadNondet Monad_List :=
 }.
 Proof.
   all: cbn; intros.
-  - reflexivity.
-  - rewrite app_nil_r. reflexivity.
+  - easy.
+  - now rewrite app_nil_r.
 Defined.
 
-Arguments fail {M inst MonadFail A}.
+Arguments fail   {M inst MonadFail A}.
 Arguments choose {M inst MonadAlt A} _ _.
 
 Section S1.
 
-Variable M : Type -> Type.
-Variable inst : Monad M.
+Variables
+  (M : Type -> Type)
+  (inst : Monad M).
 
 Fixpoint select
   {inst' : MonadNondet inst} {A : Type} (l : list A) : M (A * list A) :=
 match l with
-| [] => fail
+| []      => fail
 | x :: xs =>
-    choose (pure (x, xs)) $ do
-      p <- select xs;
-      let '(y, ys) := p in
-        pure (y, x :: ys)
+  choose (pure (x, xs)) $ do
+    p <- select xs;
+    let '(y, ys) := p in
+      pure (y, x :: ys)
 end.
 
 Fixpoint perms' (n : nat)
   {inst' : MonadNondet inst} {A : Type} (l : list A) : M (list A) :=
 match n, l with
-| 0, _ => fail
+| 0, _  => fail
 | _, [] => pure []
 | S n', _ => do
     p <- select l;
@@ -211,12 +214,12 @@ Compute perms [1; 2; 3].
 
 Section S2.
 
-Variable M : Type -> Type.
-Variable inst : Monad M.
+Variables
+  (M : Type -> Type)
+  (inst : Monad M).
 
 (** [catch] and [fail] form a monoid. Pure computations need no handler. *)
-Class MonadExcept
-  (inst' : MonadFail inst) : Type :=
+Class MonadExcept (inst' : MonadFail inst) : Type :=
 {
   catch : forall {A : Type}, M A -> M A -> M A;
   catch_fail_l :
@@ -248,13 +251,13 @@ Qed.
 
 Fixpoint product (l : list nat) : nat :=
 match l with
-| [] => 1
+| []     => 1
 | h :: t => h * product t
 end.
 
 Fixpoint has (n : nat) (l : list nat) : bool :=
 match l with
-| [] => false
+| []     => false
 | h :: t => Nat.eqb n h || has n t
 end.
 
@@ -263,10 +266,9 @@ Lemma product_has_0 :
     has 0 l = true -> product l = 0.
 Proof.
   induction l as [| h t]; cbn; intros.
-  - congruence.
-  - destruct h as [| h'].
-    + reflexivity.
-    + rewrite IHt; auto.
+  - now congruence.
+  - destruct h as [| h']; [easy |].
+    now rewrite IHt.
 Qed.
 
 Definition work
@@ -284,11 +286,9 @@ Theorem fastprod_spec :
       fastprod l = pure (product l).
 Proof.
   unfold fastprod, work; intros.
-  case_eq (has 0 l); intros.
-  - rewrite catch_fail_l, product_has_0.
-    + reflexivity.
-    + assumption.
-  - rewrite catch_pure. reflexivity.
+  destruct (has 0 l) eqn: H.
+  - now rewrite catch_fail_l, product_has_0.
+  - now rewrite catch_pure.
 Qed.
 
 Definition next
@@ -299,21 +299,19 @@ Theorem work_foldr :
   forall (inst' : MonadFail inst),
     work = fold_right next (pure 1).
 Proof.
-  intros. ext l. induction l as [| h t]; cbn.
-  - reflexivity.
-  - unfold work in *. cbn. destruct h as [| h']; cbn.
-    + reflexivity.
-    + case_eq (has 0 t); intros.
-      * rewrite H in *. rewrite <- IHt. rewrite fmap_bind_pure.
-        rewrite bind_fail_l. reflexivity.
-      * rewrite H in *. rewrite <- IHt. rewrite fmap_pure. reflexivity.
+  intros.
+  ext l.
+  induction l as [| h t]; cbn; [easy |].
+  unfold work in *; cbn.
+  destruct h as [| h']; cbn; [easy |].
+  destruct (has 0 t) eqn: H.
+  - now rewrite <- IHt, fmap_bind_pure, bind_fail_l.
+  - now rewrite <- IHt, fmap_pure.
 Qed.
 
-Fixpoint hasE
-  {inst' : MonadFail inst} (*{inst'' : MonadExcept inst'}*)
-  (n : nat) (l : list nat) : M unit :=
+Fixpoint hasE {inst' : MonadFail inst} (n : nat) (l : list nat) : M unit :=
 match l with
-| [] => pure tt
+| []     => pure tt
 | h :: t => if Nat.eqb n h then fail else hasE n t
 end.
 
@@ -329,20 +327,22 @@ Lemma aux :
     if has 0 l then pure m else pure n.
 Proof.
   induction l as [| h t]; cbn in *; intros.
-  - rewrite constrA_spec. monad.
+  - rewrite constrA_spec.
+    now monad.
   - destruct h as [| h'].
-    + rewrite constrA_fail_l, catch_fail_l. cbn. reflexivity.
-    + rewrite IHt. cbn. reflexivity.
+    + now rewrite constrA_fail_l, catch_fail_l; cbn.
+    + now rewrite IHt; cbn.
 Qed.
 
 Theorem fastprod'_spec :
   forall (inst' : MonadFail inst) (inst'' : MonadExcept inst') (l : list nat),
     fastprod' l = pure (product l).
 Proof.
-  intros. unfold fastprod'. rewrite aux.
-  case_eq (has 0 l); intros.
-  - rewrite product_has_0; auto.
-  - reflexivity.
+  intros.
+  unfold fastprod'.
+  rewrite aux.
+  destruct (has 0 l) eqn: H; [| easy].
+  now rewrite product_has_0.
 Qed.
 
 End S2.
@@ -388,19 +388,23 @@ Class MonadStateNondet
 
 Section S3.
 
-Variable M : Type -> Type.
-Variable inst : Monad M.
+Variables
+  (M : Type -> Type)
+  (inst : Monad M).
 
 Lemma guard_seq_bind :
   forall (S : Type) (inst' : MonadStateNondet S inst) (A : Type)
   (b : bool) (ma : M A),
     guard b >> ma = ma >>= fun a : A => guard b >> pure a.
 Proof.
-  intros. unfold guard. destruct b.
-  - unfold skip, constrA. unfold compose. monad.
-  - rewrite constrA_fail_l. rewrite <- (seq_fail_r _ _ ma).
-    rewrite constrA_spec. f_equal. ext a. rewrite constrA_fail_l.
-    reflexivity.
+  intros.
+  unfold guard.
+  destruct b.
+  - unfold skip, constrA, compose.
+    now monad.
+  - rewrite constrA_fail_l, <- (seq_fail_r _ _ ma), constrA_spec.
+    f_equal; ext a.
+    now rewrite constrA_fail_l.
 Qed.
 
 End S3.
@@ -409,11 +413,12 @@ End S3.
 
 Section S4.
 
-Axiom (Prob : Type).
-Axiom p0 : Prob.
-Axiom p1 : Prob.
-Axiom neg : Prob -> Prob.
-Axiom mul : Prob -> Prob -> Prob.
+Axioms
+  (Prob : Type)
+  (p0 : Prob)
+  (p1 : Prob)
+  (neg : Prob -> Prob)
+  (mul : Prob -> Prob -> Prob).
 
 Class MonadProb_no_laws
   (M : Type -> Type) (inst : Monad M) : Type :=
@@ -424,8 +429,7 @@ Class MonadProb_no_laws
 Notation "x <| p |> y" := (choice p x y)
   (left associativity, at level 5).
 
-Class MonadProb
-  (M : Type -> Type) (inst : Monad M) : Type :=
+Class MonadProb (M : Type -> Type) (inst : Monad M) : Type :=
 {
   instP :: MonadProb_no_laws inst;
   choice_p0 :

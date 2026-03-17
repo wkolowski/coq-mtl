@@ -1,12 +1,13 @@
 From CoqMTL Require Export Control.Monad.Class.MonadNondet.
 From CoqMTL Require Export Control.Monad.Class.MonadState.
 
-(** A monad that models both nondeterministic and stateful computations.
-    The law [seq_fail_r] says that eventual failure makes the whole
-    computation fail. [bind_choose_r] says that if a choice depends on
-    a previous computation, it can be expressed as a more complicated
-    choice. They can probably be summed up by saying that the state is
-    local to each branch of nondeterminism.
+(**
+  A monad that models both nondeterministic and stateful computations.
+  The law [seq_fail_r] says that eventual failure makes the whole
+  computation fail. [bind_choose_r] says that if a choice depends on
+  a previous computation, it can be expressed as a more complicated
+  choice. They can probably be summed up by saying that the state is
+  local to each branch of nondeterminism.
 *)
 Class MonadStateNondet
   (S : Type) (M : Type -> Type) (inst : Monad M) : Type :=

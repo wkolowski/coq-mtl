@@ -1,9 +1,11 @@
 From CoqMTL Require Export Control.Monad.Class.MonadFail.
 From CoqMTL Require Export Control.Monad.Class.MonadAlt.
 
-(** A monad that represents nondeterministic computations, i.e. ones that can
-    [fail] and make choices. The laws can be summarized by saying that if we
-    can choose, we don't choose failure. *)
+(**
+  A monad that represents nondeterministic computations, i.e. ones that can
+  [fail] and make choices. The laws can be summarized by saying that if we
+  can choose, we don't choose failure.
+*)
 Class MonadNondet (M : Type -> Type) (inst : Monad M) : Type :=
 {
   instF :: MonadFail M inst;

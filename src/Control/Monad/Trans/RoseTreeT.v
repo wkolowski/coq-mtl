@@ -3,19 +3,23 @@ From CoqMTL Require Import Control.Monad.Trans.
 From CoqMTL Require Import Control.Monad.Class.All.
 From CoqMTL Require Import Control.Monad.Identity.
 
-(** A transformer which adds some effect to the base monad [M], but I
-    don't yet know what effect it is. It's completely analogous to
-    the monad [RT], besides the fact that we can't use induction. *)
+(**
+  A transformer which adds some effect to the base monad [M], but I
+  don't yet know what effect it is. It's completely analogous to
+  the monad [RT], besides the fact that we can't use induction.
+*)
 Definition RoseTreeT (M : Type -> Type) (A : Type) : Type :=
   forall X : Type, (A -> M X) -> (M X -> M X -> M X) -> M X.
 
-(** There most often is only one valid definition for a function. You can
-    find it by following the types. *)
-
+(**
+  There most often is only one valid definition for a function. You can
+  find it by following the types.
+*)
 Section RoseTreeT_Instances.
 
-Variable M : Type -> Type.
-Variable inst : Monad M.
+Variables
+  (M : Type -> Type)
+  (inst : Monad M).
 
 Definition fmap_RoseTreeT
   {A B : Type} (f : A -> B) (t : RoseTreeT M A) : RoseTreeT M B :=
@@ -27,16 +31,18 @@ Instance Functor_RoseTreeT : Functor (RoseTreeT M) :=
 {
   fmap := @fmap_RoseTreeT
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition pure_RoseTreeT
   {A : Type} (x : A) : RoseTreeT M A :=
     fun X leaf _ => leaf x.
 
 Definition ap_RoseTreeT
-  {A B : Type} (tf : RoseTreeT M (A -> B)) (ta : RoseTreeT M A)
-  : RoseTreeT M B := fun X leaf node =>
-    tf X (fun f => fmap f ta X leaf node) node.
+  {A B : Type} (tf : RoseTreeT M (A -> B)) (ta : RoseTreeT M A) : RoseTreeT M B :=
+    fun X leaf node =>
+      tf X (fun f => fmap f ta X leaf node) node.
 
 #[refine]
 #[export]
@@ -45,12 +51,14 @@ Instance Applicative_RoseTreeT : Applicative (RoseTreeT M) :=
   pure := @pure_RoseTreeT;
   ap := @ap_RoseTreeT;
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 Definition bind_RoseTreeT
-  {A B : Type} (ta : RoseTreeT M A) (tf : A -> RoseTreeT M B)
-  : RoseTreeT M B := fun X leaf node =>
-    ta X (fun a => tf a X leaf node) node.
+  {A B : Type} (ta : RoseTreeT M A) (tf : A -> RoseTreeT M B) : RoseTreeT M B :=
+    fun X leaf node =>
+      ta X (fun a => tf a X leaf node) node.
 
 #[refine]
 #[export]
@@ -58,27 +66,33 @@ Instance Monad_RoseTreeT : Monad (RoseTreeT M) :=
 {
   bind := @bind_RoseTreeT
 }.
-Proof. all: reflexivity. Defined.
+Proof.
+  all: easy.
+Defined.
 
 End RoseTreeT_Instances.
 
 #[global] Hint Unfold
   fmap_RoseTreeT pure_RoseTreeT ap_RoseTreeT bind_RoseTreeT : CoqMTL.
 
-(** [RoseTreeT M] isn't an [Alternative] functor precisely because the
-    base monad [M] needs not be one. *)
+(**
+  [RoseTreeT M] isn't an [Alternative] functor precisely because the
+  base monad [M] needs not be one.
+*)
 Lemma RoseTreeT_not_Alternative :
   (forall (M : Type -> Type) (inst : Monad M), Alternative (RoseTreeT M)) ->
     False.
 Proof.
-  unfold RoseTreeT; intros.
+  unfold RoseTreeT; intros X.
   specialize (X Identity (Monad_Identity)).
-  unfold Identity in *. destruct X.
-  apply (aempty False False); trivial.
+  unfold Identity in *.
+  destruct X.
+  now apply (aempty False False).
 Qed.
 
-(** But even if [M] is an [Alternative] functor, there still are some
-    problems. *)
+(**
+  But even if [M] is an [Alternative] functor, there still are some problems.
+*)
 #[refine]
 #[export]
 Instance Alternative_RoseTreeT
@@ -90,7 +104,7 @@ Instance Alternative_RoseTreeT
   aplus A x y := fun X leaf node => aplus (x X leaf node) (y X leaf node)
 }.
 Proof.
-  all: monad.
+  3: now monad.
 Abort.
 
 (** [RoseTreeT] preserves [MonadNondet]. *)
@@ -105,7 +119,9 @@ Instance MonadAlt_RoseTreeT
     fun A x y =>
       fun X empty node => choose (x X empty node) (y X empty node)
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -115,7 +131,9 @@ Instance MonadFail_RoseTreeT
 {
   fail := fun A => fun X empty node => fail
 }.
-Proof. reflexivity. Defined.
+Proof.
+  easy.
+Defined.
 
 #[refine]
 #[export]
@@ -126,10 +144,13 @@ Instance MonadNondet_RoseTreeT
   instF := @MonadFail_RoseTreeT M inst (@instF _ _ inst');
   instA := @MonadAlt_RoseTreeT M inst (@instA _ _ inst');
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
-(** [MonadExcept] poses the standard problem for Church-encoded
-    transformers. *)
+(**
+  [MonadExcept] poses the standard problem for Church-encoded transformers.
+*)
 #[refine]
 #[export]
 Instance MonadExcept_RoseTreeT
@@ -142,8 +163,7 @@ Instance MonadExcept_RoseTreeT
       fun X empty node => catch (x X empty node) (y X empty node)
 }.
 Proof.
-  1-3: monad.
-    unfold pure_RoseTreeT.
+  1-3: now monad.
 Abort.
 
 (** [RoseTreeT] preserves reader, writer and state. *)
@@ -158,10 +178,11 @@ Instance MonadReader_RoseTreeT
   ask := fun X empty node => ask >>= empty
 }.
 Proof.
-  ext3 X empty node. hs.
+  ext3 X empty node.
+  hs.
   rewrite <- ask_ask at 2.
   rewrite <- constrA_bind_assoc.
-  monad.
+  now monad.
 Defined.
 
 #[refine]
@@ -174,11 +195,10 @@ Instance MonadWriter_RoseTreeT
   tell w := fun X leaf node => tell w >>= leaf;
   listen A x := fun X leaf node => x X (fun a => leaf (a, neutr)) node
 }.
-Proof. all: hs. Defined.
+Proof.
+  all: now hs.
+Defined.
 
-(** BEWARE: there is a strange bug when trying to prove the goals in order
-    or [Focus] on the fourth goal. This is why we have to solve it first
-    using the select 4: *)
 #[refine]
 #[export]
 Instance MonadState_RoseTreeT
@@ -190,19 +210,22 @@ Instance MonadState_RoseTreeT
   put := fun s X empty node => put s >> empty tt;
 }.
 Proof.
-  monad.
-  - intros. ext3 X empty node. cbn.
-    unfold fmap_RoseTreeT, const, id, compose, pure_RoseTreeT.
-    rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
-    reflexivity.
-  - intros. ext3 X empty node. cbn. hs.
-    unfold bind_RoseTreeT, pure_RoseTreeT.
-    rewrite bind_constrA_comm, get_put, constrA_pure_l. reflexivity.
-  - intros; cbn; unfold bind_RoseTreeT; ext3 X leaf node; monad.
+  - now monad.
+  - intros.
+    ext3 X empty node.
+    cbn; unfold fmap_RoseTreeT, const, id, compose, pure_RoseTreeT.
+    now rewrite constrA_bind_assoc, put_get, <- constrA_bind_assoc, bind_pure_l.
+  - intros.
+    ext3 X empty node.
+    cbn; unfold bind_RoseTreeT, pure_RoseTreeT.
+    now rewrite bind_constrA_comm, get_put, constrA_pure_l.
+  - now intros; cbn; unfold bind_RoseTreeT; ext3 X leaf node; monad.
 Defined.
 
-(** Even though [RoseTreeT] preserves both [MonadState] and [MonadNondet],
-    [MonadStateNondet] poses standard problems. *)
+(**
+  Even though [RoseTreeT] preserves both [MonadState] and [MonadNondet],
+  [MonadStateNondet] poses standard problems.
+*)
 #[refine]
 #[export]
 Instance MonadStateNondet_RoseTreeT
@@ -214,8 +237,6 @@ Instance MonadStateNondet_RoseTreeT
   instN := MonadNondet_RoseTreeT M inst inst';
 }.
 Proof.
-  intros. rewrite constrA_spec. cbn.
-    unfold bind_RoseTreeT. ext X. ext2 empty node.
 Abort.
 
 (** If [M] is the free monad of [F], so is [RoseTreeT M]. *)
@@ -231,8 +252,9 @@ Instance MonadFree_RoseTreeT
       wrap (fmap (fun l => l X empty node) fma)
 }.
 Proof.
-  intros A B f x. ext3 X empty node.
-  cbn. unfold bind_RoseTreeT, pure_RoseTreeT.
-  rewrite <- !fmap_comp'. unfold compose.
-  reflexivity.
+  intros A B f x.
+  ext3 X empty node.
+  cbn; unfold bind_RoseTreeT, pure_RoseTreeT.
+  rewrite <- !fmap_comp'.
+  now unfold compose.
 Defined.

@@ -5,15 +5,19 @@ From CoqMTL Require Import Control.Monad.Identity.
 
 From CoqMTL Require Import Misc.Monoid.
 
-(** A transformer which to any base monad [M] adds a layer that can read
-    the environment, perform logging and read a single cell of state. *)
+(**
+  A transformer which to any base monad [M] adds a layer that can read
+  the environment, perform logging and read a single cell of state.
+*)
 Definition RWST
   (W : Monoid) (R S : Type) (M : Type -> Type) (A : Type) : Type :=
     R -> S -> M (A * S * W)%type.
 
-(** Definitions of [fmap], [pure], [ap], [bind] and so on are made up of
-    three parts: to understand each of them, look it up in [ReaderT],
-    [WriterT], [StateT]. *)
+(**
+  Definitions of [fmap], [pure], [ap], [bind] and so on are made up of
+  three parts: to understand each of them, look it up in [ReaderT],
+  [WriterT], [StateT].
+*)
 
 Definition fmap_RWST
   {W : Monoid} {R S : Type} {M : Type -> Type} {inst : Monad M} {A B : Type}
@@ -26,12 +30,13 @@ Definition fmap_RWST
 #[refine]
 #[export]
 Instance Functor_RWST
-  (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M)
-    : Functor (RWST W R S M) :=
+  (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M) : Functor (RWST W R S M) :=
 {
   fmap := @fmap_RWST W R S M inst;
 }.
-Proof. all: unfold compose; monad. Defined.
+Proof.
+  all: now unfold compose; monad.
+Defined.
 
 Definition pure_RWST
   {W : Monoid} {R S : Type} {M : Type -> Type} {inst : Monad M} {A : Type}
@@ -43,7 +48,8 @@ Definition ap_RWST
   (f : RWST W R S M (A -> B)) (x : RWST W R S M A) : RWST W R S M B :=
     fun r s =>
       f r s >>= fun '(f', sf, wf) =>
-      x r sf >>= fun '(x', sx, wx) => pure (f' x', sx, op wf wx).
+      x r sf >>= fun '(x', sx, wx) =>
+        pure (f' x', sx, op wf wx).
 
 #[global] Hint Unfold pure_RWST ap_RWST : CoqMTL.
 
@@ -57,29 +63,33 @@ Instance Applicative_RWST
   pure := @pure_RWST W R S M inst;
   ap := @ap_RWST W R S M inst;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 Lemma RWST_not_CommutativeApplicative :
   ~ (forall (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M),
       CommutativeApplicative _ (Applicative_RWST W R S M inst)).
 Proof.
-  intro. destruct (H (Monoid_list_app bool) unit unit Identity _).
+  intros H.
+  destruct (H (Monoid_list_app bool) unit unit Identity _).
   unfold RWST in ap_comm.
   specialize (ap_comm nat nat nat (fun _ => id)
     (fun _ _ => (42, tt, [true; false]))
-    (fun _ _ => (43, tt, [false; true]))).
-  compute in ap_comm. do 2 apply (f_equal (fun f => f tt)) in ap_comm.
-  inv ap_comm.
+    (fun _ _ => (43, tt, [false; true])));
+    compute in ap_comm.
+  do 2 apply (f_equal (fun f => f tt)) in ap_comm.
+  now inversion ap_comm.
 Qed.
 
 Lemma RWST_not_Alternative :
   (forall (W : Monoid) (R S : Type) (M : Type -> Type) (inst : Monad M),
     Alternative (RWST W R S M)) -> False.
 Proof.
-  intro H. destruct (H Monoid_unit unit unit Identity _).
-  clear - aempty. compute in aempty.
-  destruct (aempty False tt tt) as [[f _] _].
-  assumption.
+  intros H.
+  destruct (H Monoid_unit unit unit Identity _).
+  clear -aempty; compute in aempty.
+  now destruct (aempty False tt tt) as [[f _] _].
 Qed.
 
 Definition bind_RWST
@@ -87,7 +97,8 @@ Definition bind_RWST
   (x : RWST W R S M A) (f : A -> RWST W R S M B) : RWST W R S M B :=
     fun r s =>
       x r s >>= fun '(x', sx, wx) =>
-      f x' r sx >>= fun '(b, sb, wb) => pure (b, sb, op wx wb).
+      f x' r sx >>= fun '(b, sb, wb) =>
+        pure (b, sb, op wx wb).
 
 #[global] Hint Unfold bind_RWST : CoqMTL.
 
@@ -100,16 +111,21 @@ Instance Monad_RWST
   is_applicative := Applicative_RWST W R S M inst;
   bind := @bind_RWST W R S M inst;
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
-(** To lift a computation into the monad, we bind it to a function which
-    puts its value next to the current state. It doesn't read the
-    environment or write the to the log. *)
+(**
+  To lift a computation into the monad, we bind it to a function which
+  puts its value next to the current state. It doesn't read the
+  environment or write the to the log.
+*)
 Definition lift_RWST
   {W : Monoid} {R S : Type} {M : Type -> Type} {inst : Monad M} {A : Type}
   (x : M A) : RWST W R S M A :=
     fun r s =>
-      x >>= fun a : A => pure (a, s, neutr).
+      x >>= fun a : A =>
+        pure (a, s, neutr).
 
 #[global] Hint Unfold lift_RWST : CoqMTL.
 
@@ -120,10 +136,14 @@ Instance MonadTrans_RWST
 {
   lift := @lift_RWST W R S;
 }.
-Proof. all: unfold compose; monad. Defined.
+Proof.
+  all: now unfold compose; monad.
+Defined.
 
-(** [RWST] puts a layer of [MonadReader], [MonadWriter] and [MonadState]
-    on top of the base monad [M]. *)
+(**
+  [RWST] puts a layer of [MonadReader], [MonadWriter] and [MonadState]
+  on top of the base monad [M].
+*)
 
 #[refine]
 #[export]
@@ -133,7 +153,9 @@ Instance MonadReader_RWST
 {
   ask := fun r s => pure (r, s, neutr);
 }.
-Proof. monad. Defined.
+Proof.
+  now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -147,7 +169,9 @@ Instance MonadWriter_RWST
       fun r s =>
         m r s >>= fun '(a, s, w) => pure (a, w, s, neutr);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -159,12 +183,13 @@ Instance MonadState_RWST
   put := fun s : S => fun _ _ => pure (tt, s, neutr);
 }.
 Proof.
-  1-3: monad.
-  intros. cbn. ext r. ext s. monad.
+  all: now monad.
 Defined.
 
-(** Just like [ReaderT], [WriterT] and [StateT], [RWST] preserves all other
-    kinds of monads. *)
+(**
+  Just like [ReaderT], [WriterT] and [StateT], [RWST] preserves all other
+  kinds of monads.
+*)
 
 #[refine]
 #[export]
@@ -176,7 +201,9 @@ Instance MonadAlt_RWST
   choose :=
     fun A x y => fun r s => choose (x r s) (y r s );
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -187,7 +214,9 @@ Instance MonadFail_RWST
 {
   fail := fun A _ _ => @fail M inst inst' (A * S * W);
 }.
-Proof. monad. Defined.
+Proof.
+  now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -199,7 +228,9 @@ Instance MonadNondet_RWST
   instF := @MonadFail_RWST W R S M inst (@instF _ _ inst');
   instA := @MonadAlt_RWST W R S M inst (@instA _ _ inst');
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 #[refine]
 #[export]
@@ -212,13 +243,24 @@ Instance MonadStateNondet_RWST
   instN := MonadNondet_RWST W R S M inst inst';
 }.
 Proof.
-  - intros. rewrite constrA_spec. cbn. hs. ext2 r s.
+  - intros.
+    rewrite constrA_spec.
+    cbn; unfold bind_RWST.
+    ext2 r s.
     rewrite <- (seq_fail_r _ _ (x r s)) at 1.
-    rewrite constrA_spec. f_equal. ext y.
-    destruct y as [[a s'] w]. apply bind_fail_l.
-  - intros. cbn. unfold bind_RWST. ext r. ext s.
-    rewrite <- bind_choose_r. f_equal.
-    ext asw. destruct asw as [[a sa] wa]. apply bind_choose_l.
+    rewrite constrA_spec.
+    f_equal.
+    ext y.
+    destruct y as [[a s'] w].
+    now apply bind_fail_l.
+  - intros.
+    cbn; unfold bind_RWST.
+    ext2 r s.
+    rewrite <- bind_choose_r.
+    f_equal.
+    ext asw.
+    destruct asw as [[a sa] wa].
+    now apply bind_choose_l.
 Defined.
 
 #[refine]
@@ -232,7 +274,9 @@ Instance MonadExcept_RWST
   catch :=
     fun A x y => fun r s => catch (x r s) (y r s);
 }.
-Proof. all: monad. Defined.
+Proof.
+  all: now monad.
+Defined.
 
 (** If [M] is the free monad of [F], so is [RWST W R S M]. *)
 #[refine]
@@ -247,10 +291,11 @@ Instance MonadFree_RWST
     fun A m r s => wrap (fmap (fun x => x r s) m);
 }.
 Proof.
-  intros. ext2 r s. cbn.
-  unfold bind_RWST, pure_RWST, RWST in *.
-  rewrite <- !fmap_comp'. unfold compose.
-  rewrite wrap_law.
-  rewrite (wrap_law _ _ (fun a : A => pure (a, s, neutr)) x).
-  monad.
+  intros.
+  ext2 r s.
+  cbn; unfold bind_RWST, pure_RWST, RWST in *.
+  rewrite <- !fmap_comp'.
+  unfold compose.
+  rewrite wrap_law, (wrap_law _ _ (fun a : A => pure (a, s, neutr)) x).
+  now monad.
 Defined.
